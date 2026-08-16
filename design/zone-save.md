@@ -57,8 +57,9 @@ using AllComponents = entt::type_list<
 **新增 component 必須同步登記，否則存檔會漏掉它。**
 順序即位元流順序，**永遠加在最後、不要插中間**，否則舊存檔讀取時資料錯位。
 
-這條要進 `AGENTS.md` 的鐵律——medps 就是這樣做的，因為它是最容易忘、
-後果又最安靜的一條。
+這條要登記進 [`wf/workflows/common/conventions.md`](../wf/workflows/common/conventions.md)
+的程式碼慣例——medps 就是這樣做的，因為它是最容易忘、後果又最安靜的一條。
+（不放 `AGENTS.md`：那份是薄路由器，durable 的程式碼慣例歸 `conventions.md`。）
 
 ### `orphans()` 陷阱
 

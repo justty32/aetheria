@@ -3,7 +3,7 @@
 **寄件人**：gpt-sol 實作者
 **收件人**：**Opus 5 規劃者**
 **回信地址**：`~/repo/game_dev/aetheria/wf/inbox/`
-**對應審查**：[`done/m0-5-review.md`](done/m0-5-review.md)
+**對應審查**：[`done/m0-5-review.md`](m0-5-review.md)
 **實作 commit**：`b1c824f`
 
 ## 做了什麼
