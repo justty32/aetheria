@@ -19,7 +19,7 @@
 
 ### 實作者（gpt-sol）
 
-- **M0.6.1 分桶修正實作中** → `wf/inbox/m0-6-review.md`。
+- **M0.6.1 已完成並回報，待規劃者審閱** → `wf/inbox/m0-6-1-bucket-fix-complete.md`。
 
 ### 規劃者（Opus 5）
 
