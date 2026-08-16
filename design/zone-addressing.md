@@ -2,7 +2,7 @@
 
 > 從 [zone-model.md](zone-model.md) 拆出。那份講 zone 的**結構與生命週期**，
 > 這份只回答一件事：**一個 zone 的位址怎麼算出來。**
-> 存檔路徑推導見 [zone-save.md](zone-save.md)；繼承來源見 [medps-relation.md](medps-relation.md)。
+> 存檔路徑推導見 [zone-save.md](zone-save.md)；繼承來源見 [medps-inheritance.md](medps-inheritance.md)。
 
 **空間 zone 用座標推導，非空間 zone 用單調序號。**
 這是 [medps-relation.md](medps-relation.md) 繼承清單第 11 項的定案。

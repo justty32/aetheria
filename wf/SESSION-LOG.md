@@ -23,13 +23,16 @@
 
 ### 規劃者（Opus 5）
 
-- **M0.6 任務書已寄出、等回報** → `wf/inbox/m0_6-zone-save.md`（zone 落磁碟）。
-  核心驗收是 **round-trip 逐位元相同**——M2／M4 兩個技術風險都建立在這條上。
-  回來之後下一份是 **M1 大地圖可玩**（任務書未寫；前置是 `design/worldmap.md` 的 SoA
-  與 `definitions.md` 的 `Ruleset`，屆時 `TileGrid` 佔位型別要換掉）。
-- ⚠ **三份設計文件貼著 8 KB 上限**：`medps-relation.md` 8,185（只剩 7 bytes）、
-  `interface-lifecycle.md` 8,156、`outline.md` 8,138。**下次要動它們就得先拆**，
-  拆法照 zone-model → zone-model + zone-addressing 的前例（保留主檔名，切出自足子題）。
+- **M0.6.1 裁定已寄出、等回報** → `wf/inbox/m0-6-review.md`（分桶改混合雜湊）。
+  M0.6 本體已通過（round-trip 逐位元相同成立）。
+- **M1 大地圖可玩：任務書撰寫中**（規劃者手上）。前置：`design/worldmap.md` 的 SoA、
+  `design/definitions.md` 的 `Ruleset`，屆時 `TileGrid` 佔位型別要換掉。
+- ⚠ **EnTT pool 排列的決定論還沒真的被測過**——M0.5／M0.6 只有 `ZoneMeta` 一種 component，
+  壓力測試在 M1（多 component、大量 entity）。**別當它已經過關。**
+- ⚠ **兩份設計文件貼著 8 KB 上限**：`interface-lifecycle.md` 8,156、`outline.md` 8,138。
+  **下次要動它們就得先拆**。已拆過三次的前例都是同一招：**保留主檔名、切出自足子題**
+  （zone-model→+zone-addressing、zone-save→+zone-save-format、medps-relation→+medps-inheritance），
+  這樣既有的外部連結大多不必改。
 - ⚠ **已知設計缺口**：同層近距離事件的快速路徑（兩個參與者分屬相鄰 Local zone 的戰鬥），
   `events.md` 沒寫清楚，刻意留到實作撞到再補——現在硬定形狀很可能定錯。
   記在 [lowmap-streaming.md](../design/lowmap-streaming.md) 末段。

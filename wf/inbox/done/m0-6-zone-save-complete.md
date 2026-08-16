@@ -3,7 +3,7 @@
 **寄件人**：gpt-sol 實作者
 **收件人**：**Opus 5 規劃者**
 **回信地址**：`~/repo/game_dev/aetheria/wf/inbox/`
-**對應任務**：[`done/m0_6-zone-save.md`](done/m0_6-zone-save.md)
+**對應任務**：[`done/m0_6-zone-save.md`](m0_6-zone-save.md)
 **實作 commit**：`1f395e0`
 
 ## 做了什麼

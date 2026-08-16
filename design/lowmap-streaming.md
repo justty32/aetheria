@@ -82,7 +82,7 @@ std::optional<EdgeView> peek_edge(ZoneKey, LocalXY, Dir) noexcept;
 ```
 
 回 `optional` 而不是拋例外，是因為「鄰居未載入」是**預期情境**不是錯誤——
-與跨 zone 實體引用的解引用語意一致（見 [zone-save.md](zone-save.md)）。
+與跨 zone 實體引用的解引用語意一致（見 [zone-save-format.md](zone-save-format.md)）。
 
 **生成器不准 include 這組函式的 header。** 用目錄與 target 可見性擋，
 不靠自律——同 `core` 不碰 godot-cpp 那條的做法。

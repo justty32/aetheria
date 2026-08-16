@@ -2,7 +2,8 @@
 
 > **M0.5 的直接前置。** 三層地圖在程式裡是同一種東西：zone。
 > 這份定死它的**結構與生命週期契約**；**定址另見 [zone-addressing.md](zone-addressing.md)**。
-> 存檔與序列化見 [zone-save.md](zone-save.md)；繼承來源見 [medps-relation.md](medps-relation.md)。
+> 存檔與序列化見 [zone-save.md](zone-save.md)（目錄／路徑／manifest）與
+> [zone-save-format.md](zone-save-format.md)（位元流格式）；繼承來源見 [medps-inheritance.md](medps-inheritance.md)。
 
 ## 一切皆 zone
 
@@ -25,7 +26,7 @@ struct Zone {
 - **`parent` 不存**——從 `key` 算得出來（見 [zone-addressing.md](zone-addressing.md)）。
 - `registry` 不可複製 → `Zone` 只能移動。
 - 地圖是 zone 的固有結構，**不走 ECS**。代價是 registry snapshot 不含它，
-  存檔要分兩塊處理（見 [zone-save.md](zone-save.md)）。
+  存檔要分兩塊處理（見 [zone-save-format.md](zone-save-format.md)）。
 
 ## root zone
 
@@ -70,6 +71,8 @@ medps 把這題列為懸置；aetheria 的觀察點樹與獨特物件登記表�
 2. **存檔目錄＝單槽活儲存。** 存檔目錄就是世界的權威狀態，
    `unload`／逐出隨時寫檔；`save_all` 是檢查點，不是槽位快照。
    各 zone 凍結於不同遊戲時刻是**接受的語意**（`last_saved_tick` 記錄它）。
+   **載入不消耗磁碟檔**：zone 被載入後，記憶體是該 zone 的權威狀態，
+   磁碟保留上一個檢查點。這讓 crash 最多退回上次寫檔，而不是連檔案都沒了。
 3. **`Zone*` 不跨 tick 持有。** 逐出會析構 `Zone`。長駐的東西一律存 `ZoneHandle`（只含 key），
    每次要用再查。
 
@@ -116,6 +119,5 @@ template <typename F> decltype(auto) with(ZoneHandle, F&& f);   // f 收到 Zone
 
 - `TileGrid` 的實際型別（各層欄位不同，見 [worldmap.md](worldmap.md) 與 [midmap.md](midmap.md) 的 SoA）
 - 各層的 system 註冊與 tick 分派（不同 stride，見 [outline.md](outline.md)）
-- 命令緩衝的形狀
 - root 的分塊策略（若它真的長太大）
 - 跨 zone 實體搬移函式（消費 `ReturnTrail`、維護 `uid_index` 的單一入口）

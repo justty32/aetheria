@@ -3,6 +3,9 @@
 > **重要發現（2026-08-15）：`~/repo/game_dev/medps` 是同一個構想的前一輪，而且走得相當遠。**
 > 動 aetheria 的任何基礎設施前，先讀這份。
 > 通用原則見 [principles.md](principles.md)；用詞以 [glossary.md](glossary.md) 為準。
+> 逐條比對的細節（已拍板繼承的決策表、刻意不同的比對表）拆到了
+> [medps-inheritance.md](medps-inheritance.md)，這份只留關係定位、取向裁定、
+> 核對清單結果與刻意不同的結論。
 
 ## 重疊程度
 
@@ -20,32 +23,6 @@ medps 的自我定位是「奇幻版太閣立志傳 × 騎馬與砍殺 × 上古
 | 序列化 | cereal + EnTT snapshot | 未定 |
 
 差異是真實的（尤其時間模型與中層尺寸），但**基礎設施幾乎完全重疊**。
-
-## medps 已拍板、aetheria 應直接繼承的決策
-
-這些不要重新發明，去讀 medps 的原始 spec：
-
-| 決策 | 結論 | 出處 |
-|---|---|---|
-| **格網拓樸** | 方格、4 鄰接 | roadmap D-1（2026-07-25 拍板） |
-| **def 系統** | def 全進不可變 `Ruleset`、**不進存檔**、載入期建 id→下標索引 | roadmap D-2（已落地）→ 見 [definitions.md](definitions.md) |
-| **一切皆 zone** | 各層共用同一套 `Zone` + `ZoneManager`，沒有獨立的「世界地圖系統」 | `zone_layers.md:36-42` |
-| **root 永駐** | id=0 的 root zone 放跨 zone 的全局實體，永不卸載、不參與一般 tick | `zone_streaming_architecture.md:21` |
-| **成長軸不變量** | 持久／常駐結構只能隨「已載入 zone 數」或「已造訪 zone 數」成長，**絕不隨世界總 zone 數** | `zone-addressing-lifecycle-design.md:138` |
-| **垂直層收在同一 zone** | 地下／地面／天空是 `Zone::layers` 的 z 鍵，**不是不同 zone** | `zone_layers.md:41-42` |
-| **三條執行期契約** | tick 內禁止 zone 結構性變更；存檔目錄＝單槽活儲存；`Zone*` 不跨 tick 持有 | 同上 §3.11-3.13 |
-| **跨 registry 不存 entity** | 跨 zone 引用存 zone id + 穩定 uid，解引用**兩段皆可失敗**且失敗是預期結果 | 同上 §3.7 |
-| **fail-fast 套件** | load 驗檔內 id、manifest 原子寫、destroy 同步刪檔、規則檔壞就 throw | 同上 §3.10 |
-
-## aetheria 刻意不同的地方
-
-| 題目 | medps | aetheria | 理由 |
-|---|---|---|---|
-| **zone 定址** | 零語意 `uint64_t` 單調序號 + `parent` 鏈；「child 在 parent 哪一格」（ChildLink/anchor）**defer 未實作** | **已定案：混合方案**——空間 zone 的 `ZoneKey` 由 `(level, region_id, x, y)` 推導，非空間 zone 用序號。見 [zone-addressing.md](zone-addressing.md) | aetheria 的巢狀是嚴格且稠密的（每個 tile 恰好對應一個下層 zone），座標推導讓 ChildLink 這整題**免費消失**，也讓 [interface-world-mid.md](interface-world-mid.md) 的投影天然可定址。medps 放棄它的理由是「ToME 短名定址無座標語意也活得很好」，但那是在 ChildLink 尚未落地時說的 |
-| **卸載策略** | LRU + `pinned` | **場強 + `pinned`**（機制照抄，把 `last_touch` 換成 observer 分數） | 逐出「最不重要的」比逐出「最久沒碰的」更貼合玩法，見 [observer.md](observer.md) |
-| **離線補算** | defer（被逐出的 zone 就是凍結） | **核心機制之一**，見 [interface-lifecycle.md](interface-lifecycle.md) | aetheria 的中層生命週期是設計前提，不是延後項 |
-| **模擬 LOD** | 另案未動（tome4 §2-G 能量制） | **三條軸都做**：空間（observer）+ 實體（significance）+ 事件（event scaling） | 這是 aetheria 的核心玩法機制，不是最佳化 |
-| **時間模型** | 三層各自不同 | 單一時鐘、三種 stride | 避免平行時間線，見 [outline.md](outline.md) |
 
 ## 拍板：獨立但逐條繼承（2026-08-15）
 
@@ -79,7 +56,7 @@ M0 開工前必須逐條完成。每條的判準是「aetheria 有一份文件�
 | 7 | 一切皆 zone、root 永駐 | [zone-model.md](zone-model.md) | ✅ 繼承 |
 | 8 | 三條執行期契約（tick 重入禁令、單槽活儲存、`Zone*` 不跨 tick） | [zone-model.md](zone-model.md) | ✅ 繼承 |
 | 9 | fail-fast 套件（load 驗 id、manifest 原子寫、destroy 刪檔） | [zone-save.md](zone-save.md) | ✅ 繼承，**再加 `require`／`load` 分流**（medps 把這題 defer 了） |
-| 10 | 序列化選型（cereal + EnTT snapshot、`AllComponents` 單一清單） | [zone-save.md](zone-save.md) | ✅ 繼承，含 `orphans()` 陷阱的對策 |
+| 10 | 序列化選型（cereal + EnTT snapshot、`AllComponents` 單一清單） | [zone-save-format.md](zone-save-format.md) | ✅ 繼承，含 `orphans()` 陷阱的對策 |
 | 11 | zone 定址：零語意序號 vs 座標推導 | [zone-addressing.md](zone-addressing.md) | ✅ **已定案：混合方案** |
 
 **清單已全數完成。** 兩處刻意不同，理由寫在 [zone-addressing.md](zone-addressing.md)：

@@ -1,20 +1,8 @@
 # 存檔與序列化
 
 > zone 怎麼落到磁碟、怎麼讀回來、格式變動怎麼辦。
-> 結構見 [zone-model.md](zone-model.md)；繼承來源見 [medps-relation.md](medps-relation.md)。
-
-## 選型：cereal + EnTT snapshot
-
-繼承 medps 的既有選型，理由是它已經跑通且有測試（`medps/docs/references/cereal_tutorial.md`）：
-
-| 用途 | 工具 |
-|---|---|
-| 實體與 component | EnTT `snapshot` / `snapshot_loader` |
-| 位元組編碼 | cereal `PortableBinary`（跨平台位元組序一致） |
-| 壓縮 | zstd（tile 陣列壓得很好） |
-| 規則檔（可手寫） | TOML，**不進存檔**（見 [definitions.md](definitions.md)） |
-
-**不用通用序列化框架的反射魔法。** 格式要能自己控版本、自己看懂位元組流。
+> 位元流格式（序列化選型、component 清單、跨 zone 引用編碼）見 [zone-save-format.md](zone-save-format.md)。
+> 結構見 [zone-model.md](zone-model.md)；繼承來源見 [medps-inheritance.md](medps-inheritance.md)。
 
 ## 一個 zone 一個檔，路徑由 key 推導
 
@@ -22,77 +10,39 @@
 saves/<slot>/
   manifest.bin              世界級 metainfo
   root.bin                  root zone
-  a3/a3f2000100200000.bin   分桶：hex 前兩碼一層目錄
+  7c/a3f2000100200000.bin   分桶：桶名＝key 混合雜湊的 2 碼（見下），檔名＝完整 key
 ```
 
 - **路徑用 key 算出來，不維護任何清單。**
   「這個 zone 存不存在？」＝ `exists(path(key))`。
 - **目錄分桶現在就做。** 現在是改 `path()` 三行；等到有數萬個檔案再改，
   就是搬檔案 + 寫遷移工具。pre-v1 沒有存檔資產，這筆帳現在付最便宜——
-  這條論證直接取自 medps `zone-addressing-lifecycle-design.md` §3.3。
+  這條論證取自 medps `zone-addressing-lifecycle-design.md` §3.3。
 
-## zone 檔的兩塊
+### ⚠ 桶名取**混合過的雜湊**，不是 key 的高位
 
-`Zone` 的地圖不走 ECS，所以一個 zone 檔是兩塊接在同一個 stream 上：
+medps 的 key 是**零語意流水號**，高位會變，所以「取 hex 前兩碼」分得開。
+**aetheria 的 key 是結構化的**（[zone-addressing.md](zone-addressing.md)）：
+最高的 hex 碼是 `level`，第二碼是 `region_id` 的高 4 bits——而世界只有 3～5 個 Region。
+於是前兩碼實際只有三種值：
 
-```
-[檔頭]  magic + format_version + key + last_saved_tick
-[第一塊] layers（各 z 的 TileGrid，SoA 逐欄寫）+ persistence 旗標
-[第二塊] registry 的 EnTT snapshot（依 AllComponents 展開）
-```
+| 層 | 全世界用到的桶 |
+|---|---|
+| Region | `10/` |
+| Site | `20/` |
+| Local | `30/` |
 
-**檔頭帶 magic 與 version**。medps 早期把版本欄位全滅、靠「格式一變就刪存檔」，
-aetheria 不跟這條——版本欄位把「靜默讀壞」變成「大聲拒讀」，
-而 `AllComponents` 清單一動就會默默改變位元組流，這正是它值得先行的理由。
+**兩億個 Local zone 會全部落進 `30/`。** 分桶等於沒做。
 
-## `AllComponents`：唯一清單
+這是照抄 medps 規則、沒有重新推導的結果——**而 zone 定址正是本專案刻意不同於 medps 的那一條**。
+繼承來的結論，只要它依賴的前提被改掉了，就必須重驗。
 
-```cpp
-using AllComponents = entt::type_list<
-    ZoneMeta, Position, /* ... */
-    NewComponent           // ← 永遠加在最後
->;
-```
+**規則**：桶名取 key 經過一次**位元混合**（splitmix64 的 finalizer 之類）後的 2 個 hex 碼，
+共 256 個桶。檔名仍是完整的 16 碼 hex key，所以照 key 找檔案、`ls` 一個桶看內容都不受影響。
 
-**新增 component 必須同步登記，否則存檔會漏掉它。**
-順序即位元流順序，**永遠加在最後、不要插中間**，否則舊存檔讀取時資料錯位。
-
-這條要登記進 [`wf/workflows/common/conventions.md`](../wf/workflows/common/conventions.md)
-的程式碼慣例——medps 就是這樣做的，因為它是最容易忘、後果又最安靜的一條。
-（不放 `AGENTS.md`：那份是薄路由器，durable 的程式碼慣例歸 `conventions.md`。）
-
-### `orphans()` 陷阱
-
-EnTT 的 `snapshot_loader::orphans()` 會刪掉「沒有任何 component」的 entity。
-一個只帶**未登記** component 的 entity 會整個消失，而且**不會報錯**。
-
-對策：每個 zone 至少有一個帶 `ZoneMeta` 的 placeholder entity（保證身分與存活），
-且測試要比對載入前後的 entity 數。
-
-## 存字串 id，不存下標
-
-**存檔絕不存 def 的執行期下標**——下標會因資料檔改動而整體位移。
-
-作法：存檔開頭寫一份 id 表（`下標 → 字串 id`），主體用下標，
-讀檔時用當前 `Ruleset` 重映射。詳見 [definitions.md](definitions.md)。
-
-## 跨 zone 引用
-
-`entt::entity` 只在自己的 registry 內有意義。跨 zone 一律用：
-
-```cpp
-struct StableId { uint64_t uid; };                    // opt-in component
-struct EntityRef { ZoneKey zone; uint64_t uid; };     // {0,0} = null
-```
-
-- `uid` 由 `ZoneManager` 配發，計數器存在 manifest。
-- `StableId` **只掛具名／被 mark 的實體**，不是每個雜兵都有——
-  這與 [unique-objects.md](unique-objects.md) 的獨特／標籤二分是同一條線。
-- 解引用**兩段皆可失敗**且失敗是預期結果：
-  `get(ref.zone)` 回 `nullptr` ＝ zone 未載入（呼叫端決定要不要 load）；
-  `find_uid(uid)` 回 `entt::null` ＝ 已死亡。
-- `uid_index` 是**執行期**結構，load 後由 `view<StableId>` 重建。
-  重建撞號＝存檔損毀 → throw 附 zone key + uid。
+256 個桶對照設計的痛點門檻（「數萬個檔案」）綽綽有餘：實際檔案數受
+[zone-model.md](zone-model.md) 的成長軸不變量約束，只隨**已造訪**的 zone 數成長，
+不是隨世界大小成長。真的不夠了再加一層，那正是本節開頭說的那種遷移。
 
 ## manifest
 
@@ -155,16 +105,14 @@ Tick    now
 | 測試 | 判準 |
 |---|---|
 | **round-trip** | 存 → 讀 → 狀態雜湊逐位元相同 |
-| **entity 數守恆** | 載入前後 entity 數相同（`orphans()` 陷阱的哨兵） |
-| **component 覆蓋** | 每個登記在 `AllComponents` 的型別都有 round-trip 測試 |
+| **entity 數守恆** | 載入前後 entity 數相同（[`orphans()` 陷阱](zone-save-format.md) 的哨兵） |
+| **component 覆蓋** | 每個登記在 [`AllComponents`](zone-save-format.md) 的型別都有 round-trip 測試 |
 | **懸空 def id** | 用改過的規則檔讀舊存檔 → 明確報錯，不靜默 |
 | **manifest 撕裂** | 人工截斷 manifest → 拒絕開檔，不覆寫 |
 | **key 不符** | 人工改檔內 key → throw 附兩個 key |
 
 ## 待細化
 
-- `TileGrid` 各層的欄位與壓縮策略
-- `StatusDigest`／`SiteDigest` 的實際序列化形式
 - 多存檔槽（目前單槽；多槽＝目錄複製，defer）
 - 背景存檔（目前同步；痛了再說）
 - 「清理很久沒訪問且不重要的 zone 檔」——medps 記過的需求，aetheria 同樣需要
