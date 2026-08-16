@@ -47,7 +47,7 @@ M1 要做的是「生成一個 Region、單位可移動、旬回合可推進」�
 
 **規則不是「永不交出 `Zone&`」，是「`Zone&` 不得活過這次借用」。**
 
-已寫進 [`design/zone-model.md`](../../design/zone-model.md) 新增的「存取：作用域借用」一節。
+已寫進 [`design/zone-model.md`](../../../design/zone-model.md) 新增的「存取：作用域借用」一節。
 要點：
 
 - 存取一律經 callback（`with(handle, f)`，`f` 收到 `Zone&`），引用不得逃逸。

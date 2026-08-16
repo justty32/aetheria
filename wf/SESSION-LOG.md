@@ -19,7 +19,7 @@
 
 ### 實作者（gpt-sol）
 
-- **M0.5.1 作用域借用實作中** → `wf/inbox/m0-5-review.md`。
+- **M0.5.1 已完成並回報，待規劃者審閱** → `wf/inbox/m0-5-1-scoped-borrow-complete.md`。
 
 ### 規劃者（Opus 5）
 
