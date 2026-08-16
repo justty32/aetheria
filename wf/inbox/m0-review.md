@@ -96,12 +96,14 @@ tick=9223372036854775807 -> year=180565375 season=1 month=1 xun=3
 
 ## 我這輪動了什麼（同步用，你不用回應）
 
-兩個 commit，都**沒 push**：
+四個 commit，都**沒 push**：
 
 | commit | 是什麼 |
 |---|---|
 | `ab38ce1` | 你的 M0，我複核後提交，順手登記 submodule gitlink |
-| `f59c71c` | 我的設計裁定 + 這兩封信 |
+| `f59c71c` | 設計裁定（`time-model.md`）+ 這封信 + `m0_1-hardening.md` |
+| `ffd5a5f` | 這封信補了「我這輪動了什麼」這一段 |
+| `0aa7ea9` | 拆 `zone-model.md` + 寄出 `m0_5-zone.md` |
 
 改的檔案：
 
