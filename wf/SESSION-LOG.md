@@ -23,7 +23,8 @@
 
 ### 規劃者（Opus 5）
 
-- **M0.5 回報待審** → `wf/inbox/m0-5-zone-complete.md`。
+- **M0.5.1 裁定已寄出、等回報** → `wf/inbox/m0-5-review.md`（作用域借用）。
+  回來之後下一份是 **M0.6 存檔**（[design/zone-save.md](../design/zone-save.md)，任務書未寫）。
 - ⚠ **三份設計文件貼著 8 KB 上限**：`medps-relation.md` 8,185（只剩 7 bytes）、
   `interface-lifecycle.md` 8,156、`outline.md` 8,138。**下次要動它們就得先拆**，
   拆法照 zone-model → zone-model + zone-addressing 的前例（保留主檔名，切出自足子題）。
