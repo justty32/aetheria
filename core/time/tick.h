@@ -1,6 +1,8 @@
 #pragma once
 
+#include <compare>
 #include <cstdint>
+#include <limits>
 
 namespace aetheria::time {
 
@@ -9,7 +11,68 @@ namespace aetheria::time {
 // 值本身永不失效。
 enum class Tick : std::int64_t {};
 
-inline constexpr Tick kSecondsPerXun{864'000};
+// Duration 是兩個時刻之間的秒數。
+// 它是無擁有者的值型別。
+// 值本身永不失效。
+enum class Duration : std::int64_t {};
+
+[[nodiscard]] constexpr Tick operator+(Tick tick, Duration duration) noexcept {
+    return Tick{static_cast<std::int64_t>(tick) + static_cast<std::int64_t>(duration)};
+}
+
+[[nodiscard]] constexpr Tick operator+(Duration duration, Tick tick) noexcept {
+    return tick + duration;
+}
+
+[[nodiscard]] constexpr Tick operator-(Tick tick, Duration duration) noexcept {
+    return Tick{static_cast<std::int64_t>(tick) - static_cast<std::int64_t>(duration)};
+}
+
+[[nodiscard]] constexpr Duration operator-(Tick lhs, Tick rhs) noexcept {
+    return Duration{static_cast<std::int64_t>(lhs) - static_cast<std::int64_t>(rhs)};
+}
+
+[[nodiscard]] constexpr Duration operator+(Duration lhs, Duration rhs) noexcept {
+    return Duration{static_cast<std::int64_t>(lhs) + static_cast<std::int64_t>(rhs)};
+}
+
+[[nodiscard]] constexpr Duration operator-(Duration lhs, Duration rhs) noexcept {
+    return Duration{static_cast<std::int64_t>(lhs) - static_cast<std::int64_t>(rhs)};
+}
+
+[[nodiscard]] constexpr Duration operator*(Duration duration, std::int64_t multiplier) noexcept {
+    return Duration{static_cast<std::int64_t>(duration) * multiplier};
+}
+
+[[nodiscard]] constexpr Duration operator*(std::int64_t multiplier, Duration duration) noexcept {
+    return duration * multiplier;
+}
+
+[[nodiscard]] constexpr std::int64_t operator/(Duration lhs, Duration rhs) noexcept {
+    return static_cast<std::int64_t>(lhs) / static_cast<std::int64_t>(rhs);
+}
+
+[[nodiscard]] constexpr Duration operator%(Duration lhs, Duration rhs) noexcept {
+    return Duration{static_cast<std::int64_t>(lhs) % static_cast<std::int64_t>(rhs)};
+}
+
+inline constexpr Duration kXun{864'000};
+inline constexpr Duration kYear{31'104'000};
+inline constexpr Duration kHour{3'600};
+inline constexpr Duration kMinute{60};
+inline constexpr Duration kSiteCombatTurn{900};
+inline constexpr Duration kLocalCombatTurn{6};
+
+inline constexpr Tick kMinTick{
+    (static_cast<std::int64_t>(std::numeric_limits<std::int32_t>::min()) - 1) *
+    static_cast<std::int64_t>(kYear)};
+inline constexpr Tick kMaxTick{static_cast<std::int64_t>(std::numeric_limits<std::int32_t>::max()) *
+                                   static_cast<std::int64_t>(kYear) -
+                               1};
+
+[[nodiscard]] constexpr bool is_representable(Tick tick) noexcept {
+    return tick >= kMinTick && tick <= kMaxTick;
+}
 
 // CalendarDate 是 360 天曆中的旬精度日期。
 // 它是無擁有者的值型別。

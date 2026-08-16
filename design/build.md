@@ -11,7 +11,7 @@
 | OS | Manjaro Linux x86_64 |
 | CMake / generator | 4.4.2 / Ninja 1.13.2 |
 | C++ | GCC 16.1.1，C++23、關閉 GNU extensions |
-| Godot | `godot-mono 4.7.1.stable` |
+| Godot | `godot-mono 4.7.1.stable`；GDExtension API 期望版本固定為 `4.7.1` |
 | vcpkg baseline | `b781af668027bbf77f2f827f47b5c6cd8d825c08` |
 | godot-cpp | submodule commit `d7b6162249ed52796a8301d216c24ee71d68c2bf` |
 
@@ -33,8 +33,10 @@ cmake --build build --parallel
 ```
 
 第一次 configure 會依 `vcpkg.json` 的 baseline 安裝依賴。若找到 `godot`、`godot4`、
-`godot-4` 或 `godot-mono`，CMake 會執行 `--dump-extension-api`，讓 bindings 對準本機引擎；
-找不到時改用 godot-cpp 內建的 4.7 API。
+`godot-4` 或 `godot-mono`，CMake 會執行 `--dump-extension-api`，並核對 JSON header 必須是
+Godot `4.7.1`；不符就中止 configure。可用 cache 變數
+`-DAETHERIA_GODOT_BIN=/path/to/godot` 明確覆寫執行檔。找不到 Godot 時改用 godot-cpp
+內建的 4.7 API，`aetheria_sim` 仍可獨立建置。
 
 產物：
 
@@ -61,19 +63,21 @@ godot-mono --headless --path godot --quit-after 5
 另以 target property 強制為 C++23。exception ABI 與標準函式庫連結也明確改成跟專案一致。
 
 `aetheria_core` 只公開 repo 根 include，CMake configure 會掃 target include properties，
-一旦出現 `godot-cpp`／`godot_cpp` 就 fail-fast。`build/compile_commands.json` 可看到 core 命令只有
-`-I<repo-root>`，bridge 才有 godot-cpp 的 `-isystem`；`cmake --graphviz=...` 也顯示只有 bridge
-連 godot-cpp，sim 僅連 core + CLI11。
+也掃直接／介面 link properties；一旦出現 `godot-cpp`／`godot_cpp` 就 fail-fast。
+CTest 的 `CoreIsolation.CompileCommands` 另掃 `build/compile_commands.json` 中每一個 core TU，
+驗證傳遞展開後的實際編譯命令也沒有 godot-cpp。bridge 才有第三方 `-isystem`；
+`cmake --graphviz=...` 也顯示只有 bridge 連 godot-cpp，sim 僅連 core + CLI11。
+
+Godot 專案固定使用 `gl_compatibility` renderer；M0 的 headless 探針與未來 2D 顯示均以這條
+相容性路徑為基準，不在不同開發機上自動漂移 renderer。
 
 ## 可重現性論證
 
 - vcpkg manifest 固定 baseline，套件版本由同一份 ports tree 決定。
-- godot-cpp 由 submodule gitlink 固定 commit；CMake 也核對 checkout HEAD。
+- godot-cpp 已由 submodule gitlink 固定 commit；CMake 也核對 checkout HEAD。
 - 編譯器與 Godot 屬外部工具鏈，版本應由 CI image 或開發環境文件固定。
-- 任務書稱本專案尚未 `git init`，但 M0 實作時已存在 `main` 的初始 commit `6ab8f19`；本次遵守
-  「不要 commit」，所以含 M0 的狀態尚無 commit 可供 clean clone。提交前必須把現有
-  `third_party/godot-cpp` 登記為 submodule gitlink；提交後再在乾淨目錄重跑上述指令，才算完成
-  實際 clean-clone 驗證。本次只完成固定點與相依鏈的可重現性論證。
+
+<!-- M0.1 commit 後在乾淨 clone 重跑，將實測結果補在這裡。 -->
 
 ## 實際踩坑
 
@@ -85,3 +89,6 @@ godot-mono --headless --path godot --quit-after 5
 4. Godot 4.7.1 Mono 對全新 `godot/.godot/` 的第一次 headless editor 掃描，在完成檔案掃描後
    曾以 139 結束；不改檔直接再跑即為 0，之後主場景也穩定為 0。這是一次性初始化坑，不能把
    第一次失敗當成 bridge 載入失敗；仍應檢查第二次與主場景的原始輸出。
+5. 每次 configure 直接覆寫正式 `extension_api.json`，即使內容相同也會令 godot-cpp 的 2,137
+   個生成檔重新產生。現在先 dump 到 build 內的 probe 目錄核對版本，再用 content-stable copy
+   更新正式檔；重跑 configure 後 Ninja 可維持 `no work to do`。

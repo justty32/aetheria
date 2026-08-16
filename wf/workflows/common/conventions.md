@@ -21,7 +21,9 @@ M0 的檔案量仍小，本節直接兼作 code map；長大後再依
 | 路徑 | 職責 |
 |---|---|
 | `CMakeLists.txt`、`vcpkg.json` | 四 target、隔離檢查、依賴固定與 Godot API dump |
-| `core/time/` | 純 C++ Tick 與 360 天曆換算 |
+| `cmake/` | CTest 使用的 core 編譯命令隔離檢查 |
+| `core/base/` | 所有建置組態都生效的 core 不變式檢查 |
+| `core/time/` | 純 C++ Tick／Duration 與 360 天曆換算 |
 | `core/api/` | core 對外 API；目前只有版本 |
 | `tests/time/` | 曆法邊界與往返 GoogleTest |
 | `sim/` | 不需 Godot 的 CLI 探針 |

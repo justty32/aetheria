@@ -1,6 +1,6 @@
 #include "core/time/tick.h"
 
-#include <cassert>
+#include "core/base/check.h"
 
 namespace aetheria::time {
 namespace {
@@ -20,8 +20,10 @@ constexpr std::int64_t floor_div(std::int64_t numerator, std::int64_t denominato
 }  // namespace
 
 CalendarDate to_date(Tick tick) noexcept {
+    AETH_CHECK(is_representable(tick));
+
     const auto seconds = static_cast<std::int64_t>(tick);
-    const auto elapsed_xun = floor_div(seconds, static_cast<std::int64_t>(kSecondsPerXun));
+    const auto elapsed_xun = floor_div(seconds, static_cast<std::int64_t>(kXun));
     const auto elapsed_years = floor_div(elapsed_xun, kXunPerYear);
     const auto xun_in_year = elapsed_xun - elapsed_years * kXunPerYear;
 
@@ -39,9 +41,9 @@ CalendarDate to_date(Tick tick) noexcept {
 }
 
 Tick to_tick(CalendarDate date) noexcept {
-    assert(date.season >= 1 && date.season <= kSeasonsPerYear);
-    assert(date.month >= 1 && date.month <= kMonthsPerSeason);
-    assert(date.xun >= 1 && date.xun <= kXunPerMonth);
+    AETH_CHECK(date.season >= 1 && date.season <= kSeasonsPerYear);
+    AETH_CHECK(date.month >= 1 && date.month <= kMonthsPerSeason);
+    AETH_CHECK(date.xun >= 1 && date.xun <= kXunPerMonth);
 
     const auto elapsed_years = static_cast<std::int64_t>(date.year) - 1;
     const auto season_index = static_cast<std::int64_t>(date.season) - 1;
@@ -49,7 +51,7 @@ Tick to_tick(CalendarDate date) noexcept {
     const auto xun_index = static_cast<std::int64_t>(date.xun) - 1;
     const auto elapsed_xun = elapsed_years * kXunPerYear + season_index * kXunPerSeason +
                              month_index * kXunPerMonth + xun_index;
-    return Tick{elapsed_xun * static_cast<std::int64_t>(kSecondsPerXun)};
+    return Tick{elapsed_xun * static_cast<std::int64_t>(kXun)};
 }
 
 }  // namespace aetheria::time
