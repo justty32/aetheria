@@ -53,6 +53,8 @@ static_assert(parent_of(kSite) == kRegion);
 static_assert(parent_of(kLocal) == kSite);
 static_assert(!std::is_copy_constructible_v<Zone>);
 static_assert(std::is_move_constructible_v<Zone>);
+static_assert(std::is_empty_v<aetheria::zone::SitePayload>);
+static_assert(std::is_empty_v<aetheria::zone::LocalPayload>);
 static_assert(std::is_copy_constructible_v<ZoneHandle>);
 static_assert(
     std::same_as<decltype(std::declval<ZoneManager&>().get(kRootZone)), std::optional<ZoneHandle>>);
@@ -118,6 +120,30 @@ TEST(ZoneKey, RootAndDetachedHaveRootParent) {
     DetachedZoneKeyAllocator allocator;
     EXPECT_EQ(parent_of(kRootZone), kRootZone);
     EXPECT_EQ(parent_of(allocator.allocate()), kRootZone);
+}
+
+TEST(SpatialPayload, DefaultAlternativeMatchesEveryDefinedZoneLevel) {
+    DetachedZoneKeyAllocator allocator;
+    const Zone root{kRootZone};
+    const Zone region{kRegion};
+    const Zone site{kSite};
+    const Zone local{kLocal};
+    const Zone detached{allocator.allocate()};
+
+    EXPECT_TRUE(std::holds_alternative<std::monostate>(root.payload));
+    EXPECT_TRUE(std::holds_alternative<aetheria::zone::RegionPayload>(region.payload));
+    EXPECT_TRUE(std::holds_alternative<aetheria::zone::SitePayload>(site.payload));
+    EXPECT_TRUE(std::holds_alternative<aetheria::zone::LocalPayload>(local.payload));
+    EXPECT_TRUE(std::holds_alternative<std::monostate>(detached.payload));
+}
+
+TEST(SpatialPayload, ConstructorRejectsLevelMismatchAndTilesOnRootOrDetached) {
+    DetachedZoneKeyAllocator allocator;
+    const auto detached = allocator.allocate();
+
+    EXPECT_THROW(Zone(kSite, aetheria::zone::RegionPayload{}), std::invalid_argument);
+    EXPECT_THROW(Zone(kRootZone, aetheria::zone::RegionPayload{}), std::invalid_argument);
+    EXPECT_THROW(Zone(detached, aetheria::zone::RegionPayload{}), std::invalid_argument);
 }
 
 TEST(ZoneManager, RootCannotBeUnloadedOrDestroyed) {
@@ -235,8 +261,8 @@ TEST(ZoneManager, UnloadAndLoadTransferTheSameSubstantiveZone) {
     const auto key = child_key(kRootZone, 12, 0);
     const auto handle = manager.materialize(key);
     ASSERT_TRUE(manager.with(handle, [](Zone& zone) {
-        zone.region_tiles.emplace(1, 1);
-        zone.region_tiles->temperature.at(0) = 73;
+        auto& layers = std::get<aetheria::zone::RegionPayload>(zone.payload).layers;
+        layers.emplace(0, aetheria::world::RegionTiles{1, 1}).first->second.temperature.at(0) = 73;
     }));
 
     ASSERT_TRUE(manager.unload(key));
@@ -245,8 +271,10 @@ TEST(ZoneManager, UnloadAndLoadTransferTheSameSubstantiveZone) {
     EXPECT_TRUE(store.contains(key));
     ASSERT_TRUE(manager.load(key));
     std::uint16_t loaded_tile{};
-    ASSERT_TRUE(manager.with(
-        handle, [&](const Zone& zone) { loaded_tile = zone.region_tiles->temperature.at(0); }));
+    ASSERT_TRUE(manager.with(handle, [&](const Zone& zone) {
+        loaded_tile =
+            std::get<aetheria::zone::RegionPayload>(zone.payload).layers.at(0).temperature.at(0);
+    }));
     EXPECT_EQ(loaded_tile, 73);
     EXPECT_TRUE(store.contains(key));
 }
@@ -257,13 +285,15 @@ TEST(ZoneManager, TickBorrowWritesZoneDataVisibleAfterTheTurn) {
     const auto handle = manager.materialize(child_key(kRootZone, 13, 0));
 
     manager.tick(Tick{10}, [](Zone& zone) {
-        zone.region_tiles.emplace(1, 1);
-        zone.region_tiles->temperature.at(0) = 91;
+        auto& layers = std::get<aetheria::zone::RegionPayload>(zone.payload).layers;
+        layers.emplace(0, aetheria::world::RegionTiles{1, 1}).first->second.temperature.at(0) = 91;
     });
 
     std::uint16_t observed{};
-    ASSERT_TRUE(manager.with(
-        handle, [&](const Zone& zone) { observed = zone.region_tiles->temperature.at(0); }));
+    ASSERT_TRUE(manager.with(handle, [&](const Zone& zone) {
+        observed =
+            std::get<aetheria::zone::RegionPayload>(zone.payload).layers.at(0).temperature.at(0);
+    }));
     EXPECT_EQ(observed, 91);
 }
 
@@ -273,17 +303,20 @@ TEST(ZoneManager, QueuedUnloadKeepsTickBorrowAliveUntilCallbackReturns) {
     const auto handle = manager.materialize(child_key(kRootZone, 14, 0));
 
     manager.tick(Tick{20}, [&](Zone& zone) {
-        zone.region_tiles.emplace(1, 1);
-        zone.region_tiles->temperature.at(0) = 101;
+        auto& layers = std::get<aetheria::zone::RegionPayload>(zone.payload).layers;
+        auto& tiles = layers.emplace(0, aetheria::world::RegionTiles{1, 1}).first->second;
+        tiles.temperature.at(0) = 101;
         manager.queue_unload(zone.key);
-        zone.region_tiles->temperature.at(0) = 102;
+        tiles.temperature.at(0) = 102;
     });
 
     EXPECT_FALSE(manager.with(handle, [](Zone&) {}));
     ASSERT_TRUE(manager.load(handle.key()));
     std::uint16_t observed{};
-    ASSERT_TRUE(manager.with(
-        handle, [&](const Zone& zone) { observed = zone.region_tiles->temperature.at(0); }));
+    ASSERT_TRUE(manager.with(handle, [&](const Zone& zone) {
+        observed =
+            std::get<aetheria::zone::RegionPayload>(zone.payload).layers.at(0).temperature.at(0);
+    }));
     EXPECT_EQ(observed, 102);
 }
 

@@ -6,8 +6,10 @@
 #include "core/zone/zone_key.h"
 
 #include <cstdint>
-#include <optional>
+#include <map>
+#include <stdexcept>
 #include <utility>
+#include <variant>
 
 #include <entt/entity/registry.hpp>
 
@@ -24,11 +26,70 @@ struct ZoneMeta {
     constexpr bool operator==(const ZoneMeta&) const noexcept = default;
 };
 
+// RegionPayload 是 L1 Zone 的垂直 RegionTiles 集合。
+// 所屬 Zone 擁有它。
+// payload alternative 被替換或 Zone 析構後失效。
+struct RegionPayload {
+    std::map<std::int8_t, world::RegionTiles> layers;
+};
+
+// SitePayload 是 L2 Zone 的 schema 標記；M1.0.1 尚不定義 tile 欄位。
+// 所屬 Zone 擁有它。
+// payload alternative 被替換或 Zone 析構後失效。
+struct SitePayload {};
+
+// LocalPayload 是 L3 Zone 的 schema 標記；M1.0.1 尚不定義 tile 欄位。
+// 所屬 Zone 擁有它。
+// payload alternative 被替換或 Zone 析構後失效。
+struct LocalPayload {};
+
+// SpatialPayload 將三層異質 tile schema 收在單一 Zone 欄位。
+// Zone 擁有目前的 alternative。
+// alternative 被替換或 Zone 析構後其中資料失效。
+using SpatialPayload = std::variant<std::monostate, RegionPayload, SitePayload, LocalPayload>;
+
+[[nodiscard]] inline bool payload_matches_level(ZoneKey key,
+                                                const SpatialPayload& payload) noexcept {
+    switch (level_of(key)) {
+    case ZoneLevel::Root:
+    case ZoneLevel::Detached:
+        return std::holds_alternative<std::monostate>(payload);
+    case ZoneLevel::Region:
+        return std::holds_alternative<RegionPayload>(payload);
+    case ZoneLevel::Site:
+        return std::holds_alternative<SitePayload>(payload);
+    case ZoneLevel::Local:
+        return std::holds_alternative<LocalPayload>(payload);
+    }
+    return false;
+}
+
+[[nodiscard]] inline SpatialPayload default_payload_for(ZoneKey key) {
+    switch (level_of(key)) {
+    case ZoneLevel::Root:
+    case ZoneLevel::Detached:
+        return std::monostate{};
+    case ZoneLevel::Region:
+        return RegionPayload{};
+    case ZoneLevel::Site:
+        return SitePayload{};
+    case ZoneLevel::Local:
+        return LocalPayload{};
+    }
+    throw std::invalid_argument{"保留的 ZoneLevel 沒有 SpatialPayload schema"};
+}
+
 // Zone 是三層地圖共用的實體、垂直格網與生命週期狀態。
 // ZoneManager 或 ZoneStore 以 unique_ptr 單獨擁有它。
 // 被 unload／destroy 或其擁有者析構後失效。
 struct Zone {
-    explicit Zone(ZoneKey zone_key) : key{zone_key} {
+    explicit Zone(ZoneKey zone_key) : Zone{zone_key, default_payload_for(zone_key)} {}
+
+    Zone(ZoneKey zone_key, SpatialPayload spatial_payload)
+        : key{zone_key}, payload{std::move(spatial_payload)} {
+        if (!payload_matches_level(key, payload)) {
+            throw std::invalid_argument{"SpatialPayload alternative 與 ZoneKey level 不符"};
+        }
         const auto placeholder = reg.create();
         reg.emplace<ZoneMeta>(placeholder, value_of(key));
     }
@@ -40,8 +101,7 @@ struct Zone {
 
     ZoneKey key;
     entt::registry reg;
-    // M1.0 只落地 L1 payload；三層異質 layers 的最終形狀待規劃者裁定。
-    std::optional<world::RegionTiles> region_tiles;
+    SpatialPayload payload;
     LodLevel lod{LodLevel::Full};
     bool pinned{};
     time::Tick last_saved_tick{};

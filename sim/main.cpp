@@ -48,8 +48,10 @@ int main(int argc, char** argv) {
                 const auto handle = zone_manager.materialize(key);
                 static_cast<void>(zone_manager.with(handle, [&](aetheria::zone::Zone& zone) {
                     if (aetheria::zone::level_of(key) == aetheria::zone::ZoneLevel::Region) {
-                        zone.region_tiles.emplace(2, 2);
-                        zone.region_tiles->temperature.at(0) = static_cast<std::uint8_t>(17U);
+                        auto& layers = std::get<aetheria::zone::RegionPayload>(zone.payload).layers;
+                        auto& tiles = layers.emplace(0, aetheria::world::RegionTiles{2, 2})
+                                          .first->second;
+                        tiles.temperature.at(0) = static_cast<std::uint8_t>(17U);
                     }
                 }));
             }

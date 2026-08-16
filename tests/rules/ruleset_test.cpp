@@ -203,16 +203,20 @@ TEST(ZoneCodec, RemapsSavedTerrainIndicesAfterTomlDefinitionOrderChanges) {
               << " reordered_index=" << value_of(new_grass) << '\n';
 
     Zone source{child_key(kRootZone, 1, 0)};
-    source.region_tiles.emplace(2, 1);
-    source.region_tiles->base = {old_grass, *old_ruleset.find_terrain("terrain.ocean")};
+    auto& source_tiles =
+        std::get<aetheria::zone::RegionPayload>(source.payload)
+            .layers.emplace(0, aetheria::world::RegionTiles{2, 1})
+            .first->second;
+    source_tiles.base = {old_grass, *old_ruleset.find_terrain("terrain.ocean")};
     const auto saved = encode_zone(source, old_ruleset);
     const auto loaded = decode_zone(saved, reordered_ruleset);
 
-    ASSERT_TRUE(loaded->region_tiles.has_value());
-    EXPECT_EQ(loaded->region_tiles->base.at(0), new_grass);
-    EXPECT_EQ(reordered_ruleset.terrain(loaded->region_tiles->base.at(0))->id,
+    const auto& loaded_tiles =
+        std::get<aetheria::zone::RegionPayload>(loaded->payload).layers.at(0);
+    EXPECT_EQ(loaded_tiles.base.at(0), new_grass);
+    EXPECT_EQ(reordered_ruleset.terrain(loaded_tiles.base.at(0))->id,
               "terrain.grassland");
-    EXPECT_EQ(reordered_ruleset.terrain(loaded->region_tiles->base.at(1))->id, "terrain.ocean");
+    EXPECT_EQ(reordered_ruleset.terrain(loaded_tiles.base.at(1))->id, "terrain.ocean");
     EXPECT_EQ(encode_zone(*decode_zone(encode_zone(*loaded, reordered_ruleset), reordered_ruleset),
                           reordered_ruleset),
               encode_zone(*loaded, reordered_ruleset));
@@ -226,8 +230,11 @@ TEST(ZoneCodec, RejectsSavedStringIdMissingFromCurrentRuleset) {
     const auto old_ruleset = RulesetLoader::load(old_directory.path());
     const auto missing_ruleset = RulesetLoader::load(missing_directory.path());
     Zone source{child_key(kRootZone, 1, 0)};
-    source.region_tiles.emplace(1, 1);
-    source.region_tiles->base.at(0) = *old_ruleset.find_terrain("terrain.grassland");
+    auto& source_tiles =
+        std::get<aetheria::zone::RegionPayload>(source.payload)
+            .layers.emplace(0, aetheria::world::RegionTiles{1, 1})
+            .first->second;
+    source_tiles.base.at(0) = *old_ruleset.find_terrain("terrain.grassland");
     const auto saved = encode_zone(source, old_ruleset);
 
     try {

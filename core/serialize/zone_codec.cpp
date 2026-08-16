@@ -89,20 +89,20 @@ void validate_ids(std::span<const Id> values, std::size_t definition_count,
 
 std::string encode_zone(const zone::Zone& value, const rules::Ruleset& ruleset) {
     validate_zone_meta(value);
-    if (value.region_tiles.has_value()) {
-        if (zone::level_of(value.key) != zone::ZoneLevel::Region) {
-            throw std::runtime_error{"RegionTiles 只允許存在於 L1 Region zone"};
+    if (!zone::payload_matches_level(value.key, value.payload)) {
+        throw std::runtime_error{"SpatialPayload alternative 與 ZoneKey level 不符"};
+    }
+    if (const auto* region = std::get_if<zone::RegionPayload>(&value.payload)) {
+        for (const auto& [z, tiles] : region->layers) {
+            static_cast<void>(z);
+            if (!tiles.valid_layout()) {
+                throw std::runtime_error{"zone RegionTiles 欄位尺寸不一致"};
+            }
+            validate_ids<rules::TerrainId>(tiles.base, ruleset.terrains().size(), "TerrainId");
+            validate_ids<rules::ReliefId>(tiles.relief, ruleset.reliefs().size(), "ReliefId");
+            validate_ids<rules::FeatureId>(tiles.feature, ruleset.features().size(), "FeatureId");
+            validate_ids<rules::EdgeId>(tiles.edges, ruleset.edges().size(), "EdgeId");
         }
-        if (!value.region_tiles->valid_layout()) {
-            throw std::runtime_error{"zone RegionTiles 欄位尺寸不一致"};
-        }
-        validate_ids<rules::TerrainId>(value.region_tiles->base, ruleset.terrains().size(),
-                                       "TerrainId");
-        validate_ids<rules::ReliefId>(value.region_tiles->relief, ruleset.reliefs().size(),
-                                      "ReliefId");
-        validate_ids<rules::FeatureId>(value.region_tiles->feature, ruleset.features().size(),
-                                       "FeatureId");
-        validate_ids<rules::EdgeId>(value.region_tiles->edges, ruleset.edges().size(), "EdgeId");
     }
     std::ostringstream stream{std::ios::binary};
     {
@@ -116,18 +116,21 @@ std::string encode_zone(const zone::Zone& value, const rules::Ruleset& ruleset) 
         auto feature_ids = string_ids(ruleset.features());
         auto edge_ids = string_ids(ruleset.edges());
         archive(terrain_ids, relief_ids, feature_ids, edge_ids);
-        const bool has_region_tiles = value.region_tiles.has_value();
-        archive(has_region_tiles);
-        if (has_region_tiles) {
-            const auto& tiles = *value.region_tiles;
-            std::vector<std::uint8_t> ever_realized;
-            ever_realized.reserve(tiles.site.size());
-            for (const auto& site : tiles.site) {
-                ever_realized.push_back(site.ever_realized ? UINT8_C(1) : UINT8_C(0));
+        const auto payload_index = static_cast<std::uint8_t>(value.payload.index());
+        archive(payload_index);
+        if (const auto* region = std::get_if<zone::RegionPayload>(&value.payload)) {
+            const auto layer_count = static_cast<std::uint64_t>(region->layers.size());
+            archive(layer_count);
+            for (const auto& [z, tiles] : region->layers) {
+                std::vector<std::uint8_t> ever_realized;
+                ever_realized.reserve(tiles.site.size());
+                for (const auto& site : tiles.site) {
+                    ever_realized.push_back(site.ever_realized ? UINT8_C(1) : UINT8_C(0));
+                }
+                archive(z, tiles.width, tiles.height, tiles.base, tiles.relief, tiles.feature,
+                        tiles.temperature, tiles.moisture, tiles.elevation, tiles.edges,
+                        tiles.owner, ever_realized);
             }
-            archive(tiles.width, tiles.height, tiles.base, tiles.relief, tiles.feature,
-                    tiles.temperature, tiles.moisture, tiles.elevation, tiles.edges, tiles.owner,
-                    ever_realized);
         }
     }
     {
@@ -163,8 +166,6 @@ std::unique_ptr<zone::Zone> decode_zone(std::string_view bytes, const rules::Rul
         if (persistence_flags != kReservedPersistenceFlags) {
             throw std::runtime_error{"zone persistence flags 不支援"};
         }
-        value = std::make_unique<zone::Zone>(zone::ZoneKey{key});
-        value->last_saved_tick = time::Tick{saved_tick};
         std::vector<std::string> terrain_ids;
         std::vector<std::string> relief_ids;
         std::vector<std::string> feature_ids;
@@ -178,38 +179,64 @@ std::unique_ptr<zone::Zone> decode_zone(std::string_view bytes, const rules::Rul
             feature_ids, [&](std::string_view id) { return ruleset.find_feature(id); }, "feature");
         const auto edge_remap = build_remap<rules::EdgeId>(
             edge_ids, [&](std::string_view id) { return ruleset.find_edge(id); }, "edge");
-        bool has_region_tiles{};
-        archive(has_region_tiles);
-        if (has_region_tiles) {
-            if (zone::level_of(value->key) != zone::ZoneLevel::Region) {
-                throw std::runtime_error{"zone 檔把 RegionTiles 放在非 L1 zone"};
+        std::uint8_t payload_index{};
+        archive(payload_index);
+        zone::SpatialPayload payload;
+        switch (payload_index) {
+        case 0:
+            payload = std::monostate{};
+            break;
+        case 1: {
+            zone::RegionPayload region;
+            std::uint64_t layer_count{};
+            archive(layer_count);
+            if (layer_count > 256U) {
+                throw std::runtime_error{"zone RegionPayload layer 數超過 int8_t 容量"};
             }
-            world::RegionTiles tiles;
-            std::vector<std::uint8_t> ever_realized;
-            archive(tiles.width, tiles.height, tiles.base, tiles.relief, tiles.feature,
-                    tiles.temperature, tiles.moisture, tiles.elevation, tiles.edges, tiles.owner,
-                    ever_realized);
-            const auto count64 = static_cast<std::uint64_t>(tiles.width) * tiles.height;
-            if (tiles.width == 0 || tiles.height == 0 ||
-                count64 > std::numeric_limits<std::size_t>::max() / 4U) {
-                throw std::runtime_error{"zone RegionTiles 尺寸超出可表達範圍"};
-            }
-            tiles.site.resize(static_cast<std::size_t>(count64));
-            if (!tiles.valid_layout() || ever_realized.size() != tiles.tile_count()) {
-                throw std::runtime_error{"zone RegionTiles 欄位尺寸不一致"};
-            }
-            for (std::size_t index = 0; index < tiles.site.size(); ++index) {
-                if (ever_realized[index] > 1) {
-                    throw std::runtime_error{"zone SiteState ever_realized 不是布林值"};
+            for (std::uint64_t layer = 0; layer < layer_count; ++layer) {
+                std::int8_t z{};
+                world::RegionTiles tiles;
+                std::vector<std::uint8_t> ever_realized;
+                archive(z, tiles.width, tiles.height, tiles.base, tiles.relief, tiles.feature,
+                        tiles.temperature, tiles.moisture, tiles.elevation, tiles.edges,
+                        tiles.owner, ever_realized);
+                const auto count64 = static_cast<std::uint64_t>(tiles.width) * tiles.height;
+                if (tiles.width == 0 || tiles.height == 0 ||
+                    count64 > std::numeric_limits<std::size_t>::max() / 4U) {
+                    throw std::runtime_error{"zone RegionTiles 尺寸超出可表達範圍"};
                 }
-                tiles.site[index].ever_realized = ever_realized[index] != 0;
+                tiles.site.resize(static_cast<std::size_t>(count64));
+                if (!tiles.valid_layout() || ever_realized.size() != tiles.tile_count()) {
+                    throw std::runtime_error{"zone RegionTiles 欄位尺寸不一致"};
+                }
+                for (std::size_t index = 0; index < tiles.site.size(); ++index) {
+                    if (ever_realized[index] > 1) {
+                        throw std::runtime_error{"zone SiteState ever_realized 不是布林值"};
+                    }
+                    tiles.site[index].ever_realized = ever_realized[index] != 0;
+                }
+                remap_ids(tiles.base, terrain_remap, "TerrainId");
+                remap_ids(tiles.relief, relief_remap, "ReliefId");
+                remap_ids(tiles.feature, feature_remap, "FeatureId");
+                remap_ids(tiles.edges, edge_remap, "EdgeId");
+                if (!region.layers.emplace(z, std::move(tiles)).second) {
+                    throw std::runtime_error{"zone RegionPayload 含重複 z layer"};
+                }
             }
-            remap_ids(tiles.base, terrain_remap, "TerrainId");
-            remap_ids(tiles.relief, relief_remap, "ReliefId");
-            remap_ids(tiles.feature, feature_remap, "FeatureId");
-            remap_ids(tiles.edges, edge_remap, "EdgeId");
-            value->region_tiles = std::move(tiles);
+            payload = std::move(region);
+            break;
         }
+        case 2:
+            payload = zone::SitePayload{};
+            break;
+        case 3:
+            payload = zone::LocalPayload{};
+            break;
+        default:
+            throw std::runtime_error{"zone SpatialPayload alternative tag 不支援"};
+        }
+        value = std::make_unique<zone::Zone>(zone::ZoneKey{key}, std::move(payload));
+        value->last_saved_tick = time::Tick{saved_tick};
     }
     value->reg.clear();
     {

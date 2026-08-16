@@ -28,6 +28,7 @@
 namespace {
 
 using aetheria::serialize::AllComponents;
+using aetheria::serialize::decode_zone;
 using aetheria::serialize::encode_zone;
 using aetheria::serialize::kSaveFormatVersion;
 using aetheria::serialize::persistent_state_hash;
@@ -112,11 +113,14 @@ void write_file(const std::filesystem::path& path, std::string_view bytes) {
 [[nodiscard]] Zone populated_zone(ZoneKey key) {
     Zone zone{key};
     zone.last_saved_tick = Tick{987'654'321};
-    zone.region_tiles.emplace(2, 2);
-    zone.region_tiles->temperature = {11, 22, 33, 44};
-    zone.region_tiles->moisture = {55, 66, 77, 88};
-    zone.region_tiles->site.at(0).lod = aetheria::zone::LodLevel::Full;
-    zone.region_tiles->site.at(0).ever_realized = true;
+    auto& layers = std::get<aetheria::zone::RegionPayload>(zone.payload).layers;
+    auto& surface = layers.emplace(0, aetheria::world::RegionTiles{2, 2}).first->second;
+    surface.temperature = {11, 22, 33, 44};
+    surface.moisture = {55, 66, 77, 88};
+    surface.site.at(0).lod = aetheria::zone::LodLevel::Full;
+    surface.site.at(0).ever_realized = true;
+    auto& underground = layers.emplace(-1, aetheria::world::RegionTiles{3, 1}).first->second;
+    underground.elevation = {99, 100, 101};
     const auto extra = zone.reg.create();
     zone.reg.emplace<ZoneMeta>(extra, value_of(key));
     return zone;
@@ -226,10 +230,13 @@ TEST(FileZoneStore, RoundTripPreservesCanonicalBitsAndEntityCount) {
     EXPECT_EQ(encode_zone(*loaded, test_ruleset()), encode_zone(source, test_ruleset()));
     EXPECT_EQ(entity_count(*loaded), before_entities);
     EXPECT_EQ(loaded->reg.view<const ZoneMeta>().size(), 2U);
-    EXPECT_EQ(loaded->region_tiles->moisture,
+    const auto& loaded_layers = std::get<aetheria::zone::RegionPayload>(loaded->payload).layers;
+    EXPECT_EQ(loaded_layers.at(0).moisture,
               (std::vector<std::uint8_t>{55, 66, 77, 88}));
-    EXPECT_EQ(loaded->region_tiles->site.at(0).lod, aetheria::zone::LodLevel::Absent);
-    EXPECT_TRUE(loaded->region_tiles->site.at(0).ever_realized);
+    EXPECT_EQ(loaded_layers.at(0).site.at(0).lod, aetheria::zone::LodLevel::Absent);
+    EXPECT_TRUE(loaded_layers.at(0).site.at(0).ever_realized);
+    EXPECT_EQ(loaded_layers.at(-1).elevation,
+              (std::vector<std::uint16_t>{99, 100, 101}));
 }
 
 TEST(FileZoneStore, DerivesStableBucketedPathsWithoutCollisions) {
@@ -296,6 +303,25 @@ TEST(FileZoneStore, RejectsZoneFormatVersionMismatch) {
     write_file(store.path_for(key), zstd_compress(raw));
 
     EXPECT_THROW(static_cast<void>(store.load(key)), std::runtime_error);
+}
+
+TEST(ZoneCodec, RejectsPayloadAlternativeMismatchDuringDecode) {
+    const auto region = child_key(kRootZone, 3, 0);
+    const auto site = child_key(region, 4, 5);
+    auto source = populated_zone(region);
+    auto bytes = encode_zone(source, test_ruleset());
+    ASSERT_GE(bytes.size(), 17U);
+    const auto site_bits = value_of(site);
+    for (std::size_t index = 0; index < sizeof(site_bits); ++index) {
+        bytes[9 + index] = static_cast<char>((site_bits >> (index * 8U)) & UINT64_C(0xFF));
+    }
+
+    try {
+        static_cast<void>(decode_zone(bytes, test_ruleset()));
+        FAIL() << "payload/key mismatch should throw";
+    } catch (const std::invalid_argument& error) {
+        EXPECT_NE(std::string{error.what()}.find("SpatialPayload"), std::string::npos);
+    }
 }
 
 TEST(FileZoneStore, ManifestRoundTripsAndAtomicallyReplaces) {
