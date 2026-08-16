@@ -19,6 +19,7 @@ protected:
 
 public:
     [[nodiscard]] godot::String get_core_version() const;
+    // 跨界 Tick 不在 core 合法域時回空 Dictionary，不讓不可信輸入觸發 AETH_CHECK。
     [[nodiscard]] godot::Dictionary tick_to_date(std::int64_t tick) const;
 };
 

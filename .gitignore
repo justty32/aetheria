@@ -1,5 +1,5 @@
 # 建置產物
-build/
+build*/
 out/
 *.so
 *.dll

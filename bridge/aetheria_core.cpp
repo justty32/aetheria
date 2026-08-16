@@ -19,7 +19,11 @@ godot::String AetheriaCore::get_core_version() const {
 }
 
 godot::Dictionary AetheriaCore::tick_to_date(std::int64_t tick) const {
-    const auto date = aetheria::time::to_date(aetheria::time::Tick{tick});
+    const auto core_tick = aetheria::time::Tick{tick};
+    if (!aetheria::time::is_representable(core_tick)) {
+        return {};
+    }
+    const auto date = aetheria::time::to_date(core_tick);
     godot::Dictionary result;
     result["year"] = date.year;
     result["season"] = date.season;
@@ -29,4 +33,3 @@ godot::Dictionary AetheriaCore::tick_to_date(std::int64_t tick) const {
 }
 
 }  // namespace aetheria::bridge
-
