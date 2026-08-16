@@ -23,6 +23,17 @@ enum class LodLevel : std::uint8_t {
     Absent,
 };
 
+// ZoneMeta 是每個 zone registry 至少一個實體持有的存檔哨兵。
+// 所屬 Zone 擁有 component 實例。
+// 所屬 Zone 析構後失效；zone_key 必須與 Zone::key 相同。
+struct ZoneMeta {
+    std::uint64_t zone_key{};
+
+    template <typename Archive> void serialize(Archive& archive) { archive(zone_key); }
+
+    constexpr bool operator==(const ZoneMeta&) const noexcept = default;
+};
+
 // TileGrid 是 M0.5 生命週期測試用的最小實質格網。
 // 所屬 Zone 擁有它。
 // 所屬 Zone 析構後失效；M1 會依 worldmap.md 換成真正 SoA。
@@ -43,7 +54,11 @@ struct TileGrid {
 // ZoneManager 或 ZoneStore 以 unique_ptr 單獨擁有它。
 // 被 unload／destroy 或其擁有者析構後失效。
 struct Zone {
-    explicit Zone(ZoneKey zone_key) : key{zone_key} { layers.emplace(0, TileGrid{1, 1}); }
+    explicit Zone(ZoneKey zone_key) : key{zone_key} {
+        layers.emplace(0, TileGrid{1, 1});
+        const auto placeholder = reg.create();
+        reg.emplace<ZoneMeta>(placeholder, value_of(key));
+    }
 
     Zone(const Zone&) = delete;
     Zone& operator=(const Zone&) = delete;

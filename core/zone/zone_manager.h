@@ -36,8 +36,8 @@ private:
 // ZoneManager 是所有已載入 zone 的唯一生命週期入口。
 // 建立它的世界狀態擁有它；它只借用 ZoneStore。
 // manager 析構後 handle 仍是 key，但須交給另一個 manager 重新查找。
-// 契約：tick 內的結構變更只能排進 FIFO；各 zone 以自己的 last_saved_tick 寫回單槽 store；
-// 長駐查詢只回 ZoneHandle；Zone& 僅在 with／tick callback 的作用域內借用。
+// 契約：tick 內的結構變更只能排進 FIFO；各 zone 以自己的 last_saved_tick 寫回單槽
+// store；長駐查詢只回 ZoneHandle；Zone& 僅在 with／tick callback 的作用域內借用。
 class ZoneManager {
 public:
     explicit ZoneManager(ZoneStore& store);
@@ -48,6 +48,7 @@ public:
     [[nodiscard]] ZoneHandle materialize(ZoneKey key);
     [[nodiscard]] bool unload(ZoneKey key);
     [[nodiscard]] bool destroy(ZoneKey key);
+    void save_all();
 
     template <typename Borrower>
         requires std::invocable<Borrower, Zone&> &&

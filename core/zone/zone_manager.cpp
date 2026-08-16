@@ -5,7 +5,7 @@
 namespace aetheria::zone {
 
 ZoneManager::ZoneManager(ZoneStore& store) : store_{store} {
-    auto root = store_.take(kRootZone);
+    auto root = store_.load(kRootZone);
     if (root == nullptr) {
         root = std::make_unique<Zone>(kRootZone);
     }
@@ -36,7 +36,7 @@ bool ZoneManager::load(ZoneKey key) {
     if (zones_.contains(key)) {
         return true;
     }
-    auto zone = store_.take(key);
+    auto zone = store_.load(key);
     if (zone == nullptr) {
         return false;
     }
@@ -67,10 +67,9 @@ bool ZoneManager::unload(ZoneKey key) {
         return false;
     }
     found->second->last_saved_tick = current_tick_;
-    auto zone = std::move(found->second);
+    store_.save(*found->second);
     zones_.erase(found);
     remove_from_tick_order(key);
-    store_.save(std::move(zone));
     return true;
 }
 
@@ -79,12 +78,21 @@ bool ZoneManager::destroy(ZoneKey key) {
     if (key == kRootZone) {
         return false;
     }
+    const bool was_stored = store_.erase(key);
     const bool was_loaded = zones_.erase(key) != 0;
     if (was_loaded) {
         remove_from_tick_order(key);
     }
-    const bool was_stored = store_.erase(key);
     return was_loaded || was_stored;
+}
+
+void ZoneManager::save_all() {
+    AETH_CHECK(!in_tick_);
+    for (auto& [key, zone] : zones_) {
+        static_cast<void>(key);
+        zone->last_saved_tick = current_tick_;
+        store_.save(*zone);
+    }
 }
 
 void ZoneManager::queue_materialize(ZoneKey key) {

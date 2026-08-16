@@ -10,9 +10,11 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 include(CTest)
 
+find_package(cereal CONFIG REQUIRED)
 find_package(CLI11 CONFIG REQUIRED)
 find_package(EnTT CONFIG REQUIRED)
 find_package(GTest CONFIG REQUIRED)
+find_package(zstd CONFIG REQUIRED)
 
 function(aetheria_enable_warnings target)
     if(MSVC)
@@ -25,18 +27,26 @@ endfunction()
 add_library(aetheria_core STATIC
     core/api/version.cpp
     core/time/tick.cpp
+    core/serialize/zone_codec.cpp
+    core/zone/file_zone_store.cpp
     core/zone/zone_manager.cpp
     core/zone/zone_store.cpp
 )
 target_include_directories(aetheria_core PUBLIC "${PROJECT_SOURCE_DIR}")
-target_link_libraries(aetheria_core PUBLIC EnTT::EnTT)
+target_link_libraries(aetheria_core
+    PUBLIC EnTT::EnTT
+    PRIVATE cereal::cereal zstd::libzstd_static
+)
 aetheria_enable_warnings(aetheria_core)
 
 add_executable(aetheria_tests
     tests/time/tick_test.cpp
+    tests/zone/zone_store_test.cpp
     tests/zone/zone_test.cpp
 )
-target_link_libraries(aetheria_tests PRIVATE aetheria_core GTest::gtest_main)
+target_link_libraries(aetheria_tests
+    PRIVATE aetheria_core cereal::cereal GTest::gtest_main zstd::libzstd_static
+)
 aetheria_enable_warnings(aetheria_tests)
 include(GoogleTest)
 gtest_discover_tests(aetheria_tests)
@@ -47,10 +57,16 @@ add_test(
         -DPROJECT_ROOT=${PROJECT_SOURCE_DIR}
         -P "${PROJECT_SOURCE_DIR}/cmake/check_core_isolation.cmake"
 )
-
 add_executable(aetheria_sim sim/main.cpp)
 target_link_libraries(aetheria_sim PRIVATE aetheria_core CLI11::CLI11)
 aetheria_enable_warnings(aetheria_sim)
+add_test(
+    NAME SimPersistence.TwoProcesses
+    COMMAND "${CMAKE_COMMAND}"
+        -DSIM=$<TARGET_FILE:aetheria_sim>
+        -DTEST_DIR=${CMAKE_BINARY_DIR}/sim-persistence-test
+        -P "${PROJECT_SOURCE_DIR}/cmake/check_sim_persistence.cmake"
+)
 
 set(AETHERIA_EXPECTED_GODOT_VERSION "4.7.1")
 set(GODOTCPP_API_VERSION "4.7" CACHE STRING "Godot API version" FORCE)

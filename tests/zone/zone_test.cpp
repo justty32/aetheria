@@ -210,8 +210,12 @@ TEST(ZoneManager, SavesDifferentZonesAtTheirOwnTicks) {
         }
     });
 
-    EXPECT_EQ(store.last_saved_tick(first), Tick{100});
-    EXPECT_EQ(store.last_saved_tick(second), Tick{250});
+    const auto saved_first = store.load(first);
+    const auto saved_second = store.load(second);
+    ASSERT_NE(saved_first, nullptr);
+    ASSERT_NE(saved_second, nullptr);
+    EXPECT_EQ(saved_first->last_saved_tick, Tick{100});
+    EXPECT_EQ(saved_second->last_saved_tick, Tick{250});
 }
 
 TEST(ZoneManager, RequireAndProbeLoadTreatMissingZoneDifferently) {
@@ -233,12 +237,13 @@ TEST(ZoneManager, UnloadAndLoadTransferTheSameSubstantiveZone) {
     ASSERT_TRUE(manager.unload(key));
     EXPECT_FALSE(manager.get(key).has_value());
     EXPECT_FALSE(manager.with(handle, [](Zone&) {}));
+    EXPECT_TRUE(store.contains(key));
     ASSERT_TRUE(manager.load(key));
     std::uint16_t loaded_tile{};
     ASSERT_TRUE(manager.with(
         handle, [&](const Zone& zone) { loaded_tile = zone.layers.at(0).tiles.at(0); }));
     EXPECT_EQ(loaded_tile, 73);
-    EXPECT_FALSE(store.contains(key));
+    EXPECT_TRUE(store.contains(key));
 }
 
 TEST(ZoneManager, TickBorrowWritesZoneDataVisibleAfterTheTurn) {
