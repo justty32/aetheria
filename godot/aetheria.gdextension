@@ -1,0 +1,15 @@
+[configuration]
+
+entry_symbol = "aetheria_library_init"
+compatibility_minimum = "4.7"
+reloadable = true
+
+[libraries]
+
+linux.debug.x86_64 = "res://bin/libaetheria_bridge.so"
+linux.release.x86_64 = "res://bin/libaetheria_bridge.so"
+windows.debug.x86_64 = "res://bin/aetheria_bridge.dll"
+windows.release.x86_64 = "res://bin/aetheria_bridge.dll"
+macos.debug = "res://bin/libaetheria_bridge.dylib"
+macos.release = "res://bin/libaetheria_bridge.dylib"
+

@@ -3,7 +3,8 @@
 中世紀奇幻背景、日式表現風格的**三層嵌套地圖回合制策略遊戲**。
 Godot 4 只負責顯示、美術、音效與 UI；**全部玩法邏輯由 C++ GDExtension 承擔**。
 
-> **現況：規劃階段。** 目前只有設計文件，尚無程式碼、`project.godot` 或建置系統。
+> **現況：M0 骨架已落地。** 純 C++ core、測試、headless CLI、GDExtension 與 Godot
+> 驗證場景可建置執行；尚未實作玩法。
 
 ## 你來找什麼？
 
@@ -13,6 +14,7 @@ Godot 4 只負責顯示、美術、音效與 UI；**全部玩法邏輯由 C++ GD
 | **全部設計文件** | [design/README.md](design/README.md) — 索引 |
 | **程式架構怎麼分** | [design/tech-stack.md](design/tech-stack.md) |
 | **C++ 怎麼寫、用什麼依賴** | [design/cpp-conventions.md](design/cpp-conventions.md) |
+| **怎麼建置與驗證** | [design/build.md](design/build.md) |
 | **最難的技術問題在哪** | [design/interface-world-mid.md](design/interface-world-mid.md) 與 [design/interface-lifecycle.md](design/interface-lifecycle.md) |
 | **世界怎麼在有限算力下活著** | [design/observer.md](design/observer.md)、[design/significance.md](design/significance.md) |
 | **和 medps 是什麼關係** | [design/medps-relation.md](design/medps-relation.md) — **先讀這個再動基礎設施** |
@@ -46,8 +48,14 @@ Godot 4 只負責顯示、美術、音效與 UI；**全部玩法邏輯由 C++ GD
 |---|---|
 | `design/` | 全部設計文件。一份一檔、上限 8 KB |
 | `wf/` | 工作流 kernel：`WORKFLOWS` / `INDEX` / `DEV-GUIDE` / `SESSION-LOG` / `WAIT_USER` + `workflows/` |
+| `core/` | 純 C++23 核心；不依賴 Godot |
+| `bridge/` | godot-cpp 綁定與 `AetheriaCore` Node |
+| `godot/` | Godot 4.7 專案與 M0 驗證場景 |
+| `tests/` | GoogleTest 單元測試 |
+| `sim/` | 不需 Godot 的 headless CLI |
+| `third_party/` | 固定版本的 godot-cpp submodule |
 
-尚未建立（規劃階段之後才會有）：`core/`、`bridge/`、`godot/`、`data/`、`scripts/`、`tests/`。
+尚未建立：`data/`、`scripts/`；等對應功能真的需要時再加。
 
 ## 參考專案
 

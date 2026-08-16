@@ -21,7 +21,7 @@ AGENTS.md（本檔，最頂）→ wf/WORKFLOWS.md / wf/INDEX.md → 各工作流
 - **README** = 初入一個資料夾**先讀的入口／導引**；**INDEX** = **描述該資料夾頂層結構**的索引。小資料夾兩者合一，大了才分出獨立 INDEX。
 - **durable 知識歸到它所屬的那一層／那個工作流**，絕不往上堆——所以本檔才這麼薄。要某主題的細節，順著上面的樹往下走，不在本檔找。
 - **鐵律（always-on，任何工作流任何時候都遵守）**：
-  1. 重構/整理必須**不改變原意**（行為不變、改完跑驗證；build/test 指令**尚未建立**，見 [design/](design/README.md) 與下方「專案現況」）。
+  1. 重構/整理必須**不改變原意**（行為不變、改完跑驗證；build/test 指令見 [wf/workflows/testing.md](wf/workflows/testing.md)）。
   2. **未經確認不 push、不開新工作**（commit 到主分支是慣例，push 先確認）。
   3. 各工作流的**具體流程在它自己的入口檔**，不在頂層。
 - **[wf/DEV-GUIDE.md](wf/DEV-GUIDE.md) 是被動參考**（結構整理原則 + 四級成長軌跡）——**只在你要重構/整理結構時才取用**，不貫穿日常每個動作。碰原始碼的**程式碼慣例 + 導航 index 維護鏈**在 [wf/workflows/common/conventions.md](wf/workflows/common/conventions.md)。
@@ -50,4 +50,7 @@ AGENTS.md（本檔，最頂）→ wf/WORKFLOWS.md / wf/INDEX.md → 各工作流
 
 ## 專案現況
 
-只有規劃文件階段：尚無 `project.godot`、CMakeLists.txt 或任何程式碼骨架；**build / test 指令尚未建立**。等進入實作階段，回來補上 [wf/workflows/testing.md](wf/workflows/testing.md) 與 [wf/workflows/common/conventions.md](wf/workflows/common/conventions.md) 的對應指令與慣例。
+M0 可編譯骨架已建立：純 C++23 `core/`、GoogleTest、headless CLI、C++23 godot-cpp
+GDExtension 與 Godot 4.7 驗證場景均可建置執行；尚無玩法邏輯。建置／測試指令見
+[design/build.md](design/build.md) 與 [wf/workflows/testing.md](wf/workflows/testing.md)，程式碼導航見
+[wf/workflows/common/conventions.md](wf/workflows/common/conventions.md)。

@@ -10,10 +10,4 @@
 
 ## 待使用者項
 
-- **`workflows/inbox/CONTACTS.md` 目前是空的**（無已知協作 agent）。
-  日後真有協作對象再補，沒有編造假地址。
-
-> 已裁定並移除的項目（2026-08-15）：
-> medps 關係 → **取向 ②：獨立但逐條繼承已拍板決策**，繼承核對清單在
-> [design/medps-relation.md](../design/medps-relation.md)；
-> 時區 → **台北時區**，推斷值確認無誤，兩個檔不必改。
+- （無）

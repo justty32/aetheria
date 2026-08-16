@@ -43,7 +43,7 @@ aetheria/
 | `aetheria_bridge` | 共享庫 | core + godot-cpp | 產出 `.so` 給 Godot 載入 |
 
 **`aetheria_core` 那條是最重要的驗收點。** 用 CMake 的 target 可見性擋死，
-不要只靠約定——這是 [`design/tech-stack.md`](../../design/tech-stack.md) 鐵律一的機械化落實。
+不要只靠約定——這是 [`design/tech-stack.md`](../../../design/tech-stack.md) 鐵律一的機械化落實。
 
 ## 最小內容（真的很少）
 
@@ -82,7 +82,7 @@ gtest, cli11
 ```
 
 其餘（entt、tomlplusplus、lua、sol2、zstd、spdlog、benchmark）**等真的用到再加**。
-清單見 [`design/cpp-conventions.md`](../../design/cpp-conventions.md)。
+清單見 [`design/cpp-conventions.md`](../../../design/cpp-conventions.md)。
 
 **godot-cpp 不走 vcpkg**——它必須跟 Godot 版本綁死，用 submodule 或固定版本原始碼樹。
 
@@ -133,7 +133,7 @@ M0 的範圍控制很重要，**以下一律不做**：
 
 | 不做 | 為什麼 |
 |---|---|
-| `Zone`／`ZoneManager` | 留給 M0.5，設計在 [`design/zone-model.md`](../../design/zone-model.md) |
+| `Zone`／`ZoneManager` | 留給 M0.5，設計在 [`design/zone-model.md`](../../../design/zone-model.md) |
 | 任何生成器 | 留給 M1 |
 | EnTT、cereal、Lua、TOML 的接入 | 等有東西要用它們的時候 |
 | 任何玩法邏輯 | M0 不碰玩法 |

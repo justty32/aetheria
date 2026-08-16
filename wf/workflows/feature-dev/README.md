@@ -18,7 +18,8 @@
 - 測試迭代期間，code map / 文檔可暫時落後；**commit 前必須對齊**。
 - 跨 session 時在本工作流 `session-log.md` 補一行 `[功能名] 文檔/code map 待同步`，下個 session 不會誤判已同步。
 
-> 專案目前只在規劃階段，尚無程式碼可供 feature-dev 動工；等 C++ 核心與 Godot 專案骨架建立、build/test 指令補齊後，本工作流才會實際被觸發。
+> M0 已建立 C++／Godot 骨架；實際 build/test 指令見 [testing](../testing.md)，
+> 檔案導航見 [common/conventions](../common/conventions.md)。
 
 ## 內容
 

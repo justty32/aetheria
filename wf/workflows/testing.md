@@ -4,9 +4,38 @@
 
 ## 指令
 
-- **快速驗證（Claude 自己跑、鐵律要求的那套）**：尚未建立（規劃階段，尚無 CMake / Godot 專案骨架，見 [design/](../../design/README.md)）。
-- **完整驗證**：尚未建立，同上。
+- 首次 configure（`VCPKG_ROOT` 指向已 bootstrap 的 vcpkg）：
+
+```sh
+cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Debug \
+  -DCMAKE_TOOLCHAIN_FILE="$VCPKG_ROOT/scripts/buildsystems/vcpkg.cmake"
+```
+
+- **快速驗證**（純 C++，不需 Godot）：
+
+```sh
+cmake --build build --target aetheria_tests aetheria_sim --parallel
+ctest --test-dir build --output-on-failure
+./build/aetheria_sim --tick 62208000
+```
+
+- **完整驗證**：
+
+```sh
+cmake --build build --parallel
+ctest --test-dir build --output-on-failure
+./build/aetheria_sim --tick 62208000
+godot-mono --headless --path godot --editor --quit-after 3
+godot-mono --headless --path godot --quit-after 5
+```
+
+Godot 全新專案第一次 editor 掃描可能 exit 139；若掃描已完成，原樣重跑一次。第二次與主場景
+都必須 exit 0，不能因已知首掃問題略過後兩項。完整建置說明見 [design/build.md](../../design/build.md)。
 
 ## 測試分類
 
-尚無測試分類——目前無程式碼、無 build/test 骨架。日後建立 C++ 核心（預期用 CTest 或同等框架，純 C++ 不依賴 godot-cpp 部分應可獨立跑單元測試）與 Godot 端整合驗證時，回來補上分類方式（例如：純 C++ 單元測試 vs. 需要 Godot runtime 的整合/場景測試）。跑不了的環境依賴驗證 → 記 [WAIT_USER](../WAIT_USER.md)。
+- `unit`：`aetheria_tests`，GoogleTest 經 CTest 發現；純 C++、不需 Godot。
+- `headless`：`aetheria_sim`，驗證 core 可獨立執行與穩定文字輸出。
+- `integration`：Godot headless editor + 主場景，驗證 GDExtension 註冊與 Variant 轉換。
+
+跑不了的環境依賴驗證 → 記 [WAIT_USER](../WAIT_USER.md)。

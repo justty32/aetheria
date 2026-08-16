@@ -12,32 +12,6 @@
 
 ## 最新進度
 
-- **規劃階段進行中**：大綱與 L1／L2 玩法已細化（[design/README.md](../design/README.md) 有完整索引）。
-  尚無任何程式碼、`project.godot`、CMake。
-- **medps 繼承核對清單 11 條已全數完成** → [design/medps-relation.md](../design/medps-relation.md)。
-  M0 的前置（`zone-model.md` / `zone-save.md`）已寫完；**zone 定址定案：混合方案**
-  （空間 zone 座標推導、Detached 用序號），刻意不同於 medps 的零語意序號，理由在文件裡。
-- **程序生成已細化完成**（6 份）：接邊採「降維裁決鏈」（角 → 邊 → 面），
-  Site 永不寫自己的邊界，因此生成順序無關、缺席無關、重生成無關。可直接遞迴到 L2→L3。
-- **事件系統已細化完成**（3 份 + `principles.md` + `player-residence.md`）：
-  事件是跨層物件，主場層由 observer 決定；跨 Site 影響一律經 Region 中介；
-  期望值一致 + δ 上界讓「要不要親自去打」成為有數學保證的權衡。
-- **時間單位已改**：分鐘 → **秒**，且回合 stride 可變（交戰時 Site 900 秒、Local 6 秒）。
-  理由是推演移動速度時發現原本的粒度會讓戰場機動失去意義，見 `design/combat-scaling.md`。
-- **觀察點結構已修正**：不是多個平行來源，而是**單一根（玩家）+ 子觀察點樹**。
-  子觀察點同時是**獨特物件的登記處**（[design/unique-objects.md](../design/unique-objects.md)）。
-- **戰鬥公式與力量體系已簡單規劃**（[power-tiers.md](../design/power-tiers.md)、
-  [combat-formula.md](../design/combat-formula.md)）：**量與質分開**，位階直接沿用 significance 五級、
-  每階 ×4 折算成等效戰力；再加「階差 ≥ 3 幾乎免疫」的門檻，讓凡人對抗傳奇要靠**手段**而非人海。
-  Region 公式用 `R^p`（p 初值 1.3）+ 崩潰閾值，**形式已定、數值全部待校準**。
-- **L3 已規劃完成**（[lowmap.md](../design/lowmap.md)、[lowmap-streaming.md](../design/lowmap-streaming.md)、
-  [localgen.md](../design/localgen.md)）：**三層都規劃完了**，且 L2↔L3 完全複用 L1↔L2 的機制，
-  沒有引入任何新機制。串流＝場強換一組參數；跨 zone 規則精確化為
-  「**看可以跨、改必須經中介**」，且生成期絕不跨。
-- **協作模式已建立**（使用者 2026-08-15 訂定）：規劃者寫設計與任務書、不寫實作；
-  實作 agent 依 `wf/inbox/` 的任務書實作、不自行改設計。兩者共用收件匣，
-  見 [workflows/inbox/CONTACTS.md](workflows/inbox/CONTACTS.md)。
-- **M0 任務書已寄出** → `wf/inbox/m0-bootstrap.md`＋`implementer-onboarding.md`，等實作 agent 接手。
 - ⚠ **已知設計缺口**：同層近距離事件的快速路徑（兩個參與者分屬相鄰 Local zone 的戰鬥），
   `events.md` 沒寫清楚，刻意留到實作撞到再補——現在硬定形狀很可能定錯。
   記在 [lowmap-streaming.md](../design/lowmap-streaming.md) 末段。

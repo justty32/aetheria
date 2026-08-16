@@ -1,0 +1,10 @@
+{
+  "name": "aetheria",
+  "version-string": "0.0.1",
+  "builtin-baseline": "b781af668027bbf77f2f827f47b5c6cd8d825c08",
+  "dependencies": [
+    "cli11",
+    "gtest"
+  ]
+}
+

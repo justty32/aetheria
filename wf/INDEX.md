@@ -10,13 +10,18 @@
 
 ```text
 aetheria/
-  AGENTS.md CLAUDE.md   ← 頂層只有這兩個 .md
+  AGENTS.md CLAUDE.md README.md
+  CMakeLists.txt vcpkg.json
+  core/ bridge/ tests/ sim/   純 C++ 核心、綁定、測試、headless CLI
+  godot/            Godot 4.7 顯示／整合驗證專案
+  third_party/      固定版本的 godot-cpp submodule
   design/    遊戲設計文件（索引：design/README.md，由主 agent 維護）
   wf/        工作流 kernel（本檔所在）
   .claude/   commands（如 /wf-tick）
 ```
 
-> 專案目前只在**規劃文件階段**，尚無 `project.godot`、CMakeLists.txt 或程式碼骨架。日後長出核心 C++（GDExtension，預期不依賴 godot-cpp、可獨立編譯測試）與 Godot 專案目錄時，回來補上對應列。
+> M0 可編譯骨架已建立；建置與驗證見 [design/build.md](../design/build.md) 與
+> [testing](workflows/testing.md)。目前尚無玩法邏輯。
 
 ### 主體
 
@@ -24,6 +29,9 @@ aetheria/
 |------|------|
 | `design/` | 遊戲設計文件，索引見 [design/README.md](../design/README.md)（不歸本工作流 kernel 管，由主 agent 同步維護）。|
 | `.claude/` | [commands](../.claude/commands/)（slash 指令，如 `/wf-tick`）。|
+| `core/`、`bridge/`、`godot/` | 純 C++ 核心、GDExtension 綁定與 Godot 顯示層。|
+| `tests/`、`sim/` | GoogleTest 與不需 Godot 的 headless CLI。|
+| `third_party/` | 固定版本的 godot-cpp submodule。|
 
 ### `wf/` — 工作流 kernel（本檔所在）
 
