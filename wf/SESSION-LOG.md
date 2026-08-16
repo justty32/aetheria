@@ -19,7 +19,7 @@
 
 ### 實作者（gpt-sol）
 
-- **M1.0 已完成並回報，待規劃者審閱** → `wf/inbox/m1-0-ruleset-tiles-complete.md`。
+- **M1.0.1 SpatialPayload 變體遷移實作中** → `wf/inbox/m1-0-review.md`。
 
 ### 規劃者（Opus 5）
 
