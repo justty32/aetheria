@@ -13,3 +13,19 @@ move_cost = 2
 flags = 2
 visual = "terrain/ocean"
 yield = { food = 1, production = 0, wealth = 1, mana = 0 }
+
+[[defs]]
+id = "terrain.desert"
+name_key = "terrain.desert.name"
+move_cost = 2
+flags = 1
+visual = "terrain/desert"
+yield = { food = 0, production = 1, wealth = 1, mana = 0 }
+
+[[defs]]
+id = "terrain.tundra"
+name_key = "terrain.tundra.name"
+move_cost = 2
+flags = 1
+visual = "terrain/tundra"
+yield = { food = 1, production = 1, wealth = 0, mana = 0 }

@@ -11,3 +11,24 @@ name_key = "edge.road.name"
 move_cost = 1
 flags = 1
 visual = "edge/road"
+
+[[defs]]
+id = "edge.stream"
+name_key = "edge.stream.name"
+move_cost = 2
+flags = 2
+visual = "edge/stream"
+
+[[defs]]
+id = "edge.river"
+name_key = "edge.river.name"
+move_cost = 3
+flags = 2
+visual = "edge/river"
+
+[[defs]]
+id = "edge.great_river"
+name_key = "edge.great_river.name"
+move_cost = 4
+flags = 2
+visual = "edge/great_river"

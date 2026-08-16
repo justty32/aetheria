@@ -2,9 +2,9 @@
 #include "core/rules/ruleset.h"
 #include "core/serialize/zone_codec.h"
 #include "core/time/tick.h"
+#include "core/worldgen/region_generator.h"
 #include "core/zone/file_zone_store.h"
 #include "core/zone/zone_manager.h"
-#include "core/worldgen/region_generator.h"
 
 #include <array>
 #include <chrono>
@@ -44,6 +44,10 @@ void print_generation(const aetheria::worldgen::RegionBuildResult& result,
     std::cout << "plate_hash=" << aetheria::worldgen::hash_stage(result.plates) << '\n'
               << "height_hash=" << aetheria::worldgen::hash_stage(result.height) << '\n'
               << "erosion_hash=" << aetheria::worldgen::hash_stage(result.erosion) << '\n'
+              << "climate_hash=" << aetheria::worldgen::hash_stage(result.climate) << '\n'
+              << "river_hash=" << aetheria::worldgen::hash_stage(result.rivers) << '\n'
+              << "biome_hash=" << aetheria::worldgen::hash_stage(result.biome) << '\n'
+              << "feature_hash=" << aetheria::worldgen::hash_stage(result.features) << '\n'
               << "skeleton_hash=" << aetheria::worldgen::hash_skeleton(result.skeleton) << '\n'
               << "tiles_hash=" << aetheria::worldgen::hash_tiles(tiles) << '\n'
               << std::fixed << std::setprecision(3)
@@ -52,15 +56,16 @@ void print_generation(const aetheria::worldgen::RegionBuildResult& result,
               << "land_connected="
               << (aetheria::worldgen::land_is_single_component(result.skeleton) ? "true" : "false")
               << '\n'
-              << "elapsed_ms="
-              << std::chrono::duration<double, std::milli>{elapsed}.count() << '\n';
+              << "elapsed_ms=" << std::chrono::duration<double, std::milli>{elapsed}.count()
+              << '\n';
 }
 
 int run_gen_region(const aetheria::rules::Ruleset& ruleset, std::uint64_t seed,
                    std::uint32_t region_id, std::uint16_t erosion_iterations,
-                   const std::filesystem::path& dump_directory) {
+                   std::int16_t biome_moisture_bias, const std::filesystem::path& dump_directory) {
     aetheria::worldgen::RegionGenerationConfig config;
     config.erosion.iterations = erosion_iterations;
+    config.biome.moisture_bias = biome_moisture_bias;
     const auto start = std::chrono::steady_clock::now();
     const auto result = aetheria::worldgen::build_skeleton(
         aetheria::worldgen::RegionSlowVariables{region_id, 128, 96}, seed, ruleset, config);
@@ -76,6 +81,14 @@ int run_gen_region(const aetheria::rules::Ruleset& ruleset, std::uint64_t seed,
                   aetheria::worldgen::grayscale(result.height));
         write_pgm(dump_directory / "03-erosion.pgm", result.erosion.width, result.erosion.height,
                   aetheria::worldgen::grayscale(result.erosion));
+        write_pgm(dump_directory / "04-climate.pgm", result.climate.width, result.climate.height,
+                  aetheria::worldgen::grayscale(result.climate));
+        write_pgm(dump_directory / "05-rivers.pgm", result.rivers.width, result.rivers.height,
+                  aetheria::worldgen::grayscale(result.rivers));
+        write_pgm(dump_directory / "06-biome.pgm", result.biome.width, result.biome.height,
+                  aetheria::worldgen::grayscale(result.biome));
+        write_pgm(dump_directory / "07-features.pgm", result.features.width, result.features.height,
+                  aetheria::worldgen::grayscale(result.features));
     }
     print_generation(result, tiles, elapsed);
     return 0;
@@ -102,6 +115,14 @@ int run_gen_verify(const aetheria::rules::Ruleset& ruleset, std::uint64_t seed,
                 aetheria::worldgen::hash_stage(second.height) ||
             aetheria::worldgen::hash_stage(first.erosion) !=
                 aetheria::worldgen::hash_stage(second.erosion) ||
+            aetheria::worldgen::hash_stage(first.climate) !=
+                aetheria::worldgen::hash_stage(second.climate) ||
+            aetheria::worldgen::hash_stage(first.rivers) !=
+                aetheria::worldgen::hash_stage(second.rivers) ||
+            aetheria::worldgen::hash_stage(first.biome) !=
+                aetheria::worldgen::hash_stage(second.biome) ||
+            aetheria::worldgen::hash_stage(first.features) !=
+                aetheria::worldgen::hash_stage(second.features) ||
             aetheria::worldgen::hash_skeleton(first.skeleton) !=
                 aetheria::worldgen::hash_skeleton(second.skeleton) ||
             aetheria::worldgen::hash_tiles(first_tiles) !=
@@ -128,6 +149,7 @@ int main(int argc, char** argv) {
     std::uint64_t generation_seed{};
     std::uint32_t generation_region_id{};
     std::uint16_t erosion_iterations{12};
+    std::int16_t biome_moisture_bias{};
     std::string dump_stages;
     std::uint32_t verify_iterations{100};
     app.add_option("--tick", requested_tick, "額外換算的 Tick（秒）");
@@ -139,7 +161,9 @@ int main(int argc, char** argv) {
     gen_region->add_option("--seed", generation_seed, "世界 seed")->required();
     gen_region->add_option("--region", generation_region_id, "Region id");
     gen_region->add_option("--erosion-iterations", erosion_iterations, "固定熱力侵蝕次數");
-    gen_region->add_option("--dump-stages", dump_stages, "三階段 PGM 輸出目錄");
+    gen_region->add_option("--biome-moisture-bias", biome_moisture_bias,
+                           "biome 查表前的水氣偏移（階段 6 隔離探針）");
+    gen_region->add_option("--dump-stages", dump_stages, "七階段 PGM 輸出目錄");
     auto* gen_verify = gen->add_subcommand("verify", "重複生成並驗證同 seed 決定論");
     gen_verify->add_option("--seed", generation_seed, "起始世界 seed")->required();
     gen_verify->add_option("--iterations", verify_iterations, "驗證 seed 數量");
@@ -149,7 +173,7 @@ int main(int argc, char** argv) {
 
     if (*gen_region) {
         return run_gen_region(ruleset, generation_seed, generation_region_id, erosion_iterations,
-                              dump_stages);
+                              biome_moisture_bias, dump_stages);
     }
     if (*gen_verify) {
         return run_gen_verify(ruleset, generation_seed, verify_iterations);
@@ -180,8 +204,8 @@ int main(int argc, char** argv) {
                 static_cast<void>(zone_manager.with(handle, [&](aetheria::zone::Zone& zone) {
                     if (aetheria::zone::level_of(key) == aetheria::zone::ZoneLevel::Region) {
                         auto& layers = std::get<aetheria::zone::RegionPayload>(zone.payload).layers;
-                        auto& tiles = layers.emplace(0, aetheria::world::RegionTiles{2, 2})
-                                          .first->second;
+                        auto& tiles =
+                            layers.emplace(0, aetheria::world::RegionTiles{2, 2}).first->second;
                         tiles.temperature.at(0) = static_cast<std::uint8_t>(17U);
                     }
                 }));

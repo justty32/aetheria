@@ -431,6 +431,7 @@ TEST(FileZoneStore, RejectsGenerationParameterGroupMismatchByName) {
                                         aetheria::worldgen::generation_parameter_hashes(changed)});
         FAIL() << "generation parameter mismatch should throw";
     } catch (const std::runtime_error& error) {
+        std::cout << "parameter_mismatch_error=" << error.what() << '\n';
         EXPECT_NE(std::string{error.what()}.find("erosion"), std::string::npos);
     }
 }

@@ -1,0 +1,25 @@
+[[rules]]
+max_temperature_tenths = 20
+terrain = "terrain.tundra"
+relief = "relief.plain"
+
+[[rules]]
+max_moisture = 12500
+terrain = "terrain.desert"
+relief = "relief.plain"
+
+[[rules]]
+min_elevation = 5200
+min_ruggedness = 500
+terrain = "terrain.grassland"
+relief = "relief.mountain"
+
+[[rules]]
+min_ruggedness = 320
+terrain = "terrain.grassland"
+relief = "relief.hills"
+
+[[rules]]
+fallback = true
+terrain = "terrain.grassland"
+relief = "relief.plain"

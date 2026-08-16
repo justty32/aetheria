@@ -2,6 +2,7 @@
 
 #include <cstdint>
 #include <filesystem>
+#include <limits>
 #include <map>
 #include <optional>
 #include <span>
@@ -111,13 +112,30 @@ struct EdgeDef {
     VisualRef visual;
 };
 
+// BiomeRule 是資料檔中依序第一命中的地形／起伏生成規則。
+// Ruleset 擁有所有實例，生成器只借用 const span。
+// 所屬 Ruleset 析構後失效；fallback 必須是最後一條。
+struct BiomeRule {
+    std::int16_t min_temperature_tenths{std::numeric_limits<std::int16_t>::min()};
+    std::int16_t max_temperature_tenths{std::numeric_limits<std::int16_t>::max()};
+    std::uint16_t min_moisture{};
+    std::uint16_t max_moisture{std::numeric_limits<std::uint16_t>::max()};
+    std::uint16_t min_elevation{};
+    std::uint16_t max_elevation{std::numeric_limits<std::uint16_t>::max()};
+    std::uint16_t min_ruggedness{};
+    std::uint16_t max_ruggedness{std::numeric_limits<std::uint16_t>::max()};
+    TerrainId terrain;
+    ReliefId relief;
+    bool fallback{};
+};
+
 class RulesetLoader;
 
 // Ruleset 是 TOML 載入後不可變的 def 集合與字串索引。
 // 世界狀態擁有它，其餘系統只借用 const Ruleset&。
 // 擁有者析構後所有 def 指標、span 與執行期下標失效。
 class Ruleset {
-public:
+    public:
     Ruleset(const Ruleset&) = delete;
     Ruleset& operator=(const Ruleset&) = delete;
     Ruleset(Ruleset&&) noexcept = default;
@@ -137,8 +155,9 @@ public:
     [[nodiscard]] std::span<const ReliefDef> reliefs() const noexcept { return reliefs_; }
     [[nodiscard]] std::span<const FeatureDef> features() const noexcept { return features_; }
     [[nodiscard]] std::span<const EdgeDef> edges() const noexcept { return edges_; }
+    [[nodiscard]] std::span<const BiomeRule> biome_rules() const noexcept { return biome_rules_; }
 
-private:
+    private:
     friend class RulesetLoader;
     Ruleset() = default;
 
@@ -146,6 +165,7 @@ private:
     std::vector<ReliefDef> reliefs_;
     std::vector<FeatureDef> features_;
     std::vector<EdgeDef> edges_;
+    std::vector<BiomeRule> biome_rules_;
     std::map<std::string, TerrainId, std::less<>> terrain_index_;
     std::map<std::string, ReliefId, std::less<>> relief_index_;
     std::map<std::string, FeatureId, std::less<>> feature_index_;
@@ -156,7 +176,7 @@ private:
 // 呼叫端擁有回傳值，loader 不保留狀態。
 // load 結束後沒有借用留在 loader 中。
 class RulesetLoader {
-public:
+    public:
     [[nodiscard]] static Ruleset load(const std::filesystem::path& data_directory);
 };
 

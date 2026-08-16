@@ -25,11 +25,11 @@ M0 的檔案量仍小，本節直接兼作 code map；長大後再依
 | `cmake/` | CTest 使用的 core 編譯命令隔離檢查 |
 | `core/base/` | 所有建置組態都生效的 core 不變式檢查 |
 | `core/time/` | 純 C++ Tick／Duration 與 360 天曆換算 |
-| `core/rules/`、`data/` | 不可變 Ruleset、TOML def 載入與四類基礎定義檔 |
+| `core/rules/`、`data/` | 不可變 Ruleset、TOML def 與資料驅動 biome 規則載入 |
 | `core/serialize/` | PortableBinary canonical zone 位元流、EnTT snapshot 與 `AllComponents` |
 | `core/zone/` | ZoneKey、Zone、記憶體／zstd 磁碟 store 與 ZoneManager 生命週期 |
 | `core/world/` | L1 `RegionTiles` SoA、四鄰接座標與雙邊一致 edge 寫入 |
-| `core/worldgen/` | 純 C++ Region 生成骨架、階段子種子、板塊／高度／侵蝕與唯一量化閘口 |
+| `core/worldgen/` | 純 C++ Region 七階段生成、階段子種子、唯一量化閘口與河流 edge 輸出 |
 | `core/api/` | core 對外 API；目前只有版本 |
 | `tests/time/` | 曆法邊界與往返 GoogleTest |
 | `tests/zone/` | ZoneKey、生命週期、兩種 store 共用契約、損毀拒讀與 round-trip 測試 |

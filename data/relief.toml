@@ -11,3 +11,10 @@ name_key = "relief.hills.name"
 move_cost = 2
 flags = 0
 visual = "relief/hills"
+
+[[defs]]
+id = "relief.mountain"
+name_key = "relief.mountain.name"
+move_cost = 4
+flags = 1
+visual = "relief/mountain"

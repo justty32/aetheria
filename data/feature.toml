@@ -12,3 +12,24 @@ move_cost = 2
 flags = 1
 visual = "feature/forest"
 required_terrain = "terrain.grassland"
+
+[[defs]]
+id = "feature.mine"
+name_key = "feature.mine.name"
+move_cost = 2
+flags = 2
+visual = "feature/mine"
+
+[[defs]]
+id = "feature.oasis"
+name_key = "feature.oasis.name"
+move_cost = 1
+flags = 4
+visual = "feature/oasis"
+
+[[defs]]
+id = "feature.landmark"
+name_key = "feature.landmark.name"
+move_cost = 1
+flags = 8
+visual = "feature/landmark"

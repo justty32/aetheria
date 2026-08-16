@@ -11,7 +11,8 @@
 namespace aetheria::rules {
 namespace {
 
-[[nodiscard]] const toml::array& read_defs(const std::filesystem::path& path) {
+[[nodiscard]] const toml::array& read_array(const std::filesystem::path& path,
+                                            std::string_view section) {
     static thread_local toml::table document;
     if (!std::filesystem::is_regular_file(path)) {
         throw std::runtime_error{"Ruleset 檔案不存在：" + path.string()};
@@ -22,11 +23,16 @@ namespace {
         throw std::runtime_error{"Ruleset TOML 格式錯誤：" + path.string() + "：" +
                                  std::string{error.description()}};
     }
-    const auto* defs = document["defs"].as_array();
-    if (defs == nullptr) {
-        throw std::runtime_error{"Ruleset 缺少 [[defs]] 區段：" + path.string()};
+    const auto* entries = document[section].as_array();
+    if (entries == nullptr) {
+        throw std::runtime_error{"Ruleset 缺少 [[" + std::string{section} + "]] 區段：" +
+                                 path.string()};
     }
-    return *defs;
+    return *entries;
+}
+
+[[nodiscard]] const toml::array& read_defs(const std::filesystem::path& path) {
+    return read_array(path, "defs");
 }
 
 [[nodiscard]] const toml::table& require_table(const toml::node& node,
@@ -69,6 +75,21 @@ namespace {
     return static_cast<std::int32_t>(value);
 }
 
+template <typename Value>
+[[nodiscard]] Value optional_bounded_integer(const toml::table& table, std::string_view field,
+                                             Value fallback, const std::filesystem::path& path) {
+    const auto value = table[field].value<std::int64_t>();
+    if (!value.has_value()) {
+        return fallback;
+    }
+    if (*value < static_cast<std::int64_t>(std::numeric_limits<Value>::min()) ||
+        *value > static_cast<std::int64_t>(std::numeric_limits<Value>::max())) {
+        throw std::runtime_error{"Ruleset 整數欄位超出範圍 " + std::string{field} + "：" +
+                                 path.string()};
+    }
+    return static_cast<Value>(*value);
+}
+
 template <typename Def>
 void read_common(const toml::table& table, const std::filesystem::path& path, Def& def) {
     def.id = require_string(table, "id", path);
@@ -79,8 +100,8 @@ void read_common(const toml::table& table, const std::filesystem::path& path, De
     }
     def.move_cost = static_cast<std::int32_t>(move_cost);
     const auto flags = require_integer(table, "flags", path);
-    if (flags < 0 || static_cast<std::uint64_t>(flags) >
-                         std::numeric_limits<std::uint32_t>::max()) {
+    if (flags < 0 ||
+        static_cast<std::uint64_t>(flags) > std::numeric_limits<std::uint32_t>::max()) {
         throw std::runtime_error{"Ruleset flags 超出 uint32：" + def.id};
     }
     def.flags = static_cast<std::uint32_t>(flags);
@@ -90,16 +111,15 @@ void read_common(const toml::table& table, const std::filesystem::path& path, De
 void register_global_id(std::set<std::string, std::less<>>& ids, const std::string& id,
                         std::string_view required_prefix) {
     if (!id.starts_with(required_prefix)) {
-        throw std::runtime_error{"Ruleset id 缺少類型前綴 " + std::string{required_prefix} +
-                                 "：" + id};
+        throw std::runtime_error{"Ruleset id 缺少類型前綴 " + std::string{required_prefix} + "：" +
+                                 id};
     }
     if (!ids.insert(id).second) {
         throw std::runtime_error{"Ruleset 全域 id 重複：" + id};
     }
 }
 
-template <typename Id, typename Def>
-[[nodiscard]] Id append_def(std::vector<Def>& defs, Def def) {
+template <typename Id, typename Def> [[nodiscard]] Id append_def(std::vector<Def>& defs, Def def) {
     if (defs.size() > std::numeric_limits<std::uint16_t>::max()) {
         throw std::runtime_error{"Ruleset 單一 def 類型超過 uint16 容量"};
     }
@@ -201,10 +221,58 @@ Ruleset RulesetLoader::load(const std::filesystem::path& data_directory) {
     for (const auto& [feature_index, terrain_string_id] : feature_terrain_references) {
         const auto terrain = result.find_terrain(terrain_string_id);
         if (!terrain.has_value()) {
-            throw std::runtime_error{"FeatureDef 引用不存在的 terrain id：" +
-                                     terrain_string_id};
+            throw std::runtime_error{"FeatureDef 引用不存在的 terrain id：" + terrain_string_id};
         }
         result.features_.at(feature_index).required_terrain = *terrain;
+    }
+
+    const auto biome_path = data_directory / "biomes.toml";
+    if (std::filesystem::is_regular_file(biome_path)) {
+        bool saw_fallback{};
+        for (const auto& node : read_array(biome_path, "rules")) {
+            const auto& table = require_table(node, biome_path);
+            if (saw_fallback) {
+                throw std::runtime_error{"Biome fallback 後不得再有規則：" + biome_path.string()};
+            }
+            BiomeRule rule;
+            rule.fallback = table["fallback"].value_or(false);
+            rule.min_temperature_tenths = optional_bounded_integer<std::int16_t>(
+                table, "min_temperature_tenths", rule.min_temperature_tenths, biome_path);
+            rule.max_temperature_tenths = optional_bounded_integer<std::int16_t>(
+                table, "max_temperature_tenths", rule.max_temperature_tenths, biome_path);
+            rule.min_moisture = optional_bounded_integer<std::uint16_t>(
+                table, "min_moisture", rule.min_moisture, biome_path);
+            rule.max_moisture = optional_bounded_integer<std::uint16_t>(
+                table, "max_moisture", rule.max_moisture, biome_path);
+            rule.min_elevation = optional_bounded_integer<std::uint16_t>(
+                table, "min_elevation", rule.min_elevation, biome_path);
+            rule.max_elevation = optional_bounded_integer<std::uint16_t>(
+                table, "max_elevation", rule.max_elevation, biome_path);
+            rule.min_ruggedness = optional_bounded_integer<std::uint16_t>(
+                table, "min_ruggedness", rule.min_ruggedness, biome_path);
+            rule.max_ruggedness = optional_bounded_integer<std::uint16_t>(
+                table, "max_ruggedness", rule.max_ruggedness, biome_path);
+            if (rule.min_temperature_tenths > rule.max_temperature_tenths ||
+                rule.min_moisture > rule.max_moisture || rule.min_elevation > rule.max_elevation ||
+                rule.min_ruggedness > rule.max_ruggedness) {
+                throw std::runtime_error{"BiomeRule 範圍上下界顛倒：" + biome_path.string()};
+            }
+            const auto terrain_string = require_string(table, "terrain", biome_path);
+            const auto relief_string = require_string(table, "relief", biome_path);
+            const auto terrain = result.find_terrain(terrain_string);
+            const auto relief = result.find_relief(relief_string);
+            if (!terrain.has_value() || !relief.has_value()) {
+                throw std::runtime_error{"BiomeRule 引用不存在的 def：terrain=" + terrain_string +
+                                         " relief=" + relief_string};
+            }
+            rule.terrain = *terrain;
+            rule.relief = *relief;
+            saw_fallback = rule.fallback;
+            result.biome_rules_.push_back(rule);
+        }
+        if (result.biome_rules_.empty() || !saw_fallback) {
+            throw std::runtime_error{"BiomeRule 最後一條必須是 fallback：" + biome_path.string()};
+        }
     }
     return result;
 }

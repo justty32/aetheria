@@ -15,14 +15,21 @@ namespace aetheria::worldgen {
 // 世界狀態擁有值，生成器只在呼叫期間借用。
 // 值本身永不失效；改動後必須明確重建骨架。
 struct RegionSlowVariables {
+    constexpr RegionSlowVariables(std::uint32_t value_region_id = 0,
+                                  std::uint32_t value_width = 128, std::uint32_t value_height = 96,
+                                  std::int16_t value_latitude_degrees = 35) noexcept
+        : region_id{value_region_id}, width{value_width}, height{value_height},
+          latitude_degrees{value_latitude_degrees} {}
+
     std::uint32_t region_id{};
     std::uint32_t width{128};
     std::uint32_t height{96};
+    std::int16_t latitude_degrees{35};
 };
 
 // RegionFastVariables 是 populate 專用的快變數入口。
 // 世界狀態擁有值，populate 只在呼叫期間借用。
-// M1.1 尚無欄位；型別刻意不會出現在 build_skeleton 簽章。
+// 目前尚無欄位；型別刻意不會出現在 build_skeleton 簽章。
 struct RegionFastVariables {};
 
 // PlateGenerationConfig 是板塊階段可調但不進世界狀態的參數。
@@ -109,12 +116,12 @@ struct GenerationParameterHashes {
     constexpr bool operator==(const GenerationParameterHashes&) const noexcept = default;
 };
 
-[[nodiscard]] GenerationParameterHashes generation_parameter_hashes(
-    const RegionGenerationConfig& config = {}) noexcept;
-[[nodiscard]] constexpr std::string_view generation_parameter_group_name(
-    std::size_t index) noexcept {
-    constexpr std::array names{"plates", "height", "erosion", "climate", "rivers", "biome",
-                               "features"};
+[[nodiscard]] GenerationParameterHashes
+generation_parameter_hashes(const RegionGenerationConfig& config = {}) noexcept;
+[[nodiscard]] constexpr std::string_view
+generation_parameter_group_name(std::size_t index) noexcept {
+    constexpr std::array names{"plates", "height", "erosion", "climate",
+                               "rivers", "biome",  "features"};
     return index < names.size() ? names[index] : "unknown";
 }
 
@@ -185,6 +192,50 @@ struct QuantizedElevation {
     std::uint16_t sea_level{};
 };
 
+// ClimateStageOutput 是固定點溫度、降水與緯度風帶的產物。
+// build_skeleton 的回傳值擁有它，不含任何浮點欄位。
+// 所屬回傳值析構或 vector 重配後其中參考失效。
+struct ClimateStageOutput {
+    std::uint32_t width{};
+    std::uint32_t height{};
+    std::vector<std::int16_t> temperature_tenths;
+    std::vector<std::uint16_t> moisture;
+    std::vector<std::int8_t> prevailing_wind_x;
+};
+
+// RiverStageOutput 是 priority-flood 流向、流量與河級的整數產物。
+// build_skeleton 的回傳值擁有它，不含任何浮點欄位。
+// 所屬回傳值析構或 vector 重配後其中參考失效。
+struct RiverStageOutput {
+    std::uint32_t width{};
+    std::uint32_t height{};
+    std::vector<std::uint16_t> filled_elevation;
+    std::vector<std::int32_t> downstream;
+    std::vector<std::uint32_t> flow;
+    std::vector<std::uint8_t> river_class;
+    std::vector<std::uint16_t> moisture;
+    std::vector<std::uint8_t> lake;
+};
+
+// BiomeStageOutput 是資料檔第一命中規則產生的 terrain／relief 下標。
+// build_skeleton 的回傳值擁有它。
+// 所屬回傳值析構或 vector 重配後其中參考失效。
+struct BiomeStageOutput {
+    std::uint32_t width{};
+    std::uint32_t height{};
+    std::vector<rules::TerrainId> terrain;
+    std::vector<rules::ReliefId> relief;
+};
+
+// FeatureStageOutput 是藍噪聲森林與礦脈、綠洲、地標的產物。
+// build_skeleton 的回傳值擁有它。
+// 所屬回傳值析構或 vector 重配後其中參考失效。
+struct FeatureStageOutput {
+    std::uint32_t width{};
+    std::uint32_t height{};
+    std::vector<rules::FeatureId> feature;
+};
+
 // RegionDefinitionIds 是生成器啟動時一次解析完成的 Ruleset 下標。
 // RegionSkeleton 擁有值，populate 只讀取複本。
 // 所屬 skeleton 析構後失效；跨 Ruleset 不可沿用。
@@ -193,7 +244,14 @@ struct RegionDefinitionIds {
     rules::TerrainId ocean;
     rules::ReliefId plain;
     rules::FeatureId no_feature;
+    rules::FeatureId forest;
+    rules::FeatureId mine;
+    rules::FeatureId oasis;
+    rules::FeatureId landmark;
     rules::EdgeId no_edge;
+    rules::EdgeId stream;
+    rules::EdgeId river;
+    rules::EdgeId great_river;
 };
 
 // RegionSkeleton 是只含已量化慢變地形的穩定 Region 骨架。
@@ -201,16 +259,24 @@ struct RegionDefinitionIds {
 // 所屬擁有者析構或欄位重配後其中參考失效。
 struct RegionSkeleton {
     QuantizedElevation elevation;
+    ClimateStageOutput climate;
+    RiverStageOutput rivers;
+    BiomeStageOutput biome;
+    FeatureStageOutput features;
     RegionDefinitionIds definitions;
 };
 
-// RegionBuildResult 同時帶穩定骨架與三階段除錯產物。
+// RegionBuildResult 同時帶穩定骨架與七階段除錯產物。
 // 呼叫端擁有整個回傳值。
 // 回傳值析構後所有 stage 與 skeleton 參考失效。
 struct RegionBuildResult {
     PlateStageOutput plates;
     HeightStageOutput height;
     ErosionStageOutput erosion;
+    ClimateStageOutput climate;
+    RiverStageOutput rivers;
+    BiomeStageOutput biome;
+    FeatureStageOutput features;
     RegionSkeleton skeleton;
 };
 
@@ -238,16 +304,39 @@ struct RegionBuildResult {
 // erosion 或回傳值析構後，各自內部參考失效，兩者互不借用。
 [[nodiscard]] QuantizedElevation quantize_elevation(const ErosionStageOutput& erosion);
 
+[[nodiscard]] ClimateStageOutput generate_climate(const RegionSlowVariables& slow,
+                                                  const QuantizedElevation& elevation,
+                                                  std::uint64_t stage_seed,
+                                                  const ClimateGenerationConfig& config);
+[[nodiscard]] RiverStageOutput generate_rivers(const QuantizedElevation& elevation,
+                                               const ClimateStageOutput& climate,
+                                               std::uint64_t stage_seed,
+                                               const RiverGenerationConfig& config);
+[[nodiscard]] BiomeStageOutput
+generate_biomes(const QuantizedElevation& elevation, const ClimateStageOutput& climate,
+                const RiverStageOutput& rivers, const rules::Ruleset& ruleset,
+                const RegionDefinitionIds& definitions, std::uint64_t stage_seed,
+                const BiomeGenerationConfig& config);
+[[nodiscard]] FeatureStageOutput
+generate_features(const PlateStageOutput& plates, const QuantizedElevation& elevation,
+                  const ClimateStageOutput& climate, const RiverStageOutput& rivers,
+                  const BiomeStageOutput& biome, const RegionDefinitionIds& definitions,
+                  std::uint64_t stage_seed, const FeatureGenerationConfig& config);
+
 [[nodiscard]] RegionBuildResult build_skeleton(const RegionSlowVariables& slow,
-                                                std::uint64_t world_seed,
-                                                const rules::Ruleset& ruleset,
-                                                const RegionGenerationConfig& config = {});
+                                               std::uint64_t world_seed,
+                                               const rules::Ruleset& ruleset,
+                                               const RegionGenerationConfig& config = {});
 [[nodiscard]] world::RegionTiles populate(const RegionSkeleton& skeleton,
                                           const RegionFastVariables& fast);
 
 [[nodiscard]] std::uint64_t hash_stage(const PlateStageOutput& stage) noexcept;
 [[nodiscard]] std::uint64_t hash_stage(const HeightStageOutput& stage) noexcept;
 [[nodiscard]] std::uint64_t hash_stage(const ErosionStageOutput& stage) noexcept;
+[[nodiscard]] std::uint64_t hash_stage(const ClimateStageOutput& stage) noexcept;
+[[nodiscard]] std::uint64_t hash_stage(const RiverStageOutput& stage) noexcept;
+[[nodiscard]] std::uint64_t hash_stage(const BiomeStageOutput& stage) noexcept;
+[[nodiscard]] std::uint64_t hash_stage(const FeatureStageOutput& stage) noexcept;
 [[nodiscard]] std::uint64_t hash_skeleton(const RegionSkeleton& skeleton) noexcept;
 [[nodiscard]] std::uint64_t hash_tiles(const world::RegionTiles& tiles) noexcept;
 [[nodiscard]] double land_fraction(const RegionSkeleton& skeleton) noexcept;
@@ -256,5 +345,9 @@ struct RegionBuildResult {
 [[nodiscard]] std::vector<std::uint8_t> grayscale(const PlateStageOutput& stage);
 [[nodiscard]] std::vector<std::uint8_t> grayscale(const HeightStageOutput& stage);
 [[nodiscard]] std::vector<std::uint8_t> grayscale(const ErosionStageOutput& stage);
+[[nodiscard]] std::vector<std::uint8_t> grayscale(const ClimateStageOutput& stage);
+[[nodiscard]] std::vector<std::uint8_t> grayscale(const RiverStageOutput& stage);
+[[nodiscard]] std::vector<std::uint8_t> grayscale(const BiomeStageOutput& stage);
+[[nodiscard]] std::vector<std::uint8_t> grayscale(const FeatureStageOutput& stage);
 
 }  // namespace aetheria::worldgen
