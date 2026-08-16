@@ -47,7 +47,7 @@ using aetheria::zone::ZoneManager;
 using aetheria::zone::ZoneMeta;
 using aetheria::zone::ZoneStore;
 
-static_assert(AllComponents::size == 1);
+static_assert(AllComponents::size == 6);
 static_assert(std::same_as<entt::type_list_element_t<0, AllComponents>, ZoneMeta>);
 
 class TemporaryDirectory {

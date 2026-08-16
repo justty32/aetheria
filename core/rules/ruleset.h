@@ -1,5 +1,6 @@
 #pragma once
 
+#include <array>
 #include <cstdint>
 #include <filesystem>
 #include <limits>
@@ -11,6 +12,10 @@
 #include <vector>
 
 namespace aetheria::rules {
+
+inline constexpr std::uint32_t kTerrainWaterFlag = UINT32_C(1) << 1U;
+inline constexpr std::uint32_t kEdgeRiverFlag = UINT32_C(1) << 1U;
+inline constexpr std::uint32_t kEdgeBridgeFlag = UINT32_C(1) << 2U;
 
 // TerrainId 是 Ruleset 中 TerrainDef 的強型別下標。
 // Ruleset 配發其值，tile 只保存值的複本。
@@ -129,6 +134,15 @@ struct BiomeRule {
     bool fallback{};
 };
 
+// MovementRules 是資料檔提供的四季整數移動倍率。
+// Ruleset 擁有值，移動與尋路系統只讀取複本。
+// Ruleset 析構後失效；numerator／denominator 皆以整數計算並向上取整。
+struct MovementRules {
+    std::array<std::uint16_t, 4> season_numerators{};
+    std::uint16_t season_denominator{};
+    bool loaded{};
+};
+
 class RulesetLoader;
 
 // Ruleset 是 TOML 載入後不可變的 def 集合與字串索引。
@@ -156,6 +170,7 @@ class Ruleset {
     [[nodiscard]] std::span<const FeatureDef> features() const noexcept { return features_; }
     [[nodiscard]] std::span<const EdgeDef> edges() const noexcept { return edges_; }
     [[nodiscard]] std::span<const BiomeRule> biome_rules() const noexcept { return biome_rules_; }
+    [[nodiscard]] const MovementRules& movement_rules() const noexcept { return movement_rules_; }
 
     private:
     friend class RulesetLoader;
@@ -166,6 +181,7 @@ class Ruleset {
     std::vector<FeatureDef> features_;
     std::vector<EdgeDef> edges_;
     std::vector<BiomeRule> biome_rules_;
+    MovementRules movement_rules_;
     std::map<std::string, TerrainId, std::less<>> terrain_index_;
     std::map<std::string, ReliefId, std::less<>> relief_index_;
     std::map<std::string, FeatureId, std::less<>> feature_index_;

@@ -1,7 +1,7 @@
 [[defs]]
 id = "edge.none"
 name_key = "edge.none.name"
-move_cost = 1
+move_cost = 0
 flags = 0
 visual = "edge/none"
 
@@ -32,3 +32,10 @@ name_key = "edge.great_river.name"
 move_cost = 4
 flags = 2
 visual = "edge/great_river"
+
+[[defs]]
+id = "edge.bridge"
+name_key = "edge.bridge.name"
+move_cost = 1
+flags = 6
+visual = "edge/bridge"

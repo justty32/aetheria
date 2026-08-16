@@ -91,12 +91,14 @@ template <typename Value>
 }
 
 template <typename Def>
-void read_common(const toml::table& table, const std::filesystem::path& path, Def& def) {
+void read_common(const toml::table& table, const std::filesystem::path& path, Def& def,
+                 bool allow_zero_move_cost = false) {
     def.id = require_string(table, "id", path);
     def.name_key = require_string(table, "name_key", path);
     const auto move_cost = require_integer(table, "move_cost", path);
-    if (move_cost < 1 || move_cost > std::numeric_limits<std::int32_t>::max()) {
-        throw std::runtime_error{"Ruleset move_cost 必須 >= 1：" + def.id};
+    if (move_cost < (allow_zero_move_cost ? 0 : 1) ||
+        move_cost > std::numeric_limits<std::int32_t>::max()) {
+        throw std::runtime_error{"Ruleset move_cost 超出允許範圍：" + def.id};
     }
     def.move_cost = static_cast<std::int32_t>(move_cost);
     const auto flags = require_integer(table, "flags", path);
@@ -198,7 +200,7 @@ Ruleset RulesetLoader::load(const std::filesystem::path& data_directory) {
     for (const auto& node : read_defs(feature_path)) {
         const auto& table = require_table(node, feature_path);
         FeatureDef def;
-        read_common(table, feature_path, def);
+        read_common(table, feature_path, def, true);
         const auto reference = table["required_terrain"].value<std::string>();
         register_global_id(global_ids, def.id, "feature.");
         const auto id = append_def<FeatureId>(result.features_, std::move(def));
@@ -212,7 +214,7 @@ Ruleset RulesetLoader::load(const std::filesystem::path& data_directory) {
     for (const auto& node : read_defs(edge_path)) {
         const auto& table = require_table(node, edge_path);
         EdgeDef def;
-        read_common(table, edge_path, def);
+        read_common(table, edge_path, def, true);
         register_global_id(global_ids, def.id, "edge.");
         const auto id = append_def<EdgeId>(result.edges_, std::move(def));
         result.edge_index_.emplace(result.edges_.back().id, id);
@@ -273,6 +275,33 @@ Ruleset RulesetLoader::load(const std::filesystem::path& data_directory) {
         if (result.biome_rules_.empty() || !saw_fallback) {
             throw std::runtime_error{"BiomeRule 最後一條必須是 fallback：" + biome_path.string()};
         }
+    }
+
+    const auto movement_path = data_directory / "movement.toml";
+    if (std::filesystem::is_regular_file(movement_path)) {
+        toml::table movement;
+        try {
+            movement = toml::parse_file(movement_path.string());
+        } catch (const toml::parse_error& error) {
+            throw std::runtime_error{"Ruleset TOML 格式錯誤：" + movement_path.string() + "：" +
+                                     std::string{error.description()}};
+        }
+        const auto* numerators = movement["season_numerators"].as_array();
+        const auto denominator = movement["season_denominator"].value<std::int64_t>();
+        if (numerators == nullptr || numerators->size() != 4 || !denominator.has_value() ||
+            *denominator <= 0 || *denominator > UINT16_MAX) {
+            throw std::runtime_error{"movement.toml 的四季倍率格式無效"};
+        }
+        for (std::size_t index = 0; index < numerators->size(); ++index) {
+            const auto numerator = (*numerators)[index].value<std::int64_t>();
+            if (!numerator.has_value() || *numerator <= 0 || *numerator > UINT16_MAX) {
+                throw std::runtime_error{"movement.toml 的四季倍率必須是正整數"};
+            }
+            result.movement_rules_.season_numerators[index] =
+                static_cast<std::uint16_t>(*numerator);
+        }
+        result.movement_rules_.season_denominator = static_cast<std::uint16_t>(*denominator);
+        result.movement_rules_.loaded = true;
     }
     return result;
 }

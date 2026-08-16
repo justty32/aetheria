@@ -1,7 +1,7 @@
 [[defs]]
 id = "feature.none"
 name_key = "feature.none.name"
-move_cost = 1
+move_cost = 0
 flags = 0
 visual = "feature/none"
 

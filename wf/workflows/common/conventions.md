@@ -26,14 +26,14 @@ M0 的檔案量仍小，本節直接兼作 code map；長大後再依
 | `core/base/` | 所有建置組態都生效的 core 不變式檢查 |
 | `core/time/` | 純 C++ Tick／Duration 與 360 天曆換算 |
 | `core/rules/`、`data/` | 不可變 Ruleset、TOML def 與資料驅動 biome 規則載入 |
-| `core/serialize/` | PortableBinary canonical zone 位元流、EnTT snapshot 與 `AllComponents` |
+| `core/serialize/` | PortableBinary zone 位元流、EnTT snapshot、`AllComponents` 與跨歷史正規化 hash |
 | `core/zone/` | ZoneKey、Zone、記憶體／zstd 磁碟 store 與 ZoneManager 生命週期 |
-| `core/world/` | L1 `RegionTiles` SoA、四鄰接座標與雙邊一致 edge 寫入 |
+| `core/world/` | L1 `RegionTiles` SoA、整數 MP／A*／旬回合與雙邊一致 edge 寫入 |
 | `core/worldgen/` | 純 C++ Region 七階段生成、階段子種子、唯一量化閘口與河流 edge 輸出 |
 | `core/api/` | core 對外 API；目前只有版本 |
 | `tests/time/` | 曆法邊界與往返 GoogleTest |
 | `tests/zone/` | ZoneKey、生命週期、兩種 store 共用契約、損毀拒讀與 round-trip 測試 |
-| `tests/rules/`、`tests/world/`、`tests/serialize/` | Ruleset fail-fast／id 重映射、SoA edge／記憶體與 EnTT 壓測 |
+| `tests/rules/`、`tests/world/`、`tests/serialize/` | Ruleset、移動／尋路／跨歷史 hash、SoA 與 EnTT 壓測 |
 | `tests/worldgen/` | Region 生成決定論、階段隔離、量化型別閘口、連通性與效能預算 |
 | `sim/` | 不需 Godot 的曆法與 zone 樹 CLI 探針 |
 | `bridge/` | `AetheriaCore` Node 與 GDExtension 註冊；唯一可 include godot-cpp 的自有目錄 |

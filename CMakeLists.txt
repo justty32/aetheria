@@ -28,12 +28,14 @@ endfunction()
 add_library(aetheria_core STATIC
     core/api/version.cpp
     core/rules/ruleset.cpp
+    core/serialize/normalized_state_hash.cpp
     core/time/tick.cpp
     core/serialize/zone_codec.cpp
     core/zone/file_zone_store.cpp
     core/zone/zone_manager.cpp
     core/zone/zone_store.cpp
     core/world/region_tiles.cpp
+    core/world/region_movement.cpp
     core/worldgen/region_generator.cpp
 )
 target_include_directories(aetheria_core PUBLIC "${PROJECT_SOURCE_DIR}")
@@ -47,6 +49,7 @@ add_executable(aetheria_tests
     tests/rules/ruleset_test.cpp
     tests/serialize/registry_codec_test.cpp
     tests/time/tick_test.cpp
+    tests/world/region_movement_test.cpp
     tests/world/region_tiles_test.cpp
     tests/worldgen/region_generator_test.cpp
     tests/zone/zone_store_test.cpp

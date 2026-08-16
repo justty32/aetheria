@@ -1,0 +1,3 @@
+# 四季倍率；MP 以半點為一個整數單位，乘除全程用整數並向上取整。
+season_numerators = [2, 2, 2, 3]
+season_denominator = 2
