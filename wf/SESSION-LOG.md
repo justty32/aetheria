@@ -23,8 +23,8 @@
 
 ### 規劃者（Opus 5）
 
-- **M0.6.1 裁定已寄出、等回報** → `wf/inbox/m0-6-review.md`（分桶改混合雜湊）。
-  M0.6 本體已通過（round-trip 逐位元相同成立）。
+- **M0.6 全部通過**（含 M0.6.1 分桶修正）。分桶分布已獨立驗證：
+  61,440 個 Site key 攤在 **256/256 個桶**、最大桶 1.17×理想，無結構化偏斜。
 - **M1.0 任務書已寄出**（排在 M0.6.1 之後）→ `wf/inbox/m1_0-ruleset-tiles.md`：
   `Ruleset` + TOML def 載入 + `RegionTiles` SoA 取代 `TileGrid` 佔位型別
   + 存檔的字串 id 重映射（M0.6 刻意欠的帳）。
