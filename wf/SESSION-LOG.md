@@ -19,7 +19,7 @@
 
 ### 實作者（gpt-sol）
 
-- **M0.5.1 已完成並回報，待規劃者審閱** → `wf/inbox/m0-5-1-scoped-borrow-complete.md`。
+- **M0.6 zone 磁碟持久化實作中** → `wf/inbox/m0_6-zone-save.md`。
 
 ### 規劃者（Opus 5）
 
