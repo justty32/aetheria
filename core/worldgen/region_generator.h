@@ -3,7 +3,10 @@
 #include "core/rules/ruleset.h"
 #include "core/world/region_tiles.h"
 
+#include <array>
+#include <cstddef>
 #include <cstdint>
+#include <string_view>
 #include <vector>
 
 namespace aetheria::worldgen {
@@ -47,14 +50,73 @@ struct ErosionGenerationConfig {
     double transfer_fraction{0.18};
 };
 
-// RegionGenerationConfig 將三階段參數分槽，避免後段參數污染前段。
+// ClimateGenerationConfig 是固定點氣候與線性雨影的參數。
+// 呼叫端擁有值，氣候階段只在呼叫期間借用。
+// 呼叫結束後即可失效。
+struct ClimateGenerationConfig {
+    std::uint16_t lapse_tenths_per_km{65};
+    std::uint16_t air_decay{1800};
+    std::uint16_t uplift_rain{24};
+};
+
+// RiverGenerationConfig 是河網分級與水氣回灌參數。
+// 呼叫端擁有值，河流階段只在呼叫期間借用。
+// 呼叫結束後即可失效。
+struct RiverGenerationConfig {
+    std::uint32_t stream_threshold{90000};
+    std::uint32_t river_threshold{180000};
+    std::uint32_t great_river_threshold{420000};
+    std::uint16_t moisture_bonus{9000};
+};
+
+// BiomeGenerationConfig 是資料表查詢前的可調整偏移。
+// 呼叫端擁有值，biome 階段只在呼叫期間借用。
+// 呼叫結束後即可失效。
+struct BiomeGenerationConfig {
+    std::int16_t temperature_bias_tenths{};
+    std::int16_t moisture_bias{};
+};
+
+// FeatureGenerationConfig 是藍噪聲地物散布的密度參數。
+// 呼叫端擁有值，地物階段只在呼叫期間借用。
+// 呼叫結束後即可失效。
+struct FeatureGenerationConfig {
+    std::uint16_t forest_density_scale{42000};
+    std::uint16_t mine_chance{9000};
+    std::uint16_t oasis_chance{5000};
+    std::uint16_t landmark_chance{180};
+};
+
+// RegionGenerationConfig 將七階段參數分槽，避免後段參數污染前段。
 // 呼叫端擁有值，各階段只借用自己的子設定。
 // 呼叫結束後即可失效。
 struct RegionGenerationConfig {
     PlateGenerationConfig plates;
     HeightGenerationConfig height;
     ErosionGenerationConfig erosion;
+    ClimateGenerationConfig climate;
+    RiverGenerationConfig rivers;
+    BiomeGenerationConfig biome;
+    FeatureGenerationConfig features;
 };
+
+// GenerationParameterHashes 是 manifest 固定的七階段參數身分。
+// SaveManifest 擁有值，FileZoneStore 與生成器只讀取複本。
+// 值本身永不失效；任一分組不同即不得載入既有世界。
+struct GenerationParameterHashes {
+    std::array<std::uint64_t, 7> groups{};
+
+    constexpr bool operator==(const GenerationParameterHashes&) const noexcept = default;
+};
+
+[[nodiscard]] GenerationParameterHashes generation_parameter_hashes(
+    const RegionGenerationConfig& config = {}) noexcept;
+[[nodiscard]] constexpr std::string_view generation_parameter_group_name(
+    std::size_t index) noexcept {
+    constexpr std::array names{"plates", "height", "erosion", "climate", "rivers", "biome",
+                               "features"};
+    return index < names.size() ? names[index] : "unknown";
+}
 
 // Plate 是一個 Voronoi 板塊的種子與慢變地質屬性。
 // PlateStageOutput 擁有所有實例。

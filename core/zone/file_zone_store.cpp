@@ -1,6 +1,7 @@
 #include "core/zone/file_zone_store.h"
 
 #include <cereal/archives/portable_binary.hpp>
+#include <cereal/types/array.hpp>
 
 #include <zstd.h>
 
@@ -98,7 +99,8 @@ void atomic_replace(const std::filesystem::path& path, std::string_view bytes) {
     const auto now = static_cast<std::int64_t>(manifest.now);
     archive(manifest.format_version, manifest.next_detached_id, manifest.next_entity_uid,
             manifest.dims.region_width, manifest.dims.region_height, manifest.dims.site_width,
-            manifest.dims.site_height, manifest.world_seed, now);
+            manifest.dims.site_height, manifest.world_seed, manifest.generation_parameters.groups,
+            now);
     if (!stream) {
         throw std::runtime_error{"manifest 序列化失敗"};
     }
@@ -112,7 +114,8 @@ void atomic_replace(const std::filesystem::path& path, std::string_view bytes) {
     cereal::PortableBinaryInputArchive archive{stream};
     archive(manifest.format_version, manifest.next_detached_id, manifest.next_entity_uid,
             manifest.dims.region_width, manifest.dims.region_height, manifest.dims.site_width,
-            manifest.dims.site_height, manifest.world_seed, now);
+            manifest.dims.site_height, manifest.world_seed, manifest.generation_parameters.groups,
+            now);
     manifest.now = time::Tick{now};
     if (stream.peek() != std::char_traits<char>::eof()) {
         throw std::runtime_error{"manifest 含未解析的尾端資料"};
@@ -149,10 +152,27 @@ void atomic_replace(const std::filesystem::path& path, std::string_view bytes) {
     return value ^ (value >> 31U);
 }
 
+void require_generation_parameters(
+    const worldgen::GenerationParameterHashes& actual,
+    const worldgen::GenerationParameterHashes& expected, std::string_view action) {
+    for (std::size_t index = 0; index < actual.groups.size(); ++index) {
+        if (actual.groups[index] != expected.groups[index]) {
+            throw std::runtime_error{
+                std::string{action} + " generation parameters 不符：group=" +
+                std::string{worldgen::generation_parameter_group_name(index)} +
+                " 檔內=" + std::to_string(actual.groups[index]) +
+                " 預期=" + std::to_string(expected.groups[index])};
+        }
+    }
+}
+
 }  // namespace
 
-FileZoneStore::FileZoneStore(std::filesystem::path slot_directory, const rules::Ruleset& ruleset)
-    : slot_directory_{std::move(slot_directory)}, ruleset_{ruleset} {
+FileZoneStore::FileZoneStore(
+    std::filesystem::path slot_directory, const rules::Ruleset& ruleset,
+    worldgen::GenerationParameterHashes expected_generation_parameters)
+    : slot_directory_{std::move(slot_directory)}, ruleset_{ruleset},
+      expected_generation_parameters_{expected_generation_parameters} {
     const auto path = manifest_path();
     std::error_code error;
     const bool has_manifest = std::filesystem::exists(path, error);
@@ -177,6 +197,8 @@ FileZoneStore::FileZoneStore(std::filesystem::path slot_directory, const rules::
             "manifest format_version 不符：檔內=" + std::to_string(manifest_->format_version) +
             " 預期=" + std::to_string(serialize::kSaveFormatVersion)};
     }
+    require_generation_parameters(manifest_->generation_parameters,
+                                  expected_generation_parameters_, "載入 manifest");
     if (!contains(kRootZone)) {
         throw std::runtime_error{"存檔有 manifest 但缺 root.bin：" + slot_directory_.string()};
     }
@@ -251,6 +273,8 @@ void FileZoneStore::write_manifest(const SaveManifest& manifest) {
     if (!contains(kRootZone)) {
         throw std::runtime_error{"寫 manifest 前必須先寫 root.bin"};
     }
+    require_generation_parameters(manifest.generation_parameters,
+                                  expected_generation_parameters_, "寫入 manifest");
     if (manifest_.has_value() && manifest.dims != manifest_->dims) {
         throw std::runtime_error{"既有存檔的 WorldDims 不可變更"};
     }

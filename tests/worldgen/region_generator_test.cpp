@@ -256,4 +256,20 @@ TEST(RegionGeneration, StageAndRegionSeedsAreIndependent) {
     EXPECT_NE(region_a, region_b);
 }
 
+TEST(RegionGeneration, ParameterHashesIdentifyTheChangedStageGroup) {
+    const RegionGenerationConfig original;
+    auto changed = original;
+    ++changed.biome.moisture_bias;
+    const auto before = aetheria::worldgen::generation_parameter_hashes(original);
+    const auto after = aetheria::worldgen::generation_parameter_hashes(changed);
+
+    for (std::size_t index = 0; index < before.groups.size(); ++index) {
+        if (index == 5) {
+            EXPECT_NE(before.groups[index], after.groups[index]);
+        } else {
+            EXPECT_EQ(before.groups[index], after.groups[index]);
+        }
+    }
+}
+
 }  // namespace

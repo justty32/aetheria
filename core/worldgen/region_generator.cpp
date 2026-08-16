@@ -312,6 +312,41 @@ std::uint64_t derive_region_stage_seed(std::uint64_t world_seed, std::uint32_t r
                       derive_region_seed(world_seed, region_id));
 }
 
+GenerationParameterHashes generation_parameter_hashes(
+    const RegionGenerationConfig& config) noexcept {
+    GenerationParameterHashes result;
+    auto begin_group = [] { return UINT64_C(14695981039346656037); };
+
+    result.groups[0] = begin_group();
+    hash_scalar(result.groups[0], config.plates.min_count);
+    hash_scalar(result.groups[0], config.plates.max_count);
+    result.groups[1] = begin_group();
+    hash_scalar(result.groups[1], config.height.noise_octaves);
+    hash_scalar(result.groups[1], config.height.target_land_percent);
+    result.groups[2] = begin_group();
+    hash_scalar(result.groups[2], config.erosion.iterations);
+    hash_double(result.groups[2], config.erosion.talus);
+    hash_double(result.groups[2], config.erosion.transfer_fraction);
+    result.groups[3] = begin_group();
+    hash_scalar(result.groups[3], config.climate.lapse_tenths_per_km);
+    hash_scalar(result.groups[3], config.climate.air_decay);
+    hash_scalar(result.groups[3], config.climate.uplift_rain);
+    result.groups[4] = begin_group();
+    hash_scalar(result.groups[4], config.rivers.stream_threshold);
+    hash_scalar(result.groups[4], config.rivers.river_threshold);
+    hash_scalar(result.groups[4], config.rivers.great_river_threshold);
+    hash_scalar(result.groups[4], config.rivers.moisture_bonus);
+    result.groups[5] = begin_group();
+    hash_scalar(result.groups[5], config.biome.temperature_bias_tenths);
+    hash_scalar(result.groups[5], config.biome.moisture_bias);
+    result.groups[6] = begin_group();
+    hash_scalar(result.groups[6], config.features.forest_density_scale);
+    hash_scalar(result.groups[6], config.features.mine_chance);
+    hash_scalar(result.groups[6], config.features.oasis_chance);
+    hash_scalar(result.groups[6], config.features.landmark_chance);
+    return result;
+}
+
 PlateStageOutput generate_plates(const RegionSlowVariables& slow, std::uint64_t stage_seed,
                                  const PlateGenerationConfig& config) {
     const auto count = checked_count(slow.width, slow.height);

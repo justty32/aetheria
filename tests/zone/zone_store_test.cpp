@@ -5,6 +5,7 @@
 #include "tests/support/ruleset_fixture.h"
 
 #include <cereal/archives/portable_binary.hpp>
+#include <cereal/types/array.hpp>
 
 #include <zstd.h>
 
@@ -186,7 +187,8 @@ void write_raw_manifest(const std::filesystem::path& path, const SaveManifest& m
     const auto now = static_cast<std::int64_t>(manifest.now);
     archive(manifest.format_version, manifest.next_detached_id, manifest.next_entity_uid,
             manifest.dims.region_width, manifest.dims.region_height, manifest.dims.site_width,
-            manifest.dims.site_height, manifest.world_seed, now);
+            manifest.dims.site_height, manifest.world_seed, manifest.generation_parameters.groups,
+            now);
     write_file(path, std::move(stream).str());
 }
 
@@ -410,7 +412,27 @@ TEST(FileZoneStore, RejectsManifestFormatVersionMismatch) {
 
     EXPECT_THROW(static_cast<void>(FileZoneStore{directory.path(), test_ruleset()}),
                  std::runtime_error);
-    EXPECT_EQ(read_file(directory.path() / "manifest.bin").size(), 53U);
+    EXPECT_EQ(read_file(directory.path() / "manifest.bin").size(), 109U);
+}
+
+TEST(FileZoneStore, RejectsGenerationParameterGroupMismatchByName) {
+    TemporaryDirectory directory;
+    {
+        FileZoneStore store{directory.path(), test_ruleset()};
+        ZoneManager manager{store};
+        manager.save_all();
+        store.write_manifest(SaveManifest{});
+    }
+    aetheria::worldgen::RegionGenerationConfig changed;
+    ++changed.erosion.iterations;
+
+    try {
+        static_cast<void>(FileZoneStore{directory.path(), test_ruleset(),
+                                        aetheria::worldgen::generation_parameter_hashes(changed)});
+        FAIL() << "generation parameter mismatch should throw";
+    } catch (const std::runtime_error& error) {
+        EXPECT_NE(std::string{error.what()}.find("erosion"), std::string::npos);
+    }
 }
 
 TEST(FileZoneStore, RequiresRootWhenManifestExists) {

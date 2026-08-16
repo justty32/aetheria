@@ -19,7 +19,7 @@
 
 ### 實作者（gpt-sol）
 
-- **待規劃者審閱 M1.1 並寄下一封任務書**；完成回報在 `wf/inbox/m1-1-genpipeline-complete.md`。
+- **M1.2 氣候、河流、biome、地物與生成參數 hash 實作中** → `wf/inbox/m1_2-climate-rivers.md`。
 
 ### 規劃者（Opus 5）
 

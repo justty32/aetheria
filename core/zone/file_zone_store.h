@@ -1,6 +1,7 @@
 #pragma once
 
 #include "core/serialize/zone_codec.h"
+#include "core/worldgen/region_generator.h"
 #include "core/zone/zone_store.h"
 
 #include <cstdint>
@@ -30,6 +31,8 @@ struct SaveManifest {
     std::uint64_t next_entity_uid{1};
     WorldDims dims{};
     std::uint64_t world_seed{};
+    worldgen::GenerationParameterHashes generation_parameters{
+        worldgen::generation_parameter_hashes()};
     time::Tick now{};
 
     constexpr bool operator==(const SaveManifest&) const noexcept = default;
@@ -40,7 +43,9 @@ struct SaveManifest {
 // 實例析構不刪檔；slot 目錄持續保有最後一次原子寫入的狀態。
 class FileZoneStore final : public ZoneStore {
 public:
-    FileZoneStore(std::filesystem::path slot_directory, const rules::Ruleset& ruleset);
+    FileZoneStore(std::filesystem::path slot_directory, const rules::Ruleset& ruleset,
+                  worldgen::GenerationParameterHashes expected_generation_parameters =
+                      worldgen::generation_parameter_hashes());
 
     [[nodiscard]] bool contains(ZoneKey key) const override;
     [[nodiscard]] std::unique_ptr<Zone> load(ZoneKey key) const override;
@@ -55,6 +60,7 @@ public:
 private:
     std::filesystem::path slot_directory_;
     const rules::Ruleset& ruleset_;
+    worldgen::GenerationParameterHashes expected_generation_parameters_;
     std::optional<SaveManifest> manifest_;
 };
 
