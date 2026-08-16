@@ -32,7 +32,7 @@ core 用 `std::` 與自訂 POD 型別，轉換一律在 bridge 做。**這條沒
 | 模組 | 職責 |
 |---|---|
 | `core/time/` | 全局時鐘（`Tick` = 秒）、曆法換算、各層可變 stride 的回合排程 |
-| `core/zone/` | `Zone`／`ZoneManager`、`ZoneKey` 定址、載入卸載 → [zone-model.md](zone-model.md) |
+| `core/zone/` | `Zone`／`ZoneManager`、`ZoneKey` 定址、載入卸載 → [zone-model.md](zone-model.md) 與 [zone-addressing.md](zone-addressing.md) |
 | `core/world/` | 世界圖、Region／Site／Local 各層的資料模型與 system（掛在 zone 上跑） |
 | `core/gen/` | 程序生成：世界、Region 地形、Site 佈局、Local 佈局 |
 | `core/path/` | 尋路：tile A*、region graph 上的 Dijkstra、分層尋路 |

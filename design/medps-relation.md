@@ -41,7 +41,7 @@ medps 的自我定位是「奇幻版太閣立志傳 × 騎馬與砍殺 × 上古
 
 | 題目 | medps | aetheria | 理由 |
 |---|---|---|---|
-| **zone 定址** | 零語意 `uint64_t` 單調序號 + `parent` 鏈；「child 在 parent 哪一格」（ChildLink/anchor）**defer 未實作** | **已定案：混合方案**——空間 zone 的 `ZoneKey` 由 `(level, region_id, x, y)` 推導，非空間 zone 用序號。見 [zone-model.md](zone-model.md) | aetheria 的巢狀是嚴格且稠密的（每個 tile 恰好對應一個下層 zone），座標推導讓 ChildLink 這整題**免費消失**，也讓 [interface-world-mid.md](interface-world-mid.md) 的投影天然可定址。medps 放棄它的理由是「ToME 短名定址無座標語意也活得很好」，但那是在 ChildLink 尚未落地時說的 |
+| **zone 定址** | 零語意 `uint64_t` 單調序號 + `parent` 鏈；「child 在 parent 哪一格」（ChildLink/anchor）**defer 未實作** | **已定案：混合方案**——空間 zone 的 `ZoneKey` 由 `(level, region_id, x, y)` 推導，非空間 zone 用序號。見 [zone-addressing.md](zone-addressing.md) | aetheria 的巢狀是嚴格且稠密的（每個 tile 恰好對應一個下層 zone），座標推導讓 ChildLink 這整題**免費消失**，也讓 [interface-world-mid.md](interface-world-mid.md) 的投影天然可定址。medps 放棄它的理由是「ToME 短名定址無座標語意也活得很好」，但那是在 ChildLink 尚未落地時說的 |
 | **卸載策略** | LRU + `pinned` | **場強 + `pinned`**（機制照抄，把 `last_touch` 換成 observer 分數） | 逐出「最不重要的」比逐出「最久沒碰的」更貼合玩法，見 [observer.md](observer.md) |
 | **離線補算** | defer（被逐出的 zone 就是凍結） | **核心機制之一**，見 [interface-lifecycle.md](interface-lifecycle.md) | aetheria 的中層生命週期是設計前提，不是延後項 |
 | **模擬 LOD** | 另案未動（tome4 §2-G 能量制） | **三條軸都做**：空間（observer）+ 實體（significance）+ 事件（event scaling） | 這是 aetheria 的核心玩法機制，不是最佳化 |
@@ -80,9 +80,9 @@ M0 開工前必須逐條完成。每條的判準是「aetheria 有一份文件�
 | 8 | 三條執行期契約（tick 重入禁令、單槽活儲存、`Zone*` 不跨 tick） | [zone-model.md](zone-model.md) | ✅ 繼承 |
 | 9 | fail-fast 套件（load 驗 id、manifest 原子寫、destroy 刪檔） | [zone-save.md](zone-save.md) | ✅ 繼承，**再加 `require`／`load` 分流**（medps 把這題 defer 了） |
 | 10 | 序列化選型（cereal + EnTT snapshot、`AllComponents` 單一清單） | [zone-save.md](zone-save.md) | ✅ 繼承，含 `orphans()` 陷阱的對策 |
-| 11 | zone 定址：零語意序號 vs 座標推導 | [zone-model.md](zone-model.md) | ✅ **已定案：混合方案** |
+| 11 | zone 定址：零語意序號 vs 座標推導 | [zone-addressing.md](zone-addressing.md) | ✅ **已定案：混合方案** |
 
-**清單已全數完成。** 兩處刻意不同，理由寫在 [zone-model.md](zone-model.md)：
+**清單已全數完成。** 兩處刻意不同，理由寫在 [zone-addressing.md](zone-addressing.md)：
 
 - **定址走座標推導**（Detached zone 才用序號）。收益是 medps defer 掉的
   ChildLink／anchor 整題免費消失，且投影與接邊的規範化 id 直接可算。

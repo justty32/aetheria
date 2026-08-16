@@ -33,7 +33,7 @@ struct RegionTiles {
 
 **沒有「Site 的 id」這種欄位。** Site 的身分就是它的 `ZoneKey`，
 由 `(region_id, x, y)` **推導**而得——這正是座標定址方案要消滅的東西
-（見 [zone-model.md](zone-model.md)）。這裡存的是狀態，不是身分：
+（見 [zone-addressing.md](zone-addressing.md)）。這裡存的是狀態，不是身分：
 
 ```cpp
 struct SiteState {

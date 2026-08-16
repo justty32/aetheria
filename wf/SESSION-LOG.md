@@ -16,9 +16,11 @@
   等 gpt-sol 實作者接手。M0 已提交（`ab38ce1`）。
 - ⚠ **M0 的三個守衛還不是真的**：核心隔離的 CMake 檢查只守它上面的行、
   `to_date` 對超域 Tick 靜默溢位、`AETH_CHECK` 尚未建立。修法在 M0.1 任務書。
-- **M0.5（Zone／ZoneManager）任務書還沒寫**，要等 M0.1 驗收。前置：
-  [design/zone-model.md](../design/zone-model.md) 已 8,159 bytes（上限 8 KB 只剩 33），
-  **寫 M0.5 之前得先拆它**。[design/outline.md](../design/outline.md) 同樣逼近上限。
+- **M0.5 任務書已寄出** → `wf/inbox/m0_5-zone.md`（排在 M0.1 之後做）。
+  刻意不含磁碟存檔——持久化抽成介面，真格式留給 **M0.6**（`design/zone-save.md`，任務書未寫）。
+- ⚠ **三份設計文件貼著 8 KB 上限**：`medps-relation.md` 8,185（只剩 7 bytes）、
+  `interface-lifecycle.md` 8,156、`outline.md` 8,138。**下次要動它們就得先拆**，
+  拆法照 zone-model → zone-model + zone-addressing 的前例（保留主檔名，切出自足子題）。
 - ⚠ **已知設計缺口**：同層近距離事件的快速路徑（兩個參與者分屬相鄰 Local zone 的戰鬥），
   `events.md` 沒寫清楚，刻意留到實作撞到再補——現在硬定形狀很可能定錯。
   記在 [lowmap-streaming.md](../design/lowmap-streaming.md) 末段。

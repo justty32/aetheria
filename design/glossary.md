@@ -32,7 +32,7 @@
 
 | 型別 | 是什麼 | 範圍 |
 |---|---|---|
-| `ZoneKey` | **zone 的位址**。座標推導，見 [zone-model.md](zone-model.md) | uint64 |
+| `ZoneKey` | **zone 的位址**。座標推導，見 [zone-addressing.md](zone-addressing.md) | uint64 |
 | `RegionXY` | Region 內的格位 | 128×96 |
 | `SiteXY` | Site 內的格位 | 64×64 |
 | `LocalXY` | Local 內的格位 | 64×64 |

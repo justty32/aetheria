@@ -82,7 +82,7 @@ struct UniqueRecord {
 - 它在跨 zone 未載入時仍然有意義
 - 它容許粗略（只知道「在北方某處」也是合法的定位）
 
-但它必須能**解析回實際的 zone key**（見 [zone-model.md](zone-model.md) 的定址），
+但它必須能**解析回實際的 zone key**（見 [zone-addressing.md](zone-addressing.md) 的定址），
 否則玩家點下去無法前往。所以 `Locator` 同時帶一個可選的精確 `ZoneKey`——
 知道就填，不知道就留空並只顯示粗略描述。
 

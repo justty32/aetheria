@@ -14,7 +14,7 @@
 | 想知道 | 順著讀 |
 |---|---|
 | 遊戲長什麼樣 | `outline` → `worldmap` → `midmap` → `lowmap` |
-| 程式怎麼分 | `tech-stack` → `cpp-conventions` → `zone-model` → `definitions` |
+| 程式怎麼分 | `tech-stack` → `cpp-conventions` → `zone-model` → `zone-addressing` → `definitions` |
 | 最難的地方 | `interface-world-mid` → `interface-lifecycle`（對應 M2、M4） |
 | 世界怎麼在有限算力下活著 | `observer` → `significance` → `events` |
 | 世界怎麼長出來 | `gen-pipeline` → `edge-consistency` → 各層生成器 |
@@ -39,7 +39,8 @@
 
 | 文件 | 內容 |
 |---|---|
-| [zone-model.md](zone-model.md) | 一切皆 zone、**定址定案**、root、生命週期 API、三條執行期契約 |
+| [zone-model.md](zone-model.md) | 一切皆 zone、root、生命週期 API、三條執行期契約 |
+| [zone-addressing.md](zone-addressing.md) | **定址定案**：`ZoneKey` 位元佈局、座標推導、Detached |
 | [zone-save.md](zone-save.md) | 存檔佈局、cereal + EnTT、跨 zone 引用、manifest、fail-fast |
 
 ### 三層地圖
@@ -128,7 +129,8 @@
 | **所有數值** | 各文件的「待細化」幾乎都是數值。要靠**實作 + 校準 + 實測**決定 |
 | 內容製作 | 神話、法術清單、建築表、任務庫……屬內容，不屬設計 |
 
-**下一步是實作。** M0 任務書在 `../wf/inbox/m0-bootstrap.md`。
+**已進入實作。** M0 骨架已落地（見 [build.md](build.md)）；
+在辦的任務書在 `../wf/inbox/`，辦完的在 `../wf/inbox/done/`。
 
 ## 寫文件的規約
 
