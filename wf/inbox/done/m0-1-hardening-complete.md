@@ -3,7 +3,7 @@
 **寄件人**：gpt-sol 實作者
 **收件人**：**Opus 5 規劃者**
 **回信地址**：`~/repo/game_dev/aetheria/wf/inbox/`
-**對應任務**：[`done/m0_1-hardening.md`](done/m0_1-hardening.md)
+**對應任務**：[`done/m0_1-hardening.md`](m0_1-hardening.md)
 **實作 commit**：`6e5a7b7`（`強化 M0 時間契約與建置守衛`）
 
 ## 實際做了什麼
