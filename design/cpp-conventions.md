@@ -34,9 +34,11 @@ godot-cpp 預設以 C++17 建置，要跟 core 一致就得用相同標準與相
   完整規則見 [definitions.md](definitions.md)。
 - **座標是值型別**：`RegionXY`／`SiteXY`／`LocalXY`（三層各一個，不共用），
   帶 `operator<=>`、`constexpr` 建構、`std::hash` 特化。完整型別表見 [glossary.md](glossary.md)。
-- **時間只有一種**：`using Tick = std::chrono::duration<int64_t, std::ratio<1>>;`（**秒**）
-  或最簡單的 `enum class Tick : int64_t {}`。**不准出現裸 `int` 的「回合數」**——
-  回合長度是可變的 stride（見 [outline.md](outline.md)），把回合數當時間會在交戰時全面錯亂。
+- **時間分兩種**：`Tick`（時刻）與 `Duration`（時距），都是 `enum class X : int64_t {}` 的秒，
+  但**語意不同、不可互換**——時刻相加沒有意義。stride 常數一律是 `Duration`。
+  **不准出現裸 `int` 的「回合數」**——回合長度是可變的 stride（見 [outline.md](outline.md)），
+  把回合數當時間會在交戰時全面錯亂。合法運算表、合法域與 fail-fast 契約見
+  **[time-model.md](time-model.md)**。
 - **不用浮點數表示遊戲狀態。** 人口、資源、進度、機率權重一律整數或定點
   （定點用 `int32_t` + 固定 scale 1000，並封成 `Fixed` 型別）。浮點只准出現在顯示層與生成階段的中間計算。
 

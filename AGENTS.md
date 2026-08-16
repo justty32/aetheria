@@ -45,7 +45,7 @@ AGENTS.md（本檔，最頂）→ wf/WORKFLOWS.md / wf/INDEX.md → 各工作流
 - **文件語言**：繁體中文。
 - **設計文件**在 `design/`，索引是 [design/README.md](design/README.md)。
 - **架構鐵律**：核心 C++ 邏輯不得依賴 godot-cpp（純 C++ 可獨立編譯與測試）；Godot 端不得持有玩法狀態，只做顯示／美術／音效／UI／輸入轉發。
-- **git**：`~/repo/game_dev/` 本身不是 git repo，但 aetheria 之後預期會是獨立 git repo；目前尚未 `git init`，**不要主動 `git init` 或 commit**。
+- **git**：`~/repo/game_dev/` 本身不是 git repo，aetheria 是獨立 git repo（分支 `main`，尚無 remote）。`third_party/godot-cpp` 是 submodule，clone 後要 `git submodule update --init --recursive`。commit 到 `main` 是慣例；**push 一律先確認**。
 - **參考專案**：`~/repo/game_dev/my_godot_assists`（Godot 可複用元件與外部專案分析）、`~/repo/game_dev/my-rpg-frontend`（既有 Godot + GDExtension 專案佈局範例）、`~/repo/moddings/tome4`（下層地圖的 zone／生命週期參考）。
 
 ## 專案現況

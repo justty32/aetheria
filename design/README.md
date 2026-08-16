@@ -31,6 +31,7 @@
 | [glossary.md](glossary.md) | 術語仲裁 |
 | [tech-stack.md](tech-stack.md) | `core`/`bridge`/`godot` 三層、跨語言契約、測試、決定論 |
 | [cpp-conventions.md](cpp-conventions.md) | C++23、型別與介面約定、vcpkg、建置目標 |
+| [time-model.md](time-model.md) | **時刻 vs 時距**、合法運算表、合法域與 `AETH_CHECK`、曆法精度界線 |
 | [build.md](build.md) | M0 實際工具鏈、建置／驗證指令、版本固定與踩坑 |
 | [medps-relation.md](medps-relation.md) | 11 條繼承核對清單（已完成）、兩處刻意不同 |
 
