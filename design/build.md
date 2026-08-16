@@ -77,7 +77,10 @@ Godot 專案固定使用 `gl_compatibility` renderer；M0 的 headless 探針與
 - godot-cpp 已由 submodule gitlink 固定 commit；CMake 也核對 checkout HEAD。
 - 編譯器與 Godot 屬外部工具鏈，版本應由 CI image 或開發環境文件固定。
 
-<!-- M0.1 commit 後在乾淨 clone 重跑，將實測結果補在這裡。 -->
+M0.1 已從本地 `main` 執行 `git clone` 到 `/tmp` 的全新目錄，再依本頁指令初始化 submodule
+並建置。gitlink checkout 為 `d7b6162…`，全量 1,103 步建置完成，CTest 7/7 通過，sim 輸出
+與原工作樹一致。乾淨 Godot 專案的第一次 editor 掃描重現已知 exit 139；原樣第二次為 0，
+主場景也為 0。因此 gitlink、依賴取得、四個 target 與執行期載入均已經過真正 clean-clone 驗證。
 
 ## 實際踩坑
 

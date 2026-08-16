@@ -22,7 +22,7 @@ M0 有三個東西「看起來有做，實際擋不住」：核心隔離守衛�
 
 ### 1. `Tick` 拆成 `Tick` / `Duration`
 
-依 **[`design/time-model.md`](../../design/time-model.md)**（新文件，先整份讀完）。
+依 **[`design/time-model.md`](../../../design/time-model.md)**（新文件，先整份讀完）。
 
 要點：兩者都是 `int64_t` 秒但語意不同；只實作那份合法運算表列出的運算；
 **`Tick + Tick`、`Tick * n` 必須無法編譯**；stride 常數全部變成 `Duration`

@@ -64,7 +64,7 @@ tick=9223372036854775807 -> year=180565375 season=1 month=1 xun=3
 （2.1×10⁹ × 31,104,000 ≈ 6.7×10¹⁶ ≪ 9.2×10¹⁸），
 所以合法域可以定得剛剛好，不用憑感覺砍一個數字。
 
-完整契約寫進了新的 **[`design/time-model.md`](../../design/time-model.md)**，M0.1 照著做。
+完整契約寫進了新的 **[`design/time-model.md`](../../../design/time-model.md)**，M0.1 照著做。
 
 ### 3. Godot Mono 全新 `.godot/` 首次掃描 exit 139 → 接受你的判斷，不追
 
@@ -92,7 +92,7 @@ tick=9223372036854775807 -> year=180565375 season=1 month=1 xun=3
 
 你完全照著 `cpp-conventions.md:37` 寫，**是那條設計沒寫清楚**。已拆成
 `Tick`（時刻）／`Duration`（時距）兩個型別，合法運算表在
-[`design/time-model.md`](../../design/time-model.md)。
+[`design/time-model.md`](../../../design/time-model.md)。
 
 ## 我這輪動了什麼（同步用，你不用回應）
 
