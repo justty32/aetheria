@@ -279,6 +279,8 @@ TEST(RegionGeneration, SameSeedIsBitIdenticalAcrossEveryStageAndWorldField) {
     EXPECT_EQ(hash_stage(first.rivers), hash_stage(second.rivers));
     EXPECT_EQ(hash_stage(first.biome), hash_stage(second.biome));
     EXPECT_EQ(hash_stage(first.features), hash_stage(second.features));
+    EXPECT_EQ(hash_stage(first.cities), hash_stage(second.cities));
+    EXPECT_EQ(hash_stage(first.roads), hash_stage(second.roads));
     EXPECT_EQ(hash_skeleton(first.skeleton), hash_skeleton(second.skeleton));
     EXPECT_EQ(hash_tiles(first_tiles), hash_tiles(second_tiles));
 }
@@ -355,6 +357,8 @@ TEST(RegionGeneration, EveryStageHasAFullSizeVisualization) {
     EXPECT_EQ(grayscale(result.rivers).size(), expected);
     EXPECT_EQ(grayscale(result.biome).size(), expected);
     EXPECT_EQ(grayscale(result.features).size(), expected);
+    EXPECT_EQ(grayscale(result.cities).size(), expected);
+    EXPECT_EQ(grayscale(result.roads).size(), expected);
 }
 
 TEST(RegionGeneration, EveryRiverPathTerminatesAtSeaOrLakeAndEdgesAreSymmetric) {

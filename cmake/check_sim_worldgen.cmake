@@ -16,7 +16,7 @@ if(NOT region_result EQUAL 0)
 endif()
 
 foreach(stage IN ITEMS 01-plates.pgm 02-height.pgm 03-erosion.pgm 04-climate.pgm 05-rivers.pgm
-                       06-biome.pgm 07-features.pgm)
+                       06-biome.pgm 07-features.pgm 08-cities.pgm 09-roads.pgm)
     set(stage_path "${TEST_DIR}/${stage}")
     if(NOT EXISTS "${stage_path}")
         message(FATAL_ERROR "缺少 stage dump：${stage_path}")

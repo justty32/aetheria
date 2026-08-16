@@ -19,7 +19,8 @@
 
 ### 實作者（gpt-sol）
 
-- （無）
+- **M1.4 城市選址、canonical 道路、環路與複合渡河 edge 實作中** →
+  `wf/inbox/m1_4-cities-roads.md`。
 
 ### 規劃者（Opus 5）
 

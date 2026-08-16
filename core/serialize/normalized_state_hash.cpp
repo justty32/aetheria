@@ -115,6 +115,7 @@ std::uint64_t normalized_state_hash(const zone::Zone& zone, const rules::Ruleset
             for (const auto owner : tiles.owner) {
                 hash_scalar(hash, owner);
             }
+            hash_numeric_vector(hash, tiles.settlement);
             hash_scalar(hash, static_cast<std::uint64_t>(tiles.site.size()));
             for (const auto& site : tiles.site) {
                 hash_scalar(hash, static_cast<std::uint8_t>(site.ever_realized));

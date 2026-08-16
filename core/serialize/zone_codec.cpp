@@ -7,6 +7,7 @@
 #include <cereal/types/string.hpp>
 #include <cereal/types/vector.hpp>
 
+#include <algorithm>
 #include <cstddef>
 #include <limits>
 #include <sstream>
@@ -102,6 +103,11 @@ std::string encode_zone(const zone::Zone& value, const rules::Ruleset& ruleset) 
             validate_ids<rules::ReliefId>(tiles.relief, ruleset.reliefs().size(), "ReliefId");
             validate_ids<rules::FeatureId>(tiles.feature, ruleset.features().size(), "FeatureId");
             validate_ids<rules::EdgeId>(tiles.edges, ruleset.edges().size(), "EdgeId");
+            if (std::ranges::any_of(tiles.settlement, [](world::SettlementTier tier) {
+                    return tier > world::SettlementTier::City;
+                })) {
+                throw std::runtime_error{"zone RegionTiles 含無效 SettlementTier"};
+            }
         }
     }
     std::ostringstream stream{std::ios::binary};
@@ -129,7 +135,7 @@ std::string encode_zone(const zone::Zone& value, const rules::Ruleset& ruleset) 
                 }
                 archive(z, tiles.width, tiles.height, tiles.base, tiles.relief, tiles.feature,
                         tiles.temperature, tiles.moisture, tiles.elevation, tiles.edges,
-                        tiles.owner, ever_realized);
+                        tiles.owner, tiles.settlement, ever_realized);
             }
         }
     }
@@ -199,7 +205,7 @@ std::unique_ptr<zone::Zone> decode_zone(std::string_view bytes, const rules::Rul
                 std::vector<std::uint8_t> ever_realized;
                 archive(z, tiles.width, tiles.height, tiles.base, tiles.relief, tiles.feature,
                         tiles.temperature, tiles.moisture, tiles.elevation, tiles.edges,
-                        tiles.owner, ever_realized);
+                        tiles.owner, tiles.settlement, ever_realized);
                 const auto count64 = static_cast<std::uint64_t>(tiles.width) * tiles.height;
                 if (tiles.width == 0 || tiles.height == 0 ||
                     count64 > std::numeric_limits<std::size_t>::max() / 4U) {
@@ -208,6 +214,11 @@ std::unique_ptr<zone::Zone> decode_zone(std::string_view bytes, const rules::Rul
                 tiles.site.resize(static_cast<std::size_t>(count64));
                 if (!tiles.valid_layout() || ever_realized.size() != tiles.tile_count()) {
                     throw std::runtime_error{"zone RegionTiles 欄位尺寸不一致"};
+                }
+                if (std::ranges::any_of(tiles.settlement, [](world::SettlementTier tier) {
+                        return tier > world::SettlementTier::City;
+                    })) {
+                    throw std::runtime_error{"zone RegionTiles 含無效 SettlementTier"};
                 }
                 for (std::size_t index = 0; index < tiles.site.size(); ++index) {
                     if (ever_realized[index] > 1) {

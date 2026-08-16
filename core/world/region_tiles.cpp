@@ -62,6 +62,7 @@ RegionTiles::RegionTiles(std::uint32_t grid_width, std::uint32_t grid_height)
     elevation.resize(count);
     edges.resize(count * 4U);
     owner.resize(count);
+    settlement.resize(count);
     site.resize(count);
 }
 
@@ -89,7 +90,7 @@ bool RegionTiles::valid_layout() const noexcept {
     return base.size() == count && relief.size() == count &&
            feature.size() == count && temperature.size() == count && moisture.size() == count &&
            elevation.size() == count && edges.size() == count * 4U && owner.size() == count &&
-           site.size() == count;
+           settlement.size() == count && site.size() == count;
 }
 
 void RegionTiles::set_edge(RegionXY a, RegionXY b, rules::EdgeId edge_id) {
@@ -109,7 +110,7 @@ std::size_t RegionTiles::edge_storage_bytes() const noexcept { return bytes(edge
 
 std::size_t RegionTiles::dynamic_storage_bytes() const noexcept {
     return bytes(base) + bytes(relief) + bytes(feature) + bytes(temperature) + bytes(moisture) +
-           bytes(elevation) + bytes(edges) + bytes(owner) + bytes(site);
+           bytes(elevation) + bytes(edges) + bytes(owner) + bytes(settlement) + bytes(site);
 }
 
 }  // namespace aetheria::world

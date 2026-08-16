@@ -15,6 +15,12 @@ terrain = "terrain.grassland"
 relief = "relief.mountain"
 
 [[rules]]
+min_moisture = 52000
+max_elevation = 4500
+terrain = "terrain.swamp"
+relief = "relief.plain"
+
+[[rules]]
 min_ruggedness = 320
 terrain = "terrain.grassland"
 relief = "relief.hills"

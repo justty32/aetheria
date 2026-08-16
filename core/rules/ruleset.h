@@ -14,6 +14,7 @@
 namespace aetheria::rules {
 
 inline constexpr std::uint32_t kTerrainWaterFlag = UINT32_C(1) << 1U;
+inline constexpr std::uint32_t kEdgeRoadFlag = UINT32_C(1);
 inline constexpr std::uint32_t kEdgeRiverFlag = UINT32_C(1) << 1U;
 inline constexpr std::uint32_t kEdgeBridgeFlag = UINT32_C(1) << 2U;
 
@@ -143,6 +144,50 @@ struct MovementRules {
     bool loaded{};
 };
 
+// CrossingRule 將河級與道路級資料驅動映射成單一複合 EdgeDef。
+// CivilizationRules 擁有所有實例，worldgen 只讀取複本。
+// 所屬 Ruleset 析構後失效。
+struct CrossingRule {
+    EdgeId river;
+    EdgeId road;
+    EdgeId result;
+};
+
+// CivilizationRules 是城市評分、間距、道路工程與渡河查表的資料規則。
+// Ruleset 擁有值，worldgen 階段 8～9 只借用 const 參考。
+// 所屬 Ruleset 析構後失效；所有分數與成本均為整數。
+struct CivilizationRules {
+    std::int32_t freshwater_weight{};
+    std::int32_t farmland_weight{};
+    std::int32_t harbor_weight{};
+    std::int32_t defense_weight{};
+    std::int32_t resource_weight{};
+    std::int32_t bottleneck_weight{};
+    std::int32_t extreme_climate_penalty{};
+    std::int32_t high_elevation_penalty{};
+    std::uint16_t high_elevation_threshold{};
+    std::uint16_t target_city_count{};
+    std::uint16_t major_city_count{};
+    std::uint16_t town_count{};
+    std::array<std::uint16_t, 3> minimum_spacing{};
+    std::uint8_t bottleneck_radius{};
+    std::uint8_t loop_percent{};
+    std::uint16_t road_base_cost{};
+    std::uint16_t road_terrain_weight{};
+    std::uint16_t road_slope_weight{};
+    std::uint16_t road_slope_divisor{};
+    std::uint16_t road_valley_discount{};
+    std::uint16_t road_swamp_penalty{};
+    std::uint16_t road_river_crossing_penalty{};
+    std::uint16_t road_reuse_numerator{};
+    std::uint16_t road_reuse_denominator{};
+    std::array<std::uint16_t, 3> road_usage_thresholds{};
+    std::array<EdgeId, 3> road_edges{};
+    TerrainId swamp_terrain;
+    std::vector<CrossingRule> crossings;
+    bool loaded{};
+};
+
 class RulesetLoader;
 
 // Ruleset 是 TOML 載入後不可變的 def 集合與字串索引。
@@ -171,6 +216,9 @@ class Ruleset {
     [[nodiscard]] std::span<const EdgeDef> edges() const noexcept { return edges_; }
     [[nodiscard]] std::span<const BiomeRule> biome_rules() const noexcept { return biome_rules_; }
     [[nodiscard]] const MovementRules& movement_rules() const noexcept { return movement_rules_; }
+    [[nodiscard]] const CivilizationRules& civilization_rules() const noexcept {
+        return civilization_rules_;
+    }
 
     private:
     friend class RulesetLoader;
@@ -182,6 +230,7 @@ class Ruleset {
     std::vector<EdgeDef> edges_;
     std::vector<BiomeRule> biome_rules_;
     MovementRules movement_rules_;
+    CivilizationRules civilization_rules_;
     std::map<std::string, TerrainId, std::less<>> terrain_index_;
     std::map<std::string, ReliefId, std::less<>> relief_index_;
     std::map<std::string, FeatureId, std::less<>> feature_index_;

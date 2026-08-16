@@ -17,6 +17,16 @@ namespace aetheria::world {
 // 所屬世界狀態存在期間有效。
 enum class FactionId : std::uint16_t {};
 
+// SettlementTier 是 Region tile 上城市選址的持久三級結果。
+// RegionTiles 擁有每格的值複本，Site 生成只讀取它。
+// 值本身永不失效；None 代表該格沒有聚落。
+enum class SettlementTier : std::uint8_t {
+    None,
+    Village,
+    Town,
+    City,
+};
+
 // RegionXY 是 L1 Region 內的非環繞方格座標。
 // 呼叫端擁有值。
 // 值本身永不失效。
@@ -62,6 +72,7 @@ struct RegionTiles {
     std::vector<std::uint16_t> elevation;
     std::vector<rules::EdgeId> edges;
     std::vector<FactionId> owner;
+    std::vector<SettlementTier> settlement;
     std::vector<SiteState> site;
 };
 
@@ -86,6 +97,7 @@ static_assert(detail::IsIntegerWorldStateVector<decltype(RegionTiles::moisture)>
 static_assert(detail::IsIntegerWorldStateVector<decltype(RegionTiles::elevation)>::value);
 static_assert(detail::IsIntegerWorldStateVector<decltype(RegionTiles::edges)>::value);
 static_assert(detail::IsIntegerWorldStateVector<decltype(RegionTiles::owner)>::value);
+static_assert(detail::IsIntegerWorldStateVector<decltype(RegionTiles::settlement)>::value);
 static_assert(detail::IsIntegerWorldStateVector<decltype(RegionTiles::site)>::value);
 
 inline constexpr std::size_t kDeclaredRegionTilesStorageSize =
@@ -94,7 +106,7 @@ inline constexpr std::size_t kDeclaredRegionTilesStorageSize =
     sizeof(decltype(RegionTiles::feature)) + sizeof(decltype(RegionTiles::temperature)) +
     sizeof(decltype(RegionTiles::moisture)) + sizeof(decltype(RegionTiles::elevation)) +
     sizeof(decltype(RegionTiles::edges)) + sizeof(decltype(RegionTiles::owner)) +
-    sizeof(decltype(RegionTiles::site));
+    sizeof(decltype(RegionTiles::settlement)) + sizeof(decltype(RegionTiles::site));
 static_assert(sizeof(RegionTiles) == kDeclaredRegionTilesStorageSize,
               "新增 RegionTiles 世界狀態欄位時必須登記並驗證其為整數或 enum");
 

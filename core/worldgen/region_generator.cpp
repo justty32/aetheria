@@ -23,6 +23,8 @@ inline constexpr std::uint64_t kClimateStageId = UINT64_C(0x434C494D41544504);
 inline constexpr std::uint64_t kRiverStageId = UINT64_C(0x5249564552530005);
 inline constexpr std::uint64_t kBiomeStageId = UINT64_C(0x42494F4D45530006);
 inline constexpr std::uint64_t kFeatureStageId = UINT64_C(0x4645415455524507);
+inline constexpr std::uint64_t kCityStageId = UINT64_C(0x4349544945530008);
+inline constexpr std::uint64_t kRoadStageId = UINT64_C(0x524F414453000009);
 inline constexpr double kMinWorldElevation = -4096.0;
 inline constexpr double kMaxWorldElevation = 61439.0;
 
@@ -346,6 +348,10 @@ generation_parameter_hashes(const RegionGenerationConfig& config) noexcept {
     hash_scalar(result.groups[6], config.features.mine_chance);
     hash_scalar(result.groups[6], config.features.oasis_chance);
     hash_scalar(result.groups[6], config.features.landmark_chance);
+    result.groups[7] = begin_group();
+    hash_scalar(result.groups[7], config.cities.minimum_score_bias);
+    result.groups[8] = begin_group();
+    hash_scalar(result.groups[8], config.roads.loop_percent_override);
     return result;
 }
 
@@ -920,9 +926,18 @@ RegionBuildResult build_skeleton(const RegionSlowVariables& slow, std::uint64_t 
     auto features = generate_features(
         plates, elevation, climate, rivers, biome, definitions,
         derive_region_stage_seed(world_seed, slow.region_id, kFeatureStageId), config.features);
-    RegionSkeleton skeleton{elevation, climate, rivers, biome, features, definitions};
-    return {std::move(plates), std::move(height), std::move(erosion),  std::move(climate),
-            std::move(rivers), std::move(biome),  std::move(features), std::move(skeleton)};
+    auto cities = generate_cities(
+        elevation, climate, rivers, biome, features, ruleset,
+        derive_region_stage_seed(world_seed, slow.region_id, kCityStageId), config.cities);
+    auto roads = generate_roads(
+        elevation, climate, rivers, biome, features, cities, definitions, ruleset,
+        derive_region_stage_seed(world_seed, slow.region_id, kRoadStageId), config.roads);
+    RegionSkeleton skeleton{elevation, climate, rivers, biome, features, cities, roads,
+                            definitions};
+    return {std::move(plates),   std::move(height),   std::move(erosion),
+            std::move(climate),  std::move(rivers),   std::move(biome),
+            std::move(features), std::move(cities),   std::move(roads),
+            std::move(skeleton)};
 }
 
 world::RegionTiles populate(const RegionSkeleton& skeleton, const RegionFastVariables& fast) {
@@ -933,6 +948,9 @@ world::RegionTiles populate(const RegionSkeleton& skeleton, const RegionFastVari
         skeleton.rivers.moisture.size() != count || skeleton.rivers.downstream.size() != count ||
         skeleton.rivers.river_class.size() != count || skeleton.biome.terrain.size() != count ||
         skeleton.biome.relief.size() != count || skeleton.features.feature.size() != count ||
+        skeleton.cities.score.size() != count || skeleton.cities.bottleneck.size() != count ||
+        skeleton.roads.edges.size() != count * 4U ||
+        skeleton.roads.usage.size() != count * 4U ||
         skeleton.elevation.width > static_cast<std::uint32_t>(INT16_MAX) ||
         skeleton.elevation.height > static_cast<std::uint32_t>(INT16_MAX)) {
         throw std::invalid_argument{"RegionSkeleton 尺寸不一致"};
@@ -949,27 +967,13 @@ world::RegionTiles populate(const RegionSkeleton& skeleton, const RegionFastVari
             0, UINT8_MAX));
         tiles.moisture[index] = static_cast<std::uint8_t>(skeleton.rivers.moisture[index] / 257U);
     }
-    std::fill(tiles.edges.begin(), tiles.edges.end(), skeleton.definitions.no_edge);
-    for (std::size_t index = 0; index < count; ++index) {
-        const auto downstream = skeleton.rivers.downstream[index];
-        const auto river_class = skeleton.rivers.river_class[index];
-        if (river_class == 0 || downstream < 0) {
-            continue;
+    tiles.edges = skeleton.roads.edges;
+    for (const auto& city : skeleton.cities.cities) {
+        const auto index = tiles.index_of(city.tile);
+        if (index != city.canonical_id || tiles.settlement[index] != world::SettlementTier::None) {
+            throw std::runtime_error{"城市 canonical id 或位置重複"};
         }
-        const auto target = static_cast<std::size_t>(downstream);
-        const auto adjacent = neighbors(index, tiles.width, tiles.height);
-        if (target >= count ||
-            std::find(adjacent.begin(), adjacent.end(), target) == adjacent.end()) {
-            throw std::runtime_error{"河流 downstream 不是四鄰接 tile"};
-        }
-        const auto edge = river_class == 3   ? skeleton.definitions.great_river
-                          : river_class == 2 ? skeleton.definitions.river
-                                             : skeleton.definitions.stream;
-        const world::RegionXY from{static_cast<std::int16_t>(index % tiles.width),
-                                   static_cast<std::int16_t>(index / tiles.width)};
-        const world::RegionXY to{static_cast<std::int16_t>(target % tiles.width),
-                                 static_cast<std::int16_t>(target / tiles.width)};
-        tiles.set_edge(from, to, edge);
+        tiles.settlement[index] = city.tier;
     }
     return tiles;
 }
@@ -1053,6 +1057,40 @@ std::uint64_t hash_stage(const FeatureStageOutput& stage) noexcept {
     return hash;
 }
 
+std::uint64_t hash_stage(const CityStageOutput& stage) noexcept {
+    auto hash = UINT64_C(14695981039346656037);
+    hash_scalar(hash, stage.width);
+    hash_scalar(hash, stage.height);
+    hash_vector(hash, stage.score);
+    hash_vector(hash, stage.bottleneck);
+    hash_scalar(hash, static_cast<std::uint64_t>(stage.cities.size()));
+    for (const auto& city : stage.cities) {
+        hash_scalar(hash, city.canonical_id);
+        hash_scalar(hash, city.tile.x);
+        hash_scalar(hash, city.tile.y);
+        hash_scalar(hash, city.score);
+        hash_scalar(hash, city.tier);
+        hash_scalar(hash, city.minimum_spacing);
+    }
+    return hash;
+}
+
+std::uint64_t hash_stage(const RoadStageOutput& stage) noexcept {
+    auto hash = UINT64_C(14695981039346656037);
+    hash_scalar(hash, stage.width);
+    hash_scalar(hash, stage.height);
+    hash_vector(hash, stage.edges);
+    hash_vector(hash, stage.usage);
+    hash_scalar(hash, static_cast<std::uint64_t>(stage.connections.size()));
+    for (const auto& connection : stage.connections) {
+        hash_scalar(hash, connection.first_city);
+        hash_scalar(hash, connection.second_city);
+        hash_scalar(hash, connection.terrain_cost);
+        hash_scalar(hash, static_cast<std::uint8_t>(connection.loop));
+    }
+    return hash;
+}
+
 std::uint64_t hash_skeleton(const RegionSkeleton& skeleton) noexcept {
     auto hash = UINT64_C(14695981039346656037);
     hash_scalar(hash, skeleton.elevation.width);
@@ -1064,6 +1102,8 @@ std::uint64_t hash_skeleton(const RegionSkeleton& skeleton) noexcept {
     hash_scalar(hash, hash_stage(skeleton.rivers));
     hash_scalar(hash, hash_stage(skeleton.biome));
     hash_scalar(hash, hash_stage(skeleton.features));
+    hash_scalar(hash, hash_stage(skeleton.cities));
+    hash_scalar(hash, hash_stage(skeleton.roads));
     hash_scalar(hash, rules::value_of(skeleton.definitions.land));
     hash_scalar(hash, rules::value_of(skeleton.definitions.ocean));
     hash_scalar(hash, rules::value_of(skeleton.definitions.plain));
@@ -1091,6 +1131,7 @@ std::uint64_t hash_tiles(const world::RegionTiles& tiles) noexcept {
     hash_vector(hash, tiles.elevation);
     hash_vector(hash, tiles.edges);
     hash_vector(hash, tiles.owner);
+    hash_vector(hash, tiles.settlement);
     hash_scalar(hash, static_cast<std::uint64_t>(tiles.site.size()));
     for (const auto& site : tiles.site) {
         hash_scalar(hash, site.lod);
@@ -1180,6 +1221,28 @@ std::vector<std::uint8_t> grayscale(const FeatureStageOutput& stage) {
     pixels.reserve(stage.feature.size());
     for (const auto feature : stage.feature) {
         pixels.push_back(static_cast<std::uint8_t>((rules::value_of(feature) * 61U) & UINT8_MAX));
+    }
+    return pixels;
+}
+
+std::vector<std::uint8_t> grayscale(const CityStageOutput& stage) {
+    std::vector<std::uint8_t> pixels(stage.score.size());
+    for (const auto& city : stage.cities) {
+        if (city.canonical_id < pixels.size()) {
+            pixels[city.canonical_id] = static_cast<std::uint8_t>(city.tier) * 85U;
+        }
+    }
+    return pixels;
+}
+
+std::vector<std::uint8_t> grayscale(const RoadStageOutput& stage) {
+    const auto count = static_cast<std::size_t>(stage.width) * stage.height;
+    std::vector<std::uint8_t> pixels(count);
+    for (std::size_t index = 0; index < count; ++index) {
+        const auto begin = index * 4U;
+        const auto maximum = *std::max_element(stage.usage.begin() + static_cast<std::ptrdiff_t>(begin),
+                                               stage.usage.begin() + static_cast<std::ptrdiff_t>(begin + 4U));
+        pixels[index] = static_cast<std::uint8_t>(std::min<unsigned>(255U, maximum * 64U));
     }
     return pixels;
 }

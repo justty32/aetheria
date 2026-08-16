@@ -94,7 +94,21 @@ struct FeatureGenerationConfig {
     std::uint16_t landmark_chance{180};
 };
 
-// RegionGenerationConfig 將七階段參數分槽，避免後段參數污染前段。
+// CityGenerationConfig 是階段 8 的整體分數偏移探針。
+// 呼叫端擁有值；各因子權重仍全部來自 civilization.toml。
+// 呼叫結束後即可失效。
+struct CityGenerationConfig {
+    std::int16_t minimum_score_bias{};
+};
+
+// RoadGenerationConfig 是階段 9 的環路比例覆寫探針，0 表示採資料檔值。
+// 呼叫端擁有值；道路工程成本仍全部來自 civilization.toml。
+// 呼叫結束後即可失效。
+struct RoadGenerationConfig {
+    std::uint8_t loop_percent_override{};
+};
+
+// RegionGenerationConfig 將九階段參數分槽，避免後段參數污染前段。
 // 呼叫端擁有值，各階段只借用自己的子設定。
 // 呼叫結束後即可失效。
 struct RegionGenerationConfig {
@@ -105,13 +119,15 @@ struct RegionGenerationConfig {
     RiverGenerationConfig rivers;
     BiomeGenerationConfig biome;
     FeatureGenerationConfig features;
+    CityGenerationConfig cities;
+    RoadGenerationConfig roads;
 };
 
-// GenerationParameterHashes 是 manifest 固定的七階段參數身分。
+// GenerationParameterHashes 是 manifest 固定的九階段參數身分。
 // SaveManifest 擁有值，FileZoneStore 與生成器只讀取複本。
 // 值本身永不失效；任一分組不同即不得載入既有世界。
 struct GenerationParameterHashes {
-    std::array<std::uint64_t, 7> groups{};
+    std::array<std::uint64_t, 9> groups{};
 
     constexpr bool operator==(const GenerationParameterHashes&) const noexcept = default;
 };
@@ -120,8 +136,8 @@ struct GenerationParameterHashes {
 generation_parameter_hashes(const RegionGenerationConfig& config = {}) noexcept;
 [[nodiscard]] constexpr std::string_view
 generation_parameter_group_name(std::size_t index) noexcept {
-    constexpr std::array names{"plates", "height", "erosion", "climate",
-                               "rivers", "biome",  "features"};
+    constexpr std::array names{"plates", "height", "erosion", "climate", "rivers",
+                               "biome",  "features", "cities", "roads"};
     return index < names.size() ? names[index] : "unknown";
 }
 
@@ -236,6 +252,53 @@ struct FeatureStageOutput {
     std::vector<rules::FeatureId> feature;
 };
 
+// CitySite 是階段 8 選出的 canonical 聚落位置、分數與間距。
+// CityStageOutput 擁有所有實例，道路階段只讀取複本。
+// 所屬輸出析構或 cities 重配後失效；canonical_id 等於 tile 線性下標。
+struct CitySite {
+    std::uint32_t canonical_id{};
+    world::RegionXY tile;
+    std::int32_t score{};
+    world::SettlementTier tier{world::SettlementTier::None};
+    std::uint16_t minimum_spacing{};
+
+    constexpr bool operator==(const CitySite&) const noexcept = default;
+};
+
+// CityStageOutput 是每格定居／瓶頸分數與三級城市清單。
+// RegionBuildResult 擁有它，道路階段只在呼叫期間借用。
+// 所屬回傳值析構或 vector 重配後其中參考失效。
+struct CityStageOutput {
+    std::uint32_t width{};
+    std::uint32_t height{};
+    std::vector<std::int32_t> score;
+    std::vector<std::uint16_t> bottleneck;
+    std::vector<CitySite> cities;
+};
+
+// RoadConnection 是 MST 或補環路選出的 canonical 城市對。
+// RoadStageOutput 擁有所有實例。
+// 所屬輸出析構或 connections 重配後失效。
+struct RoadConnection {
+    std::uint32_t first_city{};
+    std::uint32_t second_city{};
+    std::int64_t terrain_cost{};
+    bool loop{};
+
+    constexpr bool operator==(const RoadConnection&) const noexcept = default;
+};
+
+// RoadStageOutput 是階段 9 的完整雙向 edge、重用次數與路網骨架。
+// RegionBuildResult 擁有它，populate 只讀取複本。
+// 所屬回傳值析構或 vector 重配後其中參考失效。
+struct RoadStageOutput {
+    std::uint32_t width{};
+    std::uint32_t height{};
+    std::vector<rules::EdgeId> edges;
+    std::vector<std::uint16_t> usage;
+    std::vector<RoadConnection> connections;
+};
+
 // RegionDefinitionIds 是生成器啟動時一次解析完成的 Ruleset 下標。
 // RegionSkeleton 擁有值，populate 只讀取複本。
 // 所屬 skeleton 析構後失效；跨 Ruleset 不可沿用。
@@ -263,10 +326,12 @@ struct RegionSkeleton {
     RiverStageOutput rivers;
     BiomeStageOutput biome;
     FeatureStageOutput features;
+    CityStageOutput cities;
+    RoadStageOutput roads;
     RegionDefinitionIds definitions;
 };
 
-// RegionBuildResult 同時帶穩定骨架與七階段除錯產物。
+// RegionBuildResult 同時帶穩定骨架與九階段除錯產物。
 // 呼叫端擁有整個回傳值。
 // 回傳值析構後所有 stage 與 skeleton 參考失效。
 struct RegionBuildResult {
@@ -277,6 +342,8 @@ struct RegionBuildResult {
     RiverStageOutput rivers;
     BiomeStageOutput biome;
     FeatureStageOutput features;
+    CityStageOutput cities;
+    RoadStageOutput roads;
     RegionSkeleton skeleton;
 };
 
@@ -322,6 +389,18 @@ generate_features(const PlateStageOutput& plates, const QuantizedElevation& elev
                   const ClimateStageOutput& climate, const RiverStageOutput& rivers,
                   const BiomeStageOutput& biome, const RegionDefinitionIds& definitions,
                   std::uint64_t stage_seed, const FeatureGenerationConfig& config);
+[[nodiscard]] CityStageOutput
+generate_cities(const QuantizedElevation& elevation, const ClimateStageOutput& climate,
+                const RiverStageOutput& rivers, const BiomeStageOutput& biome,
+                const FeatureStageOutput& features, const rules::Ruleset& ruleset,
+                std::uint64_t stage_seed, const CityGenerationConfig& config);
+[[nodiscard]] RoadStageOutput
+generate_roads(const QuantizedElevation& elevation, const ClimateStageOutput& climate,
+               const RiverStageOutput& rivers, const BiomeStageOutput& biome,
+               const FeatureStageOutput& features, const CityStageOutput& cities,
+               const RegionDefinitionIds& definitions, const rules::Ruleset& ruleset,
+               std::uint64_t stage_seed, const RoadGenerationConfig& config,
+               bool canonicalize_city_order = true);
 
 [[nodiscard]] RegionBuildResult build_skeleton(const RegionSlowVariables& slow,
                                                std::uint64_t world_seed,
@@ -337,6 +416,8 @@ generate_features(const PlateStageOutput& plates, const QuantizedElevation& elev
 [[nodiscard]] std::uint64_t hash_stage(const RiverStageOutput& stage) noexcept;
 [[nodiscard]] std::uint64_t hash_stage(const BiomeStageOutput& stage) noexcept;
 [[nodiscard]] std::uint64_t hash_stage(const FeatureStageOutput& stage) noexcept;
+[[nodiscard]] std::uint64_t hash_stage(const CityStageOutput& stage) noexcept;
+[[nodiscard]] std::uint64_t hash_stage(const RoadStageOutput& stage) noexcept;
 [[nodiscard]] std::uint64_t hash_skeleton(const RegionSkeleton& skeleton) noexcept;
 [[nodiscard]] std::uint64_t hash_tiles(const world::RegionTiles& tiles) noexcept;
 [[nodiscard]] double land_fraction(const RegionSkeleton& skeleton) noexcept;
@@ -349,5 +430,7 @@ generate_features(const PlateStageOutput& plates, const QuantizedElevation& elev
 [[nodiscard]] std::vector<std::uint8_t> grayscale(const RiverStageOutput& stage);
 [[nodiscard]] std::vector<std::uint8_t> grayscale(const BiomeStageOutput& stage);
 [[nodiscard]] std::vector<std::uint8_t> grayscale(const FeatureStageOutput& stage);
+[[nodiscard]] std::vector<std::uint8_t> grayscale(const CityStageOutput& stage);
+[[nodiscard]] std::vector<std::uint8_t> grayscale(const RoadStageOutput& stage);
 
 }  // namespace aetheria::worldgen

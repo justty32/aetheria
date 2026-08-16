@@ -36,6 +36,7 @@ add_library(aetheria_core STATIC
     core/zone/zone_store.cpp
     core/world/region_tiles.cpp
     core/world/region_movement.cpp
+    core/worldgen/civilization_generator.cpp
     core/worldgen/region_generator.cpp
 )
 target_include_directories(aetheria_core PUBLIC "${PROJECT_SOURCE_DIR}")
@@ -51,6 +52,7 @@ add_executable(aetheria_tests
     tests/time/tick_test.cpp
     tests/world/region_movement_test.cpp
     tests/world/region_tiles_test.cpp
+    tests/worldgen/civilization_generator_test.cpp
     tests/worldgen/region_generator_test.cpp
     tests/zone/zone_store_test.cpp
     tests/zone/zone_test.cpp

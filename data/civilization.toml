@@ -1,0 +1,74 @@
+# 城市評分與道路工程全部使用整數；三級陣列順序為村莊、城鎮、大城。
+freshwater_weight = 500
+farmland_weight = 18
+harbor_weight = 220
+defense_weight = 24
+resource_weight = 160
+bottleneck_weight = 420
+extreme_climate_penalty = -260
+high_elevation_penalty = -180
+high_elevation_threshold = 5400
+target_city_count = 18
+major_city_count = 2
+town_count = 6
+minimum_spacing = [3, 5, 8]
+bottleneck_radius = 3
+
+loop_percent = 15
+road_base_cost = 80
+road_terrain_weight = 20
+road_slope_weight = 5
+road_slope_divisor = 25
+road_valley_discount = 25
+road_swamp_penalty = 180
+road_river_crossing_penalty = 140
+road_reuse_numerator = 1
+road_reuse_denominator = 4
+road_usage_thresholds = [1, 2, 4]
+road_edges = ["edge.trail", "edge.road", "edge.highway"]
+swamp_terrain = "terrain.swamp"
+
+[[crossings]]
+river = "edge.stream"
+road = "edge.trail"
+result = "edge.ford_stream_trail"
+
+[[crossings]]
+river = "edge.stream"
+road = "edge.road"
+result = "edge.bridge_wood_stream_road"
+
+[[crossings]]
+river = "edge.stream"
+road = "edge.highway"
+result = "edge.bridge_stone_stream_highway"
+
+[[crossings]]
+river = "edge.river"
+road = "edge.trail"
+result = "edge.ford_river_trail"
+
+[[crossings]]
+river = "edge.river"
+road = "edge.road"
+result = "edge.bridge_wood_over_river"
+
+[[crossings]]
+river = "edge.river"
+road = "edge.highway"
+result = "edge.bridge_stone_over_river"
+
+[[crossings]]
+river = "edge.great_river"
+road = "edge.trail"
+result = "edge.ferry_great_river_trail"
+
+[[crossings]]
+river = "edge.great_river"
+road = "edge.road"
+result = "edge.bridge_wood_great_river_road"
+
+[[crossings]]
+river = "edge.great_river"
+road = "edge.highway"
+result = "edge.bridge_stone_great_river_highway"

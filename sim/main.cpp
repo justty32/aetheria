@@ -48,6 +48,8 @@ void print_generation(const aetheria::worldgen::RegionBuildResult& result,
               << "river_hash=" << aetheria::worldgen::hash_stage(result.rivers) << '\n'
               << "biome_hash=" << aetheria::worldgen::hash_stage(result.biome) << '\n'
               << "feature_hash=" << aetheria::worldgen::hash_stage(result.features) << '\n'
+              << "city_hash=" << aetheria::worldgen::hash_stage(result.cities) << '\n'
+              << "road_hash=" << aetheria::worldgen::hash_stage(result.roads) << '\n'
               << "skeleton_hash=" << aetheria::worldgen::hash_skeleton(result.skeleton) << '\n'
               << "tiles_hash=" << aetheria::worldgen::hash_tiles(tiles) << '\n'
               << std::fixed << std::setprecision(3)
@@ -89,6 +91,10 @@ int run_gen_region(const aetheria::rules::Ruleset& ruleset, std::uint64_t seed,
                   aetheria::worldgen::grayscale(result.biome));
         write_pgm(dump_directory / "07-features.pgm", result.features.width, result.features.height,
                   aetheria::worldgen::grayscale(result.features));
+        write_pgm(dump_directory / "08-cities.pgm", result.cities.width, result.cities.height,
+                  aetheria::worldgen::grayscale(result.cities));
+        write_pgm(dump_directory / "09-roads.pgm", result.roads.width, result.roads.height,
+                  aetheria::worldgen::grayscale(result.roads));
     }
     print_generation(result, tiles, elapsed);
     return 0;
@@ -123,6 +129,10 @@ int run_gen_verify(const aetheria::rules::Ruleset& ruleset, std::uint64_t seed,
                 aetheria::worldgen::hash_stage(second.biome) ||
             aetheria::worldgen::hash_stage(first.features) !=
                 aetheria::worldgen::hash_stage(second.features) ||
+            aetheria::worldgen::hash_stage(first.cities) !=
+                aetheria::worldgen::hash_stage(second.cities) ||
+            aetheria::worldgen::hash_stage(first.roads) !=
+                aetheria::worldgen::hash_stage(second.roads) ||
             aetheria::worldgen::hash_skeleton(first.skeleton) !=
                 aetheria::worldgen::hash_skeleton(second.skeleton) ||
             aetheria::worldgen::hash_tiles(first_tiles) !=
@@ -163,7 +173,7 @@ int main(int argc, char** argv) {
     gen_region->add_option("--erosion-iterations", erosion_iterations, "固定熱力侵蝕次數");
     gen_region->add_option("--biome-moisture-bias", biome_moisture_bias,
                            "biome 查表前的水氣偏移（階段 6 隔離探針）");
-    gen_region->add_option("--dump-stages", dump_stages, "七階段 PGM 輸出目錄");
+    gen_region->add_option("--dump-stages", dump_stages, "九階段 PGM 輸出目錄");
     auto* gen_verify = gen->add_subcommand("verify", "重複生成並驗證同 seed 決定論");
     gen_verify->add_option("--seed", generation_seed, "起始世界 seed")->required();
     gen_verify->add_option("--iterations", verify_iterations, "驗證 seed 數量");

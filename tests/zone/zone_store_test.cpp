@@ -118,6 +118,7 @@ void write_file(const std::filesystem::path& path, std::string_view bytes) {
     auto& surface = layers.emplace(0, aetheria::world::RegionTiles{2, 2}).first->second;
     surface.temperature = {11, 22, 33, 44};
     surface.moisture = {55, 66, 77, 88};
+    surface.settlement.at(1) = aetheria::world::SettlementTier::Town;
     surface.site.at(0).lod = aetheria::zone::LodLevel::Full;
     surface.site.at(0).ever_realized = true;
     auto& underground = layers.emplace(-1, aetheria::world::RegionTiles{3, 1}).first->second;
@@ -235,6 +236,7 @@ TEST(FileZoneStore, RoundTripPreservesCanonicalBitsAndEntityCount) {
     const auto& loaded_layers = std::get<aetheria::zone::RegionPayload>(loaded->payload).layers;
     EXPECT_EQ(loaded_layers.at(0).moisture,
               (std::vector<std::uint8_t>{55, 66, 77, 88}));
+    EXPECT_EQ(loaded_layers.at(0).settlement.at(1), aetheria::world::SettlementTier::Town);
     EXPECT_EQ(loaded_layers.at(0).site.at(0).lod, aetheria::zone::LodLevel::Absent);
     EXPECT_TRUE(loaded_layers.at(0).site.at(0).ever_realized);
     EXPECT_EQ(loaded_layers.at(-1).elevation,
@@ -412,7 +414,7 @@ TEST(FileZoneStore, RejectsManifestFormatVersionMismatch) {
 
     EXPECT_THROW(static_cast<void>(FileZoneStore{directory.path(), test_ruleset()}),
                  std::runtime_error);
-    EXPECT_EQ(read_file(directory.path() / "manifest.bin").size(), 109U);
+    EXPECT_EQ(read_file(directory.path() / "manifest.bin").size(), 125U);
 }
 
 TEST(FileZoneStore, RejectsGenerationParameterGroupMismatchByName) {

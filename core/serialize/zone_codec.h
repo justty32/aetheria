@@ -10,7 +10,7 @@
 
 namespace aetheria::serialize {
 
-inline constexpr std::uint32_t kSaveFormatVersion = 5;
+inline constexpr std::uint32_t kSaveFormatVersion = 6;
 
 [[nodiscard]] std::string encode_zone(const zone::Zone& zone, const rules::Ruleset& ruleset);
 [[nodiscard]] std::unique_ptr<zone::Zone> decode_zone(std::string_view bytes,

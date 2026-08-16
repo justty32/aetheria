@@ -29,3 +29,11 @@ move_cost = 2
 flags = 1
 visual = "terrain/tundra"
 yield = { food = 1, production = 1, wealth = 0, mana = 0 }
+
+[[defs]]
+id = "terrain.swamp"
+name_key = "terrain.swamp.name"
+move_cost = 3
+flags = 1
+visual = "terrain/swamp"
+yield = { food = 1, production = 0, wealth = 0, mana = 1 }

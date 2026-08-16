@@ -39,3 +39,80 @@ name_key = "edge.bridge.name"
 move_cost = 1
 flags = 6
 visual = "edge/bridge"
+
+[[defs]]
+id = "edge.trail"
+name_key = "edge.trail.name"
+move_cost = 1
+flags = 1
+visual = "edge/trail"
+
+[[defs]]
+id = "edge.highway"
+name_key = "edge.highway.name"
+move_cost = 1
+flags = 1
+visual = "edge/highway"
+
+[[defs]]
+id = "edge.ford_stream_trail"
+name_key = "edge.ford_stream_trail.name"
+move_cost = 2
+flags = 7
+visual = "edge/ford_stream_trail"
+
+[[defs]]
+id = "edge.bridge_wood_stream_road"
+name_key = "edge.bridge_wood_stream_road.name"
+move_cost = 1
+flags = 7
+visual = "edge/bridge_wood_stream_road"
+
+[[defs]]
+id = "edge.bridge_stone_stream_highway"
+name_key = "edge.bridge_stone_stream_highway.name"
+move_cost = 1
+flags = 7
+visual = "edge/bridge_stone_stream_highway"
+
+[[defs]]
+id = "edge.ford_river_trail"
+name_key = "edge.ford_river_trail.name"
+move_cost = 3
+flags = 7
+visual = "edge/ford_river_trail"
+
+[[defs]]
+id = "edge.bridge_wood_over_river"
+name_key = "edge.bridge_wood_over_river.name"
+move_cost = 2
+flags = 7
+visual = "edge/bridge_wood_over_river"
+
+[[defs]]
+id = "edge.bridge_stone_over_river"
+name_key = "edge.bridge_stone_over_river.name"
+move_cost = 1
+flags = 7
+visual = "edge/bridge_stone_over_river"
+
+[[defs]]
+id = "edge.ferry_great_river_trail"
+name_key = "edge.ferry_great_river_trail.name"
+move_cost = 4
+flags = 7
+visual = "edge/ferry_great_river_trail"
+
+[[defs]]
+id = "edge.bridge_wood_great_river_road"
+name_key = "edge.bridge_wood_great_river_road.name"
+move_cost = 3
+flags = 7
+visual = "edge/bridge_wood_great_river_road"
+
+[[defs]]
+id = "edge.bridge_stone_great_river_highway"
+name_key = "edge.bridge_stone_great_river_highway.name"
+move_cost = 2
+flags = 7
+visual = "edge/bridge_stone_great_river_highway"

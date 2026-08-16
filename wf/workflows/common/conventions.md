@@ -29,12 +29,12 @@ M0 的檔案量仍小，本節直接兼作 code map；長大後再依
 | `core/serialize/` | PortableBinary zone 位元流、EnTT snapshot、`AllComponents` 與跨歷史正規化 hash |
 | `core/zone/` | ZoneKey、Zone、記憶體／zstd 磁碟 store 與 ZoneManager 生命週期 |
 | `core/world/` | L1 `RegionTiles` SoA、整數 MP／A*／旬回合與雙邊一致 edge 寫入 |
-| `core/worldgen/` | 純 C++ Region 七階段生成、階段子種子、唯一量化閘口與河流 edge 輸出 |
+| `core/worldgen/` | 純 C++ Region 九階段生成、城市選址、canonical 道路與複合渡河 edge |
 | `core/api/` | core 對外 API；目前只有版本 |
 | `tests/time/` | 曆法邊界與往返 GoogleTest |
 | `tests/zone/` | ZoneKey、生命週期、兩種 store 共用契約、損毀拒讀與 round-trip 測試 |
 | `tests/rules/`、`tests/world/`、`tests/serialize/` | Ruleset、移動／尋路／跨歷史 hash、SoA 與 EnTT 壓測 |
-| `tests/worldgen/` | Region 生成決定論、階段隔離、量化型別閘口、連通性與效能預算 |
+| `tests/worldgen/` | Region 生成決定論／負向控制、階段隔離、路網、連通性與效能預算 |
 | `sim/` | 不需 Godot 的曆法與 zone 樹 CLI 探針 |
 | `bridge/` | `AetheriaCore` Node 與 GDExtension 註冊；唯一可 include godot-cpp 的自有目錄 |
 | `godot/` | 純顯示／呼叫驗證場景與 `.gdextension` 描述檔 |
