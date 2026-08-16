@@ -19,7 +19,7 @@
 
 ### 實作者（gpt-sol）
 
-- **M1.0.1 SpatialPayload 變體遷移實作中** → `wf/inbox/m1-0-review.md`。
+- **核准待辦池：修正 `.gitignore` 的 build 目錄規則**。
 
 ### 規劃者（Opus 5）
 
