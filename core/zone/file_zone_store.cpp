@@ -143,6 +143,12 @@ void atomic_replace(const std::filesystem::path& path, std::string_view bytes) {
     return false;
 }
 
+[[nodiscard]] constexpr std::uint64_t mix_zone_key(std::uint64_t value) noexcept {
+    value = (value ^ (value >> 30U)) * UINT64_C(0xBF58476D1CE4E5B9);
+    value = (value ^ (value >> 27U)) * UINT64_C(0x94D049BB133111EB);
+    return value ^ (value >> 31U);
+}
+
 }  // namespace
 
 FileZoneStore::FileZoneStore(std::filesystem::path slot_directory)
@@ -223,7 +229,15 @@ std::filesystem::path FileZoneStore::path_for(ZoneKey key) const {
         throw std::runtime_error{"ZoneKey hex 路徑格式化失敗"};
     }
     const std::string hex{buffer};
-    return slot_directory_ / hex.substr(0, 2) / (hex + ".bin");
+    const auto mixed = mix_zone_key(value_of(key));
+    char bucket_buffer[3]{};
+    const auto bucket_written =
+        std::snprintf(bucket_buffer, sizeof(bucket_buffer), "%02llx",
+                      static_cast<unsigned long long>(mixed >> 56U));
+    if (bucket_written != 2) {
+        throw std::runtime_error{"ZoneKey 分桶路徑格式化失敗"};
+    }
+    return slot_directory_ / bucket_buffer / (hex + ".bin");
 }
 
 std::filesystem::path FileZoneStore::manifest_path() const {

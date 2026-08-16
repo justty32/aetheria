@@ -14,6 +14,7 @@
 #include <cstdint>
 #include <filesystem>
 #include <fstream>
+#include <set>
 #include <sstream>
 #include <stdexcept>
 #include <string>
@@ -233,9 +234,24 @@ TEST(FileZoneStore, DerivesStableBucketedPathsWithoutCollisions) {
 
     EXPECT_EQ(store.path_for(first), store.path_for(first));
     EXPECT_NE(store.path_for(first), store.path_for(second));
-    EXPECT_EQ(store.path_for(first).parent_path().filename(), "a3");
+    EXPECT_EQ(store.path_for(first).parent_path().filename(), "6f");
     EXPECT_EQ(store.path_for(first).filename(), "a3f2000100200000.bin");
     EXPECT_EQ(store.path_for(kRootZone).filename(), "root.bin");
+}
+
+TEST(FileZoneStore, SpreadsSameLevelCoordinatesAcrossMultipleBuckets) {
+    TemporaryDirectory directory;
+    FileZoneStore store{directory.path()};
+    const auto region = child_key(kRootZone, 1, 0);
+    const auto site = child_key(region, 7, 9);
+    std::set<std::filesystem::path> buckets;
+
+    for (std::uint32_t coordinate = 0; coordinate < 64; ++coordinate) {
+        const auto local = child_key(site, coordinate, coordinate);
+        buckets.insert(store.path_for(local).parent_path().filename());
+    }
+
+    EXPECT_GT(buckets.size(), 1U);
 }
 
 TEST(FileZoneStore, RejectsStoredKeyDifferentFromRequestedKeyWithBothValues) {
