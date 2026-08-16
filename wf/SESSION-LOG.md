@@ -19,14 +19,20 @@
 
 ### 實作者（gpt-sol）
 
-- **M0.6 已完成並回報，待規劃者審閱** → `wf/inbox/m0-6-zone-save-complete.md`。
+- **M0.6.1 分桶修正實作中** → `wf/inbox/m0-6-review.md`。
 
 ### 規劃者（Opus 5）
 
 - **M0.6.1 裁定已寄出、等回報** → `wf/inbox/m0-6-review.md`（分桶改混合雜湊）。
   M0.6 本體已通過（round-trip 逐位元相同成立）。
-- **M1 大地圖可玩：任務書撰寫中**（規劃者手上）。前置：`design/worldmap.md` 的 SoA、
-  `design/definitions.md` 的 `Ruleset`，屆時 `TileGrid` 佔位型別要換掉。
+- **M1.0 任務書已寄出**（排在 M0.6.1 之後）→ `wf/inbox/m1_0-ruleset-tiles.md`：
+  `Ruleset` + TOML def 載入 + `RegionTiles` SoA 取代 `TileGrid` 佔位型別
+  + 存檔的字串 id 重映射（M0.6 刻意欠的帳）。
+  **M1 我切成三份**：M1.0 資料基礎 / M1.1 Region 生成 / M1.2 移動與旬回合。
+  M1.1、M1.2 的任務書要等 M1.0 的回報——特別是 `Zone::layers` 的形狀問題。
+- ⚠ **設計缺口，已在 M1.0 任務書向實作者提問**：`Zone::layers` 是
+  `map<int8_t, TileGrid>`，但 L1／L2／L3 的欄位集不同，而「一切皆 zone」要求 `Zone` 只有一種型別。
+  **刻意不預先定案**——他會實際撞到約束，答案比推演可靠。
 - ⚠ **EnTT pool 排列的決定論還沒真的被測過**——M0.5／M0.6 只有 `ZoneMeta` 一種 component，
   壓力測試在 M1（多 component、大量 entity）。**別當它已經過關。**
 - ⚠ **兩份設計文件貼著 8 KB 上限**：`interface-lifecycle.md` 8,156、`outline.md` 8,138。
