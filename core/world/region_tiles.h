@@ -7,6 +7,7 @@
 #include <compare>
 #include <cstddef>
 #include <cstdint>
+#include <type_traits>
 #include <vector>
 
 namespace aetheria::world {
@@ -63,5 +64,38 @@ struct RegionTiles {
     std::vector<FactionId> owner;
     std::vector<SiteState> site;
 };
+
+namespace detail {
+
+template <typename Value> struct IsIntegerWorldStateVector : std::false_type {};
+
+template <typename Value, typename Allocator>
+struct IsIntegerWorldStateVector<std::vector<Value, Allocator>>
+    : std::bool_constant<std::is_integral_v<Value> || std::is_enum_v<Value> ||
+                         std::is_same_v<Value, SiteState>> {};
+
+}  // namespace detail
+
+static_assert(std::is_integral_v<decltype(RegionTiles::width)>);
+static_assert(std::is_integral_v<decltype(RegionTiles::height)>);
+static_assert(detail::IsIntegerWorldStateVector<decltype(RegionTiles::base)>::value);
+static_assert(detail::IsIntegerWorldStateVector<decltype(RegionTiles::relief)>::value);
+static_assert(detail::IsIntegerWorldStateVector<decltype(RegionTiles::feature)>::value);
+static_assert(detail::IsIntegerWorldStateVector<decltype(RegionTiles::temperature)>::value);
+static_assert(detail::IsIntegerWorldStateVector<decltype(RegionTiles::moisture)>::value);
+static_assert(detail::IsIntegerWorldStateVector<decltype(RegionTiles::elevation)>::value);
+static_assert(detail::IsIntegerWorldStateVector<decltype(RegionTiles::edges)>::value);
+static_assert(detail::IsIntegerWorldStateVector<decltype(RegionTiles::owner)>::value);
+static_assert(detail::IsIntegerWorldStateVector<decltype(RegionTiles::site)>::value);
+
+inline constexpr std::size_t kDeclaredRegionTilesStorageSize =
+    sizeof(decltype(RegionTiles::width)) + sizeof(decltype(RegionTiles::height)) +
+    sizeof(decltype(RegionTiles::base)) + sizeof(decltype(RegionTiles::relief)) +
+    sizeof(decltype(RegionTiles::feature)) + sizeof(decltype(RegionTiles::temperature)) +
+    sizeof(decltype(RegionTiles::moisture)) + sizeof(decltype(RegionTiles::elevation)) +
+    sizeof(decltype(RegionTiles::edges)) + sizeof(decltype(RegionTiles::owner)) +
+    sizeof(decltype(RegionTiles::site));
+static_assert(sizeof(RegionTiles) == kDeclaredRegionTilesStorageSize,
+              "新增 RegionTiles 世界狀態欄位時必須登記並驗證其為整數或 enum");
 
 }  // namespace aetheria::world

@@ -19,7 +19,7 @@
 
 ### 實作者（gpt-sol）
 
-- **核准待辦池：補 `core/` 公開型別的標頭三行說明**。
+- **M1.1 Region 生成管線與前三階段實作中** → `wf/inbox/m1_1-genpipeline.md`。
 
 ### 規劃者（Opus 5）
 
