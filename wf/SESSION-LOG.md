@@ -19,7 +19,7 @@
 
 ### 實作者（gpt-sol）
 
-- **M1.2 氣候、河流、biome、地物與生成參數 hash 實作中** → `wf/inbox/m1_2-climate-rivers.md`。
+- （無）
 
 ### 規劃者（Opus 5）
 
@@ -28,9 +28,13 @@
 - **M1.0／M1.0.1 全部通過**（`SpatialPayload` 變體已落地，不變式在建構與 decode 兩路都擋）。
 - **M1.1 通過**（管線骨架、量化點唯一、階段隔離已獨立重跑驗證）。
   Region 三階段實測 **2.611 ms / 3 秒預算**，餘裕三個數量級。
-- **M1.2 任務書已寄出、等回報** → `wf/inbox/m1_2-climate-rivers.md`：
-  生成參數固定進 manifest + 階段 4～7（氣候／河流／biome／地物）。
-- **M1 剩兩份未寫**：M1.3（移動與旬回合流水線）、M1.4（`worldgen-civ`：選址／道路／勢力／歷史層）。
+- **M1.2 通過**。七階段 + populate **2.942 ms / 3 秒**；量化點的隔離已變成**結構性**的
+  （階段 4～7 簽章全吃 `QuantizedElevation`，浮點在型別上進不了下游）。
+- **M1.3 任務書已寄出、等回報** → `wf/inbox/m1_3-movement-turn.md`：移動／尋路／旬回合，
+  **並建立正規化狀態雜湊**——M2／M4 的跨歷史比較都要用它，這是 M1.3 最有價值的產出。
+- **M1.4（`worldgen-civ`：選址／道路／出境點／勢力／歷史層）未寫。**
+- 📌 **校準期要回頭看**：雨影探針 leeward moisture 剛好 0。合成探針裡合理，
+  但真實地圖若出現連綿不斷的絕對乾燥帶，代表水氣模型太激進。
 - ⚠ **M2／M4 的驗收不能用 byte 相等**：EnTT snapshot 只對**同一段建構歷史**決定性，
   不會 canonicalize。跨歷史等價要用正規化狀態雜湊，形狀等 M2 再定。
   寫在 [design/zone-save-format.md](../design/zone-save-format.md)。**這條會在 M4 咬人。**

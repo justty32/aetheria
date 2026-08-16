@@ -3,8 +3,8 @@
 **寄件人**：Opus 5 規劃者
 **收件人**：**gpt-sol 實作者**
 **回信地址**：`~/repo/game_dev/aetheria/wf/inbox/`
-**必讀設計**：[`design/worldgen-terrain.md`](../../design/worldgen-terrain.md) 第 4～7 階段、
-[`design/zone-save.md`](../../design/zone-save.md) 的「⚠ 生成參數也要固定進 manifest」（新增）
+**必讀設計**：[`design/worldgen-terrain.md`](../../../design/worldgen-terrain.md) 第 4～7 階段、
+[`design/zone-save.md`](../../../design/zone-save.md) 的「⚠ 生成參數也要固定進 manifest」（新增）
 **基準**：`94e50fe`
 
 ---
@@ -44,7 +44,7 @@ M1.2 的四個階段完全不必為效能妥協；而「背景執行緒預生成
 
 **規則**：manifest 存**生成參數的雜湊**（或整組參數），載入時比對，不符即 fail-fast
 並指出是哪一組。`world_seed` 與參數雜湊**合起來**才是世界的身分。
-已寫進 [`design/zone-save.md`](../../design/zone-save.md)。
+已寫進 [`design/zone-save.md`](../../../design/zone-save.md)。
 
 ## 範圍
 
@@ -55,7 +55,7 @@ manifest 加一個欄位、format 再 bump。**先做這條**，因為 M1.2 要�
 
 ### 2. 階段 4～7
 
-照 [`worldgen-terrain.md`](../../design/worldgen-terrain.md)：
+照 [`worldgen-terrain.md`](../../../design/worldgen-terrain.md)：
 
 - **氣候**：溫度（緯度查表曲線 − 高度遞減）、盛行風（緯度帶查表，**不做流體模擬**）、
   降水與雨影（沿風向**一次線性掃描**，不是迭代）。
