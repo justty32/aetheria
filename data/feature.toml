@@ -1,0 +1,14 @@
+[[defs]]
+id = "feature.none"
+name_key = "feature.none.name"
+move_cost = 1
+flags = 0
+visual = "feature/none"
+
+[[defs]]
+id = "feature.forest"
+name_key = "feature.forest.name"
+move_cost = 2
+flags = 1
+visual = "feature/forest"
+required_terrain = "terrain.grassland"

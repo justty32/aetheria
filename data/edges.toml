@@ -1,0 +1,13 @@
+[[defs]]
+id = "edge.none"
+name_key = "edge.none.name"
+move_cost = 1
+flags = 0
+visual = "edge/none"
+
+[[defs]]
+id = "edge.road"
+name_key = "edge.road.name"
+move_cost = 1
+flags = 1
+visual = "edge/road"

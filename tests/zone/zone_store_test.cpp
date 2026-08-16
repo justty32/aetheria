@@ -2,6 +2,7 @@
 #include "core/serialize/zone_codec.h"
 #include "core/zone/file_zone_store.h"
 #include "core/zone/zone_manager.h"
+#include "tests/support/ruleset_fixture.h"
 
 #include <cereal/archives/portable_binary.hpp>
 
@@ -30,13 +31,13 @@ using aetheria::serialize::AllComponents;
 using aetheria::serialize::encode_zone;
 using aetheria::serialize::kSaveFormatVersion;
 using aetheria::serialize::persistent_state_hash;
+using aetheria::tests::test_ruleset;
 using aetheria::time::Tick;
 using aetheria::zone::child_key;
 using aetheria::zone::FileZoneStore;
 using aetheria::zone::InMemoryZoneStore;
 using aetheria::zone::kRootZone;
 using aetheria::zone::SaveManifest;
-using aetheria::zone::TileGrid;
 using aetheria::zone::value_of;
 using aetheria::zone::Zone;
 using aetheria::zone::ZoneKey;
@@ -111,19 +112,21 @@ void write_file(const std::filesystem::path& path, std::string_view bytes) {
 [[nodiscard]] Zone populated_zone(ZoneKey key) {
     Zone zone{key};
     zone.last_saved_tick = Tick{987'654'321};
-    zone.layers.at(0) = TileGrid{2, 2};
-    zone.layers.at(0).tiles = {11, 22, 33, 44};
-    zone.layers.emplace(-1, TileGrid{3, 1});
-    zone.layers.at(-1).tiles = {55, 66, 77};
+    zone.region_tiles.emplace(2, 2);
+    zone.region_tiles->temperature = {11, 22, 33, 44};
+    zone.region_tiles->moisture = {55, 66, 77, 88};
+    zone.region_tiles->site.at(0).lod = aetheria::zone::LodLevel::Full;
+    zone.region_tiles->site.at(0).ever_realized = true;
     const auto extra = zone.reg.create();
     zone.reg.emplace<ZoneMeta>(extra, value_of(key));
     return zone;
 }
 
 void expect_store_contract(ZoneStore& store) {
+    const auto& ruleset = test_ruleset();
     const auto key = child_key(kRootZone, UINT16_C(0x1234), 0);
     auto source = populated_zone(key);
-    const auto source_hash = persistent_state_hash(source);
+    const auto source_hash = persistent_state_hash(source, ruleset);
     const auto source_entities = entity_count(source);
 
     EXPECT_FALSE(store.contains(key));
@@ -133,13 +136,13 @@ void expect_store_contract(ZoneStore& store) {
 
     const auto first = store.load(key);
     ASSERT_NE(first, nullptr);
-    EXPECT_EQ(persistent_state_hash(*first), source_hash);
+    EXPECT_EQ(persistent_state_hash(*first, ruleset), source_hash);
     EXPECT_EQ(entity_count(*first), source_entities);
-    EXPECT_EQ(encode_zone(*first), encode_zone(source));
+    EXPECT_EQ(encode_zone(*first, ruleset), encode_zone(source, ruleset));
 
     const auto second = store.load(key);
     ASSERT_NE(second, nullptr);
-    EXPECT_EQ(persistent_state_hash(*second), source_hash);
+    EXPECT_EQ(persistent_state_hash(*second, ruleset), source_hash);
     EXPECT_TRUE(store.contains(key));
 
     EXPECT_TRUE(store.erase(key));
@@ -184,13 +187,13 @@ void write_raw_manifest(const std::filesystem::path& path, const SaveManifest& m
 }
 
 TEST(ZoneStoreContract, InMemoryBackend) {
-    InMemoryZoneStore store;
+    InMemoryZoneStore store{test_ruleset()};
     expect_store_contract(store);
 }
 
 TEST(ZoneStoreContract, FileBackend) {
     TemporaryDirectory directory;
-    FileZoneStore store{directory.path()};
+    FileZoneStore store{directory.path(), test_ruleset()};
     expect_store_contract(store);
 }
 
@@ -206,10 +209,10 @@ TEST(ZonePersistence, NewZoneStartsWithMatchingPlaceholder) {
 
 TEST(FileZoneStore, RoundTripPreservesCanonicalBitsAndEntityCount) {
     TemporaryDirectory directory;
-    FileZoneStore store{directory.path()};
+    FileZoneStore store{directory.path(), test_ruleset()};
     const auto key = child_key(kRootZone, UINT16_C(0xA3F2), 0);
     auto source = populated_zone(key);
-    const auto before_hash = persistent_state_hash(source);
+    const auto before_hash = persistent_state_hash(source, test_ruleset());
     const auto before_entities = entity_count(source);
 
     store.save(source);
@@ -219,16 +222,19 @@ TEST(FileZoneStore, RoundTripPreservesCanonicalBitsAndEntityCount) {
     const auto loaded = store.load(key);
 
     ASSERT_NE(loaded, nullptr);
-    EXPECT_EQ(persistent_state_hash(*loaded), before_hash);
-    EXPECT_EQ(encode_zone(*loaded), encode_zone(source));
+    EXPECT_EQ(persistent_state_hash(*loaded, test_ruleset()), before_hash);
+    EXPECT_EQ(encode_zone(*loaded, test_ruleset()), encode_zone(source, test_ruleset()));
     EXPECT_EQ(entity_count(*loaded), before_entities);
     EXPECT_EQ(loaded->reg.view<const ZoneMeta>().size(), 2U);
-    EXPECT_EQ(loaded->layers.at(-1).tiles, (std::vector<std::uint16_t>{55, 66, 77}));
+    EXPECT_EQ(loaded->region_tiles->moisture,
+              (std::vector<std::uint8_t>{55, 66, 77, 88}));
+    EXPECT_EQ(loaded->region_tiles->site.at(0).lod, aetheria::zone::LodLevel::Absent);
+    EXPECT_TRUE(loaded->region_tiles->site.at(0).ever_realized);
 }
 
 TEST(FileZoneStore, DerivesStableBucketedPathsWithoutCollisions) {
     TemporaryDirectory directory;
-    FileZoneStore store{directory.path()};
+    FileZoneStore store{directory.path(), test_ruleset()};
     const ZoneKey first{UINT64_C(0xA3F2000100200000)};
     const ZoneKey second{UINT64_C(0xA4F2000100200000)};
 
@@ -241,7 +247,7 @@ TEST(FileZoneStore, DerivesStableBucketedPathsWithoutCollisions) {
 
 TEST(FileZoneStore, SpreadsSameLevelCoordinatesAcrossMultipleBuckets) {
     TemporaryDirectory directory;
-    FileZoneStore store{directory.path()};
+    FileZoneStore store{directory.path(), test_ruleset()};
     const auto region = child_key(kRootZone, 1, 0);
     const auto site = child_key(region, 7, 9);
     std::set<std::filesystem::path> buckets;
@@ -256,7 +262,7 @@ TEST(FileZoneStore, SpreadsSameLevelCoordinatesAcrossMultipleBuckets) {
 
 TEST(FileZoneStore, RejectsStoredKeyDifferentFromRequestedKeyWithBothValues) {
     TemporaryDirectory directory;
-    FileZoneStore store{directory.path()};
+    FileZoneStore store{directory.path(), test_ruleset()};
     const auto requested = child_key(kRootZone, 1, 0);
     const auto stored = child_key(kRootZone, 2, 0);
     auto source = populated_zone(stored);
@@ -276,7 +282,7 @@ TEST(FileZoneStore, RejectsStoredKeyDifferentFromRequestedKeyWithBothValues) {
 
 TEST(FileZoneStore, RejectsZoneFormatVersionMismatch) {
     TemporaryDirectory directory;
-    FileZoneStore store{directory.path()};
+    FileZoneStore store{directory.path(), test_ruleset()};
     const auto key = child_key(kRootZone, 3, 0);
     auto source = populated_zone(key);
     store.save(source);
@@ -300,7 +306,7 @@ TEST(FileZoneStore, ManifestRoundTripsAndAtomicallyReplaces) {
     expected.world_seed = 89;
     expected.now = Tick{1234};
     {
-        FileZoneStore store{directory.path()};
+        FileZoneStore store{directory.path(), test_ruleset()};
         ZoneManager manager{store};
         manager.save_all();
         store.write_manifest(expected);
@@ -309,7 +315,7 @@ TEST(FileZoneStore, ManifestRoundTripsAndAtomicallyReplaces) {
         EXPECT_FALSE(std::filesystem::exists(store.manifest_path().string() + ".tmp"));
     }
     {
-        FileZoneStore store{directory.path()};
+        FileZoneStore store{directory.path(), test_ruleset()};
         ASSERT_TRUE(store.manifest().has_value());
         EXPECT_EQ(*store.manifest(), expected);
         ZoneManager manager{store};
@@ -319,7 +325,7 @@ TEST(FileZoneStore, ManifestRoundTripsAndAtomicallyReplaces) {
 
 TEST(FileZoneStore, RejectsChangingImmutableWorldDims) {
     TemporaryDirectory directory;
-    FileZoneStore store{directory.path()};
+    FileZoneStore store{directory.path(), test_ruleset()};
     ZoneManager manager{store};
     manager.save_all();
     store.write_manifest(SaveManifest{});
@@ -337,7 +343,7 @@ TEST(FileZoneStore, RejectsTruncatedManifestWithoutOverwritingExistingFiles) {
     std::string root_before;
     std::string zone_before;
     {
-        FileZoneStore store{directory.path()};
+        FileZoneStore store{directory.path(), test_ruleset()};
         ZoneManager manager{store};
         const auto key = child_key(kRootZone, 4, 0);
         static_cast<void>(manager.materialize(key));
@@ -352,7 +358,8 @@ TEST(FileZoneStore, RejectsTruncatedManifestWithoutOverwritingExistingFiles) {
         write_file(store.manifest_path(), std::string_view{manifest}.substr(0, 3));
     }
 
-    EXPECT_THROW(static_cast<void>(FileZoneStore{directory.path()}), std::runtime_error);
+    EXPECT_THROW(static_cast<void>(FileZoneStore{directory.path(), test_ruleset()}),
+                 std::runtime_error);
     EXPECT_EQ(read_file(root_path), root_before);
     EXPECT_EQ(read_file(zone_path), zone_before);
     EXPECT_EQ(std::filesystem::file_size(directory.path() / "manifest.bin"), 3U);
@@ -363,7 +370,8 @@ TEST(FileZoneStore, RejectsZoneFilesWithoutManifestAndDoesNotOverwriteThem) {
     const auto orphan = directory.path() / "ab" / "abcdef.bin";
     write_file(orphan, "orphan-data");
 
-    EXPECT_THROW(static_cast<void>(FileZoneStore{directory.path()}), std::runtime_error);
+    EXPECT_THROW(static_cast<void>(FileZoneStore{directory.path(), test_ruleset()}),
+                 std::runtime_error);
     EXPECT_EQ(read_file(orphan), "orphan-data");
     EXPECT_FALSE(std::filesystem::exists(directory.path() / "manifest.bin"));
 }
@@ -374,25 +382,27 @@ TEST(FileZoneStore, RejectsManifestFormatVersionMismatch) {
     bad.format_version = kSaveFormatVersion + 1;
     write_raw_manifest(directory.path() / "manifest.bin", bad);
 
-    EXPECT_THROW(static_cast<void>(FileZoneStore{directory.path()}), std::runtime_error);
+    EXPECT_THROW(static_cast<void>(FileZoneStore{directory.path(), test_ruleset()}),
+                 std::runtime_error);
     EXPECT_EQ(read_file(directory.path() / "manifest.bin").size(), 53U);
 }
 
 TEST(FileZoneStore, RequiresRootWhenManifestExists) {
     TemporaryDirectory directory;
     {
-        FileZoneStore store{directory.path()};
+        FileZoneStore store{directory.path(), test_ruleset()};
         ZoneManager manager{store};
         manager.save_all();
         store.write_manifest(SaveManifest{});
         ASSERT_TRUE(std::filesystem::remove(store.path_for(kRootZone)));
     }
-    EXPECT_THROW(static_cast<void>(FileZoneStore{directory.path()}), std::runtime_error);
+    EXPECT_THROW(static_cast<void>(FileZoneStore{directory.path(), test_ruleset()}),
+                 std::runtime_error);
 }
 
 TEST(FileZoneStore, ManagerDestroySynchronouslyDeletesFile) {
     TemporaryDirectory directory;
-    FileZoneStore store{directory.path()};
+    FileZoneStore store{directory.path(), test_ruleset()};
     ZoneManager manager{store};
     const auto key = child_key(kRootZone, 5, 0);
     static_cast<void>(manager.materialize(key));

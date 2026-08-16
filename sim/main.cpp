@@ -1,4 +1,5 @@
 #include "core/api/version.h"
+#include "core/rules/ruleset.h"
 #include "core/serialize/zone_codec.h"
 #include "core/time/tick.h"
 #include "core/zone/file_zone_store.h"
@@ -15,9 +16,13 @@ int main(int argc, char** argv) {
     CLI::App app{"Aetheria headless core probe"};
     std::int64_t requested_tick = 31'104'000;
     std::string save_directory;
+    std::string data_directory{AETHERIA_DEFAULT_DATA_DIR};
     app.add_option("--tick", requested_tick, "額外換算的 Tick（秒）");
     app.add_option("--save-dir", save_directory, "跨程序 zone 存檔目錄");
+    app.add_option("--data-dir", data_directory, "Ruleset TOML 資料目錄");
     CLI11_PARSE(app, argc, argv);
+
+    const auto ruleset = aetheria::rules::RulesetLoader::load(data_directory);
 
     std::cout << "Aetheria core " << aetheria::core_version() << '\n';
     const std::array ticks{std::int64_t{0}, std::int64_t{864'000}, requested_tick};
@@ -42,8 +47,10 @@ int main(int argc, char** argv) {
             } else {
                 const auto handle = zone_manager.materialize(key);
                 static_cast<void>(zone_manager.with(handle, [&](aetheria::zone::Zone& zone) {
-                    zone.layers.at(0).tiles.at(0) =
-                        static_cast<std::uint16_t>(aetheria::zone::level_value_of(key) * 17U);
+                    if (aetheria::zone::level_of(key) == aetheria::zone::ZoneLevel::Region) {
+                        zone.region_tiles.emplace(2, 2);
+                        zone.region_tiles->temperature.at(0) = static_cast<std::uint8_t>(17U);
+                    }
                 }));
             }
         }
@@ -62,7 +69,7 @@ int main(int argc, char** argv) {
             const auto handle = zone_manager.get(key);
             std::uint64_t hash{};
             static_cast<void>(zone_manager.with(*handle, [&](const aetheria::zone::Zone& zone) {
-                hash = aetheria::serialize::persistent_state_hash(zone);
+                hash = aetheria::serialize::persistent_state_hash(zone, ruleset);
             }));
             std::cout << "  level=" << level << " key=" << aetheria::zone::value_of(key)
                       << " parent=" << aetheria::zone::value_of(aetheria::zone::parent_of(key))
@@ -71,10 +78,10 @@ int main(int argc, char** argv) {
     };
 
     if (save_directory.empty()) {
-        aetheria::zone::InMemoryZoneStore zone_store;
+        aetheria::zone::InMemoryZoneStore zone_store{ruleset};
         run_zone_probe(zone_store, false, nullptr);
     } else {
-        aetheria::zone::FileZoneStore zone_store{save_directory};
+        aetheria::zone::FileZoneStore zone_store{save_directory, ruleset};
         const bool load_existing = zone_store.manifest().has_value();
         run_zone_probe(zone_store, load_existing, &zone_store);
     }

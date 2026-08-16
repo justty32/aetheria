@@ -1,5 +1,6 @@
 #pragma once
 
+#include "core/rules/ruleset.h"
 #include "core/zone/zone.h"
 
 #include <map>
@@ -26,12 +27,15 @@ public:
 // 實例析構時其中所有 canonical snapshot 一併失效。
 class InMemoryZoneStore final : public ZoneStore {
 public:
+    explicit InMemoryZoneStore(const rules::Ruleset& ruleset) : ruleset_{ruleset} {}
+
     [[nodiscard]] bool contains(ZoneKey key) const override;
     [[nodiscard]] std::unique_ptr<Zone> load(ZoneKey key) const override;
     void save(const Zone& zone) override;
     [[nodiscard]] bool erase(ZoneKey key) override;
 
 private:
+    const rules::Ruleset& ruleset_;
     std::map<ZoneKey, std::string> snapshots_;
 };
 

@@ -40,7 +40,7 @@ struct SaveManifest {
 // 實例析構不刪檔；slot 目錄持續保有最後一次原子寫入的狀態。
 class FileZoneStore final : public ZoneStore {
 public:
-    explicit FileZoneStore(std::filesystem::path slot_directory);
+    FileZoneStore(std::filesystem::path slot_directory, const rules::Ruleset& ruleset);
 
     [[nodiscard]] bool contains(ZoneKey key) const override;
     [[nodiscard]] std::unique_ptr<Zone> load(ZoneKey key) const override;
@@ -54,6 +54,7 @@ public:
 
 private:
     std::filesystem::path slot_directory_;
+    const rules::Ruleset& ruleset_;
     std::optional<SaveManifest> manifest_;
 };
 

@@ -11,11 +11,11 @@ std::unique_ptr<Zone> InMemoryZoneStore::load(ZoneKey key) const {
     if (found == snapshots_.end()) {
         return nullptr;
     }
-    return serialize::decode_zone(found->second);
+    return serialize::decode_zone(found->second, ruleset_);
 }
 
 void InMemoryZoneStore::save(const Zone& zone) {
-    snapshots_.insert_or_assign(zone.key, serialize::encode_zone(zone));
+    snapshots_.insert_or_assign(zone.key, serialize::encode_zone(zone, ruleset_));
 }
 
 bool InMemoryZoneStore::erase(ZoneKey key) { return snapshots_.erase(key) != 0; }

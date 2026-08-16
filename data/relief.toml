@@ -1,0 +1,13 @@
+[[defs]]
+id = "relief.plain"
+name_key = "relief.plain.name"
+move_cost = 1
+flags = 0
+visual = "relief/plain"
+
+[[defs]]
+id = "relief.hills"
+name_key = "relief.hills.name"
+move_cost = 2
+flags = 0
+visual = "relief/hills"

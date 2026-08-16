@@ -14,6 +14,7 @@ find_package(cereal CONFIG REQUIRED)
 find_package(CLI11 CONFIG REQUIRED)
 find_package(EnTT CONFIG REQUIRED)
 find_package(GTest CONFIG REQUIRED)
+find_package(tomlplusplus CONFIG REQUIRED)
 find_package(zstd CONFIG REQUIRED)
 
 function(aetheria_enable_warnings target)
@@ -26,23 +27,31 @@ endfunction()
 
 add_library(aetheria_core STATIC
     core/api/version.cpp
+    core/rules/ruleset.cpp
     core/time/tick.cpp
     core/serialize/zone_codec.cpp
     core/zone/file_zone_store.cpp
     core/zone/zone_manager.cpp
     core/zone/zone_store.cpp
+    core/world/region_tiles.cpp
 )
 target_include_directories(aetheria_core PUBLIC "${PROJECT_SOURCE_DIR}")
 target_link_libraries(aetheria_core
     PUBLIC EnTT::EnTT
-    PRIVATE cereal::cereal zstd::libzstd_static
+    PRIVATE cereal::cereal tomlplusplus::tomlplusplus zstd::libzstd_static
 )
 aetheria_enable_warnings(aetheria_core)
 
 add_executable(aetheria_tests
+    tests/rules/ruleset_test.cpp
+    tests/serialize/registry_codec_test.cpp
     tests/time/tick_test.cpp
+    tests/world/region_tiles_test.cpp
     tests/zone/zone_store_test.cpp
     tests/zone/zone_test.cpp
+)
+target_compile_definitions(aetheria_tests PRIVATE
+    AETHERIA_SOURCE_DIR="${PROJECT_SOURCE_DIR}"
 )
 target_link_libraries(aetheria_tests
     PRIVATE aetheria_core cereal::cereal GTest::gtest_main zstd::libzstd_static
@@ -59,6 +68,9 @@ add_test(
 )
 add_executable(aetheria_sim sim/main.cpp)
 target_link_libraries(aetheria_sim PRIVATE aetheria_core CLI11::CLI11)
+target_compile_definitions(aetheria_sim PRIVATE
+    AETHERIA_DEFAULT_DATA_DIR="${PROJECT_SOURCE_DIR}/data"
+)
 aetheria_enable_warnings(aetheria_sim)
 add_test(
     NAME SimPersistence.TwoProcesses

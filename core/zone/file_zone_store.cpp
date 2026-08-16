@@ -151,8 +151,8 @@ void atomic_replace(const std::filesystem::path& path, std::string_view bytes) {
 
 }  // namespace
 
-FileZoneStore::FileZoneStore(std::filesystem::path slot_directory)
-    : slot_directory_{std::move(slot_directory)} {
+FileZoneStore::FileZoneStore(std::filesystem::path slot_directory, const rules::Ruleset& ruleset)
+    : slot_directory_{std::move(slot_directory)}, ruleset_{ruleset} {
     const auto path = manifest_path();
     std::error_code error;
     const bool has_manifest = std::filesystem::exists(path, error);
@@ -193,7 +193,7 @@ std::unique_ptr<Zone> FileZoneStore::load(ZoneKey key) const {
         return nullptr;
     }
     try {
-        auto value = serialize::decode_zone(decompress(read_file(path)));
+        auto value = serialize::decode_zone(decompress(read_file(path)), ruleset_);
         if (value->key != key) {
             throw std::runtime_error{"zone key 不符：請求=" + std::to_string(value_of(key)) +
                                      " 檔內=" + std::to_string(value_of(value->key))};
@@ -205,7 +205,7 @@ std::unique_ptr<Zone> FileZoneStore::load(ZoneKey key) const {
 }
 
 void FileZoneStore::save(const Zone& zone) {
-    atomic_replace(path_for(zone.key), compress(serialize::encode_zone(zone)));
+    atomic_replace(path_for(zone.key), compress(serialize::encode_zone(zone, ruleset_)));
 }
 
 bool FileZoneStore::erase(ZoneKey key) {

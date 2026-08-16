@@ -1,6 +1,7 @@
 #include "core/time/tick.h"
 #include "core/zone/zone_key.h"
 #include "core/zone/zone_manager.h"
+#include "tests/support/ruleset_fixture.h"
 
 #include <concepts>
 #include <cstdint>
@@ -32,6 +33,7 @@ using aetheria::zone::ZoneHandle;
 using aetheria::zone::ZoneKey;
 using aetheria::zone::ZoneLevel;
 using aetheria::zone::ZoneManager;
+using aetheria::tests::test_ruleset;
 
 constexpr auto kRegion = child_key(kRootZone, UINT16_C(0xA55A), 0);
 constexpr auto kSite = child_key(kRegion, UINT16_C(0x0ABC), UINT16_C(0x0123));
@@ -119,7 +121,7 @@ TEST(ZoneKey, RootAndDetachedHaveRootParent) {
 }
 
 TEST(ZoneManager, RootCannotBeUnloadedOrDestroyed) {
-    InMemoryZoneStore store;
+    InMemoryZoneStore store{test_ruleset()};
     ZoneManager manager{store};
 
     EXPECT_TRUE(manager.get(kRootZone).has_value());
@@ -129,7 +131,7 @@ TEST(ZoneManager, RootCannotBeUnloadedOrDestroyed) {
 }
 
 TEST(ZoneManager, RootDoesNotParticipateInTick) {
-    InMemoryZoneStore store;
+    InMemoryZoneStore store{test_ruleset()};
     ZoneManager manager{store};
     std::vector<ZoneKey> visited;
 
@@ -143,7 +145,7 @@ TEST(ZoneManager, RootDoesNotParticipateInTick) {
 }
 
 TEST(ZoneManager, DetachedIdsAreNeverReusedAfterDestroy) {
-    InMemoryZoneStore store;
+    InMemoryZoneStore store{test_ruleset()};
     ZoneManager manager{store};
     DetachedZoneKeyAllocator allocator;
 
@@ -157,7 +159,7 @@ TEST(ZoneManager, DetachedIdsAreNeverReusedAfterDestroy) {
 }
 
 TEST(ZoneManagerDeathTest, RejectsStructuralChangesDuringTick) {
-    InMemoryZoneStore store;
+    InMemoryZoneStore store{test_ruleset()};
     ZoneManager manager{store};
     const auto loaded = child_key(kRootZone, 1, 0);
     const auto absent = child_key(kRootZone, 2, 0);
@@ -173,7 +175,7 @@ TEST(ZoneManagerDeathTest, RejectsStructuralChangesDuringTick) {
 }
 
 TEST(ZoneManager, AppliesQueuedStructuralChangesAtTickEndInFifoOrder) {
-    InMemoryZoneStore store;
+    InMemoryZoneStore store{test_ruleset()};
     ZoneManager manager{store};
     const auto first = child_key(kRootZone, 1, 0);
     const auto second = child_key(kRootZone, 2, 0);
@@ -192,7 +194,7 @@ TEST(ZoneManager, AppliesQueuedStructuralChangesAtTickEndInFifoOrder) {
 }
 
 TEST(ZoneManager, SavesDifferentZonesAtTheirOwnTicks) {
-    InMemoryZoneStore store;
+    InMemoryZoneStore store{test_ruleset()};
     ZoneManager manager{store};
     const auto first = child_key(kRootZone, 1, 0);
     const auto second = child_key(kRootZone, 2, 0);
@@ -219,7 +221,7 @@ TEST(ZoneManager, SavesDifferentZonesAtTheirOwnTicks) {
 }
 
 TEST(ZoneManager, RequireAndProbeLoadTreatMissingZoneDifferently) {
-    InMemoryZoneStore store;
+    InMemoryZoneStore store{test_ruleset()};
     ZoneManager manager{store};
     const auto missing = child_key(kRootZone, 9, 0);
 
@@ -228,11 +230,14 @@ TEST(ZoneManager, RequireAndProbeLoadTreatMissingZoneDifferently) {
 }
 
 TEST(ZoneManager, UnloadAndLoadTransferTheSameSubstantiveZone) {
-    InMemoryZoneStore store;
+    InMemoryZoneStore store{test_ruleset()};
     ZoneManager manager{store};
     const auto key = child_key(kRootZone, 12, 0);
     const auto handle = manager.materialize(key);
-    ASSERT_TRUE(manager.with(handle, [](Zone& zone) { zone.layers.at(0).tiles.at(0) = 73; }));
+    ASSERT_TRUE(manager.with(handle, [](Zone& zone) {
+        zone.region_tiles.emplace(1, 1);
+        zone.region_tiles->temperature.at(0) = 73;
+    }));
 
     ASSERT_TRUE(manager.unload(key));
     EXPECT_FALSE(manager.get(key).has_value());
@@ -241,40 +246,44 @@ TEST(ZoneManager, UnloadAndLoadTransferTheSameSubstantiveZone) {
     ASSERT_TRUE(manager.load(key));
     std::uint16_t loaded_tile{};
     ASSERT_TRUE(manager.with(
-        handle, [&](const Zone& zone) { loaded_tile = zone.layers.at(0).tiles.at(0); }));
+        handle, [&](const Zone& zone) { loaded_tile = zone.region_tiles->temperature.at(0); }));
     EXPECT_EQ(loaded_tile, 73);
     EXPECT_TRUE(store.contains(key));
 }
 
 TEST(ZoneManager, TickBorrowWritesZoneDataVisibleAfterTheTurn) {
-    InMemoryZoneStore store;
+    InMemoryZoneStore store{test_ruleset()};
     ZoneManager manager{store};
     const auto handle = manager.materialize(child_key(kRootZone, 13, 0));
 
-    manager.tick(Tick{10}, [](Zone& zone) { zone.layers.at(0).tiles.at(0) = 91; });
+    manager.tick(Tick{10}, [](Zone& zone) {
+        zone.region_tiles.emplace(1, 1);
+        zone.region_tiles->temperature.at(0) = 91;
+    });
 
     std::uint16_t observed{};
-    ASSERT_TRUE(
-        manager.with(handle, [&](const Zone& zone) { observed = zone.layers.at(0).tiles.at(0); }));
+    ASSERT_TRUE(manager.with(
+        handle, [&](const Zone& zone) { observed = zone.region_tiles->temperature.at(0); }));
     EXPECT_EQ(observed, 91);
 }
 
 TEST(ZoneManager, QueuedUnloadKeepsTickBorrowAliveUntilCallbackReturns) {
-    InMemoryZoneStore store;
+    InMemoryZoneStore store{test_ruleset()};
     ZoneManager manager{store};
     const auto handle = manager.materialize(child_key(kRootZone, 14, 0));
 
     manager.tick(Tick{20}, [&](Zone& zone) {
-        zone.layers.at(0).tiles.at(0) = 101;
+        zone.region_tiles.emplace(1, 1);
+        zone.region_tiles->temperature.at(0) = 101;
         manager.queue_unload(zone.key);
-        zone.layers.at(0).tiles.at(0) = 102;
+        zone.region_tiles->temperature.at(0) = 102;
     });
 
     EXPECT_FALSE(manager.with(handle, [](Zone&) {}));
     ASSERT_TRUE(manager.load(handle.key()));
     std::uint16_t observed{};
-    ASSERT_TRUE(
-        manager.with(handle, [&](const Zone& zone) { observed = zone.layers.at(0).tiles.at(0); }));
+    ASSERT_TRUE(manager.with(
+        handle, [&](const Zone& zone) { observed = zone.region_tiles->temperature.at(0); }));
     EXPECT_EQ(observed, 102);
 }
 
@@ -286,7 +295,7 @@ struct ScenarioResult {
 };
 
 ScenarioResult run_deterministic_scenario() {
-    InMemoryZoneStore store;
+    InMemoryZoneStore store{test_ruleset()};
     ZoneManager manager{store};
     const auto region_a = child_key(kRootZone, 7, 0);
     const auto region_b = child_key(kRootZone, 3, 0);
