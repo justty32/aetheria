@@ -133,12 +133,12 @@ TEST(ZoneManager, RootDoesNotParticipateInTick) {
     ZoneManager manager{store};
     std::vector<ZoneKey> visited;
 
-    manager.tick(Tick{1}, [&](ZoneHandle handle) { visited.push_back(handle.key()); });
+    manager.tick(Tick{1}, [&](Zone& zone) { visited.push_back(zone.key); });
     EXPECT_TRUE(visited.empty());
 
     const auto region = child_key(kRootZone, 1, 0);
     static_cast<void>(manager.materialize(region));
-    manager.tick(Tick{2}, [&](ZoneHandle handle) { visited.push_back(handle.key()); });
+    manager.tick(Tick{2}, [&](Zone& zone) { visited.push_back(zone.key); });
     EXPECT_EQ(visited, (std::vector<ZoneKey>{region}));
 }
 
@@ -163,7 +163,7 @@ TEST(ZoneManagerDeathTest, RejectsStructuralChangesDuringTick) {
     const auto absent = child_key(kRootZone, 2, 0);
     static_cast<void>(manager.materialize(loaded));
 
-    manager.tick(Tick{1}, [&](ZoneHandle) {
+    manager.tick(Tick{1}, [&](Zone&) {
         EXPECT_DEATH(static_cast<void>(manager.materialize(absent)),
                      "AETH_CHECK failed: !in_tick_");
         EXPECT_DEATH(static_cast<void>(manager.load(absent)), "AETH_CHECK failed: !in_tick_");
@@ -179,7 +179,7 @@ TEST(ZoneManager, AppliesQueuedStructuralChangesAtTickEndInFifoOrder) {
     const auto second = child_key(kRootZone, 2, 0);
     static_cast<void>(manager.materialize(first));
 
-    manager.tick(Tick{10}, [&](ZoneHandle) {
+    manager.tick(Tick{10}, [&](Zone&) {
         manager.queue_materialize(second);
         manager.queue_unload(second);
         manager.queue_materialize(second);
@@ -199,21 +199,19 @@ TEST(ZoneManager, SavesDifferentZonesAtTheirOwnTicks) {
     static_cast<void>(manager.materialize(first));
     static_cast<void>(manager.materialize(second));
 
-    manager.tick(Tick{100}, [&](ZoneHandle handle) {
-        if (handle.key() == first) {
+    manager.tick(Tick{100}, [&](Zone& zone) {
+        if (zone.key == first) {
             manager.queue_unload(first);
         }
     });
-    manager.tick(Tick{250}, [&](ZoneHandle handle) {
-        if (handle.key() == second) {
+    manager.tick(Tick{250}, [&](Zone& zone) {
+        if (zone.key == second) {
             manager.queue_unload(second);
         }
     });
 
     EXPECT_EQ(store.last_saved_tick(first), Tick{100});
     EXPECT_EQ(store.last_saved_tick(second), Tick{250});
-    EXPECT_EQ(store.tile_count(first), 1);
-    EXPECT_EQ(store.tile_count(second), 1);
 }
 
 TEST(ZoneManager, RequireAndProbeLoadTreatMissingZoneDifferently) {
@@ -229,14 +227,50 @@ TEST(ZoneManager, UnloadAndLoadTransferTheSameSubstantiveZone) {
     InMemoryZoneStore store;
     ZoneManager manager{store};
     const auto key = child_key(kRootZone, 12, 0);
-    static_cast<void>(manager.materialize(key));
+    const auto handle = manager.materialize(key);
+    ASSERT_TRUE(manager.with(handle, [](Zone& zone) { zone.layers.at(0).tiles.at(0) = 73; }));
 
     ASSERT_TRUE(manager.unload(key));
     EXPECT_FALSE(manager.get(key).has_value());
-    EXPECT_EQ(store.tile_count(key), 1);
+    EXPECT_FALSE(manager.with(handle, [](Zone&) {}));
     ASSERT_TRUE(manager.load(key));
-    EXPECT_TRUE(manager.get(key).has_value());
+    std::uint16_t loaded_tile{};
+    ASSERT_TRUE(manager.with(
+        handle, [&](const Zone& zone) { loaded_tile = zone.layers.at(0).tiles.at(0); }));
+    EXPECT_EQ(loaded_tile, 73);
     EXPECT_FALSE(store.contains(key));
+}
+
+TEST(ZoneManager, TickBorrowWritesZoneDataVisibleAfterTheTurn) {
+    InMemoryZoneStore store;
+    ZoneManager manager{store};
+    const auto handle = manager.materialize(child_key(kRootZone, 13, 0));
+
+    manager.tick(Tick{10}, [](Zone& zone) { zone.layers.at(0).tiles.at(0) = 91; });
+
+    std::uint16_t observed{};
+    ASSERT_TRUE(
+        manager.with(handle, [&](const Zone& zone) { observed = zone.layers.at(0).tiles.at(0); }));
+    EXPECT_EQ(observed, 91);
+}
+
+TEST(ZoneManager, QueuedUnloadKeepsTickBorrowAliveUntilCallbackReturns) {
+    InMemoryZoneStore store;
+    ZoneManager manager{store};
+    const auto handle = manager.materialize(child_key(kRootZone, 14, 0));
+
+    manager.tick(Tick{20}, [&](Zone& zone) {
+        zone.layers.at(0).tiles.at(0) = 101;
+        manager.queue_unload(zone.key);
+        zone.layers.at(0).tiles.at(0) = 102;
+    });
+
+    EXPECT_FALSE(manager.with(handle, [](Zone&) {}));
+    ASSERT_TRUE(manager.load(handle.key()));
+    std::uint16_t observed{};
+    ASSERT_TRUE(
+        manager.with(handle, [&](const Zone& zone) { observed = zone.layers.at(0).tiles.at(0); }));
+    EXPECT_EQ(observed, 102);
 }
 
 struct ScenarioResult {
@@ -257,17 +291,17 @@ ScenarioResult run_deterministic_scenario() {
 
     ScenarioResult result;
     result.tick_visits.emplace_back();
-    manager.tick(Tick{10}, [&](ZoneHandle handle) {
-        result.tick_visits.back().push_back(handle.key());
-        if (handle.key() == region_a) {
+    manager.tick(Tick{10}, [&](Zone& zone) {
+        result.tick_visits.back().push_back(zone.key);
+        if (zone.key == region_a) {
             manager.queue_materialize(site);
             manager.queue_unload(region_b);
         }
     });
     result.tick_visits.emplace_back();
-    manager.tick(Tick{20}, [&](ZoneHandle handle) {
-        result.tick_visits.back().push_back(handle.key());
-        if (handle.key() == site) {
+    manager.tick(Tick{20}, [&](Zone& zone) {
+        result.tick_visits.back().push_back(zone.key);
+        if (zone.key == site) {
             manager.queue_materialize(region_b);
         }
     });

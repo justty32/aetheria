@@ -12,6 +12,7 @@
 #include <memory>
 #include <optional>
 #include <stdexcept>
+#include <type_traits>
 #include <utility>
 #include <variant>
 #include <vector>
@@ -36,7 +37,7 @@ private:
 // 建立它的世界狀態擁有它；它只借用 ZoneStore。
 // manager 析構後 handle 仍是 key，但須交給另一個 manager 重新查找。
 // 契約：tick 內的結構變更只能排進 FIFO；各 zone 以自己的 last_saved_tick 寫回單槽 store；
-// 查詢 API 只回不含指標的 ZoneHandle，不把可能被逐出的 Zone* 交給呼叫端。
+// 長駐查詢只回 ZoneHandle；Zone& 僅在 with／tick callback 的作用域內借用。
 class ZoneManager {
 public:
     explicit ZoneManager(ZoneStore& store);
@@ -48,18 +49,44 @@ public:
     [[nodiscard]] bool unload(ZoneKey key);
     [[nodiscard]] bool destroy(ZoneKey key);
 
+    template <typename Borrower>
+        requires std::invocable<Borrower, Zone&> &&
+                 std::same_as<std::invoke_result_t<Borrower, Zone&>, void>
+    [[nodiscard]] bool with(ZoneHandle handle, Borrower&& borrower) {
+        const auto found = zones_.find(handle.key());
+        if (found == zones_.end()) {
+            return false;
+        }
+        std::invoke(std::forward<Borrower>(borrower), *found->second);
+        return true;
+    }
+
+    template <typename Borrower>
+        requires std::invocable<Borrower, const Zone&> &&
+                 std::same_as<std::invoke_result_t<Borrower, const Zone&>, void>
+    [[nodiscard]] bool with(ZoneHandle handle, Borrower&& borrower) const {
+        const auto found = zones_.find(handle.key());
+        if (found == zones_.end()) {
+            return false;
+        }
+        std::invoke(std::forward<Borrower>(borrower), std::as_const(*found->second));
+        return true;
+    }
+
     void queue_materialize(ZoneKey key);
     void queue_unload(ZoneKey key);
     void queue_destroy(ZoneKey key);
 
     template <typename System>
-        requires std::invocable<System&, ZoneHandle>
+        requires std::invocable<System&, Zone&>
     void tick(time::Tick now, System&& system) {
         AETH_CHECK(!in_tick_);
         in_tick_ = true;
         try {
             for (const auto key : tick_order_) {
-                std::invoke(system, ZoneHandle{key});
+                const auto found = zones_.find(key);
+                AETH_CHECK(found != zones_.end());
+                std::invoke(system, *found->second);
             }
         } catch (...) {
             in_tick_ = false;
@@ -72,7 +99,7 @@ public:
     }
 
     void tick(time::Tick now) {
-        tick(now, [](ZoneHandle) noexcept {});
+        tick(now, [](Zone&) noexcept {});
     }
 
     [[nodiscard]] std::vector<ZoneKey> loaded_keys() const;

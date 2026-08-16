@@ -32,17 +32,4 @@ std::optional<time::Tick> InMemoryZoneStore::last_saved_tick(ZoneKey key) const 
     return found->second->last_saved_tick;
 }
 
-std::optional<std::size_t> InMemoryZoneStore::tile_count(ZoneKey key) const noexcept {
-    const auto found = zones_.find(key);
-    if (found == zones_.end()) {
-        return std::nullopt;
-    }
-    std::size_t count = 0;
-    for (const auto& [z, layer] : found->second->layers) {
-        static_cast<void>(z);
-        count += layer.tiles.size();
-    }
-    return count;
-}
-
 }  // namespace aetheria::zone

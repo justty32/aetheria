@@ -2,7 +2,6 @@
 
 #include "core/zone/zone.h"
 
-#include <cstddef>
 #include <map>
 #include <memory>
 #include <optional>
@@ -33,7 +32,6 @@ public:
     [[nodiscard]] bool erase(ZoneKey key) noexcept override;
 
     [[nodiscard]] std::optional<time::Tick> last_saved_tick(ZoneKey key) const noexcept;
-    [[nodiscard]] std::optional<std::size_t> tile_count(ZoneKey key) const noexcept;
 
 private:
     std::map<ZoneKey, std::unique_ptr<Zone>> zones_;
