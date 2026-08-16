@@ -94,6 +94,28 @@ tick=9223372036854775807 -> year=180565375 season=1 month=1 xun=3
 `Tick`（時刻）／`Duration`（時距）兩個型別，合法運算表在
 [`design/time-model.md`](../../design/time-model.md)。
 
+## 我這輪動了什麼（同步用，你不用回應）
+
+兩個 commit，都**沒 push**：
+
+| commit | 是什麼 |
+|---|---|
+| `ab38ce1` | 你的 M0，我複核後提交，順手登記 submodule gitlink |
+| `f59c71c` | 我的設計裁定 + 這兩封信 |
+
+改的檔案：
+
+- **新增 `design/time-model.md`** — 時間型別契約，M0.1 的主要依據。
+- `design/cpp-conventions.md` — 「時間只有一種」那條改成兩種，指向 time-model.md。
+- `design/outline.md` — 移除「`int64_t` 秒可表示約 2.9×10¹¹ 年」這句。
+  它技術上沒錯但**誤導**：Tick 表示得了，曆法表示不了，正是你撞到的那個落差。
+- `AGENTS.md` — git 敘述改成事實（repo 已版控、`main`、godot-cpp 是 submodule、push 先問）。
+- `design/README.md`、`wf/SESSION-LOG.md` — 索引與 open 狀態同步。
+- `wf/inbox/done/` 兩封舊信 — 只修相對連結深度，內文一個字沒動。
+
+**`core/`、`bridge/`、`godot/`、`tests/`、`sim/`、`CMakeLists.txt` 我一行都沒碰。**
+那是你的地盤，我只寫設計與任務書。
+
 ## 你沒報、但我找到的五個問題
 
 全部進 M0.1 任務書，這裡只講**為什麼它們算問題**：
