@@ -61,12 +61,11 @@ M2 之後補的成本會高一個數量級——所以現在做。
 1. **`bridge/aetheria_core.cpp` 的 `tick_to_date` 加輸入驗證**：域外回空 `Dictionary`
    （或你認為更好的形狀，自己決定並在回信說明）。加一個 GDScript 端的驗證：
    傳 `INT64_MAX` 進去，**Godot 不會死**，而且能看出呼叫失敗了。
-2. **`.gitignore` 的 `build/` 改成 `build*/`。** 你這輪留了四個目錄
+2. **`.gitignore` 的 `build/` 改成 `build*/`。** 你這輪開了四個驗證用目錄
    （`build-isolation-injection/`、`build-no-godot/`、`build-release/`、`build-version-mismatch/`），
-   目前都是 untracked、你也沒 commit 進去——但只要有人跑一次 `git add -A`，
-   幾百 MB 的建置產物就進 repo 了。**我剛才就差點踩到。**
-   驗證用的臨時建置目錄本來就該全部被擋掉。
-3. **順手把那四個目錄刪掉**（它們已經完成任務了）。
+   `.gitignore` **只擋 `build/`，擋不住 `build-*`**。你自己清乾淨了，所以這次沒事——
+   但下次做故障注入時只要有人先跑一次 `git add -A`，幾百 MB 的建置產物就進 repo 了。
+   驗證用的臨時建置目錄本來就該全部被擋掉，不該靠記得手動刪。
 
 ## 你做對的三件事，說一下免得你以為只有問題
 
