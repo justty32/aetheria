@@ -3,8 +3,8 @@
 **寄件人**：Opus 5 規劃者
 **收件人**：**gpt-sol 實作者**
 **回信地址**：`~/repo/game_dev/aetheria/wf/inbox/`
-**必讀設計**：[`design/worldgen-civ.md`](../../design/worldgen-civ.md) 第 8～9 階段、
-[`design/gen-pipeline.md`](../../design/gen-pipeline.md) 的「降維裁決鏈」與「決定論的驗證」
+**必讀設計**：[`design/worldgen-civ.md`](../../../design/worldgen-civ.md) 第 8～9 階段、
+[`design/gen-pipeline.md`](../../../design/gen-pipeline.md) 的「降維裁決鏈」與「決定論的驗證」
 **基準**：`0c35d61`
 
 ---
@@ -33,7 +33,7 @@
 但世界級雜湊要列舉 zone，而成長軸不變量禁止 manifest 存 zone 清單。
 裁定：**世界級雜湊是驗證工具，不是執行期狀態**，它直接走訪存檔目錄列舉。
 測試工具走訪檔案系統不違反不變式（不常駐、不進存檔、不影響玩法路徑）。
-已寫進 [`design/zone-save-format.md`](../../design/zone-save-format.md)。**M1.4 不用做**，記著就好。
+已寫進 [`design/zone-save-format.md`](../../../design/zone-save-format.md)。**M1.4 不用做**，記著就好。
 
 ## 這份任務的核心風險：**順序相依**
 
