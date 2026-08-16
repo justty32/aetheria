@@ -10,6 +10,9 @@
 
 namespace aetheria::serialize {
 
+// EntityValue 是 registry 位元流使用的 EnTT entity 底層值型別。
+// 它是無擁有者的值型別。
+// 值本身永不失效；轉回 entity 後仍受所屬 registry 生命週期約束。
 using EntityValue = std::underlying_type_t<entt::entity>;
 
 // RegistryOutputArchive 是 EnTT snapshot 到 PortableBinary 的型別轉接器。

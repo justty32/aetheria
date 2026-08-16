@@ -37,8 +37,8 @@ struct SiteState {
 };
 
 // RegionTiles 是 L1 地圖的平行陣列資料與雙邊一致 edge 寫入入口。
-// Region Zone 暫時以 optional payload 擁有它，直到三層 layers 形狀另行裁定。
-// 所屬 Zone 析構後失效；任何 vector 重配會使先前元素參考失效。
+// 所屬 RegionPayload 的 layers map 擁有它。
+// payload 被替換或 Zone 析構後失效；任何 vector 重配會使先前元素參考失效。
 struct RegionTiles {
     RegionTiles() = default;
     RegionTiles(std::uint32_t grid_width, std::uint32_t grid_height);
