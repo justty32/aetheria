@@ -48,7 +48,7 @@ medps 把這題列為懸置；aetheria 的觀察點樹與獨特物件登記表�
 
 | 操作 | 語意 |
 |---|---|
-| `get(key)` | 取已載入的 zone；未載入回 `nullptr`。**不影響 LOD 分數** |
+| `get(key)` | 查已載入的 zone，回 `optional<ZoneHandle>`（**不是 `Zone*`**）。**不影響 LOD 分數** |
 | `require(key)` | 取或載入；檔案缺失＝結構損毀 → throw |
 | `load(key)` | 探測性載入；不存在回 `false`，不是錯誤 |
 | `materialize(key)` | 不存在就生成（走 [gen-pipeline.md](gen-pipeline.md)） |
@@ -70,8 +70,37 @@ medps 把這題列為懸置；aetheria 的觀察點樹與獨特物件登記表�
 2. **存檔目錄＝單槽活儲存。** 存檔目錄就是世界的權威狀態，
    `unload`／逐出隨時寫檔；`save_all` 是檢查點，不是槽位快照。
    各 zone 凍結於不同遊戲時刻是**接受的語意**（`last_saved_tick` 記錄它）。
-3. **`Zone*` 不跨 tick 持有。** 逐出會析構 `Zone`。第一個想長駐快取 `Zone*` 的
-   系統出現時，強制改成 handle 式存取（存 key、每次 `get`）——不等它咬人。
+3. **`Zone*` 不跨 tick 持有。** 逐出會析構 `Zone`。長駐的東西一律存 `ZoneHandle`（只含 key），
+   每次要用再查。
+
+## 存取：作用域借用（scoped borrow）
+
+⚠ **這一節是踩到坑之後補的。** 契約三原本只說「不准跨 tick 持有 `Zone*`」，
+沒說「系統要怎麼讀寫 zone 資料」——結果第一版實作用「**完全不交出任何存取**」
+滿足了它：`ZoneManager` 只回 `ZoneHandle`，`registry` 與 `layers` 從外面碰不到。
+每條驗收都過，但那套 API 什麼玩法都寫不了。
+
+**規則不是「永不交出 `Zone&`」，是「`Zone&` 不得活過這次借用」。**
+
+```cpp
+template <typename F> decltype(auto) with(ZoneHandle, F&& f);   // f 收到 Zone&
+```
+
+- 存取一律經 **callback**，引用只在 callback 內有效，**不得逃逸**（不存成員、不回傳）。
+- `tick()` 傳給 system 的也是借用（`Zone&`），不是光禿禿的 handle。
+- 借用期間**不可能**發生逐出——結構性變更全部排進命令緩衝、回合尾端才執行（契約一）。
+  這正是契約一與契約三互相支撐的地方：**有了命令緩衝，借用才安全**。
+- 借用不是萬無一失（惡意程式仍可把引用抄走），但它讓**正確寫法是最省事的寫法**，
+  這就夠了。契約靠測試守，不靠型別系統證明。
+
+## 命令緩衝的形狀（定案）
+
+`std::vector<std::variant<Materialize, Unload, Destroy>>`，**FIFO**。
+
+- 三個 `queue_*` 只能在 tick 內呼叫；tick 跑完先退出結構鎖，再依排隊順序逐項執行。
+- 每種命令一個型別，**不用裸 enum + 無效 payload**。
+- **system 丟例外時，本回合 queue 清空後重拋。** 半套的結構命令延到未知時點執行，
+  比直接失敗糟得多。
 
 ## 成長軸不變量
 

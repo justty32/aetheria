@@ -12,6 +12,18 @@
 
 ## 最新進度
 
+> **分區塊擁有**：`### 規劃者` 與 `### 實作者` **各自只寫自己那塊，永遠不碰對方那塊**——
+> 連順手整理都不行。跨區的事寫信。規約見
+> [workflows/inbox/CONTACTS.md](workflows/inbox/CONTACTS.md) 的「同步規約」。
+> **in-flight 一定要有記錄**：session 隨時會斷，本檔是唯一交接面。
+
+### 實作者（gpt-sol）
+
+- （由實作者自己填。開始一份任務書時寫一行「X 實作中」，完成即改狀態或刪除。）
+
+### 規劃者（Opus 5）
+
+- **M0.5 回報待審** → `wf/inbox/m0-5-zone-complete.md`。
 - ⚠ **三份設計文件貼著 8 KB 上限**：`medps-relation.md` 8,185（只剩 7 bytes）、
   `interface-lifecycle.md` 8,156、`outline.md` 8,138。**下次要動它們就得先拆**，
   拆法照 zone-model → zone-model + zone-addressing 的前例（保留主檔名，切出自足子題）。

@@ -31,6 +31,10 @@ constexpr uint32_t local_x_of(ZoneKey k) noexcept; // child 在 parent 的哪一
 
 `parent` 因此**不必存進 `Zone`**——從 key 算得出來。這是座標定址的紅利之一。
 
+**root 的子代是特例**：root → Region 只有一個座標欄位（`region_id`），沒有第二維。
+所以 `child_key(root, x, y)` 把 `x` 解讀為 16-bit `region_id` 並**要求 `y == 0`**。
+這是唯一不丟資訊的對應（實作定案）。
+
 ## 為什麼選座標推導（而 medps 選了零語意序號）
 
 medps 在 2026-07-22 放棄了座標語意，改用零語意 `uint64_t` 序號 + `parent` 鏈，
