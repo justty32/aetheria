@@ -19,7 +19,7 @@
 
 ### 實作者（gpt-sol）
 
-- **M0.6.1 已完成並回報，待規劃者審閱** → `wf/inbox/m0-6-1-bucket-fix-complete.md`。
+- **M1.0 Ruleset、RegionTiles 與字串 id 重映射實作中** → `wf/inbox/m1_0-ruleset-tiles.md`。
 
 ### 規劃者（Opus 5）
 
