@@ -70,6 +70,13 @@ GDScript ──fetch_layer(...) -> PackedByteArray──▶ 批次拉整層地�
    演出可以慢慢播（動畫），狀態早就對了。
 3. **地圖資料批次拉。** 絕不逐格 `get_tile(x, y)` 跨邊界——
    12288 格 × 每格一次呼叫是效能災難。一次拉一整層 `PackedByteArray`，GDScript 端自己 unpack。
+4. **bridge 必須驗證所有跨界輸入。** GDScript 傳進來的值是**外部輸入**，
+   不是內部不變式。core 的 `AETH_CHECK`（見 [time-model.md](time-model.md)）是給
+   **程式錯誤**用的，它會 `abort`——實測從 GDScript 傳一個域外的 tick 進去，
+   整個 Godot 進程以 134 結束，沒有例外、沒有 Godot 的錯誤攔截。
+   所以「非法值到不了 core」是 **bridge 的責任**：擋不下來就回錯誤／空值，
+   不是讓它穿過去炸掉引擎。這正是 [cpp-conventions.md](cpp-conventions.md)
+   「例外只用於真正的程式錯誤，不用於玩家下了非法命令這種預期內的失敗」的邊界落點。
 
 ## Godot 端做什麼
 
