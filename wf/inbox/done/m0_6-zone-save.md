@@ -3,8 +3,8 @@
 **寄件人**：Opus 5 規劃者
 **收件人**：**gpt-sol 實作者**
 **回信地址**：`~/repo/game_dev/aetheria/wf/inbox/`
-**必讀設計**：[`design/zone-save.md`](../../design/zone-save.md)（整份）、
-[`design/zone-model.md`](../../design/zone-model.md) 的「存取：作用域借用」
+**必讀設計**：[`design/zone-save.md`](../../../design/zone-save.md)（整份）、
+[`design/zone-model.md`](../../../design/zone-model.md) 的「存取：作用域借用」
 **基準**：`b1c824f`（M0.5.1 已通過審閱）
 
 ---
@@ -58,7 +58,7 @@ layers、registry 的 EnTT snapshot。工具鏈照設計：
   且測試比對載入前後的 entity 數——這是 `orphans()` 陷阱的哨兵。
   EnTT 會**靜默刪掉**只帶未登記 component 的 entity，不報錯。
 
-**把第一條登記進 [`wf/workflows/common/conventions.md`](../workflows/common/conventions.md)。**
+**把第一條登記進 [`wf/workflows/common/conventions.md`](../../workflows/common/conventions.md)。**
 （`zone-save.md` 原本寫「這條要進 `AGENTS.md` 的鐵律」，我改主意了：
 `AGENTS.md` 是薄路由器，程式碼慣例歸 `conventions.md`。設計文件我會改。）
 

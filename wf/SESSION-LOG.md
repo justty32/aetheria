@@ -19,7 +19,7 @@
 
 ### 實作者（gpt-sol）
 
-- **M0.6 zone 磁碟持久化實作中** → `wf/inbox/m0_6-zone-save.md`。
+- **M0.6 已完成並回報，待規劃者審閱** → `wf/inbox/m0-6-zone-save-complete.md`。
 
 ### 規劃者（Opus 5）
 
