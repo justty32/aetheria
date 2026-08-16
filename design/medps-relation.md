@@ -54,7 +54,7 @@ M0 開工前必須逐條完成。每條的判準是「aetheria 有一份文件�
 | 5 | 逐出只在 tick 尾端 + `pinned` 第二道防線 | [interface-lifecycle.md](interface-lifecycle.md)、[event-scaling.md](event-scaling.md) | ✅ 繼承（LRU 換成場強） |
 | 6 | 跨 zone 引用用 zone id + 穩定 uid，解引用可失敗 | [events.md](events.md) 的 `participants` | ✅ 繼承 |
 | 7 | 一切皆 zone、root 永駐 | [zone-model.md](zone-model.md) | ✅ 繼承 |
-| 8 | 三條執行期契約（tick 重入禁令、單槽活儲存、`Zone*` 不跨 tick） | [zone-model.md](zone-model.md) | ✅ 繼承 |
+| 8 | 三條執行期契約（tick 重入禁令、單槽活儲存、`Zone*` 不跨 tick） | [zone-contracts.md](zone-contracts.md) | ✅ 繼承 |
 | 9 | fail-fast 套件（load 驗 id、manifest 原子寫、destroy 刪檔） | [zone-save.md](zone-save.md) | ✅ 繼承，**再加 `require`／`load` 分流**（medps 把這題 defer 了） |
 | 10 | 序列化選型（cereal + EnTT snapshot、`AllComponents` 單一清單） | [zone-save-format.md](zone-save-format.md) | ✅ 繼承，含 `orphans()` 陷阱的對策 |
 | 11 | zone 定址：零語意序號 vs 座標推導 | [zone-addressing.md](zone-addressing.md) | ✅ **已定案：混合方案** |

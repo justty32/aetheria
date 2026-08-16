@@ -1,7 +1,8 @@
 # Zone 模型與生命週期
 
 > **M0.5 的直接前置。** 三層地圖在程式裡是同一種東西：zone。
-> 這份定死它的**結構與生命週期契約**；**定址另見 [zone-addressing.md](zone-addressing.md)**。
+> 這份定死它的**結構與生命週期 API**；**定址另見 [zone-addressing.md](zone-addressing.md)**，
+> **執行期契約（tick 內結構變更、作用域借用、命令緩衝）另見 [zone-contracts.md](zone-contracts.md)**。
 > 存檔與序列化見 [zone-save.md](zone-save.md)（目錄／路徑／manifest）與
 > [zone-save-format.md](zone-save-format.md)（位元流格式）；繼承來源見 [medps-inheritance.md](medps-inheritance.md)。
 
@@ -13,12 +14,12 @@
 
 ```cpp
 struct Zone {
-    ZoneKey                   key;        // 身分 + 位址（zone-addressing.md）
-    entt::registry            reg;        // 這個 zone 的所有實體
-    std::map<int8_t, TileGrid> layers;    // 鍵即 z：地面 0、地下為負、天空為正
-    LodLevel                  lod;        // 執行期，不序列化
-    bool                      pinned;     // 執行期，不序列化
-    Tick                      last_saved_tick;
+    ZoneKey        key;             // 身分 + 位址（zone-addressing.md）
+    entt::registry reg;             // 這個 zone 的所有實體
+    SpatialPayload payload;         // 空間資料，依 level 分流（見下）
+    LodLevel       lod;             // 執行期，不序列化
+    bool           pinned;          // 執行期，不序列化
+    Tick           last_saved_tick;
 };
 ```
 
@@ -27,6 +28,35 @@ struct Zone {
 - `registry` 不可複製 → `Zone` 只能移動。
 - 地圖是 zone 的固有結構，**不走 ECS**。代價是 registry snapshot 不含它，
   存檔要分兩塊處理（見 [zone-save-format.md](zone-save-format.md)）。
+
+### 空間 payload 依 level 分流（定案）
+
+三層的 tile 欄位集**本來就不同**（Region 有氣候／海拔／owner，Local 沒有），
+但「一切皆 zone」要求 `Zone` 只有一種型別。解法是把異質性收在**一個欄位**裡：
+
+```cpp
+struct RegionPayload { std::map<int8_t, RegionTiles> layers; };   // L1
+struct SitePayload   { std::map<int8_t, SiteTiles>   layers; };   // L2
+struct LocalPayload  { std::map<int8_t, LocalTiles>  layers; };   // L3
+using SpatialPayload =
+    std::variant<std::monostate, RegionPayload, SitePayload, LocalPayload>;
+```
+
+- **變體選擇在 payload 層，不在每個 z layer。** 否則同一個 zone 的不同 z
+  可能混進不同層級的 schema。
+- **不變式**：`payload` 的 alternative 必須與 `key` 的 `level` 相符。
+  建構時與 decode 時都要驗，不符即 fail-fast。
+- Root 與 Detached 用 `monostate`——它們沒有 tile。
+- 垂直層（`layers` 的 z 鍵）仍在各 payload **內**，那條沒變。
+
+為什麼不是別的：**單一大 TileGrid 塞滿所有欄位**會讓每個 Local 都背著它永遠用不到的
+氣候欄（L3 要串流大量 zone，這筆很貴）；**`Zone<Level>` 模板**會讓 `ZoneManager`
+跟著裂成三份，直接違反「一切皆 zone」；**虛擬繼承**被
+[cpp-conventions.md](cpp-conventions.md) 排除，也會毀掉 SoA 的快取友善性。
+
+變體的 alternative 數量是**設計定死的三層 + 無**，不會成長——所以它不觸犯
+「種類一律是資料」那條（[definitions.md](definitions.md)）：那條管的是**種類**，這是 **schema**。
+
 
 ## root zone
 
@@ -60,51 +90,6 @@ medps 把這題列為懸置；aetheria 的觀察點樹與獨特物件登記表�
 `require` 與 `load` 分流是刻意的：**結構引用指向的檔案缺失是損毀，該 fail-fast**；
 探測性查詢則該安靜回報。medps 把這題 defer 了。
 
-## 三條執行期契約（繼承 medps）
-
-寫進 `zone_manager.h` 的註解，並靠測試守住：
-
-1. **tick 內禁止 zone 結構性變更。** system 呼叫 `materialize`/`load`/`unload`/`destroy`
-   會讓 `zones_` 容器 rehash 或刪元素 → 迭代器 UB。
-   需要在 system 內造 zone 時，走**命令緩衝**：排隊，回合尾端統一執行。
-   這與 [principles.md](principles.md) 原則七是同一條。
-2. **存檔目錄＝單槽活儲存。** 存檔目錄就是世界的權威狀態，
-   `unload`／逐出隨時寫檔；`save_all` 是檢查點，不是槽位快照。
-   各 zone 凍結於不同遊戲時刻是**接受的語意**（`last_saved_tick` 記錄它）。
-   **載入不消耗磁碟檔**：zone 被載入後，記憶體是該 zone 的權威狀態，
-   磁碟保留上一個檢查點。這讓 crash 最多退回上次寫檔，而不是連檔案都沒了。
-3. **`Zone*` 不跨 tick 持有。** 逐出會析構 `Zone`。長駐的東西一律存 `ZoneHandle`（只含 key），
-   每次要用再查。
-
-## 存取：作用域借用（scoped borrow）
-
-⚠ **這一節是踩到坑之後補的。** 契約三原本只說「不准跨 tick 持有 `Zone*`」，
-沒說「系統要怎麼讀寫 zone 資料」——結果第一版實作用「**完全不交出任何存取**」
-滿足了它：`ZoneManager` 只回 `ZoneHandle`，`registry` 與 `layers` 從外面碰不到。
-每條驗收都過，但那套 API 什麼玩法都寫不了。
-
-**規則不是「永不交出 `Zone&`」，是「`Zone&` 不得活過這次借用」。**
-
-```cpp
-template <typename F> decltype(auto) with(ZoneHandle, F&& f);   // f 收到 Zone&
-```
-
-- 存取一律經 **callback**，引用只在 callback 內有效，**不得逃逸**（不存成員、不回傳）。
-- `tick()` 傳給 system 的也是借用（`Zone&`），不是光禿禿的 handle。
-- 借用期間**不可能**發生逐出——結構性變更全部排進命令緩衝、回合尾端才執行（契約一）。
-  這正是契約一與契約三互相支撐的地方：**有了命令緩衝，借用才安全**。
-- 借用不是萬無一失（惡意程式仍可把引用抄走），但它讓**正確寫法是最省事的寫法**，
-  這就夠了。契約靠測試守，不靠型別系統證明。
-
-## 命令緩衝的形狀（定案）
-
-`std::vector<std::variant<Materialize, Unload, Destroy>>`，**FIFO**。
-
-- 三個 `queue_*` 只能在 tick 內呼叫；tick 跑完先退出結構鎖，再依排隊順序逐項執行。
-- 每種命令一個型別，**不用裸 enum + 無效 payload**。
-- **system 丟例外時，本回合 queue 清空後重拋。** 半套的結構命令延到未知時點執行，
-  比直接失敗糟得多。
-
 ## 成長軸不變量
 
 規模現實：3～5 個 Region × 12288 格 ≈ 5 萬個 Site，再 × 4096 = **兩億個 Local**。
@@ -117,7 +102,8 @@ template <typename F> decltype(auto) with(ZoneHandle, F&& f);   // f 收到 Zone
 
 ## 待細化
 
-- `TileGrid` 的實際型別（各層欄位不同，見 [worldmap.md](worldmap.md) 與 [midmap.md](midmap.md) 的 SoA）
+- `SiteTiles`／`LocalTiles` 的欄位集（L1 的 `RegionTiles` 已定，見 [worldmap.md](worldmap.md)；
+  L2／L3 等 M3／M5 再定——現在定一定定錯）
 - 各層的 system 註冊與 tick 分派（不同 stride，見 [outline.md](outline.md)）
 - root 的分塊策略（若它真的長太大）
 - 跨 zone 實體搬移函式（消費 `ReturnTrail`、維護 `uid_index` 的單一入口）

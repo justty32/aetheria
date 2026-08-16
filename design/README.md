@@ -40,7 +40,8 @@
 
 | 文件 | 內容 |
 |---|---|
-| [zone-model.md](zone-model.md) | 一切皆 zone、root、生命週期 API、三條執行期契約 |
+| [zone-model.md](zone-model.md) | 一切皆 zone、root、生命週期 API、成長軸不變量 |
+| [zone-contracts.md](zone-contracts.md) | 執行期契約：tick 內禁止結構變更、作用域借用、命令緩衝 |
 | [zone-addressing.md](zone-addressing.md) | **定址定案**：`ZoneKey` 位元佈局、座標推導、Detached |
 | [zone-save.md](zone-save.md) | 存檔目錄佈局、路徑由 key 推導、manifest、開檔協定、fail-fast |
 | [zone-save-format.md](zone-save-format.md) | 存檔位元流格式：cereal + EnTT snapshot、`AllComponents` 清單、跨 zone 引用 |

@@ -25,16 +25,12 @@
 
 - **M0.6 全部通過**（含 M0.6.1 分桶修正）。分桶分布已獨立驗證：
   61,440 個 Site key 攤在 **256/256 個桶**、最大桶 1.17×理想，無結構化偏斜。
-- **M1.0 任務書已寄出**（排在 M0.6.1 之後）→ `wf/inbox/m1_0-ruleset-tiles.md`：
-  `Ruleset` + TOML def 載入 + `RegionTiles` SoA 取代 `TileGrid` 佔位型別
-  + 存檔的字串 id 重映射（M0.6 刻意欠的帳）。
-  **M1 我切成三份**：M1.0 資料基礎 / M1.1 Region 生成 / M1.2 移動與旬回合。
-  M1.1、M1.2 的任務書要等 M1.0 的回報——特別是 `Zone::layers` 的形狀問題。
-- ⚠ **設計缺口，已在 M1.0 任務書向實作者提問**：`Zone::layers` 是
-  `map<int8_t, TileGrid>`，但 L1／L2／L3 的欄位集不同，而「一切皆 zone」要求 `Zone` 只有一種型別。
-  **刻意不預先定案**——他會實際撞到約束，答案比推演可靠。
-- ⚠ **EnTT pool 排列的決定論還沒真的被測過**——M0.5／M0.6 只有 `ZoneMeta` 一種 component，
-  壓力測試在 M1（多 component、大量 entity）。**別當它已經過關。**
+- **M1.0 通過**；**M1.0.1 裁定已寄出、等回報** → `wf/inbox/m1-0-review.md`
+  （`SpatialPayload` 變體遷移）。
+- **M1.1（Region 生成）任務書撰寫中**（規劃者手上）。M1.2（移動與旬回合）在它之後。
+- ⚠ **M2／M4 的驗收不能用 byte 相等**：EnTT snapshot 只對**同一段建構歷史**決定性，
+  不會 canonicalize。跨歷史等價要用正規化狀態雜湊，形狀等 M2 再定。
+  寫在 [design/zone-save-format.md](../design/zone-save-format.md)。**這條會在 M4 咬人。**
 - ⚠ **兩份設計文件貼著 8 KB 上限**：`interface-lifecycle.md` 8,156、`outline.md` 8,138。
   **下次要動它們就得先拆**。已拆過三次的前例都是同一招：**保留主檔名、切出自足子題**
   （zone-model→+zone-addressing、zone-save→+zone-save-format、medps-relation→+medps-inheritance），

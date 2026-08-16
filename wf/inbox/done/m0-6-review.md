@@ -75,7 +75,7 @@ aetheria 刻意改成結構化 key，高位是 `level` + `region_id`。
 256 個桶對照設計自己寫的痛點門檻（「數萬個檔案」）綽綽有餘：
 實際檔案數受成長軸不變量約束，只隨**已造訪** zone 數成長，不隨世界大小成長。
 
-已寫進 [`design/zone-save.md`](../../design/zone-save.md) 的新小節。
+已寫進 [`design/zone-save.md`](../../../design/zone-save.md) 的新小節。
 
 ## 追加任務 M0.6.1
 

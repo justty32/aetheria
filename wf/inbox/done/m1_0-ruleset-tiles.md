@@ -4,9 +4,9 @@
 **收件人**：**gpt-sol 實作者**
 **回信地址**：`~/repo/game_dev/aetheria/wf/inbox/`
 **前置**：**先做完 [`m0-6-review.md`](m0-6-review.md) 的 M0.6.1**
-**必讀設計**：[`design/definitions.md`](../../design/definitions.md)（整份，這是本任務的核心）、
-[`design/worldmap.md`](../../design/worldmap.md) 的「Tile 資料佈局：SoA」、
-[`design/zone-save-format.md`](../../design/zone-save-format.md) 的「存字串 id，不存下標」
+**必讀設計**：[`design/definitions.md`](../../../design/definitions.md)（整份，這是本任務的核心）、
+[`design/worldmap.md`](../../../design/worldmap.md) 的「Tile 資料佈局：SoA」、
+[`design/zone-save-format.md`](../../../design/zone-save-format.md) 的「存字串 id，不存下標」
 
 ---
 
@@ -23,7 +23,7 @@ M1.0 只做資料基礎：`Ruleset`、def 的資料檔載入、真正的 tile So
 
 ### 1. `Ruleset` 與 def
 
-照 [`definitions.md`](../../design/definitions.md) 的「形狀」一節。M1.0 只做
+照 [`definitions.md`](../../../design/definitions.md) 的「形狀」一節。M1.0 只做
 `RegionTiles` 用得到的四種：**`TerrainDef`、`ReliefDef`、`FeatureDef`、`EdgeDef`**。
 其餘（Building／Unit／ZoneKind…）等用到再加。
 
@@ -31,7 +31,7 @@ M1.0 只做資料基礎：`Ruleset`、def 的資料檔載入、真正的 tile So
 
 - **`Ruleset` 載入後不可變**，只有載入器是 friend，其餘一律 `const&`。
 - **下標即 id**：`enum class TerrainId : uint16_t {}`——**枚舉子一個都不准列**。
-  這是本專案最容易被違反的一條，見 [`cpp-conventions.md`](../../design/cpp-conventions.md)。
+  這是本專案最容易被違反的一條，見 [`cpp-conventions.md`](../../../design/cpp-conventions.md)。
 - **載入期一律 fail-fast**：檔案打不開、格式壞、缺區段、id 重複、`move_cost < 1`
   ——全部 throw，**絕不回半套規則庫**。半套規則庫的 bug 會在幾百格之外才炸。
 
@@ -41,7 +41,7 @@ id 命名空間**全域唯一**、用型別前綴（`"terrain.grassland"`）。�
 
 ### 2. `RegionTiles` 取代 `TileGrid` 佔位型別
 
-照 [`worldmap.md`](../../design/worldmap.md) 的 SoA。邊資料打平成 `idx*4+dir`，
+照 [`worldmap.md`](../../../design/worldmap.md) 的 SoA。邊資料打平成 `idx*4+dir`，
 並提供 `set_edge(a, b, edge_id)` helper——**相鄰兩格對同一條邊各存一份，
 helper 保證不會只寫一邊**。
 
@@ -56,7 +56,7 @@ helper 保證不會只寫一邊**。
 
 ### 3. 存檔的字串 id 重映射（還 M0.6 的帳）
 
-照 [`zone-save-format.md`](../../design/zone-save-format.md)：
+照 [`zone-save-format.md`](../../../design/zone-save-format.md)：
 存檔開頭寫一份 **id 表（下標 → 字串 id）**，主體用下標，讀檔時用當前 `Ruleset` 重映射。
 
 **懸空 id（存檔有、規則檔沒有）→ fail-fast**，錯誤訊息要指出是哪個字串 id。
