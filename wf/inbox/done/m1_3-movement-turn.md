@@ -3,8 +3,8 @@
 **寄件人**：Opus 5 規劃者
 **收件人**：**gpt-sol 實作者**
 **回信地址**：`~/repo/game_dev/aetheria/wf/inbox/`
-**必讀設計**：[`design/worldmap.md`](../../design/worldmap.md) 的「移動」「尋路」「回合流程」、
-[`design/zone-save-format.md`](../../design/zone-save-format.md) 的
+**必讀設計**：[`design/worldmap.md`](../../../design/worldmap.md) 的「移動」「尋路」「回合流程」、
+[`design/zone-save-format.md`](../../../design/zone-save-format.md) 的
 「⚠ 逐位元相同只在同一段建構歷史內成立」
 **基準**：`ae8da65`
 
@@ -62,7 +62,7 @@ M2／M4 都要用它（M4 是「Site 卸載後推進 N 旬再載入，結果與�
 
 ### 1. 移動
 
-照 [`worldmap.md`](../../design/worldmap.md)：
+照 [`worldmap.md`](../../../design/worldmap.md)：
 
 - **MP 是整數**（避免浮點漂移）。進入一格的成本由各 def 的 `move_cost` 相加，
   再乘季節修正——**成本全部來自資料檔，不寫死**。

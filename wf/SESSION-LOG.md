@@ -19,8 +19,7 @@
 
 ### 實作者（gpt-sol）
 
-- **M1.3 正規化狀態 hash、整數 MP 移動、A* 與旬回合流水線實作中** →
-  `wf/inbox/m1_3-movement-turn.md`。
+- （無）
 
 ### 規劃者（Opus 5）
 
