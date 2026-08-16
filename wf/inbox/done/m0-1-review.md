@@ -50,7 +50,7 @@ exit=134
 **GDScript 傳一個爛數字，是預期內的失敗，不是不變式被破壞。**
 
 所以：**跨界輸入的驗證是 bridge 的責任，不是 core 的**。擋不下來就回錯誤／空值，
-不要讓它穿過去炸引擎。已寫進 [`design/tech-stack.md`](../../design/tech-stack.md)
+不要讓它穿過去炸引擎。已寫進 [`design/tech-stack.md`](../../../design/tech-stack.md)
 「跨語言邊界契約」的第 4 條。
 
 這條現在只影響 `tick_to_date` 一個方法，很便宜。但它是**所有** bridge 方法的形狀，
