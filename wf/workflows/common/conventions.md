@@ -16,26 +16,5 @@
 
 ## 導航 index（code map）
 
-M0 的檔案量仍小，本節直接兼作 code map；長大後再依
-[DEV-GUIDE「結構整理原則」](../../DEV-GUIDE.md) 拆成獨立 index。
-
-| 路徑 | 職責 |
-|---|---|
-| `CMakeLists.txt`、`vcpkg.json` | 四 target、隔離檢查、依賴固定與 Godot API dump |
-| `cmake/` | CTest 使用的 core 編譯命令隔離檢查 |
-| `core/base/` | 所有建置組態都生效的 core 不變式檢查 |
-| `core/time/` | 純 C++ Tick／Duration 與 360 天曆換算 |
-| `core/rules/`、`data/` | 不可變 Ruleset、TOML def 與資料驅動 biome 規則載入 |
-| `core/serialize/` | PortableBinary zone 位元流、EnTT snapshot、`AllComponents` 與跨歷史正規化 hash |
-| `core/zone/` | ZoneKey、Zone、記憶體／zstd 磁碟 store 與 ZoneManager 生命週期 |
-| `core/world/` | L1 `RegionTiles` SoA、整數 MP／A*／旬回合與雙邊一致 edge 寫入 |
-| `core/worldgen/` | 純 C++ Region 九階段生成、城市選址、canonical 道路與複合渡河 edge |
-| `core/api/` | core 對外 API；目前只有版本 |
-| `tests/time/` | 曆法邊界與往返 GoogleTest |
-| `tests/zone/` | ZoneKey、生命週期、兩種 store 共用契約、損毀拒讀與 round-trip 測試 |
-| `tests/rules/`、`tests/world/`、`tests/serialize/` | Ruleset、移動／尋路／跨歷史 hash、SoA 與 EnTT 壓測 |
-| `tests/worldgen/` | Region 生成決定論／負向控制、階段隔離、路網、連通性與效能預算 |
-| `sim/` | 不需 Godot 的曆法與 zone 樹 CLI 探針 |
-| `bridge/` | `AetheriaCore` Node 與 GDExtension 註冊；唯一可 include godot-cpp 的自有目錄 |
-| `godot/` | 純顯示／呼叫驗證場景與 `.gdextension` 描述檔 |
-| `third_party/godot-cpp/` | 固定 commit 的 submodule checkout |
+原始碼導航拆到獨立一檔：**[code-map.md](code-map.md)**（目錄職責、檔名慣例、每個領域有哪些檔）。
+拆檔／重構後回去更新它，維護鏈見 [refactor](../refactor.md)。

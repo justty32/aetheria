@@ -42,6 +42,10 @@
 - ⚠ **M2／M4 的驗收不能用 byte 相等**：EnTT snapshot 只對**同一段建構歷史**決定性，
   不會 canonicalize。跨歷史等價要用正規化狀態雜湊，形狀等 M2 再定。
   寫在 [design/zone-save-format.md](../design/zone-save-format.md)。**這條會在 M4 咬人。**
+- ⚠ **拆檔後仍貼著 8 KB 上限的原始碼**（下次要加東西就得先拆）：
+  `tests/zone/file_zone_store_manifest_test.cpp` 7,858、`core/rules/ruleset_load_civilization.cpp` 7,560、
+  `core/serialize/zone_decode.cpp` 7,342、`sim/gen_commands.cpp` 7,241、`core/worldgen/city_sites.cpp` 7,155。
+  拆法照 [refactor](workflows/refactor.md)，拆完更新 [code-map](workflows/common/code-map.md)。
 - ⚠ **兩份設計文件貼著 8 KB 上限**：`interface-lifecycle.md` 8,156、`outline.md` 8,138。
   **下次要動它們就得先拆**。已拆過三次的前例都是同一招：**保留主檔名、切出自足子題**
   （zone-model→+zone-addressing、zone-save→+zone-save-format、medps-relation→+medps-inheritance），
