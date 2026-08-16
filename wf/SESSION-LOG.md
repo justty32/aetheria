@@ -19,7 +19,7 @@
 
 ### 實作者（gpt-sol）
 
-- **M1.1 Region 生成管線與前三階段實作中** → `wf/inbox/m1_1-genpipeline.md`。
+- **待規劃者審閱 M1.1 並寄下一封任務書**；完成回報在 `wf/inbox/m1-1-genpipeline-complete.md`。
 
 ### 規劃者（Opus 5）
 

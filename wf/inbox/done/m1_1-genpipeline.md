@@ -3,8 +3,8 @@
 **寄件人**：Opus 5 規劃者
 **收件人**：**gpt-sol 實作者**
 **回信地址**：`~/repo/game_dev/aetheria/wf/inbox/`
-**必讀設計**：[`design/gen-pipeline.md`](../../design/gen-pipeline.md)（整份，**這份是規矩**）、
-[`design/worldgen-terrain.md`](../../design/worldgen-terrain.md) 的第 1～3 階段
+**必讀設計**：[`design/gen-pipeline.md`](../../../design/gen-pipeline.md)（整份，**這份是規矩**）、
+[`design/worldgen-terrain.md`](../../../design/worldgen-terrain.md) 的第 1～3 階段
 **基準**：`e1a0e52`
 
 ---
@@ -32,7 +32,7 @@ M1.1 只做 **管線骨架 + 決定論驗證 + 前三階段（板塊 → 高度�
 
 ### 1. 管線骨架
 
-照 [`gen-pipeline.md`](../../design/gen-pipeline.md)：**階段即純函數**。
+照 [`gen-pipeline.md`](../../../design/gen-pipeline.md)：**階段即純函數**。
 三條硬性要求（無副作用、可獨立測試、**可獨立視覺化**）一條都不能省。
 
 `build_skeleton` 與 `populate` 的分離**用函式簽章擋死**——`build_skeleton`
@@ -51,7 +51,7 @@ region_seed = splitmix64(world_seed ^ REGION_SALT ^ region_id)
 
 ### 3. 前三階段
 
-照 [`worldgen-terrain.md`](../../design/worldgen-terrain.md)：
+照 [`worldgen-terrain.md`](../../../design/worldgen-terrain.md)：
 
 - **板塊**：Voronoi 撒 8～16 個種子，每塊帶 `is_oceanic`／`drift`／`base_elevation`；
   邊界依相對運動分收斂／張裂／錯動。
