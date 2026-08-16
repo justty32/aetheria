@@ -15,8 +15,8 @@
 | vcpkg baseline | `b781af668027bbf77f2f827f47b5c6cd8d825c08` |
 | godot-cpp | submodule commit `d7b6162249ed52796a8301d216c24ee71d68c2bf` |
 
-vcpkg manifest 只含 `gtest` 與 `cli11`。godot-cpp 不走 vcpkg，來源與固定點另見
-[`third_party/README.md`](../third_party/README.md)。
+vcpkg manifest 含 `gtest`、`cli11` 與 header-only 的 `entt`。godot-cpp 不走 vcpkg，
+來源與固定點另見 [`third_party/README.md`](../third_party/README.md)。
 
 ## 從乾淨 checkout 建置
 

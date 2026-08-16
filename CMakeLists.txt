@@ -11,6 +11,7 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 include(CTest)
 
 find_package(CLI11 CONFIG REQUIRED)
+find_package(EnTT CONFIG REQUIRED)
 find_package(GTest CONFIG REQUIRED)
 
 function(aetheria_enable_warnings target)
@@ -24,11 +25,17 @@ endfunction()
 add_library(aetheria_core STATIC
     core/api/version.cpp
     core/time/tick.cpp
+    core/zone/zone_manager.cpp
+    core/zone/zone_store.cpp
 )
 target_include_directories(aetheria_core PUBLIC "${PROJECT_SOURCE_DIR}")
+target_link_libraries(aetheria_core PUBLIC EnTT::EnTT)
 aetheria_enable_warnings(aetheria_core)
 
-add_executable(aetheria_tests tests/time/tick_test.cpp)
+add_executable(aetheria_tests
+    tests/time/tick_test.cpp
+    tests/zone/zone_test.cpp
+)
 target_link_libraries(aetheria_tests PRIVATE aetheria_core GTest::gtest_main)
 aetheria_enable_warnings(aetheria_tests)
 include(GoogleTest)
