@@ -58,38 +58,9 @@ elevation = plate_base
 
 ## 4. 氣候
 
-### 溫度
-
-```
-temperature = base_by_latitude(y) − elevation * lapse_rate
-```
-
-`base_by_latitude` 是一條查表曲線（赤道最熱、兩極最冷），不是線性。
-`lapse_rate` 是高度遞減率。Region 在世界中的緯度位置由 Region 的設定給定，
-所以同一個世界裡可以有熱帶大陸與極地大陸。
-
-### 盛行風
-
-依緯度帶查表，不做流體模擬：
-
-| 緯度帶 | 風向 |
-|---|---|
-| 0°～30° | 信風，東風為主 |
-| 30°～60° | 西風帶 |
-| 60°～90° | 極地東風 |
-
-### 降水與雨影
-
-這是氣候階段的重點，也是讓地圖「說得通」的關鍵：
-
-1. 每格初始水氣 = 海格為滿、陸格為 0
-2. 沿盛行風方向掃過整張圖（一次線性掃描，不是迭代）
-3. 每格：吸收上游帶來的水氣，依溫度決定飽和度
-4. **遇到高度上升就強制降雨**（地形抬升降水），降完水氣大減
-5. 水氣隨距離自然衰減
-
-結果是山脈迎風面濕潤、背風面乾燥——**雨影**。
-沙漠因此會出現在該出現的地方（大山背後、大陸內部），而不是隨機撒。
+**獨立一檔** → [worldgen-climate.md](worldgen-climate.md)。
+溫度、盛行風、降水與雨影都在那裡；
+「地表濕度是空氣含水量而不是本步降雨」那條裁定也在那裡。
 
 ## 5. 河流
 
@@ -107,7 +78,24 @@ temperature = base_by_latitude(y) − elevation * lapse_rate
 
 ## 6. biome 判定
 
-查表：`(temperature, moisture, elevation)` → `(TerrainId, ReliefId)`。
+查表：`(temperature, moisture, elevation)` → `TerrainId`，
+以及 `(elevation, ruggedness)` → `ReliefId`。**兩張表，不是一張。**
+
+### 裁定：地貌與群系是兩個正交的軸（2026-08-21）
+
+原本是**一份有序 first-match 清單同時決定 terrain 與 relief**。實測後果：
+`max_moisture` 那條規則在 97% 的陸地命中，而它排在 mountain／hills 規則**之前**——
+於是**只要乾燥，地貌就被抹成平原**。全圖只有 4 格山。
+
+一份有序清單同時決定兩個正交的軸，**先命中的那條就把另一軸抹平**。
+
+裁定：**relief 只由 `elevation` 與 `ruggedness` 決定，`moisture`／`temperature` 不得參與**
+（一座山不會因為沒下雨就變平地）；terrain 才由 `temperature`／`moisture` 決定。
+兩者的決策輸入要在**型別上**分開，不要靠約定。
+
+拆開後非平原地貌從 0.24%～1.44% 增加到 20.67%～48.02%。
+這一件事同時解釋了四個症狀：全是沙漠、國界不沿地形長、邊界找不到山地當出境點、
+交通瓶頸評分無處可分。**四個症狀一個根因，而十二階段的雜湊全是綠的。**
 
 - **表本身住在資料檔裡**（見 [definitions.md](definitions.md)），不是 C++ 的 if-else 樹。
   這樣加一種地形不必改程式。

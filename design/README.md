@@ -81,9 +81,11 @@
 |---|---|
 | [gen-pipeline.md](gen-pipeline.md) | 階段即純函數、種子衍生、降維裁決鏈、效能預算 |
 | [edge-consistency.md](edge-consistency.md) | **接邊一致性**：規範化 id、邊界剖面、方向陷阱 |
-| [worldgen-terrain.md](worldgen-terrain.md) | L1 地形氣候：板塊、雨影、河流、biome |
-| [worldgen-civ.md](worldgen-civ.md) | L1 文明：選址、道路、出境點、勢力擴散 |
-| [worldgen-history.md](worldgen-history.md) | L1 歷史層：上古選址、古道、災變廢墟、對現代選址的回饋 |
+| [worldgen-terrain.md](worldgen-terrain.md) | L1 地形：板塊、高度、河流、biome |
+| [worldgen-climate.md](worldgen-climate.md) | L1 氣候：溫度、盛行風、降水與雨影 |
+| [worldgen-civ.md](worldgen-civ.md) | L1 文明：選址、道路、出境點 |
+| [worldgen-history.md](worldgen-history.md) | L1 歷史層：上古選址、古道、廢墟 |
+| [worldgen-factions.md](worldgen-factions.md) | L1 勢力：首都採樣、影響力擴散、國界 |
 | [sitegen-city.md](sitegen-city.md) | L2 城區：主幹道、街廓遞迴、分區、城牆 |
 | [sitegen-wild.md](sitegen-wild.md) | L2 荒野／廢墟／海域 |
 | [localgen.md](localgen.md) | L3：三條路線、居住者不預先生成、10 ms |
