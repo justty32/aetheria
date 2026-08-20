@@ -1,31 +1,29 @@
-[[rules]]
+[[terrain_rules]]
 max_temperature_tenths = 20
 terrain = "terrain.tundra"
-relief = "relief.plain"
 
-[[rules]]
+[[terrain_rules]]
 max_moisture = 12500
 terrain = "terrain.desert"
-relief = "relief.plain"
 
-[[rules]]
-min_elevation = 5200
-min_ruggedness = 500
-terrain = "terrain.grassland"
-relief = "relief.mountain"
-
-[[rules]]
+[[terrain_rules]]
 min_moisture = 52000
 max_elevation = 4500
 terrain = "terrain.swamp"
-relief = "relief.plain"
 
-[[rules]]
-min_ruggedness = 320
-terrain = "terrain.grassland"
-relief = "relief.hills"
-
-[[rules]]
+[[terrain_rules]]
 fallback = true
 terrain = "terrain.grassland"
+
+[[relief_rules]]
+min_elevation = 5200
+min_ruggedness = 500
+relief = "relief.mountain"
+
+[[relief_rules]]
+min_ruggedness = 320
+relief = "relief.hills"
+
+[[relief_rules]]
+fallback = true
 relief = "relief.plain"

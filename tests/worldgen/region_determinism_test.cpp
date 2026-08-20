@@ -90,9 +90,12 @@ TEST(RegionGeneration, EditingBiomeDataChangesOnlyDataDrivenStages) {
     TemporaryDirectory directory;
     copy_data_files(directory.path());
     write_text(directory.path() / "biomes.toml", R"(
-[[rules]]
+[[terrain_rules]]
 fallback = true
 terrain = "terrain.tundra"
+
+[[relief_rules]]
+fallback = true
 relief = "relief.plain"
 )");
     const auto changed_ruleset = RulesetLoader::load(directory.path());

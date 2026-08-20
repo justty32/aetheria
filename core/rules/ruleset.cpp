@@ -36,7 +36,7 @@ Ruleset RulesetLoader::load(const std::filesystem::path& data_directory) {
     load_reliefs(result, data_directory, global_ids);
     load_features(result, data_directory, global_ids, feature_terrain_references);
     load_edges(result, data_directory, global_ids, feature_terrain_references);
-    load_biome_rules(result, data_directory);
+    load_biome_rule_tables(result, data_directory);
     load_movement_rules(result, data_directory);
     load_faction_rules(result, data_directory);
     load_civilization_rules(result, data_directory);

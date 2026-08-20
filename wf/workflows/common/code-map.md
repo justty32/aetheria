@@ -42,7 +42,7 @@
 |---|---|
 | `ruleset.h` | 入口：include 下面兩個型別 header + `Ruleset`／`RulesetLoader` 兩個 class |
 | `def_types.h` | id 型別、flag 常數、`Terrain/Relief/Feature/EdgeDef` |
-| `rule_tables.h` | `BiomeRule`、`MovementRules`、`CrossingRule`、世界通道與 `CivilizationRules` |
+| `rule_tables.h` | 獨立 `TerrainRule`／`ReliefRule`、`MovementRules`、`CrossingRule`、世界通道與 `CivilizationRules` |
 | `toml_read.h` | 內部共用 TOML 讀取／驗證 helper |
 | `ruleset.cpp` | `Ruleset` 存取器 + `RulesetLoader::load` 的編排 |
 | `ruleset_load_defs.cpp` | terrain／relief／feature／edge 四份 def |
@@ -75,7 +75,7 @@
 
 門面 `region_generator.h` → `region_config.h`（慢／快變數、十二階段 config、參數 hash）、`region_seed.h`、`region_relief_stages.h`（1–4）、`region_climate_stages.h`（5–7）、`region_civ_stages.h`（8–10）、`region_late_stages.h`（11–12）、`region_skeleton.h`、`region_diagnostics.h`。
 
-內部共用：`gen_stage_ids.h`（stage id 與高度上下限）、`gen_grid.h`（尺寸檢查、四鄰格、陸地連通分量）、`gen_noise.h`（SplitMix64 stream、value noise、fbm）、`gen_hash.h`（FNV 與灰階化）。
+內部共用：`gen_stage_ids.h`（stage id 與高度上下限）、`gen_grid.h`（尺寸檢查、四鄰格、陸地連通分量）、`gen_noise.h`（SplitMix64 stream、value noise、fbm）、`gen_hash.h`（FNV 與灰階化）。`biome_classification.h` 是 terrain／relief 正交裁決的型別隔離入口。
 
 實作：`region_seed.cpp`（種子推導與參數 hash）、`stage_plates/height/erosion/climate/rivers/biomes.cpp`（階段 1–7；量化閘口在 `stage_erosion.cpp`）、`civ_tiles.*`（階段 8～12 共用底圖）、`settlement_scoring.cpp`＋`city_scoring.*`（共用純評分）、`city_selection.*`（canonical 分級選點）、`history_layer.cpp`＋`history_roads.*`（階段 8 選址／災變／古道）、`city_sites.cpp`（階段 9）、`road_path.*`＋`road_loops.*`＋`road_network.cpp`（階段 10 工程路徑／MST／補環路）、`portal_candidates.*`＋`portal_boundary_candidates.cpp`＋`portal_generation.cpp`（階段 11 落點與補路）、`capital_selection.cpp`＋`influence_spread.*`＋`faction_generation.cpp`（階段 12 首都與勢力）、`region_build.cpp`（建骨架）、`region_populate.cpp`（落地）、`region_stage_hash.cpp`＋`region_result_hash.cpp`（決定論 hash）、`region_debug.cpp`（陸地比例、連通性、灰階圖）。
 

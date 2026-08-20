@@ -13,19 +13,28 @@
 
 namespace aetheria::rules {
 
-// BiomeRule 是資料檔中依序第一命中的地形／起伏生成規則。
+// TerrainRule 是資料檔中依序第一命中的群系規則。
 // Ruleset 擁有所有實例，生成器只借用 const span。
 // 所屬 Ruleset 析構後失效；fallback 必須是最後一條。
-struct BiomeRule {
+struct TerrainRule {
     std::int16_t min_temperature_tenths{std::numeric_limits<std::int16_t>::min()};
     std::int16_t max_temperature_tenths{std::numeric_limits<std::int16_t>::max()};
     std::uint16_t min_moisture{};
     std::uint16_t max_moisture{std::numeric_limits<std::uint16_t>::max()};
     std::uint16_t min_elevation{};
     std::uint16_t max_elevation{std::numeric_limits<std::uint16_t>::max()};
+    TerrainId terrain;
+    bool fallback{};
+};
+
+// ReliefRule 是資料檔中依序第一命中的起伏規則。
+// 型別刻意只容納 elevation／ruggedness，氣候值不能進入地貌裁決。
+// 所屬 Ruleset 析構後失效；fallback 必須是最後一條。
+struct ReliefRule {
+    std::uint16_t min_elevation{};
+    std::uint16_t max_elevation{std::numeric_limits<std::uint16_t>::max()};
     std::uint16_t min_ruggedness{};
     std::uint16_t max_ruggedness{std::numeric_limits<std::uint16_t>::max()};
-    TerrainId terrain;
     ReliefId relief;
     bool fallback{};
 };

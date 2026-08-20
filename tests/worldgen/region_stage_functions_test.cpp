@@ -1,6 +1,8 @@
 #include "core/rules/ruleset.h"
 #include "core/world/region_tiles.h"
+#include "core/worldgen/biome_classification.h"
 #include "core/worldgen/region_generator.h"
+#include "tests/support/ruleset_fixture.h"
 
 #include <algorithm>
 #include <cstdint>
@@ -14,6 +16,8 @@ namespace {
 
 using aetheria::rules::Ruleset;
 using aetheria::worldgen::build_skeleton;
+using aetheria::worldgen::classify_relief;
+using aetheria::worldgen::classify_terrain;
 using aetheria::worldgen::ClimateStageOutput;
 using aetheria::worldgen::erode_height;
 using aetheria::worldgen::ErosionGenerationConfig;
@@ -25,11 +29,19 @@ using aetheria::worldgen::generate_rivers;
 using aetheria::worldgen::hash_stage;
 using aetheria::worldgen::populate;
 using aetheria::worldgen::QuantizedElevation;
+using aetheria::worldgen::ReliefClassificationInput;
 using aetheria::worldgen::RegionBuildResult;
 using aetheria::worldgen::RegionFastVariables;
 using aetheria::worldgen::RegionGenerationConfig;
 using aetheria::worldgen::RegionSkeleton;
 using aetheria::worldgen::RegionSlowVariables;
+using aetheria::worldgen::TerrainClassificationInput;
+
+template <typename Input>
+concept HasMoistureInput = requires(Input input) { input.moisture; };
+
+template <typename Input>
+concept HasTemperatureInput = requires(Input input) { input.temperature_tenths; };
 
 static_assert(
     std::is_invocable_r_v<RegionBuildResult, decltype(&build_skeleton), const RegionSlowVariables&,
@@ -46,6 +58,8 @@ static_assert(
     std::is_integral_v<typename decltype(ClimateStageOutput::temperature_tenths)::value_type>);
 static_assert(
     std::is_integral_v<typename decltype(aetheria::worldgen::RiverStageOutput::flow)::value_type>);
+static_assert(!HasMoistureInput<ReliefClassificationInput>);
+static_assert(!HasTemperatureInput<ReliefClassificationInput>);
 
 TEST(RegionGenerationStage, PlateStageIsAnIndependentlyRepeatablePureFunction) {
     const RegionSlowVariables slow{17, 128, 96};
@@ -123,6 +137,17 @@ TEST(RegionGenerationStage, PriorityFloodFillsAClosedDepressionAndTerminates) {
         ASSERT_LT(++steps, rivers.downstream.size());
     }
     EXPECT_NE(rivers.lake.at(current), 0);
+}
+
+TEST(RegionGenerationStage, DryMountainKeepsReliefWhileTerrainRemainsDesert) {
+    const auto& ruleset = aetheria::tests::test_ruleset();
+    const auto terrain = classify_terrain(ruleset, TerrainClassificationInput{100, 1000, 6000});
+    const auto relief = classify_relief(ruleset, ReliefClassificationInput{6000, 600});
+
+    ASSERT_NE(ruleset.terrain(terrain), nullptr);
+    ASSERT_NE(ruleset.relief(relief), nullptr);
+    EXPECT_EQ(ruleset.terrain(terrain)->id, "terrain.desert");
+    EXPECT_EQ(ruleset.relief(relief)->id, "relief.mountain");
 }
 
 }  // namespace

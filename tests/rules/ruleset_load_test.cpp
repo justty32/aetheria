@@ -17,10 +17,22 @@ using aetheria::rules::kEdgeRoadFlag;
 using aetheria::rules::kFeatureRuinFlag;
 using aetheria::tests::test_ruleset;
 
+template <typename Rule>
+concept HasMoistureBounds = requires(Rule rule) { rule.min_moisture; };
+
+template <typename Rule>
+concept HasTemperatureBounds = requires(Rule rule) { rule.min_temperature_tenths; };
+
+template <typename Rule>
+concept HasRuggednessBounds = requires(Rule rule) { rule.min_ruggedness; };
+
 static_assert(std::same_as<decltype(std::declval<const Ruleset&>().terrains()),
                            std::span<const TerrainDef>>);
 static_assert(!std::is_assignable_v<
               decltype((std::declval<const Ruleset&>().terrains()[0].move_cost)), std::int32_t>);
+static_assert(!HasMoistureBounds<aetheria::rules::ReliefRule>);
+static_assert(!HasTemperatureBounds<aetheria::rules::ReliefRule>);
+static_assert(!HasRuggednessBounds<aetheria::rules::TerrainRule>);
 
 TEST(RulesetLoader, LoadsFourImmutableDefinitionTypes) {
     const auto& ruleset = test_ruleset();
@@ -28,8 +40,10 @@ TEST(RulesetLoader, LoadsFourImmutableDefinitionTypes) {
     ASSERT_EQ(ruleset.reliefs().size(), 3U);
     ASSERT_EQ(ruleset.features().size(), 8U);
     ASSERT_EQ(ruleset.edges().size(), 18U);
-    ASSERT_EQ(ruleset.biome_rules().size(), 6U);
-    EXPECT_TRUE(ruleset.biome_rules().back().fallback);
+    ASSERT_EQ(ruleset.terrain_rules().size(), 4U);
+    ASSERT_EQ(ruleset.relief_rules().size(), 3U);
+    EXPECT_TRUE(ruleset.terrain_rules().back().fallback);
+    EXPECT_TRUE(ruleset.relief_rules().back().fallback);
     EXPECT_TRUE(ruleset.movement_rules().loaded);
     EXPECT_TRUE(ruleset.civilization_rules().loaded);
     EXPECT_EQ(ruleset.civilization_rules().factions.faction_count, 3U);

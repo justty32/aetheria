@@ -1,5 +1,6 @@
 #include "core/worldgen/region_climate_stages.h"
 
+#include "core/worldgen/biome_classification.h"
 #include "core/worldgen/gen_grid.h"
 #include "core/worldgen/region_seed.h"
 #include "core/worldgen/region_skeleton.h"
@@ -12,6 +13,33 @@
 
 namespace aetheria::worldgen {
 
+rules::TerrainId classify_terrain(const rules::Ruleset& ruleset,
+                                  TerrainClassificationInput input) {
+    for (const auto& rule : ruleset.terrain_rules()) {
+        if (rule.fallback ||
+            (input.temperature_tenths >= rule.min_temperature_tenths &&
+             input.temperature_tenths <= rule.max_temperature_tenths &&
+             input.moisture >= rule.min_moisture && input.moisture <= rule.max_moisture &&
+             input.elevation >= rule.min_elevation && input.elevation <= rule.max_elevation)) {
+            return rule.terrain;
+        }
+    }
+    throw std::runtime_error{"TerrainRule 沒有 fallback 命中"};
+}
+
+rules::ReliefId classify_relief(const rules::Ruleset& ruleset,
+                                ReliefClassificationInput input) {
+    for (const auto& rule : ruleset.relief_rules()) {
+        if (rule.fallback ||
+            (input.elevation >= rule.min_elevation && input.elevation <= rule.max_elevation &&
+             input.ruggedness >= rule.min_ruggedness &&
+             input.ruggedness <= rule.max_ruggedness)) {
+            return rule.relief;
+        }
+    }
+    throw std::runtime_error{"ReliefRule 沒有 fallback 命中"};
+}
+
 BiomeStageOutput generate_biomes(const QuantizedElevation& elevation,
                                  const ClimateStageOutput& climate, const RiverStageOutput& rivers,
                                  const rules::Ruleset& ruleset,
@@ -23,7 +51,7 @@ BiomeStageOutput generate_biomes(const QuantizedElevation& elevation,
         climate.width != elevation.width || climate.height != elevation.height ||
         climate.temperature_tenths.size() != count || rivers.width != elevation.width ||
         rivers.height != elevation.height || rivers.moisture.size() != count ||
-        ruleset.biome_rules().empty()) {
+        ruleset.terrain_rules().empty() || ruleset.relief_rules().empty()) {
         throw std::invalid_argument{"biome 階段輸入尺寸不一致或缺少 biomes.toml 規則"};
     }
     BiomeStageOutput output{elevation.width, elevation.height, {}, {}};
@@ -54,6 +82,8 @@ BiomeStageOutput generate_biomes(const QuantizedElevation& elevation,
             }
         }
         const auto ruggedness = static_cast<std::uint16_t>(maximum - minimum);
+        output.relief[index] = classify_relief(
+            ruleset, ReliefClassificationInput{elevation.meters[index], ruggedness});
         const auto temperature = static_cast<std::int16_t>(std::clamp<std::int32_t>(
             static_cast<std::int32_t>(climate.temperature_tenths[index]) +
                 config.temperature_bias_tenths,
@@ -61,23 +91,8 @@ BiomeStageOutput generate_biomes(const QuantizedElevation& elevation,
         const auto moisture = static_cast<std::uint16_t>(std::clamp<std::int32_t>(
             static_cast<std::int32_t>(rivers.moisture[index]) + config.moisture_bias, 0,
             UINT16_MAX));
-        bool matched{};
-        for (const auto& rule : ruleset.biome_rules()) {
-            if (rule.fallback ||
-                (temperature >= rule.min_temperature_tenths &&
-                 temperature <= rule.max_temperature_tenths && moisture >= rule.min_moisture &&
-                 moisture <= rule.max_moisture && elevation.meters[index] >= rule.min_elevation &&
-                 elevation.meters[index] <= rule.max_elevation &&
-                 ruggedness >= rule.min_ruggedness && ruggedness <= rule.max_ruggedness)) {
-                output.terrain[index] = rule.terrain;
-                output.relief[index] = rule.relief;
-                matched = true;
-                break;
-            }
-        }
-        if (!matched) {
-            throw std::runtime_error{"BiomeRule 沒有 fallback 命中"};
-        }
+        output.terrain[index] = classify_terrain(
+            ruleset, TerrainClassificationInput{temperature, moisture, elevation.meters[index]});
     }
     return output;
 }
