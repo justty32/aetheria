@@ -68,12 +68,12 @@ TEST(HistoryGenerationStage, DisablingAncientSitesChangesOnlyStagesEightThroughT
     const RegionSlowVariables slow{19, 128, 96};
     const auto enabled = build_skeleton(slow, seed, test_ruleset());
     const auto disabled_rules =
-        ruleset_replacing("ancient_site_count = 24", "ancient_site_count = 0");
+        ruleset_replacing("ancient_site_count = 12", "ancient_site_count = 0");
     const auto disabled = build_skeleton(slow, seed, disabled_rules);
     const auto enabled_hashes = stage_hashes(enabled);
     const auto disabled_hashes = stage_hashes(disabled);
 
-    print_hashes("history_count24_hashes", enabled_hashes);
+    print_hashes("history_count12_hashes", enabled_hashes);
     print_hashes("history_count0_hashes", disabled_hashes);
     for (std::size_t index = 0; index < 7U; ++index) {
         EXPECT_EQ(enabled_hashes[index], disabled_hashes[index]);

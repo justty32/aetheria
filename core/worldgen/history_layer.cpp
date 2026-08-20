@@ -22,7 +22,8 @@ HistoryStageOutput generate_history(const QuantizedElevation& elevation,
     if (!civilization.loaded) {
         throw std::invalid_argument{"Ruleset 缺少 civilization.toml 歷史規則"};
     }
-    auto ancient_sites = score_city_sites(elevation, climate, rivers, biome, features, ruleset);
+    auto ancient_sites = score_city_sites(elevation, climate, rivers, biome, features, ruleset,
+                                          civilization.history.scoring_weights);
     const auto target = civilization.history.ancient_site_count;
     const auto city_count = std::min(civilization.history.ancient_city_count, target);
     const auto town_count = std::min<std::uint16_t>(

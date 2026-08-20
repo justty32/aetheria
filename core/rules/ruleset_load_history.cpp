@@ -6,6 +6,7 @@
 #include <toml++/toml.hpp>
 
 #include <algorithm>
+#include <functional>
 #include <limits>
 #include <optional>
 #include <set>
@@ -62,6 +63,17 @@ void RulesetLoader::load_history_rules(Ruleset& result,
     }
 
     auto& history = result.civilization_rules_.history;
+    auto& weights = history.scoring_weights;
+    weights.freshwater = require_int32(*history_table, "freshwater_weight", civilization_path);
+    weights.farmland = require_int32(*history_table, "farmland_weight", civilization_path);
+    weights.harbor = require_int32(*history_table, "harbor_weight", civilization_path);
+    weights.defense = require_int32(*history_table, "defense_weight", civilization_path);
+    weights.resource = require_int32(*history_table, "resource_weight", civilization_path);
+    weights.bottleneck = require_int32(*history_table, "bottleneck_weight", civilization_path);
+    weights.extreme_climate_penalty =
+        require_int32(*history_table, "extreme_climate_penalty", civilization_path);
+    weights.high_elevation_penalty =
+        require_int32(*history_table, "high_elevation_penalty", civilization_path);
     history.ancient_site_count =
         require_history_u16(*history_table, "ancient_site_count", civilization_path, true);
     history.ancient_city_count =
@@ -99,11 +111,17 @@ void RulesetLoader::load_history_rules(Ruleset& result,
         history.minimum_spacing[index] = static_cast<std::uint16_t>(*value);
     }
 
+    const auto& civilization_rules = result.civilization_rules_;
+    const auto spacing_is_larger =
+        std::ranges::equal(history.minimum_spacing, civilization_rules.minimum_spacing,
+                           std::ranges::greater{});
     if (!std::is_sorted(history.minimum_spacing.begin(), history.minimum_spacing.end()) ||
-        history.ancient_road_reuse_numerator >= history.ancient_road_reuse_denominator ||
+        history.ancient_road_reuse_numerator > history.ancient_road_reuse_denominator ||
         (history.ancient_site_count != 0 &&
-         static_cast<std::uint32_t>(history.ancient_city_count) + history.ancient_town_count >
-             history.ancient_site_count)) {
+         (history.ancient_site_count >= civilization_rules.target_city_count ||
+          !spacing_is_larger ||
+          static_cast<std::uint32_t>(history.ancient_city_count) + history.ancient_town_count >
+              history.ancient_site_count))) {
         throw std::runtime_error{"civilization.toml history 的間距、數量或古道折扣無效"};
     }
 

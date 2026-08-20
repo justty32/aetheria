@@ -21,7 +21,8 @@ CityStageOutput generate_cities(const QuantizedElevation& elevation,
         history.survivor.size() != elevation.meters.size()) {
         throw std::invalid_argument{"城市階段缺少有效歷史層或文明規則"};
     }
-    auto output = score_city_sites(elevation, climate, rivers, biome, history.features, ruleset);
+    auto output = score_city_sites(elevation, climate, rivers, biome, history.features, ruleset,
+                                   civilization.scoring_weights);
     for (std::size_t index = 0; index < output.score.size(); ++index) {
         if (history.survivor[index] == 0) {
             continue;

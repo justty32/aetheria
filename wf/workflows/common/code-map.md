@@ -87,7 +87,7 @@
 | `rules/` | `ruleset_load`／`ruleset_error`（資料不變式錯誤路徑）／`ruleset_zone_codec`（索引重映射）|
 | `world/` | `region_tiles`／`region_step_cost`／`region_path`／`region_turn` |
 | `zone/` | `zone_key`／`zone_lifecycle`／`zone_store_contract`（兩種 store 共用契約）／`file_zone_store`／`file_zone_store_manifest`／`zone_codec`／`zone_manager`／`zone_manager_tick` |
-| `worldgen/` | `region_stage_functions`／`region_determinism`（階段隔離、同種子位元相同）／`region_output_validation`／`region_perf`（十階段三秒預算）／`history_layer`／`history_feedback`／`history_isolation`／`city_sites`／`road_network` |
+| `worldgen/` | `region_stage_functions`／`region_determinism`（階段隔離、同種子位元相同）／`region_output_validation`／`region_perf`（十階段三秒預算）／`history_layer`／`history_feedback`／`history_identity`（權重分家與道路探針）／`history_isolation`／`city_sites`／`road_network` |
 
 ## `sim/`
 

@@ -37,10 +37,18 @@ TEST(RulesetLoader, LoadsFourImmutableDefinitionTypes) {
               ruleset.find_terrain("terrain.grassland"));
 
     const auto& history = ruleset.civilization_rules().history;
-    EXPECT_EQ(history.ancient_site_count, 24U);
-    EXPECT_EQ(history.ancient_city_count, 8U);
-    EXPECT_EQ(history.ancient_town_count, 8U);
-    EXPECT_EQ(history.minimum_spacing, (std::array<std::uint16_t, 3>{3, 5, 8}));
+    EXPECT_EQ(history.scoring_weights.freshwater, 500);
+    EXPECT_EQ(history.scoring_weights.farmland, 6);
+    EXPECT_EQ(history.scoring_weights.harbor, 60);
+    EXPECT_EQ(history.scoring_weights.defense, 120);
+    EXPECT_EQ(history.scoring_weights.resource, 300);
+    EXPECT_EQ(history.scoring_weights.bottleneck, 700);
+    EXPECT_EQ(history.scoring_weights.extreme_climate_penalty, -260);
+    EXPECT_EQ(history.scoring_weights.high_elevation_penalty, -180);
+    EXPECT_EQ(history.ancient_site_count, 12U);
+    EXPECT_EQ(history.ancient_city_count, 3U);
+    EXPECT_EQ(history.ancient_town_count, 4U);
+    EXPECT_EQ(history.minimum_spacing, (std::array<std::uint16_t, 3>{5, 8, 12}));
     EXPECT_EQ(history.survivor_percent, 25U);
     EXPECT_EQ(history.ancient_site_bonus, 10000);
     EXPECT_EQ(history.ancient_road_reuse_numerator, 1U);

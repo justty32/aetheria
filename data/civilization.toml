@@ -74,10 +74,18 @@ road = "edge.highway"
 result = "edge.bridge_stone_great_river_highway"
 
 [history]
-ancient_site_count = 24
-ancient_city_count = 8
-ancient_town_count = 8
-minimum_spacing = [3, 5, 8]
+freshwater_weight = 500
+farmland_weight = 6
+harbor_weight = 60
+defense_weight = 120
+resource_weight = 300
+bottleneck_weight = 700
+extreme_climate_penalty = -260
+high_elevation_penalty = -180
+ancient_site_count = 12
+ancient_city_count = 3
+ancient_town_count = 4
+minimum_spacing = [5, 8, 12]
 survivor_percent = 25
 ancient_site_bonus = 10000
 ancient_road_reuse_numerator = 1

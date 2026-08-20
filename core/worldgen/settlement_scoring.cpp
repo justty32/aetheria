@@ -14,7 +14,8 @@ CityStageOutput score_city_sites(const QuantizedElevation& elevation,
                                  const RiverStageOutput& rivers,
                                  const BiomeStageOutput& biome,
                                  const FeatureStageOutput& features,
-                                 const rules::Ruleset& ruleset) {
+                                 const rules::Ruleset& ruleset,
+                                 const rules::SettlementScoringWeights& weights) {
     detail::require_civilization_inputs(elevation, climate, rivers, biome, features);
     const auto& civilization = ruleset.civilization_rules();
     if (!civilization.loaded) {
@@ -54,12 +55,12 @@ CityStageOutput score_city_sites(const QuantizedElevation& elevation,
             }
         }
         if (freshwater) {
-            score += civilization.freshwater_weight;
+            score += weights.freshwater;
         }
         if (harbor) {
-            score += civilization.harbor_weight;
+            score += weights.harbor;
         }
-        score += static_cast<std::int64_t>(defenses) * civilization.defense_weight;
+        score += static_cast<std::int64_t>(defenses) * weights.defense;
         const auto center = detail::coordinate(index, elevation.width);
         std::uint16_t farmland{};
         std::uint16_t resources{};
@@ -84,17 +85,17 @@ CityStageOutput score_city_sites(const QuantizedElevation& elevation,
                 }
             }
         }
-        score += static_cast<std::int64_t>(farmland) * civilization.farmland_weight;
-        score += static_cast<std::int64_t>(resources) * civilization.resource_weight;
+        score += static_cast<std::int64_t>(farmland) * weights.farmland;
+        score += static_cast<std::int64_t>(resources) * weights.resource;
         score += static_cast<std::int64_t>(output.bottleneck[index]) *
-                 civilization.bottleneck_weight;
+                 weights.bottleneck;
         if (climate.temperature_tenths[index] <= 20 ||
             climate.temperature_tenths[index] >= 350 || rivers.moisture[index] <= 8000 ||
             biome.terrain[index] == civilization.swamp_terrain) {
-            score += civilization.extreme_climate_penalty;
+            score += weights.extreme_climate_penalty;
         }
         if (elevation.meters[index] >= civilization.high_elevation_threshold) {
-            score += civilization.high_elevation_penalty;
+            score += weights.high_elevation_penalty;
         }
         output.score[index] = static_cast<std::int32_t>(
             std::clamp<std::int64_t>(score, std::numeric_limits<std::int32_t>::min(),

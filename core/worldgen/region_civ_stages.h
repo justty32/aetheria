@@ -44,7 +44,8 @@ struct CityStageOutput {
 [[nodiscard]] CityStageOutput
 score_city_sites(const QuantizedElevation& elevation, const ClimateStageOutput& climate,
                  const RiverStageOutput& rivers, const BiomeStageOutput& biome,
-                 const FeatureStageOutput& features, const rules::Ruleset& ruleset);
+                 const FeatureStageOutput& features, const rules::Ruleset& ruleset,
+                 const rules::SettlementScoringWeights& weights);
 
 // RoadConnection 是 MST 或補環路選出的 canonical 城市對。
 // RoadStageOutput 擁有所有實例。

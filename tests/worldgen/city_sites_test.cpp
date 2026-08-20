@@ -75,7 +75,8 @@ struct CityFixture {
 TEST(CityGenerationStage, TerrainBottleneckOutscoresNearbyOpenGround) {
     const auto fixture = bottleneck_fixture();
     const auto cities = score_city_sites(fixture.elevation, fixture.climate, fixture.rivers,
-                                         fixture.biome, fixture.features, test_ruleset());
+                                         fixture.biome, fixture.features, test_ruleset(),
+                                         test_ruleset().civilization_rules().scoring_weights);
     const auto choke = index_of(fixture.elevation.width, {9, 4});
     const auto plain = index_of(fixture.elevation.width, {3, 4});
 

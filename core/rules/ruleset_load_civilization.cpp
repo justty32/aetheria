@@ -26,15 +26,16 @@ void RulesetLoader::load_civilization_rules(Ruleset& result,
                                      "：" + std::string{error.description()}};
         }
         auto& rules = result.civilization_rules_;
-        rules.freshwater_weight = require_int32(civilization, "freshwater_weight", civilization_path);
-        rules.farmland_weight = require_int32(civilization, "farmland_weight", civilization_path);
-        rules.harbor_weight = require_int32(civilization, "harbor_weight", civilization_path);
-        rules.defense_weight = require_int32(civilization, "defense_weight", civilization_path);
-        rules.resource_weight = require_int32(civilization, "resource_weight", civilization_path);
-        rules.bottleneck_weight = require_int32(civilization, "bottleneck_weight", civilization_path);
-        rules.extreme_climate_penalty =
+        auto& weights = rules.scoring_weights;
+        weights.freshwater = require_int32(civilization, "freshwater_weight", civilization_path);
+        weights.farmland = require_int32(civilization, "farmland_weight", civilization_path);
+        weights.harbor = require_int32(civilization, "harbor_weight", civilization_path);
+        weights.defense = require_int32(civilization, "defense_weight", civilization_path);
+        weights.resource = require_int32(civilization, "resource_weight", civilization_path);
+        weights.bottleneck = require_int32(civilization, "bottleneck_weight", civilization_path);
+        weights.extreme_climate_penalty =
             require_int32(civilization, "extreme_climate_penalty", civilization_path);
-        rules.high_elevation_penalty =
+        weights.high_elevation_penalty =
             require_int32(civilization, "high_elevation_penalty", civilization_path);
         auto positive_u16 = [&](std::string_view field) {
             const auto value = require_integer(civilization, field, civilization_path);

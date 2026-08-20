@@ -103,14 +103,14 @@ TEST(RulesetLoader, AllowsDisabledHistoryWithZeroCountAndBonus) {
     TemporaryDirectory directory;
     copy_default_ruleset(directory.path());
     auto civilization = read_text(directory.path() / "civilization.toml");
-    replace_once(civilization, "ancient_site_count = 24", "ancient_site_count = 0");
+    replace_once(civilization, "ancient_site_count = 12", "ancient_site_count = 0");
     replace_once(civilization, "ancient_site_bonus = 10000", "ancient_site_bonus = 0");
     write_text(directory.path() / "civilization.toml", civilization);
 
     const auto ruleset = RulesetLoader::load(directory.path());
     EXPECT_EQ(ruleset.civilization_rules().history.ancient_site_count, 0U);
-    EXPECT_EQ(ruleset.civilization_rules().history.ancient_city_count, 8U);
-    EXPECT_EQ(ruleset.civilization_rules().history.ancient_town_count, 8U);
+    EXPECT_EQ(ruleset.civilization_rules().history.ancient_city_count, 3U);
+    EXPECT_EQ(ruleset.civilization_rules().history.ancient_town_count, 4U);
     EXPECT_EQ(ruleset.civilization_rules().history.ancient_site_bonus, 0);
 }
 
