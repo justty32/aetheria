@@ -31,10 +31,19 @@
 - **M1.2 通過**。七階段 + populate **2.942 ms / 3 秒**；量化點的隔離已變成**結構性**的
   （階段 4～7 簽章全吃 `QuantizedElevation`，浮點在型別上進不了下游）。
 - **M1.3 通過**。正規化狀態雜湊已落地（per-zone），A* admissible 有負向控制。
-- **M1.4 任務書已寄出、等回報** → `wf/inbox/m1_4-cities-roads.md`：選址 + 道路。
-  ⚠ **這是整條生成管線第一個「演算法本身順序相依」的階段**（道路重用折扣），
-  刻意為之，靠顯式正規順序維持決定論。核心驗收是「打亂輸入順序輸出不變」+ 負向控制。
-- **M1.5（出境點／勢力起始／歷史層，階段 10～12）未寫**，之後 M1 即完成。
+- **M1.4 通過**（86/86 我自己重跑）。順序相依的正負向控制都到位；瓶頸評分 1.85 ms／12,288 格。
+- **裁定：歷史層前置成階段 8**，選址／道路順延成 9／10（2026-08-20）。
+  原本排最後會與「上古高分選址 → 現代城市優先落腳」形成**循環依賴**。
+  理由寫在 [design/worldgen-civ.md](../design/worldgen-civ.md) 的裁定一節；`worldmap.md` 的管線圖已同步。
+- **M1.5 任務書已派工（codex/gpt-sol）、等回報** → `wf/inbox/m1_5-history-layer.md`：
+  階段 8 歷史層（上古選址 + 古道 + 災變廢墟 + 對現代選址的分數回饋）。
+  核心驗收是**回饋的負向控制**：`ancient_site_bonus = 0` 時現代城市與上古存活點的重疊必須顯著下降。
+- **M1.6（出境點 + 勢力起始，階段 11～12）未寫**，之後 M1 即完成。
+  ⚠ 勢力影響力擴散是**第二個順序相依演算法**（多源洪水填充），tie-break 要顯式定死，
+  且要有「打亂勢力輸入順序輸出不變」的正負向控制。M1.6 也是**會動存檔格式**的那一輪（portal 欄位）。
+- ⚠ **`ruleset_load_crossings.cpp` 只驗 key 唯一、沒驗 result 唯一**，
+  但 `underlying_river()` 是拿 result 反查 river——共用 result 會安靜地把大河降級成小溪。
+  現有資料湊巧互異所以沒事。已列進 M1.5 任務書要補。
 - 📌 **M2 要做世界級正規化雜湊**（M1.3 的是 per-zone）。裁定：它是驗證工具不是執行期狀態，
   直接走訪存檔目錄列舉，不違反成長軸不變量。寫在 `design/zone-save-format.md`。
 - 📌 **校準期要回頭看**：雨影探針 leeward moisture 剛好 0。合成探針裡合理，
@@ -46,7 +55,8 @@
   `tests/zone/file_zone_store_manifest_test.cpp` 7,858、`core/rules/ruleset_load_civilization.cpp` 7,560、
   `core/serialize/zone_decode.cpp` 7,342、`sim/gen_commands.cpp` 7,241、`core/worldgen/city_sites.cpp` 7,155。
   拆法照 [refactor](workflows/refactor.md)，拆完更新 [code-map](workflows/common/code-map.md)。
-- ⚠ **兩份設計文件貼著 8 KB 上限**：`interface-lifecycle.md` 8,156、`outline.md` 8,138。
+- ⚠ **三份設計文件貼著 8 KB 上限**：`interface-lifecycle.md` 8,156、`outline.md` 8,138、
+  `worldgen-civ.md` 7,9xx（M1.5 的裁定寫進去之後）。
   **下次要動它們就得先拆**。已拆過三次的前例都是同一招：**保留主檔名、切出自足子題**
   （zone-model→+zone-addressing、zone-save→+zone-save-format、medps-relation→+medps-inheritance），
   這樣既有的外部連結大多不必改。

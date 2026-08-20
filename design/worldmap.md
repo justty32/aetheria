@@ -139,11 +139,12 @@ struct SiteState {
 
 ```
 板塊 → 高度場 → 侵蝕 → 氣候 → 河流 → biome → 地物
-     → 選址 → 道路 → 出境點 → 勢力起始 → 歷史層
+     → 歷史層 → 選址 → 道路 → 出境點 → 勢力起始
 ```
 
 前七步（自然環境）見 [worldgen-terrain.md](worldgen-terrain.md)，
-後五步（人文）見 [worldgen-civ.md](worldgen-civ.md)，
+後五步（人文）見 [worldgen-civ.md](worldgen-civ.md)——
+**歷史層排在選址之前**是刻意的，理由見該檔的「裁定」一節，
 共通的階段契約與決定論要求見 [gen-pipeline.md](gen-pipeline.md)。
 
 每階段用衍生子種子，改一階段不會洗掉整張圖（見 [tech-stack.md](tech-stack.md) 決定論一節）。
