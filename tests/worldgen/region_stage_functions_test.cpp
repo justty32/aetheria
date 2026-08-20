@@ -6,6 +6,7 @@
 
 #include <algorithm>
 #include <cstdint>
+#include <cstdlib>
 #include <iostream>
 #include <type_traits>
 #include <vector>
@@ -107,11 +108,35 @@ TEST(RegionGenerationStage, OnePassClimateProducesAMeasurableRainShadow) {
     const auto climate =
         generate_climate(RegionSlowVariables{0, 9, 1, 35}, elevation, UINT64_C(4004), {});
 
-    ASSERT_EQ(climate.prevailing_wind_x, (std::vector<std::int8_t>{1}));
+    ASSERT_EQ(climate.prevailing_wind_x, (std::vector<std::int8_t>{100}));
     std::cout << "rain_shadow windward=" << climate.moisture.at(4)
               << " leeward=" << climate.moisture.at(5) << '\n';
     EXPECT_GT(climate.moisture.at(4), climate.moisture.at(5));
     EXPECT_GT(climate.moisture.at(5), 0U);
+}
+
+TEST(RegionGenerationStage, WindDirectionAndMoistureBlendAcrossThirtyDegreeBoundary) {
+    QuantizedElevation elevation{9, 11, {}, {}, 4096};
+    elevation.meters.assign(9U * 11U, 4096);
+    elevation.land.assign(9U * 11U, 1);
+    for (std::uint32_t y = 0; y < elevation.height; ++y) {
+        elevation.land[static_cast<std::size_t>(y) * elevation.width] = 0;
+        elevation.land[static_cast<std::size_t>(y) * elevation.width + 8U] = 0;
+    }
+    const auto climate =
+        generate_climate(RegionSlowVariables{0, 9, 11, 30}, elevation, UINT64_C(4004), {});
+
+    ASSERT_EQ(climate.prevailing_wind_x.size(), 11U);
+    EXPECT_EQ(climate.prevailing_wind_x[5], 0);
+    for (std::size_t y = 1; y < climate.prevailing_wind_x.size(); ++y) {
+        EXPECT_LE(std::abs(static_cast<int>(climate.prevailing_wind_x[y]) -
+                           static_cast<int>(climate.prevailing_wind_x[y - 1])),
+                  40);
+    }
+    const auto west_coast_land = [](std::size_t y) { return y * 9U + 1U; };
+    for (std::size_t y = 3; y <= 7; ++y) {
+        EXPECT_LT(climate.moisture[west_coast_land(y - 1)], climate.moisture[west_coast_land(y)]);
+    }
 }
 
 TEST(RegionGenerationStage, FlatLandMoistureFollowsAirWithoutHittingZero) {

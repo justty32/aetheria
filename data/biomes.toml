@@ -3,11 +3,11 @@ max_temperature_tenths = 20
 terrain = "terrain.tundra"
 
 [[terrain_rules]]
-max_moisture = 12500
+max_moisture = 32258
 terrain = "terrain.desert"
 
 [[terrain_rules]]
-min_moisture = 52000
+min_moisture = 65535
 max_elevation = 4500
 terrain = "terrain.swamp"
 

@@ -6,10 +6,42 @@
 #include <algorithm>
 #include <array>
 #include <cstdint>
+#include <cstdlib>
 #include <limits>
 #include <stdexcept>
+#include <vector>
 
 namespace aetheria::worldgen {
+namespace {
+
+constexpr auto kFullWindPercent = 100;
+constexpr auto kWindTransitionHalfWidthDegrees = 5;
+
+[[nodiscard]] constexpr std::int8_t zonal_wind_percent(int absolute_latitude) noexcept {
+    constexpr auto first_boundary = 30;
+    constexpr auto second_boundary = 60;
+    if (absolute_latitude < first_boundary - kWindTransitionHalfWidthDegrees) {
+        return -kFullWindPercent;
+    }
+    if (absolute_latitude <= first_boundary + kWindTransitionHalfWidthDegrees) {
+        return static_cast<std::int8_t>(
+            -kFullWindPercent +
+            (absolute_latitude - (first_boundary - kWindTransitionHalfWidthDegrees)) *
+                kFullWindPercent / kWindTransitionHalfWidthDegrees);
+    }
+    if (absolute_latitude < second_boundary - kWindTransitionHalfWidthDegrees) {
+        return kFullWindPercent;
+    }
+    if (absolute_latitude <= second_boundary + kWindTransitionHalfWidthDegrees) {
+        return static_cast<std::int8_t>(
+            kFullWindPercent -
+            (absolute_latitude - (second_boundary - kWindTransitionHalfWidthDegrees)) *
+                kFullWindPercent / kWindTransitionHalfWidthDegrees);
+    }
+    return -kFullWindPercent;
+}
+
+}  // namespace
 
 ClimateStageOutput generate_climate(const RegionSlowVariables& slow,
                                     const QuantizedElevation& elevation, std::uint64_t stage_seed,
@@ -40,15 +72,9 @@ ClimateStageOutput generate_climate(const RegionSlowVariables& slow,
             static_cast<std::int32_t>((latitude_temperature[band] * (15 - remainder) +
                                        latitude_temperature[next_band] * remainder) /
                                       15);
-        const auto wind = absolute_latitude < 30   ? INT8_C(-1)
-                          : absolute_latitude < 60 ? INT8_C(1)
-                                                   : INT8_C(-1);
-        output.prevailing_wind_x[y] = wind;
-        auto air =
-            static_cast<std::uint32_t>(30000U + splitmix64(stage_seed ^ y) % UINT64_C(20001));
-        auto previous_elevation = static_cast<std::int32_t>(elevation.sea_level);
-        for (std::uint32_t step = 0; step < elevation.width; ++step) {
-            const auto x = wind > 0 ? step : elevation.width - 1U - step;
+        const auto wind_percent = zonal_wind_percent(absolute_latitude);
+        output.prevailing_wind_x[y] = wind_percent;
+        for (std::uint32_t x = 0; x < elevation.width; ++x) {
             const auto index = static_cast<std::size_t>(y) * elevation.width + x;
             const auto encoded_elevation = static_cast<std::int32_t>(elevation.meters[index]);
             const auto meters_above_zero = std::max(0, encoded_elevation - 4096);
@@ -57,24 +83,52 @@ ClimateStageOutput generate_climate(const RegionSlowVariables& slow,
                 std::clamp(base_temperature - static_cast<std::int32_t>(lapse),
                            static_cast<std::int32_t>(std::numeric_limits<std::int16_t>::min()),
                            static_cast<std::int32_t>(std::numeric_limits<std::int16_t>::max())));
-            if (elevation.land[index] == 0) {
-                air = UINT16_MAX;
-                output.moisture[index] = UINT16_MAX;
-            } else {
-                const auto rise = std::max(0, encoded_elevation - previous_elevation);
-                const auto uplift_force =
-                    static_cast<std::uint32_t>(rise) * config.uplift_rain;
-                const auto uplift_rain = static_cast<std::uint32_t>(
-                    static_cast<std::uint64_t>(air) * uplift_force /
-                    (static_cast<std::uint64_t>(UINT16_MAX) + uplift_force));
-                output.moisture[index] = static_cast<std::uint16_t>(
-                    std::min<std::uint32_t>(UINT16_MAX, air + uplift_rain));
-                air -= uplift_rain;
-                constexpr auto percent_denominator = UINT32_C(100);
-                air = (air * config.air_retention_percent + percent_denominator - 1U) /
-                      percent_denominator;
+        }
+        const auto moisture_pass = [&](int direction) {
+            std::vector<std::uint16_t> row(elevation.width);
+            auto air =
+                static_cast<std::uint32_t>(30000U + splitmix64(stage_seed ^ y) % UINT64_C(20001));
+            auto previous_elevation = static_cast<std::int32_t>(elevation.sea_level);
+            for (std::uint32_t step = 0; step < elevation.width; ++step) {
+                const auto x = direction > 0 ? step : elevation.width - 1U - step;
+                const auto index = static_cast<std::size_t>(y) * elevation.width + x;
+                const auto encoded_elevation = static_cast<std::int32_t>(elevation.meters[index]);
+                if (elevation.land[index] == 0) {
+                    air = UINT16_MAX;
+                    row[x] = UINT16_MAX;
+                } else {
+                    const auto rise = std::max(0, encoded_elevation - previous_elevation);
+                    const auto uplift_force = static_cast<std::uint32_t>(rise) * config.uplift_rain;
+                    const auto uplift_rain = static_cast<std::uint32_t>(
+                        static_cast<std::uint64_t>(air) * uplift_force /
+                        (static_cast<std::uint64_t>(UINT16_MAX) + uplift_force));
+                    row[x] = static_cast<std::uint16_t>(
+                        std::min<std::uint32_t>(UINT16_MAX, air + uplift_rain));
+                    air -= uplift_rain;
+                    air = (air * config.air_retention_percent + kFullWindPercent - 1U) /
+                          kFullWindPercent;
+                }
+                previous_elevation = encoded_elevation;
             }
-            previous_elevation = encoded_elevation;
+            return row;
+        };
+        const auto eastward_weight =
+            static_cast<std::uint32_t>(wind_percent + kFullWindPercent) / 2U;
+        if (eastward_weight == 0U || eastward_weight == kFullWindPercent) {
+            const auto row = moisture_pass(eastward_weight == 0U ? -1 : 1);
+            std::copy(row.begin(), row.end(),
+                      output.moisture.begin() + static_cast<std::size_t>(y) * elevation.width);
+            continue;
+        }
+        const auto eastward = moisture_pass(1);
+        const auto westward = moisture_pass(-1);
+        for (std::uint32_t x = 0; x < elevation.width; ++x) {
+            const auto index = static_cast<std::size_t>(y) * elevation.width + x;
+            const auto blended =
+                static_cast<std::uint32_t>(eastward[x]) * eastward_weight +
+                static_cast<std::uint32_t>(westward[x]) * (kFullWindPercent - eastward_weight);
+            output.moisture[index] =
+                static_cast<std::uint16_t>((blended + kFullWindPercent / 2U) / kFullWindPercent);
         }
     }
     return output;

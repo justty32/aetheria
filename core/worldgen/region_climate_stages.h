@@ -1,6 +1,7 @@
 #pragma once
 
-// region_climate_stages.h 收斂氣候、河流、biome 與地物四個階段的型別與函式宣告。
+// region_climate_stages.h 收斂氣候、河流、biome
+// 與地物四個階段的型別與函式宣告。
 
 #include "core/rules/ruleset.h"
 #include "core/worldgen/region_config.h"
@@ -11,10 +12,12 @@
 
 namespace aetheria::worldgen {
 
-// RegionDefinitionIds 定義於 region_skeleton.h；此處僅需引用型別供函式宣告的 const 參考使用。
+// RegionDefinitionIds 定義於 region_skeleton.h；此處僅需引用型別供函式宣告的
+// const 參考使用。
 struct RegionDefinitionIds;
 
-// ClimateStageOutput 是固定點溫度、地表濕度與緯度風帶的產物。
+// ClimateStageOutput 是固定點溫度、地表濕度與緯向風力百分比的產物。
+// prevailing_wind_x：-100 為向西、100 為向東，換向帶中間以 0 平滑過渡。
 // build_skeleton 的回傳值擁有它，不含任何浮點欄位。
 // 所屬回傳值析構或 vector 重配後其中參考失效。
 struct ClimateStageOutput {
