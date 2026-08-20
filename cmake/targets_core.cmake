@@ -8,6 +8,8 @@ add_library(aetheria_core STATIC
     core/rules/ruleset_load_civilization.cpp
     core/rules/ruleset_load_factions.cpp
     core/rules/ruleset_load_history.cpp
+    core/rules/ruleset_load_history_values.cpp
+    core/rules/ruleset_load_history_references.cpp
     core/rules/ruleset_load_crossings.cpp
     core/rules/ruleset_load_world_graph.cpp
     core/serialize/normalized_state_hash.cpp

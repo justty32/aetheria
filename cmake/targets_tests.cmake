@@ -16,6 +16,7 @@ add_executable(aetheria_tests
     tests/worldgen/history_identity_test.cpp
     tests/worldgen/history_isolation_test.cpp
     tests/worldgen/history_layer_test.cpp
+    tests/worldgen/capital_selection_test.cpp
     tests/worldgen/influence_spread_test.cpp
     tests/worldgen/governance_release_test.cpp
     tests/worldgen/portal_collision_test.cpp
@@ -24,9 +25,11 @@ add_executable(aetheria_tests
     tests/worldgen/faction_metrics_test.cpp
     tests/worldgen/late_stage_isolation_test.cpp
     tests/worldgen/region_determinism_test.cpp
+    tests/worldgen/region_parameter_isolation_test.cpp
     tests/worldgen/region_output_validation_test.cpp
     tests/worldgen/region_perf_test.cpp
     tests/worldgen/region_stage_functions_test.cpp
+    tests/worldgen/region_climate_functions_test.cpp
     tests/worldgen/remeasurement_test.cpp
     tests/worldgen/road_network_test.cpp
     tests/worldgen/terrain_bottleneck_test.cpp
