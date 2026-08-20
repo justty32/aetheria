@@ -33,7 +33,7 @@
 | [cpp-conventions.md](cpp-conventions.md) | C++23、型別與介面約定、vcpkg、建置目標 |
 | [time-model.md](time-model.md) | **時刻 vs 時距**、合法運算表、合法域與 `AETH_CHECK`、曆法精度界線 |
 | [build.md](build.md) | M0 實際工具鏈、建置／驗證指令、版本固定與踩坑 |
-| [medps-relation.md](medps-relation.md) | 與 medps 的關係、取向裁定、11 條繼承核對清單（已完成）、兩處刻意不同的結論 |
+| [medps-relation.md](medps-relation.md) | 與 medps 的關係、取向裁定、繼承核對清單、兩處刻意不同 |
 | [medps-inheritance.md](medps-inheritance.md) | 逐條比對細節：已拍板繼承的決策表、刻意不同的比對表 |
 
 ### Zone 與存檔（M0 前置）
@@ -44,7 +44,7 @@
 | [zone-contracts.md](zone-contracts.md) | 執行期契約：tick 內禁止結構變更、作用域借用、命令緩衝 |
 | [zone-addressing.md](zone-addressing.md) | **定址定案**：`ZoneKey` 位元佈局、座標推導、Detached |
 | [zone-save.md](zone-save.md) | 存檔目錄佈局、路徑由 key 推導、manifest、開檔協定、fail-fast |
-| [zone-save-format.md](zone-save-format.md) | 存檔位元流格式：cereal + EnTT snapshot、`AllComponents` 清單、跨 zone 引用 |
+| [zone-save-format.md](zone-save-format.md) | 存檔位元流：cereal + EnTT snapshot、`AllComponents`、版本沿革 |
 
 ### 三層地圖
 
@@ -55,7 +55,7 @@
 | [lowmap.md](lowmap.md) | L3：人身尺度、垂直層、探索、持久層 |
 | [interface-world-mid.md](interface-world-mid.md) | **L1↔L2 界面**：投影／歸約、慢快變數、歸約量表、事件升級 |
 | [interface-lifecycle.md](interface-lifecycle.md) | **生命週期**：LOD 狀態機、Digest、重載補算、骨架失效 |
-| [interface-verification.md](interface-verification.md) | **界面驗證**：M4 判準、七條測試、負向控制與假通過陷阱 |
+| [interface-verification.md](interface-verification.md) | **界面驗證**：M4 判準、負向控制、假通過陷阱 |
 | [lowmap-streaming.md](lowmap-streaming.md) | 串流；**看可以跨、改必須經中介**；實體搬移 |
 
 ### 三條 LOD 軸
@@ -118,7 +118,7 @@
 
 | 文件 | 內容 |
 |---|---|
-| [dungeon.md](dungeon.md) | 深度曲線、機關、寶藏神器、`cleared` 防刷、光照壓力 |
+| [dungeon.md](dungeon.md) | 深度曲線、機關、寶藏、`cleared` 防刷、光照壓力 |
 | [narrative.md](narrative.md) | 人工只寫骨架，故事靠模擬長出來；三種任務 |
 | [art-specs.md](art-specs.md) | 靠組合不靠窮舉、64×64、def id 映射路徑、約 700 張 |
 | [art-pipeline.md](art-pipeline.md) | AI 生成四道閘；色盤量化與光源正規化 |
