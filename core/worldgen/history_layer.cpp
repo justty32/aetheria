@@ -1,6 +1,7 @@
 #include "core/worldgen/region_civ_stages.h"
 
 #include "core/worldgen/city_selection.h"
+#include "core/worldgen/feature_placement.h"
 #include "core/worldgen/history_roads.h"
 
 #include <algorithm>
@@ -79,8 +80,9 @@ generate_history_from_sites(const QuantizedElevation& elevation,
             continue;
         }
         const auto tier_index = static_cast<std::size_t>(tier) - 1U;
-        history_features.feature[site.canonical_id] =
-            civilization.history.ruin_features[tier_index];
+        const auto ruin = civilization.history.ruin_features[tier_index];
+        detail::require_feature_terrain(ruleset, ruin, biome.terrain[site.canonical_id]);
+        history_features.feature[site.canonical_id] = ruin;
     }
     return {std::move(ancient_sites), std::move(history_features), std::move(road_output.edges),
             std::move(survivor), std::move(road_output.connections),

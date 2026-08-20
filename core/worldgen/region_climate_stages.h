@@ -78,6 +78,7 @@ generate_biomes(const QuantizedElevation& elevation, const ClimateStageOutput& c
 generate_features(const PlateStageOutput& plates, const QuantizedElevation& elevation,
                   const ClimateStageOutput& climate, const RiverStageOutput& rivers,
                   const BiomeStageOutput& biome, const RegionDefinitionIds& definitions,
-                  std::uint64_t stage_seed, const FeatureGenerationConfig& config);
+                  const rules::Ruleset& ruleset, std::uint64_t stage_seed,
+                  const FeatureGenerationConfig& config);
 
 }  // namespace aetheria::worldgen

@@ -24,6 +24,7 @@ add_executable(aetheria_tests
     tests/worldgen/region_output_validation_test.cpp
     tests/worldgen/region_perf_test.cpp
     tests/worldgen/region_stage_functions_test.cpp
+    tests/worldgen/remeasurement_test.cpp
     tests/worldgen/road_network_test.cpp
     tests/zone/zone_key_test.cpp
     tests/zone/zone_lifecycle_test.cpp

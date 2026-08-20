@@ -74,7 +74,7 @@ RegionBuildResult build_skeleton(const RegionSlowVariables& slow, std::uint64_t 
         elevation, climate, rivers, ruleset, definitions,
         derive_region_stage_seed(world_seed, slow.region_id, detail::kBiomeStageId), config.biome);
     auto features = generate_features(
-        plates, elevation, climate, rivers, biome, definitions,
+        plates, elevation, climate, rivers, biome, definitions, ruleset,
         derive_region_stage_seed(world_seed, slow.region_id, detail::kFeatureStageId),
         config.features);
     auto history = generate_history(

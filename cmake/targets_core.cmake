@@ -27,6 +27,7 @@ add_library(aetheria_core STATIC
     core/worldgen/settlement_scoring.cpp
     core/worldgen/city_selection.cpp
     core/worldgen/city_sites.cpp
+    core/worldgen/feature_placement.cpp
     core/worldgen/history_roads.cpp
     core/worldgen/history_layer.cpp
     core/worldgen/influence_spread.cpp
@@ -45,6 +46,7 @@ add_library(aetheria_core STATIC
     core/worldgen/stage_climate.cpp
     core/worldgen/stage_rivers.cpp
     core/worldgen/stage_biomes.cpp
+    core/worldgen/stage_features.cpp
     core/worldgen/region_build.cpp
     core/worldgen/region_populate.cpp
     core/worldgen/region_stage_hash.cpp
