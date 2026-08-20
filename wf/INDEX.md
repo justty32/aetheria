@@ -16,7 +16,7 @@ aetheria/
   core/ bridge/ tests/ sim/   純 C++ 核心、綁定、測試、headless CLI
   godot/            Godot 4.7 顯示／整合驗證專案
   third_party/      固定版本的 godot-cpp submodule
-  design/    遊戲設計文件（索引：design/README.md，由主 agent 維護）
+  design/    遊戲設計文件（入口 design/README.md，清單 design/INDEX.md）
   wf/        工作流 kernel（本檔所在）
   .claude/   commands（如 /wf-tick）
 ```
@@ -28,7 +28,7 @@ aetheria/
 
 | 路徑 | 內容 |
 |------|------|
-| `design/` | 遊戲設計文件，索引見 [design/README.md](../design/README.md)（不歸本工作流 kernel 管，由主 agent 同步維護）。|
+| `design/` | 遊戲設計文件。入口 [design/README.md](../design/README.md)，完整清單 [design/INDEX.md](../design/INDEX.md)（不歸本工作流 kernel 管，由主 agent 同步維護）。|
 | `.claude/` | [commands](../.claude/commands/)（slash 指令，如 `/wf-tick`）。|
 | `core/`、`bridge/`、`godot/` | 純 C++ 核心、GDExtension 綁定與 Godot 顯示層。|
 | `tests/`、`sim/` | GoogleTest 與不需 Godot 的 headless CLI。|
