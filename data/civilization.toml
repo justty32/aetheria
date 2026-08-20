@@ -12,6 +12,8 @@ target_city_count = 18
 town_count = 6
 minimum_spacing = [3, 5, 8]
 bottleneck_radius = 3
+# 草原山地的最低總成本是 1 + 4 = 5；由此起視為屏障，普通丘陵（3～4）仍可通行。
+bottleneck_barrier_move_cost = 5
 
 loop_percent = 15
 road_base_cost = 80

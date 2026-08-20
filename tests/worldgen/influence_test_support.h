@@ -51,8 +51,6 @@ single_source_costs(const world::RegionTiles& tiles, world::RegionXY source,
         }
         const auto x = static_cast<int>(index % tiles.width);
         const auto y = static_cast<int>(index / tiles.width);
-        const world::RegionXY here{static_cast<std::int16_t>(x),
-                                   static_cast<std::int16_t>(y)};
         for (const auto& [dx, dy] : kDirections) {
             const auto nx = x + dx;
             const auto ny = y + dy;
@@ -70,7 +68,9 @@ single_source_costs(const world::RegionTiles& tiles, world::RegionXY source,
             if ((terrain->flags & rules::kTerrainWaterFlag) != 0) {
                 continue;
             }
-            const auto step = world::region_step_cost(tiles, here, next, test_ruleset(), 1);
+            const auto step = worldgen::influence_terrain_step_cost(
+                test_ruleset(), {tiles.base[next_index], tiles.relief[next_index],
+                                 tiles.feature[next_index], 1});
             if (cost <= budget - step && cost + step < costs[next_index]) {
                 costs[next_index] = cost + step;
                 open.emplace(costs[next_index], next_index);

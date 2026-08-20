@@ -26,6 +26,8 @@ CityStageOutput score_city_sites(const QuantizedElevation& elevation,
     output.score.assign(count, std::numeric_limits<std::int32_t>::min());
     output.bottleneck.resize(count);
     const auto open_ocean = detail::ocean_connected_to_boundary(elevation);
+    const auto bottleneck_passable = detail::bottleneck_passability_mask(
+        elevation, biome, features, ruleset, civilization.bottleneck_barrier_move_cost);
     const auto no_feature = ruleset.find_feature("feature.none");
     if (!no_feature.has_value()) {
         throw std::runtime_error{"城市階段缺少 feature.none"};
@@ -35,7 +37,8 @@ CityStageOutput score_city_sites(const QuantizedElevation& elevation,
             continue;
         }
         output.bottleneck[index] = detail::local_bottleneck_score(
-            elevation, index, civilization.bottleneck_radius);
+            bottleneck_passable, elevation.width, elevation.height, index,
+            civilization.bottleneck_radius);
         std::int64_t score{};
         bool freshwater = rivers.river_class[index] != 0;
         bool harbor{};

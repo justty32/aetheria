@@ -50,6 +50,8 @@ void RulesetLoader::load_civilization_rules(Ruleset& result,
         rules.town_count = positive_u16("town_count");
         rules.major_city_count = static_cast<std::uint16_t>(rules.factions.faction_count * 2U);
         const auto bottleneck_radius = positive_u16("bottleneck_radius");
+        rules.bottleneck_barrier_move_cost =
+            positive_u16("bottleneck_barrier_move_cost");
         const auto loop_percent = positive_u16("loop_percent");
         if (bottleneck_radius > 8 || loop_percent > UINT8_MAX) {
             throw std::runtime_error{"civilization.toml 半徑或環路比例超出 uint8"};

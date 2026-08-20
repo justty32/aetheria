@@ -139,6 +139,7 @@ struct CivilizationRules {
     std::uint16_t town_count{};
     std::array<std::uint16_t, 3> minimum_spacing{};
     std::uint8_t bottleneck_radius{};
+    std::uint16_t bottleneck_barrier_move_cost{};
     std::uint8_t loop_percent{};
     std::uint16_t road_base_cost{};
     std::uint16_t road_terrain_weight{};

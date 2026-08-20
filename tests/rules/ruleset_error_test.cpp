@@ -114,6 +114,17 @@ TEST(RulesetLoader, AllowsDisabledHistoryWithZeroCountAndBonus) {
     EXPECT_EQ(ruleset.civilization_rules().history.ancient_site_bonus, 0);
 }
 
+TEST(RulesetLoader, RejectsNonPositiveBottleneckBarrierCost) {
+    TemporaryDirectory directory;
+    copy_default_ruleset(directory.path());
+    auto civilization = read_text(directory.path() / "civilization.toml");
+    replace_once(civilization, "bottleneck_barrier_move_cost = 5",
+                 "bottleneck_barrier_move_cost = 0");
+    write_text(directory.path() / "civilization.toml", civilization);
+
+    EXPECT_THROW(static_cast<void>(RulesetLoader::load(directory.path())), std::runtime_error);
+}
+
 TEST(RulesetLoader, RejectsDifferentCrossingKeysSharingResult) {
     TemporaryDirectory directory;
     copy_default_ruleset(directory.path());

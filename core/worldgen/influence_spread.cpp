@@ -57,6 +57,32 @@ struct QueueGreater {
 
 }  // namespace
 
+std::int32_t influence_terrain_step_cost(const rules::Ruleset& ruleset,
+                                         InfluenceTerrainStepInput input) {
+    const auto* terrain = ruleset.terrain(input.terrain);
+    const auto* relief = ruleset.relief(input.relief);
+    const auto* feature = ruleset.feature(input.feature);
+    const auto& movement = ruleset.movement_rules();
+    if (terrain == nullptr || relief == nullptr || feature == nullptr) {
+        throw std::runtime_error{"影響力成本含不存在的 terrain／relief／feature"};
+    }
+    if (!movement.loaded || input.season < 1 ||
+        input.season > movement.season_numerators.size() || movement.season_denominator == 0) {
+        throw std::invalid_argument{"影響力成本需要有效 movement.toml 與季節"};
+    }
+    const auto base = static_cast<std::int64_t>(terrain->move_cost) + relief->move_cost +
+                      feature->move_cost;
+    const auto scaled = base * world::kMovementPointScale;
+    const auto numerator = movement.season_numerators[input.season - 1U];
+    const auto adjusted =
+        (scaled * numerator + movement.season_denominator - 1U) /
+        movement.season_denominator;
+    if (base <= 0 || adjusted <= 0 || adjusted > std::numeric_limits<std::int32_t>::max()) {
+        throw std::overflow_error{"影響力 terrain-only 成本超出正 int32"};
+    }
+    return static_cast<std::int32_t>(adjusted);
+}
+
 std::vector<world::FactionId>
 spread_influence(const world::RegionTiles& tiles, std::span<const InfluenceCapital> capitals,
                  const rules::Ruleset& ruleset,
@@ -122,8 +148,9 @@ spread_influence(const world::RegionTiles& tiles, std::span<const InfluenceCapit
             if (is_water(tiles, next_index, ruleset)) {
                 continue;
             }
-            const auto step = world::region_step_cost(tiles, here, next, ruleset,
-                                                      factions.influence_season);
+            const auto step = influence_terrain_step_cost(
+                ruleset, {tiles.base[next_index], tiles.relief[next_index],
+                          tiles.feature[next_index], factions.influence_season});
             if (current.key.cost > factions.influence_max_cost - step) {
                 continue;
             }

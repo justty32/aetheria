@@ -87,6 +87,31 @@ TEST(CityGenerationStage, TerrainBottleneckOutscoresNearbyOpenGround) {
     EXPECT_GT(cities.score[choke], cities.score[plain]);
 }
 
+TEST(CityGenerationStage, PassThroughMountainBarrierIsBottleneck) {
+    auto fixture = bottleneck_fixture();
+    std::ranges::fill(fixture.elevation.land, 1);
+    std::ranges::fill(fixture.elevation.meters, 4300);
+    const auto mountain = *test_ruleset().find_relief("relief.mountain");
+    for (std::int16_t y = 0; y < static_cast<std::int16_t>(fixture.elevation.height); ++y) {
+        if (y != 3) {
+            fixture.biome.relief[index_of(fixture.elevation.width, {4, y})] = mountain;
+        }
+    }
+    const auto cities = score_city_sites(fixture.elevation, fixture.climate, fixture.rivers,
+                                         fixture.biome, fixture.features, test_ruleset(),
+                                         test_ruleset().civilization_rules().scoring_weights);
+    const auto pass = index_of(fixture.elevation.width, {4, 3});
+    const auto north = index_of(fixture.elevation.width, {4, 2});
+    const auto south = index_of(fixture.elevation.width, {4, 4});
+
+    std::cout << "mountain_pass score=" << cities.bottleneck[pass]
+              << " north_barrier=" << cities.bottleneck[north]
+              << " south_barrier=" << cities.bottleneck[south] << '\n';
+    EXPECT_GT(cities.bottleneck[pass], 0U);
+    EXPECT_EQ(cities.bottleneck[north], 0U);
+    EXPECT_EQ(cities.bottleneck[south], 0U);
+}
+
 TEST(CityGenerationStage, FullRegionScoresAll12288TilesWithinBudgetAndRespectsSpacing) {
     const auto terrain =
         build_skeleton(RegionSlowVariables{44, 128, 96}, UINT64_C(440044), test_ruleset());

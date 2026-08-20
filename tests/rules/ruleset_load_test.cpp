@@ -48,6 +48,7 @@ TEST(RulesetLoader, LoadsFourImmutableDefinitionTypes) {
     EXPECT_TRUE(ruleset.civilization_rules().loaded);
     EXPECT_EQ(ruleset.civilization_rules().factions.faction_count, 3U);
     EXPECT_EQ(ruleset.civilization_rules().major_city_count, 6U);
+    EXPECT_EQ(ruleset.civilization_rules().bottleneck_barrier_move_cost, 5U);
     EXPECT_EQ(ruleset.civilization_rules().factions.influence_max_cost, 100);
     EXPECT_EQ(ruleset.civilization_rules().factions.influence_season, 1U);
     ASSERT_EQ(ruleset.world_connections().size(), 10U);

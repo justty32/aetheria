@@ -5,6 +5,7 @@
 
 #include <algorithm>
 #include <array>
+#include <concepts>
 #include <cstdint>
 #include <iostream>
 #include <vector>
@@ -24,6 +25,11 @@ using aetheria::world::RegionXY;
 using aetheria::worldgen::CitySite;
 using aetheria::worldgen::InfluenceCapital;
 using FactionRules = aetheria::rules::CivilizationRules::FactionRules;
+
+template <typename Input>
+concept HasEdgeInput = requires(Input input) { input.edge; };
+
+static_assert(!HasEdgeInput<aetheria::worldgen::InfluenceTerrainStepInput>);
 
 TEST(InfluenceCapitalSelection, IsCanonicalUnderShuffleAndRejectsTooManyFactions) {
     std::vector<CitySite> cities{
@@ -125,6 +131,32 @@ TEST(InfluenceSpread, BoundaryTracksHighCostMountainRidge) {
               << " map_avg_milli_mp=" << map_milli
               << " boundary_tiles=" << boundary_tiles << '\n';
     EXPECT_GT(boundary_milli * 100, map_milli * 140);
+}
+
+TEST(InfluenceSpread, RoadAndBridgeEdgesCannotChangeOwnersButStillChangeMovementCost) {
+    const auto plain = plain_tiles(11, 7);
+    auto connected = plain;
+    const auto road = *test_ruleset().find_edge("edge.road");
+    const auto bridge = *test_ruleset().find_edge("edge.bridge");
+    for (std::int16_t x = 0; x < 10; ++x) {
+        connected.set_edge({x, 2}, {static_cast<std::int16_t>(x + 1), 2}, road);
+    }
+    connected.set_edge({5, 2}, {6, 2}, bridge);
+    const std::array capitals{InfluenceCapital{FactionId{1}, {1, 2}},
+                              InfluenceCapital{FactionId{2}, {9, 4}}};
+    const FactionRules config{2, 100, 1};
+
+    const auto plain_owners =
+        aetheria::worldgen::spread_influence(plain, capitals, test_ruleset(), config);
+    const auto connected_owners =
+        aetheria::worldgen::spread_influence(connected, capitals, test_ruleset(), config);
+    const auto plain_move = aetheria::world::region_step_cost(
+        plain, {1, 2}, {2, 2}, test_ruleset(), config.influence_season);
+    const auto road_move = aetheria::world::region_step_cost(
+        connected, {1, 2}, {2, 2}, test_ruleset(), config.influence_season);
+
+    EXPECT_EQ(plain_owners, connected_owners);
+    EXPECT_NE(plain_move, road_move);
 }
 
 TEST(InfluenceSpread, OceanStopsExpansionAndLeavesFarShoreUnowned) {
