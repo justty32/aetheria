@@ -37,6 +37,16 @@ struct RegionXY {
     constexpr auto operator<=>(const RegionXY&) const noexcept = default;
 };
 
+// RegionPortal 是 Region 中稀疏的 WorldGraph 出境點綁定。
+// RegionTiles 擁有所有實例；channel 指向手工 WorldGraph 通道識別。
+// 同一 channel 在單一 Region 只能出現一次。
+struct RegionPortal {
+    RegionXY tile;
+    rules::WorldConnectionId channel{};
+
+    constexpr bool operator==(const RegionPortal&) const noexcept = default;
+};
+
 // SiteState 是 Region tile 對其下層 Site 的具現化狀態。
 // RegionTiles 擁有所有實例。
 // 所屬 RegionTiles 析構或重配後失效；lod 不進存檔。
@@ -74,6 +84,7 @@ struct RegionTiles {
     std::vector<FactionId> owner;
     std::vector<SettlementTier> settlement;
     std::vector<SiteState> site;
+    std::vector<RegionPortal> portals;
 };
 
 namespace detail {
@@ -84,6 +95,9 @@ template <typename Value, typename Allocator>
 struct IsIntegerWorldStateVector<std::vector<Value, Allocator>>
     : std::bool_constant<std::is_integral_v<Value> || std::is_enum_v<Value> ||
                          std::is_same_v<Value, SiteState>> {};
+
+template <typename Allocator>
+struct IsIntegerWorldStateVector<std::vector<RegionPortal, Allocator>> : std::true_type {};
 
 }  // namespace detail
 
@@ -99,6 +113,7 @@ static_assert(detail::IsIntegerWorldStateVector<decltype(RegionTiles::edges)>::v
 static_assert(detail::IsIntegerWorldStateVector<decltype(RegionTiles::owner)>::value);
 static_assert(detail::IsIntegerWorldStateVector<decltype(RegionTiles::settlement)>::value);
 static_assert(detail::IsIntegerWorldStateVector<decltype(RegionTiles::site)>::value);
+static_assert(detail::IsIntegerWorldStateVector<decltype(RegionTiles::portals)>::value);
 
 inline constexpr std::size_t kDeclaredRegionTilesStorageSize =
     sizeof(decltype(RegionTiles::width)) + sizeof(decltype(RegionTiles::height)) +
@@ -106,7 +121,8 @@ inline constexpr std::size_t kDeclaredRegionTilesStorageSize =
     sizeof(decltype(RegionTiles::feature)) + sizeof(decltype(RegionTiles::temperature)) +
     sizeof(decltype(RegionTiles::moisture)) + sizeof(decltype(RegionTiles::elevation)) +
     sizeof(decltype(RegionTiles::edges)) + sizeof(decltype(RegionTiles::owner)) +
-    sizeof(decltype(RegionTiles::settlement)) + sizeof(decltype(RegionTiles::site));
+    sizeof(decltype(RegionTiles::settlement)) + sizeof(decltype(RegionTiles::site)) +
+    sizeof(decltype(RegionTiles::portals));
 static_assert(sizeof(RegionTiles) == kDeclaredRegionTilesStorageSize,
               "新增 RegionTiles 世界狀態欄位時必須登記並驗證其為整數或 enum");
 

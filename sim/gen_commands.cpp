@@ -1,7 +1,7 @@
 #include "sim/gen_commands.h"
 
 #include "core/worldgen/region_generator.h"
-#include "sim/pgm_writer.h"
+#include "sim/stage_dump.h"
 
 #include <chrono>
 #include <filesystem>
@@ -27,6 +27,8 @@ void print_generation(const aetheria::worldgen::RegionBuildResult& result,
               << "history_hash=" << aetheria::worldgen::hash_stage(result.history) << '\n'
               << "city_hash=" << aetheria::worldgen::hash_stage(result.cities) << '\n'
               << "road_hash=" << aetheria::worldgen::hash_stage(result.roads) << '\n'
+              << "portal_hash=" << aetheria::worldgen::hash_stage(result.portals) << '\n'
+              << "faction_hash=" << aetheria::worldgen::hash_stage(result.factions) << '\n'
               << "skeleton_hash=" << aetheria::worldgen::hash_skeleton(result.skeleton) << '\n'
               << "tiles_hash=" << aetheria::worldgen::hash_tiles(tiles) << '\n'
               << std::fixed << std::setprecision(3)
@@ -55,27 +57,7 @@ int run_gen_region(const aetheria::rules::Ruleset& ruleset, std::uint64_t seed,
     const auto elapsed = std::chrono::steady_clock::now() - start;
 
     if (!dump_directory.empty()) {
-        std::filesystem::create_directories(dump_directory);
-        write_pgm(dump_directory / "01-plates.pgm", result.plates.width, result.plates.height,
-                  aetheria::worldgen::grayscale(result.plates));
-        write_pgm(dump_directory / "02-height.pgm", result.height.width, result.height.height,
-                  aetheria::worldgen::grayscale(result.height));
-        write_pgm(dump_directory / "03-erosion.pgm", result.erosion.width, result.erosion.height,
-                  aetheria::worldgen::grayscale(result.erosion));
-        write_pgm(dump_directory / "04-climate.pgm", result.climate.width, result.climate.height,
-                  aetheria::worldgen::grayscale(result.climate));
-        write_pgm(dump_directory / "05-rivers.pgm", result.rivers.width, result.rivers.height,
-                  aetheria::worldgen::grayscale(result.rivers));
-        write_pgm(dump_directory / "06-biome.pgm", result.biome.width, result.biome.height,
-                  aetheria::worldgen::grayscale(result.biome));
-        write_pgm(dump_directory / "07-features.pgm", result.features.width, result.features.height,
-                  aetheria::worldgen::grayscale(result.features));
-        write_pgm(dump_directory / "08-history.pgm", result.history.features.width,
-                  result.history.features.height, aetheria::worldgen::grayscale(result.history));
-        write_pgm(dump_directory / "09-cities.pgm", result.cities.width, result.cities.height,
-                  aetheria::worldgen::grayscale(result.cities));
-        write_pgm(dump_directory / "10-roads.pgm", result.roads.width, result.roads.height,
-                  aetheria::worldgen::grayscale(result.roads));
+        dump_region_stages(result, dump_directory);
     }
     print_generation(result, tiles, elapsed);
     return 0;
@@ -116,6 +98,10 @@ int run_gen_verify(const aetheria::rules::Ruleset& ruleset, std::uint64_t seed,
                 aetheria::worldgen::hash_stage(second.cities) ||
             aetheria::worldgen::hash_stage(first.roads) !=
                 aetheria::worldgen::hash_stage(second.roads) ||
+            aetheria::worldgen::hash_stage(first.portals) !=
+                aetheria::worldgen::hash_stage(second.portals) ||
+            aetheria::worldgen::hash_stage(first.factions) !=
+                aetheria::worldgen::hash_stage(second.factions) ||
             aetheria::worldgen::hash_skeleton(first.skeleton) !=
                 aetheria::worldgen::hash_skeleton(second.skeleton) ||
             aetheria::worldgen::hash_tiles(first_tiles) !=

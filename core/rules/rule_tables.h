@@ -7,6 +7,8 @@
 #include <array>
 #include <cstdint>
 #include <limits>
+#include <optional>
+#include <string>
 #include <vector>
 
 namespace aetheria::rules {
@@ -59,6 +61,39 @@ struct SettlementScoringWeights {
     std::int32_t high_elevation_penalty{};
 };
 
+// WorldConnectionType 決定 WorldGraph 通道在 Region 內解析 portal 的規則。
+enum class WorldConnectionType : std::uint8_t {
+    SeaRoute,
+    MountainPass,
+    Underground,
+    Teleport,
+};
+
+// WorldConnectionEndpoint 是傳送門可選的資料指定座標。
+// WorldGraphConnection 擁有值；其他通道不得指定座標。
+struct WorldConnectionEndpoint {
+    std::int16_t x{};
+    std::int16_t y{};
+
+    constexpr bool operator==(const WorldConnectionEndpoint&) const noexcept = default;
+};
+
+// WorldGraphConnection 是 world_graph.toml 的一條手工通道宣告。
+// Ruleset 擁有所有實例，worldgen 階段 11 只借用 const 參考。
+// connection id 是跨宣告順序穩定的資料識別。
+struct WorldGraphConnection {
+    WorldConnectionId id{};
+    std::uint32_t region_a{};
+    std::uint32_t region_b{};
+    WorldConnectionType type{WorldConnectionType::SeaRoute};
+    std::uint32_t cost_ticks{};
+    std::string requirement;
+    std::optional<WorldConnectionEndpoint> coordinate_a;
+    std::optional<WorldConnectionEndpoint> coordinate_b;
+
+    bool operator==(const WorldGraphConnection&) const noexcept = default;
+};
+
 // CivilizationRules 是城市評分、間距、道路工程與渡河查表的資料規則。
 // Ruleset 擁有值，worldgen 階段 8～10 只借用 const 參考。
 // 所屬 Ruleset 析構後失效；所有分數與成本均為整數。
@@ -78,6 +113,14 @@ struct CivilizationRules {
         std::uint16_t ancient_road_reuse_denominator{};
         EdgeId road_edge{};
         std::array<FeatureId, 3> ruin_features{};
+    };
+
+    // FactionRules 是階段 12 的權威勢力數與影響力預算。
+    // CivilizationRules 擁有值，worldgen 只借用 const 參考。
+    struct FactionRules {
+        std::uint16_t faction_count{};
+        std::int64_t influence_max_cost{};
+        std::uint8_t influence_season{};
     };
 
     SettlementScoringWeights scoring_weights{};
@@ -102,6 +145,7 @@ struct CivilizationRules {
     TerrainId swamp_terrain;
     std::vector<CrossingRule> crossings;
     HistoryRules history{};
+    FactionRules factions{};
     bool loaded{};
 };
 

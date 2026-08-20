@@ -62,6 +62,8 @@ TEST(RegionGeneration, EveryStageHasAFullSizeVisualization) {
     EXPECT_EQ(grayscale(result.history).size(), expected);
     EXPECT_EQ(grayscale(result.cities).size(), expected);
     EXPECT_EQ(grayscale(result.roads).size(), expected);
+    EXPECT_EQ(grayscale(result.portals).size(), expected);
+    EXPECT_EQ(grayscale(result.factions).size(), expected);
 }
 
 TEST(RegionGeneration, EveryRiverPathTerminatesAtSeaOrLakeAndEdgesAreSymmetric) {

@@ -48,6 +48,9 @@ class Ruleset {
     [[nodiscard]] const CivilizationRules& civilization_rules() const noexcept {
         return civilization_rules_;
     }
+    [[nodiscard]] std::span<const WorldGraphConnection> world_connections() const noexcept {
+        return world_connections_;
+    }
 
     private:
     friend class RulesetLoader;
@@ -60,6 +63,7 @@ class Ruleset {
     std::vector<BiomeRule> biome_rules_;
     MovementRules movement_rules_;
     CivilizationRules civilization_rules_;
+    std::vector<WorldGraphConnection> world_connections_;
     std::map<std::string, TerrainId, std::less<>> terrain_index_;
     std::map<std::string, ReliefId, std::less<>> relief_index_;
     std::map<std::string, FeatureId, std::less<>> feature_index_;
@@ -88,11 +92,15 @@ class RulesetLoader {
                                feature_terrain_references);
     static void load_biome_rules(Ruleset& result, const std::filesystem::path& data_directory);
     static void load_movement_rules(Ruleset& result, const std::filesystem::path& data_directory);
+    static void load_faction_rules(Ruleset& result,
+                                   const std::filesystem::path& data_directory);
     static void load_civilization_rules(Ruleset& result,
                                         const std::filesystem::path& data_directory);
     static void load_history_rules(Ruleset& result,
                                    const std::filesystem::path& data_directory);
     static void load_crossing_rules(const Ruleset& result, CivilizationRules& rules);
+    static void load_world_graph(Ruleset& result,
+                                 const std::filesystem::path& data_directory);
 };
 
 }  // namespace aetheria::rules

@@ -89,10 +89,10 @@ TEST(HistoryGenerationStage, HistoryConfigOwnsOnlyTheEighthParameterGroup) {
     changed.history.minimum_score_bias = std::numeric_limits<std::int16_t>::max();
     const auto before_groups = aetheria::worldgen::generation_parameter_hashes(original);
     const auto after_groups = aetheria::worldgen::generation_parameter_hashes(changed);
-    constexpr std::array<std::string_view, 10> names{
-        "plates", "height", "erosion",  "climate", "rivers",
-        "biome",  "features", "history", "cities",  "roads"};
-    ASSERT_EQ(before_groups.groups.size(), 10U);
+    constexpr std::array<std::string_view, 12> names{
+        "plates",   "height", "erosion", "climate", "rivers",  "biome",
+        "features", "history", "cities", "roads",   "portals", "factions"};
+    ASSERT_EQ(before_groups.groups.size(), 12U);
     for (std::size_t index = 0; index < before_groups.groups.size(); ++index) {
         EXPECT_EQ(aetheria::worldgen::generation_parameter_group_name(index), names[index]);
         if (index == 7U) {

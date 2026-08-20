@@ -1,7 +1,7 @@
 #pragma once
 
 // influence_spread.h 提供階段 12 將大城選成首都、再以多源移動成本分配勢力的純函式。
-// 本檔只定義獨立演算法與暫時的 C++ 參數，不接入 Region 生成管線或持久狀態。
+// 本檔定義階段 12 可獨立驗證的首都選擇與影響力擴散演算法。
 
 #include "core/rules/ruleset.h"
 #include "core/world/region_tiles.h"
@@ -24,12 +24,13 @@ struct InfluenceCapital {
     constexpr bool operator==(const InfluenceCapital&) const noexcept = default;
 };
 
-// InfluenceSpreadConfig 是尚未接資料管線前的影響力預算與季節參數。
-// 呼叫端擁有值，spread_influence 只讀取複本。
-// max_cost 使用 region_step_cost 的整數 MP 單位，且不得為負。
-struct InfluenceSpreadConfig {
-    std::int64_t max_cost{};
-    std::uint8_t season{1};
+// InfluenceSpreadDiagnostics 記錄多源擴散的佇列與同成本重標記量測。
+// 呼叫端擁有值；spread_influence 回傳前完整覆寫。
+struct InfluenceSpreadDiagnostics {
+    std::uint64_t queue_pushes{};
+    std::uint64_t stale_pops{};
+    std::uint64_t tie_relabels{};
+    std::uint32_t maximum_updates_per_tile{};
 };
 
 // select_capitals 只考慮 City，以 Manhattan 最遠點採樣回傳固定選擇順序。
@@ -39,6 +40,8 @@ struct InfluenceSpreadConfig {
 // spread_influence 以全部首都同時進佇列的多源 Dijkstra 回傳逐格 owner；不修改 tiles。
 [[nodiscard]] std::vector<world::FactionId>
 spread_influence(const world::RegionTiles& tiles, std::span<const InfluenceCapital> capitals,
-                 const rules::Ruleset& ruleset, const InfluenceSpreadConfig& config);
+                 const rules::Ruleset& ruleset,
+                 const rules::CivilizationRules::FactionRules& factions,
+                 InfluenceSpreadDiagnostics* diagnostics = nullptr);
 
 }  // namespace aetheria::worldgen

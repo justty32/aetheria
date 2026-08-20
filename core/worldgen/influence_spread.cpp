@@ -4,10 +4,8 @@
 
 #include <algorithm>
 #include <array>
-#include <cstdlib>
 #include <limits>
 #include <queue>
-#include <ranges>
 #include <stdexcept>
 #include <tuple>
 #include <unordered_set>
@@ -17,12 +15,6 @@ namespace {
 
 [[nodiscard]] std::uint16_t faction_value(world::FactionId faction) noexcept {
     return static_cast<std::uint16_t>(faction);
-}
-
-[[nodiscard]] std::uint32_t manhattan(world::RegionXY lhs, world::RegionXY rhs) noexcept {
-    const auto dx = std::abs(static_cast<int>(lhs.x) - static_cast<int>(rhs.x));
-    const auto dy = std::abs(static_cast<int>(lhs.y) - static_cast<int>(rhs.y));
-    return static_cast<std::uint32_t>(dx + dy);
 }
 
 struct InfluenceKey {
@@ -65,67 +57,32 @@ struct QueueGreater {
 
 }  // namespace
 
-std::vector<CitySite> select_capitals(std::span<const CitySite> cities,
-                                      std::size_t faction_count) {
-    std::vector<CitySite> eligible;
-    eligible.reserve(cities.size());
-    std::unordered_set<std::uint32_t> canonical_ids;
-    for (const auto& city : cities) {
-        if (city.tier == world::SettlementTier::City) {
-            if (!canonical_ids.insert(city.canonical_id).second) {
-                throw std::invalid_argument{"大城 canonical id 重複"};
-            }
-            eligible.push_back(city);
-        }
-    }
-    if (faction_count > eligible.size()) {
-        throw std::invalid_argument{"勢力數超過可用大城數"};
-    }
-    std::vector<CitySite> selected;
-    selected.reserve(faction_count);
-    while (selected.size() < faction_count) {
-        const auto candidate = std::ranges::max_element(eligible, [&](const CitySite& lhs,
-                                                                      const CitySite& rhs) {
-            const auto minimum_distance = [&](const CitySite& site) {
-                if (selected.empty()) {
-                    return std::numeric_limits<std::uint32_t>::max();
-                }
-                return std::ranges::min(selected | std::views::transform([&](const CitySite& other) {
-                                            return manhattan(site.tile, other.tile);
-                                        }));
-            };
-            return std::tuple{minimum_distance(lhs), lhs.score,
-                              std::numeric_limits<std::uint32_t>::max() - lhs.canonical_id} <
-                   std::tuple{minimum_distance(rhs), rhs.score,
-                              std::numeric_limits<std::uint32_t>::max() - rhs.canonical_id};
-        });
-        selected.push_back(*candidate);
-        eligible.erase(candidate);
-    }
-    return selected;
-}
-
 std::vector<world::FactionId>
 spread_influence(const world::RegionTiles& tiles, std::span<const InfluenceCapital> capitals,
-                 const rules::Ruleset& ruleset, const InfluenceSpreadConfig& config) {
+                 const rules::Ruleset& ruleset,
+                 const rules::CivilizationRules::FactionRules& factions,
+                 InfluenceSpreadDiagnostics* diagnostics) {
     if (!tiles.valid_layout() ||
         tiles.width > static_cast<std::uint32_t>(std::numeric_limits<std::int16_t>::max()) ||
         tiles.height > static_cast<std::uint32_t>(std::numeric_limits<std::int16_t>::max())) {
         throw std::invalid_argument{"影響力擴散需要有效且可用 RegionXY 表示的 RegionTiles"};
     }
-    if (config.max_cost < 0 || config.season < 1 || config.season > 4) {
+    if (factions.influence_max_cost < 0 || factions.influence_season < 1 ||
+        factions.influence_season > 4) {
         throw std::invalid_argument{"影響力預算或季節無效"};
     }
 
     const auto count = tiles.tile_count();
     std::vector<InfluenceKey> best(count);
+    std::vector<std::uint32_t> updates(count);
     std::priority_queue<QueueEntry, std::vector<QueueEntry>, QueueGreater> open;
-    std::unordered_set<std::uint16_t> factions;
+    InfluenceSpreadDiagnostics measured;
+    std::unordered_set<std::uint16_t> faction_ids;
     std::unordered_set<std::size_t> capital_tiles;
     for (const auto& capital : capitals) {
         const auto faction = faction_value(capital.faction);
         const auto index = tiles.index_of(capital.tile);
-        if (faction == 0 || !factions.insert(faction).second ||
+        if (faction == 0 || !faction_ids.insert(faction).second ||
             !capital_tiles.insert(index).second || is_water(tiles, index, ruleset)) {
             throw std::invalid_argument{"首都必須位於不同陸格並使用不同的非零勢力 id"};
         }
@@ -133,6 +90,8 @@ spread_influence(const world::RegionTiles& tiles, std::span<const InfluenceCapit
         if (candidate.canonical() < best[index].canonical()) {
             best[index] = candidate;
             open.push({candidate, index});
+            ++measured.queue_pushes;
+            updates[index] = 1;
         }
     }
 
@@ -146,6 +105,7 @@ spread_influence(const world::RegionTiles& tiles, std::span<const InfluenceCapit
         const auto current = open.top();
         open.pop();
         if (current.key.canonical() != best[current.tile_index].canonical()) {
+            ++measured.stale_pops;
             continue;
         }
         const auto here = coordinate(current.tile_index, tiles.width);
@@ -162,24 +122,36 @@ spread_influence(const world::RegionTiles& tiles, std::span<const InfluenceCapit
             if (is_water(tiles, next_index, ruleset)) {
                 continue;
             }
-            const auto step = world::region_step_cost(tiles, here, next, ruleset, config.season);
-            if (current.key.cost > config.max_cost - step) {
+            const auto step = world::region_step_cost(tiles, here, next, ruleset,
+                                                      factions.influence_season);
+            if (current.key.cost > factions.influence_max_cost - step) {
                 continue;
             }
             const InfluenceKey candidate{current.key.cost + step, current.key.faction,
                                          current.key.capital_index};
             if (candidate.canonical() < best[next_index].canonical()) {
+                if (best[next_index].cost != std::numeric_limits<std::int64_t>::max() &&
+                    candidate.cost == best[next_index].cost) {
+                    ++measured.tie_relabels;
+                }
                 best[next_index] = candidate;
                 open.push({candidate, next_index});
+                ++measured.queue_pushes;
+                ++updates[next_index];
             }
         }
     }
 
     std::vector<world::FactionId> owners(count, world::FactionId{0});
     for (std::size_t index = 0; index < count; ++index) {
-        if (best[index].cost <= config.max_cost) {
+        if (best[index].cost <= factions.influence_max_cost) {
             owners[index] = best[index].faction;
         }
+    }
+    measured.maximum_updates_per_tile =
+        *std::max_element(updates.begin(), updates.end());
+    if (diagnostics != nullptr) {
+        *diagnostics = measured;
     }
     return owners;
 }

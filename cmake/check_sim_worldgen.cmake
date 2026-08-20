@@ -16,7 +16,8 @@ if(NOT region_result EQUAL 0)
 endif()
 
 foreach(stage IN ITEMS 01-plates.pgm 02-height.pgm 03-erosion.pgm 04-climate.pgm 05-rivers.pgm
-                       06-biome.pgm 07-features.pgm 08-history.pgm 09-cities.pgm 10-roads.pgm)
+                       06-biome.pgm 07-features.pgm 08-history.pgm 09-cities.pgm 10-roads.pgm
+                       11-portals.pgm 12-factions.pgm)
     set(stage_path "${TEST_DIR}/${stage}")
     if(NOT EXISTS "${stage_path}")
         message(FATAL_ERROR "缺少 stage dump：${stage_path}")
@@ -29,8 +30,8 @@ endforeach()
 
 file(GLOB stage_dumps "${TEST_DIR}/*.pgm")
 list(LENGTH stage_dumps stage_dump_count)
-if(NOT stage_dump_count EQUAL 10)
-    message(FATAL_ERROR "stage dump 數量應為 10，實際 ${stage_dump_count}")
+if(NOT stage_dump_count EQUAL 12)
+    message(FATAL_ERROR "stage dump 數量應為 12，實際 ${stage_dump_count}")
 endif()
 
 if(NOT region_output MATCHES "land_connected=true")

@@ -136,4 +136,33 @@ std::uint64_t hash_stage(const RoadStageOutput& stage) noexcept {
     return hash;
 }
 
+std::uint64_t hash_stage(const PortalStageOutput& stage) noexcept {
+    auto hash = UINT64_C(14695981039346656037);
+    detail::hash_scalar(hash, stage.width);
+    detail::hash_scalar(hash, stage.height);
+    detail::hash_scalar(hash, hash_stage(stage.cities));
+    detail::hash_vector(hash, stage.edges);
+    detail::hash_scalar(hash, static_cast<std::uint64_t>(stage.portals.size()));
+    for (const auto& portal : stage.portals) {
+        detail::hash_scalar(hash, portal.tile.x);
+        detail::hash_scalar(hash, portal.tile.y);
+        detail::hash_scalar(hash, rules::value_of(portal.channel));
+    }
+    return hash;
+}
+
+std::uint64_t hash_stage(const FactionStageOutput& stage) noexcept {
+    auto hash = UINT64_C(14695981039346656037);
+    detail::hash_scalar(hash, stage.width);
+    detail::hash_scalar(hash, stage.height);
+    detail::hash_scalar(hash, static_cast<std::uint64_t>(stage.capitals.size()));
+    for (const auto& capital : stage.capitals) {
+        detail::hash_scalar(hash, capital.faction);
+        detail::hash_scalar(hash, capital.tile.x);
+        detail::hash_scalar(hash, capital.tile.y);
+    }
+    detail::hash_vector(hash, stage.owner);
+    return hash;
+}
+
 }  // namespace aetheria::worldgen

@@ -3,6 +3,7 @@
 #include "core/serialize/all_components.h"
 #include "core/serialize/registry_codec.h"
 #include "core/serialize/zone_codec_detail.h"
+#include "core/serialize/zone_region_portals.h"
 
 #include <cereal/archives/portable_binary.hpp>
 #include <cereal/types/string.hpp>
@@ -107,6 +108,7 @@ std::unique_ptr<zone::Zone> decode_zone(std::string_view bytes, const rules::Rul
                 archive(z, tiles.width, tiles.height, tiles.base, tiles.relief, tiles.feature,
                         tiles.temperature, tiles.moisture, tiles.elevation, tiles.edges,
                         tiles.owner, tiles.settlement, ever_realized);
+                detail::load_region_portals(archive, tiles);
                 const auto count64 = static_cast<std::uint64_t>(tiles.width) * tiles.height;
                 if (tiles.width == 0 || tiles.height == 0 ||
                     count64 > std::numeric_limits<std::size_t>::max() / 4U) {

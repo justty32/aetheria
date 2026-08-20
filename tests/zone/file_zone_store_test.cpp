@@ -75,6 +75,9 @@ TEST(FileZoneStore, RoundTripPreservesCanonicalBitsAndEntityCount) {
     EXPECT_EQ(loaded_layers.at(0).moisture,
               (std::vector<std::uint8_t>{55, 66, 77, 88}));
     EXPECT_EQ(loaded_layers.at(0).settlement.at(1), aetheria::world::SettlementTier::Town);
+    EXPECT_EQ(loaded_layers.at(0).portals,
+              (std::vector<aetheria::world::RegionPortal>{
+                  {{1, 1}, static_cast<aetheria::rules::WorldConnectionId>(UINT32_C(37))}}));
     EXPECT_EQ(loaded_layers.at(0).site.at(0).lod, aetheria::zone::LodLevel::Absent);
     EXPECT_TRUE(loaded_layers.at(0).site.at(0).ever_realized);
     EXPECT_EQ(loaded_layers.at(-1).elevation,

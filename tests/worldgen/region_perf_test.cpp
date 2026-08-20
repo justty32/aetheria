@@ -88,7 +88,7 @@ TEST(RegionGeneration, DefaultRegionFitsThreeSecondBudget) {
     EXPECT_TRUE(tiles.valid_layout());
     EXPECT_EQ(hash_stage(history), hash_stage(result.history));
     EXPECT_LT(elapsed, std::chrono::seconds{3});
-    std::cout << "ten_stage_region_ms=" << elapsed_ms << " history_stage_ms=" << history_ms
+    std::cout << "twelve_stage_region_ms=" << elapsed_ms << " history_stage_ms=" << history_ms
               << " budget_remaining_ms=" << 3000.0 - elapsed_ms << '\n';
 }
 

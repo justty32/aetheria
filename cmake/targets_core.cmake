@@ -6,8 +6,10 @@ add_library(aetheria_core STATIC
     core/rules/ruleset_load_defs.cpp
     core/rules/ruleset_load_biomes.cpp
     core/rules/ruleset_load_civilization.cpp
+    core/rules/ruleset_load_factions.cpp
     core/rules/ruleset_load_history.cpp
     core/rules/ruleset_load_crossings.cpp
+    core/rules/ruleset_load_world_graph.cpp
     core/serialize/normalized_state_hash.cpp
     core/time/tick.cpp
     core/serialize/zone_encode.cpp
@@ -28,6 +30,10 @@ add_library(aetheria_core STATIC
     core/worldgen/history_roads.cpp
     core/worldgen/history_layer.cpp
     core/worldgen/influence_spread.cpp
+    core/worldgen/capital_selection.cpp
+    core/worldgen/portal_generation.cpp
+    core/worldgen/portal_candidates.cpp
+    core/worldgen/faction_generation.cpp
     core/worldgen/road_path.cpp
     core/worldgen/road_loops.cpp
     core/worldgen/road_network.cpp
@@ -39,6 +45,7 @@ add_library(aetheria_core STATIC
     core/worldgen/stage_rivers.cpp
     core/worldgen/stage_biomes.cpp
     core/worldgen/region_build.cpp
+    core/worldgen/region_populate.cpp
     core/worldgen/region_stage_hash.cpp
     core/worldgen/region_result_hash.cpp
     core/worldgen/region_debug.cpp

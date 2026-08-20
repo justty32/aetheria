@@ -65,6 +65,10 @@ generation_parameter_hashes(const RegionGenerationConfig& config) noexcept {
     detail::hash_scalar(result.groups[8], config.cities.minimum_score_bias);
     result.groups[9] = begin_group();
     detail::hash_scalar(result.groups[9], config.roads.loop_percent_override);
+    result.groups[10] = begin_group();
+    detail::hash_scalar(result.groups[10], config.portals.road_tier);
+    result.groups[11] = begin_group();
+    detail::hash_scalar(result.groups[11], config.factions.first_faction_id);
     return result;
 }
 

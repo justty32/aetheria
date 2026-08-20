@@ -3,6 +3,7 @@
 add_executable(aetheria_sim
     sim/main.cpp
     sim/gen_commands.cpp
+    sim/stage_dump.cpp
     sim/pgm_writer.cpp
 )
 target_link_libraries(aetheria_sim PRIVATE aetheria_core CLI11::CLI11)

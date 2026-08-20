@@ -19,7 +19,7 @@
 
 ### 實作者（gpt-sol）
 
-- **M1.5.1 實作中** → 任務書 `wf/inbox/m1_5_1-cataclysm-and-traces.md`。
+- **待任務書**。
 
 ### 規劃者（Opus 5）
 

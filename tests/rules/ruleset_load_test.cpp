@@ -32,6 +32,13 @@ TEST(RulesetLoader, LoadsFourImmutableDefinitionTypes) {
     EXPECT_TRUE(ruleset.biome_rules().back().fallback);
     EXPECT_TRUE(ruleset.movement_rules().loaded);
     EXPECT_TRUE(ruleset.civilization_rules().loaded);
+    EXPECT_EQ(ruleset.civilization_rules().factions.faction_count, 3U);
+    EXPECT_EQ(ruleset.civilization_rules().major_city_count, 6U);
+    EXPECT_EQ(ruleset.civilization_rules().factions.influence_max_cost, 100);
+    EXPECT_EQ(ruleset.civilization_rules().factions.influence_season, 1U);
+    ASSERT_EQ(ruleset.world_connections().size(), 10U);
+    EXPECT_EQ(aetheria::rules::value_of(ruleset.world_connections().front().id), 1U);
+    EXPECT_EQ(aetheria::rules::value_of(ruleset.world_connections().back().id), 10U);
     EXPECT_EQ(ruleset.terrain(*ruleset.find_terrain("terrain.grassland"))->move_cost, 1);
     EXPECT_EQ(ruleset.feature(*ruleset.find_feature("feature.forest"))->required_terrain,
               ruleset.find_terrain("terrain.grassland"));

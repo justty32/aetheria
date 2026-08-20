@@ -47,8 +47,8 @@ void RulesetLoader::load_civilization_rules(Ruleset& result,
         };
         rules.high_elevation_threshold = positive_u16("high_elevation_threshold");
         rules.target_city_count = positive_u16("target_city_count");
-        rules.major_city_count = positive_u16("major_city_count");
         rules.town_count = positive_u16("town_count");
+        rules.major_city_count = static_cast<std::uint16_t>(rules.factions.faction_count * 2U);
         const auto bottleneck_radius = positive_u16("bottleneck_radius");
         const auto loop_percent = positive_u16("loop_percent");
         if (bottleneck_radius > 8 || loop_percent > UINT8_MAX) {

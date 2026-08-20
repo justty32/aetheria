@@ -137,4 +137,33 @@ std::vector<std::uint8_t> grayscale(const RoadStageOutput& stage) {
     return pixels;
 }
 
+std::vector<std::uint8_t> grayscale(const PortalStageOutput& stage) {
+    std::vector<std::uint8_t> pixels(static_cast<std::size_t>(stage.width) * stage.height);
+    for (const auto& portal : stage.portals) {
+        const auto index = static_cast<std::size_t>(portal.tile.y) * stage.width +
+                           static_cast<std::size_t>(portal.tile.x);
+        if (index < pixels.size()) {
+            pixels[index] = UINT8_MAX;
+        }
+    }
+    return pixels;
+}
+
+std::vector<std::uint8_t> grayscale(const FactionStageOutput& stage) {
+    std::vector<std::uint8_t> pixels;
+    pixels.reserve(stage.owner.size());
+    for (const auto owner : stage.owner) {
+        const auto value = static_cast<std::uint16_t>(owner);
+        pixels.push_back(value == 0 ? 0 : static_cast<std::uint8_t>((value * 73U) | 32U));
+    }
+    for (const auto& capital : stage.capitals) {
+        const auto index = static_cast<std::size_t>(capital.tile.y) * stage.width +
+                           static_cast<std::size_t>(capital.tile.x);
+        if (index < pixels.size()) {
+            pixels[index] = UINT8_MAX;
+        }
+    }
+    return pixels;
+}
+
 }  // namespace aetheria::worldgen

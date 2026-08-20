@@ -38,8 +38,10 @@ Ruleset RulesetLoader::load(const std::filesystem::path& data_directory) {
     load_edges(result, data_directory, global_ids, feature_terrain_references);
     load_biome_rules(result, data_directory);
     load_movement_rules(result, data_directory);
+    load_faction_rules(result, data_directory);
     load_civilization_rules(result, data_directory);
     load_history_rules(result, data_directory);
+    load_world_graph(result, data_directory);
 
     return result;
 }

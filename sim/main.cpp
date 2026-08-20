@@ -35,7 +35,7 @@ int main(int argc, char** argv) {
     gen_region->add_option("--erosion-iterations", erosion_iterations, "固定熱力侵蝕次數");
     gen_region->add_option("--biome-moisture-bias", biome_moisture_bias,
                            "biome 查表前的水氣偏移（階段 6 隔離探針）");
-    gen_region->add_option("--dump-stages", dump_stages, "十階段 PGM 輸出目錄");
+    gen_region->add_option("--dump-stages", dump_stages, "十二階段 PGM 輸出目錄");
     auto* gen_verify = gen->add_subcommand("verify", "重複生成並驗證同 seed 決定論");
     gen_verify->add_option("--seed", generation_seed, "起始世界 seed")->required();
     gen_verify->add_option("--iterations", verify_iterations, "驗證 seed 數量");

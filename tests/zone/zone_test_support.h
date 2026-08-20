@@ -65,6 +65,8 @@ private:
     surface.temperature = {11, 22, 33, 44};
     surface.moisture = {55, 66, 77, 88};
     surface.settlement.at(1) = world::SettlementTier::Town;
+    surface.portals.push_back(
+        {{1, 1}, static_cast<rules::WorldConnectionId>(UINT32_C(37))});
     surface.site.at(0).lod = zone::LodLevel::Full;
     surface.site.at(0).ever_realized = true;
     auto& underground = layers.emplace(-1, world::RegionTiles{3, 1}).first->second;

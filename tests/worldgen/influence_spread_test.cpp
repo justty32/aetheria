@@ -23,7 +23,7 @@ using aetheria::world::RegionTiles;
 using aetheria::world::RegionXY;
 using aetheria::worldgen::CitySite;
 using aetheria::worldgen::InfluenceCapital;
-using aetheria::worldgen::InfluenceSpreadConfig;
+using FactionRules = aetheria::rules::CivilizationRules::FactionRules;
 
 TEST(InfluenceCapitalSelection, IsCanonicalUnderShuffleAndRejectsTooManyFactions) {
     std::vector<CitySite> cities{
@@ -49,22 +49,26 @@ TEST(InfluenceCapitalSelection, IsCanonicalUnderShuffleAndRejectsTooManyFactions
 TEST(InfluenceSpread, CanonicalTieBreakIgnoresInputOrderAndNegativeControlDoesNot) {
     const auto tiles = plain_tiles(11, 7);
     std::vector<InfluenceCapital> capitals{{FactionId{1}, {2, 3}}, {FactionId{2}, {8, 3}}};
-    const InfluenceSpreadConfig config{16, 1};
+    const FactionRules config{2, 16, 1};
     const auto owners_a =
         aetheria::worldgen::spread_influence(tiles, capitals, test_ruleset(), config);
-    const auto distances_a = single_source_costs(tiles, capitals[0].tile, config.max_cost);
-    const auto distances_b = single_source_costs(tiles, capitals[1].tile, config.max_cost);
-    const auto negative_a = sequential_first_wins(tiles, capitals, config.max_cost);
+    const auto distances_a =
+        single_source_costs(tiles, capitals[0].tile, config.influence_max_cost);
+    const auto distances_b =
+        single_source_costs(tiles, capitals[1].tile, config.influence_max_cost);
+    const auto negative_a =
+        sequential_first_wins(tiles, capitals, config.influence_max_cost);
     std::ranges::reverse(capitals);
     const auto owners_b =
         aetheria::worldgen::spread_influence(tiles, capitals, test_ruleset(), config);
-    const auto negative_b = sequential_first_wins(tiles, capitals, config.max_cost);
+    const auto negative_b =
+        sequential_first_wins(tiles, capitals, config.influence_max_cost);
 
     std::size_t ties{};
     std::size_t unowned{};
     for (std::size_t index = 0; index < tiles.tile_count(); ++index) {
         const auto minimum = std::min(distances_a[index], distances_b[index]);
-        ties += minimum <= config.max_cost && distances_a[index] == minimum &&
+        ties += minimum <= config.influence_max_cost && distances_a[index] == minimum &&
                 distances_b[index] == minimum;
         unowned += owners_a[index] == FactionId{0};
     }
@@ -88,7 +92,7 @@ TEST(InfluenceSpread, BoundaryTracksHighCostMountainRidge) {
     const std::array capitals{InfluenceCapital{FactionId{1}, {2, 4}},
                               InfluenceCapital{FactionId{2}, {12, 4}}};
     const auto owners = aetheria::worldgen::spread_influence(
-        tiles, capitals, test_ruleset(), InfluenceSpreadConfig{100, 1});
+        tiles, capitals, test_ruleset(), FactionRules{2, 100, 1});
 
     std::int64_t boundary_cost{};
     std::int64_t map_cost{};
@@ -128,7 +132,7 @@ TEST(InfluenceSpread, OceanStopsExpansionAndLeavesFarShoreUnowned) {
     tiles.base[2] = *test_ruleset().find_terrain("terrain.ocean");
     const std::array capitals{InfluenceCapital{FactionId{1}, {0, 0}}};
     const auto owners = aetheria::worldgen::spread_influence(
-        tiles, capitals, test_ruleset(), InfluenceSpreadConfig{100, 1});
+        tiles, capitals, test_ruleset(), FactionRules{1, 100, 1});
 
     EXPECT_EQ(owners[0], FactionId{1});
     EXPECT_EQ(owners[1], FactionId{1});

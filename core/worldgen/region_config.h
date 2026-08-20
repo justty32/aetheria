@@ -1,6 +1,6 @@
 #pragma once
 
-// region_config.h 收斂 Region 生成器的慢變數入口與十階段可調參數。
+// region_config.h 收斂 Region 生成器的慢變數入口與十二階段可調參數。
 
 #include <array>
 #include <cstdint>
@@ -112,7 +112,19 @@ struct RoadGenerationConfig {
     std::uint8_t loop_percent_override{};
 };
 
-// RegionGenerationConfig 將十階段參數分槽，避免後段參數污染前段。
+// PortalGenerationConfig 是階段 11 補路時採用的道路級別。
+// 呼叫端擁有值；WorldGraph 宣告與落點規則仍來自 Ruleset。
+struct PortalGenerationConfig {
+    std::uint8_t road_tier{};
+};
+
+// FactionGenerationConfig 是階段 12 配發連續勢力 id 的起點。
+// 勢力數、影響力預算與季節全部來自 civilization.toml [factions]。
+struct FactionGenerationConfig {
+    std::uint16_t first_faction_id{1};
+};
+
+// RegionGenerationConfig 將十二階段參數分槽，避免後段參數污染前段。
 // 呼叫端擁有值，各階段只借用自己的子設定。
 // 呼叫結束後即可失效。
 struct RegionGenerationConfig {
@@ -126,13 +138,15 @@ struct RegionGenerationConfig {
     HistoryGenerationConfig history;
     CityGenerationConfig cities;
     RoadGenerationConfig roads;
+    PortalGenerationConfig portals;
+    FactionGenerationConfig factions;
 };
 
-// GenerationParameterHashes 是 manifest 固定的十階段參數身分。
+// GenerationParameterHashes 是 manifest 固定的十二階段參數身分。
 // SaveManifest 擁有值，FileZoneStore 與生成器只讀取複本。
 // 值本身永不失效；任一分組不同即不得載入既有世界。
 struct GenerationParameterHashes {
-    std::array<std::uint64_t, 10> groups{};
+    std::array<std::uint64_t, 12> groups{};
 
     constexpr bool operator==(const GenerationParameterHashes&) const noexcept = default;
 };
@@ -141,8 +155,9 @@ struct GenerationParameterHashes {
 generation_parameter_hashes(const RegionGenerationConfig& config = {}) noexcept;
 [[nodiscard]] constexpr std::string_view
 generation_parameter_group_name(std::size_t index) noexcept {
-    constexpr std::array names{"plates", "height",   "erosion", "climate", "rivers",
-                               "biome",  "features", "history", "cities",  "roads"};
+    constexpr std::array names{"plates",   "height", "erosion", "climate",
+                               "rivers",   "biome",  "features", "history",
+                               "cities",   "roads",  "portals",  "factions"};
     return index < names.size() ? names[index] : "unknown";
 }
 

@@ -87,10 +87,27 @@ bool RegionTiles::valid_layout() const noexcept {
         return false;
     }
     const auto count = static_cast<std::size_t>(count64);
-    return base.size() == count && relief.size() == count &&
+    if (!(base.size() == count && relief.size() == count &&
            feature.size() == count && temperature.size() == count && moisture.size() == count &&
            elevation.size() == count && edges.size() == count * 4U && owner.size() == count &&
-           settlement.size() == count && site.size() == count;
+           settlement.size() == count && site.size() == count)) {
+        return false;
+    }
+    for (std::size_t index = 0; index < portals.size(); ++index) {
+        const auto& portal = portals[index];
+        if (portal.tile.x < 0 || portal.tile.y < 0 ||
+            static_cast<std::uint32_t>(portal.tile.x) >= width ||
+            static_cast<std::uint32_t>(portal.tile.y) >= height ||
+            rules::value_of(portal.channel) == 0) {
+            return false;
+        }
+        for (std::size_t previous = 0; previous < index; ++previous) {
+            if (portals[previous].channel == portal.channel) {
+                return false;
+            }
+        }
+    }
+    return true;
 }
 
 void RegionTiles::set_edge(RegionXY a, RegionXY b, rules::EdgeId edge_id) {
@@ -110,7 +127,8 @@ std::size_t RegionTiles::edge_storage_bytes() const noexcept { return bytes(edge
 
 std::size_t RegionTiles::dynamic_storage_bytes() const noexcept {
     return bytes(base) + bytes(relief) + bytes(feature) + bytes(temperature) + bytes(moisture) +
-           bytes(elevation) + bytes(edges) + bytes(owner) + bytes(settlement) + bytes(site);
+           bytes(elevation) + bytes(edges) + bytes(owner) + bytes(settlement) + bytes(site) +
+           bytes(portals);
 }
 
 }  // namespace aetheria::world

@@ -34,6 +34,11 @@ enum class FeatureId : std::uint16_t {};
 // Ruleset 不變時值持續有效；跨存檔須先由字串 id 重映射。
 enum class EdgeId : std::uint16_t {};
 
+// WorldConnectionId 是 world_graph.toml 中手工配發的穩定通道識別。
+// WorldGraphConnection 與 RegionPortal 保存其值的複本。
+// 同一份世界圖中不得重複，存檔跨版本時不做下標重映射。
+enum class WorldConnectionId : std::uint32_t {};
+
 [[nodiscard]] constexpr std::uint16_t value_of(TerrainId id) noexcept {
     return static_cast<std::uint16_t>(id);
 }
@@ -45,6 +50,9 @@ enum class EdgeId : std::uint16_t {};
 }
 [[nodiscard]] constexpr std::uint16_t value_of(EdgeId id) noexcept {
     return static_cast<std::uint16_t>(id);
+}
+[[nodiscard]] constexpr std::uint32_t value_of(WorldConnectionId id) noexcept {
+    return static_cast<std::uint32_t>(id);
 }
 
 // Yield 是 terrain 提供的四種整數產出。

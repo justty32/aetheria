@@ -20,6 +20,8 @@ std::uint64_t hash_skeleton(const RegionSkeleton& skeleton) noexcept {
     detail::hash_scalar(hash, hash_stage(skeleton.history));
     detail::hash_scalar(hash, hash_stage(skeleton.cities));
     detail::hash_scalar(hash, hash_stage(skeleton.roads));
+    detail::hash_scalar(hash, hash_stage(skeleton.portals));
+    detail::hash_scalar(hash, hash_stage(skeleton.factions));
     detail::hash_scalar(hash, rules::value_of(skeleton.definitions.land));
     detail::hash_scalar(hash, rules::value_of(skeleton.definitions.ocean));
     detail::hash_scalar(hash, rules::value_of(skeleton.definitions.plain));
@@ -48,6 +50,12 @@ std::uint64_t hash_tiles(const world::RegionTiles& tiles) noexcept {
     detail::hash_vector(hash, tiles.edges);
     detail::hash_vector(hash, tiles.owner);
     detail::hash_vector(hash, tiles.settlement);
+    detail::hash_scalar(hash, static_cast<std::uint64_t>(tiles.portals.size()));
+    for (const auto& portal : tiles.portals) {
+        detail::hash_scalar(hash, portal.tile.x);
+        detail::hash_scalar(hash, portal.tile.y);
+        detail::hash_scalar(hash, rules::value_of(portal.channel));
+    }
     detail::hash_scalar(hash, static_cast<std::uint64_t>(tiles.site.size()));
     for (const auto& site : tiles.site) {
         detail::hash_scalar(hash, site.lod);

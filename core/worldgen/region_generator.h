@@ -6,6 +6,7 @@
 #include "core/worldgen/region_climate_stages.h"
 #include "core/worldgen/region_config.h"
 #include "core/worldgen/region_diagnostics.h"
+#include "core/worldgen/region_late_stages.h"
 #include "core/worldgen/region_relief_stages.h"
 #include "core/worldgen/region_seed.h"
 #include "core/worldgen/region_skeleton.h"

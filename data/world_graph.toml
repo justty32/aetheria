@@ -1,0 +1,82 @@
+# WorldGraph 是手工資料；portal 落點由各 Region 的階段 11 解析。
+regions = [0, 1, 2, 3, 4]
+
+[[connections]]
+id = 1
+region_a = 0
+region_b = 1
+type = "sea_route"
+cost_ticks = 3
+requirement = "ship:1"
+
+[[connections]]
+id = 2
+region_a = 0
+region_b = 2
+type = "mountain_pass"
+cost_ticks = 2
+requirement = "none"
+
+[[connections]]
+id = 3
+region_a = 0
+region_b = 3
+type = "underground"
+cost_ticks = 4
+requirement = "key:underdeep"
+
+[[connections]]
+id = 4
+region_a = 0
+region_b = 4
+type = "teleport"
+cost_ticks = 1
+requirement = "story:gate_awakened"
+
+[[connections]]
+id = 5
+region_a = 1
+region_b = 2
+type = "underground"
+cost_ticks = 4
+requirement = "key:underdeep"
+
+[[connections]]
+id = 6
+region_a = 1
+region_b = 3
+type = "teleport"
+cost_ticks = 1
+requirement = "story:gate_awakened"
+
+[[connections]]
+id = 7
+region_a = 1
+region_b = 4
+type = "mountain_pass"
+cost_ticks = 2
+requirement = "season:not_winter"
+
+[[connections]]
+id = 8
+region_a = 2
+region_b = 3
+type = "sea_route"
+cost_ticks = 3
+requirement = "ship:1"
+
+[[connections]]
+id = 9
+region_a = 2
+region_b = 4
+type = "teleport"
+cost_ticks = 1
+requirement = "story:gate_awakened"
+
+[[connections]]
+id = 10
+region_a = 3
+region_b = 4
+type = "underground"
+cost_ticks = 4
+requirement = "key:underdeep"
