@@ -34,12 +34,14 @@ static_assert(!HasMoistureBounds<aetheria::rules::ReliefRule>);
 static_assert(!HasTemperatureBounds<aetheria::rules::ReliefRule>);
 static_assert(!HasRuggednessBounds<aetheria::rules::TerrainRule>);
 
-TEST(RulesetLoader, LoadsFourImmutableDefinitionTypes) {
+TEST(RulesetLoader, LoadsImmutableDefinitionTypesAndSiteProjectionMapping) {
     const auto& ruleset = test_ruleset();
     ASSERT_EQ(ruleset.terrains().size(), 5U);
     ASSERT_EQ(ruleset.reliefs().size(), 3U);
     ASSERT_EQ(ruleset.features().size(), 9U);
     ASSERT_EQ(ruleset.edges().size(), 18U);
+    ASSERT_EQ(ruleset.grounds().size(), 6U);
+    ASSERT_EQ(ruleset.terrain_ground_mappings().size(), ruleset.terrains().size());
     ASSERT_EQ(ruleset.terrain_rules().size(), 4U);
     ASSERT_EQ(ruleset.relief_rules().size(), 3U);
     EXPECT_TRUE(ruleset.terrain_rules().back().fallback);
@@ -58,6 +60,10 @@ TEST(RulesetLoader, LoadsFourImmutableDefinitionTypes) {
     EXPECT_EQ(ruleset.feature(*ruleset.find_feature("feature.forest"))->required_terrain,
               ruleset.find_terrain("terrain.grassland"));
     EXPECT_EQ(ruleset.feature(*ruleset.find_feature("feature.ancient_foundation"))->move_cost, 0);
+    const auto grass = *ruleset.find_terrain("terrain.grassland");
+    const auto* grass_mapping = ruleset.terrain_ground_mapping(grass);
+    ASSERT_NE(grass_mapping, nullptr);
+    EXPECT_EQ(ruleset.ground(grass_mapping->ground)->id, "ground.grass");
 
     const auto& history = ruleset.civilization_rules().history;
     EXPECT_EQ(history.scoring_weights.freshwater, 500);

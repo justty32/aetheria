@@ -33,16 +33,23 @@ class Ruleset {
     [[nodiscard]] const ReliefDef* relief(ReliefId id) const noexcept;
     [[nodiscard]] const FeatureDef* feature(FeatureId id) const noexcept;
     [[nodiscard]] const EdgeDef* edge(EdgeId id) const noexcept;
+    [[nodiscard]] const GroundDef* ground(GroundId id) const noexcept;
+    [[nodiscard]] const TerrainGroundMapping* terrain_ground_mapping(TerrainId id) const noexcept;
 
     [[nodiscard]] std::optional<TerrainId> find_terrain(std::string_view id) const noexcept;
     [[nodiscard]] std::optional<ReliefId> find_relief(std::string_view id) const noexcept;
     [[nodiscard]] std::optional<FeatureId> find_feature(std::string_view id) const noexcept;
     [[nodiscard]] std::optional<EdgeId> find_edge(std::string_view id) const noexcept;
+    [[nodiscard]] std::optional<GroundId> find_ground(std::string_view id) const noexcept;
 
     [[nodiscard]] std::span<const TerrainDef> terrains() const noexcept { return terrains_; }
     [[nodiscard]] std::span<const ReliefDef> reliefs() const noexcept { return reliefs_; }
     [[nodiscard]] std::span<const FeatureDef> features() const noexcept { return features_; }
     [[nodiscard]] std::span<const EdgeDef> edges() const noexcept { return edges_; }
+    [[nodiscard]] std::span<const GroundDef> grounds() const noexcept { return grounds_; }
+    [[nodiscard]] std::span<const TerrainGroundMapping> terrain_ground_mappings() const noexcept {
+        return terrain_ground_mappings_;
+    }
     [[nodiscard]] std::span<const TerrainRule> terrain_rules() const noexcept {
         return terrain_rules_;
     }
@@ -65,6 +72,8 @@ class Ruleset {
     std::vector<ReliefDef> reliefs_;
     std::vector<FeatureDef> features_;
     std::vector<EdgeDef> edges_;
+    std::vector<GroundDef> grounds_;
+    std::vector<TerrainGroundMapping> terrain_ground_mappings_;
     std::vector<TerrainRule> terrain_rules_;
     std::vector<ReliefRule> relief_rules_;
     MovementRules movement_rules_;
@@ -74,6 +83,7 @@ class Ruleset {
     std::map<std::string, ReliefId, std::less<>> relief_index_;
     std::map<std::string, FeatureId, std::less<>> feature_index_;
     std::map<std::string, EdgeId, std::less<>> edge_index_;
+    std::map<std::string, GroundId, std::less<>> ground_index_;
 };
 
 // RulesetLoader 將一個 data 目錄完整解析成不可變 Ruleset。
@@ -96,6 +106,9 @@ class RulesetLoader {
                            std::set<std::string, std::less<>>& global_ids,
                            std::vector<std::pair<std::size_t, std::string>>&
                                feature_terrain_references);
+    static void load_grounds(Ruleset& result, const std::filesystem::path& data_directory,
+                             std::set<std::string, std::less<>>& global_ids);
+    static void load_site_projection(Ruleset& result, const std::filesystem::path& data_directory);
     static void load_biome_rule_tables(Ruleset& result,
                                        const std::filesystem::path& data_directory);
     static void load_movement_rules(Ruleset& result, const std::filesystem::path& data_directory);

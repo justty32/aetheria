@@ -94,6 +94,35 @@ move_cost=1
 flags=0
 visual="none"
 )toml");
+    write_text(path / "ground.toml", R"toml([[defs]]
+id="ground.grass"
+name_key="grass"
+move_cost=1
+flags=0
+visual="grass"
+[[defs]]
+id="ground.water"
+name_key="water"
+move_cost=0
+flags=1
+visual="water"
+)toml");
+    std::string projection;
+    if (terrain.find("terrain.grassland") != std::string_view::npos) {
+        projection += R"toml([[terrain_ground]]
+terrain="terrain.grassland"
+ground="ground.grass"
+rough_ground="ground.grass"
+)toml";
+    }
+    if (terrain.find("terrain.ocean") != std::string_view::npos) {
+        projection += R"toml([[terrain_ground]]
+terrain="terrain.ocean"
+ground="ground.water"
+rough_ground="ground.water"
+)toml";
+    }
+    write_text(path / "site_projection.toml", projection);
 }
 
 }  // namespace aetheria::tests

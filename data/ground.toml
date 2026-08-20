@@ -1,0 +1,41 @@
+[[defs]]
+id = "ground.grass"
+name_key = "ground.grass.name"
+move_cost = 1
+flags = 0
+visual = "ground/grass"
+
+[[defs]]
+id = "ground.water"
+name_key = "ground.water.name"
+move_cost = 0
+flags = 1
+visual = "ground/water"
+
+[[defs]]
+id = "ground.sand"
+name_key = "ground.sand.name"
+move_cost = 1
+flags = 0
+visual = "ground/sand"
+
+[[defs]]
+id = "ground.tundra"
+name_key = "ground.tundra.name"
+move_cost = 1
+flags = 0
+visual = "ground/tundra"
+
+[[defs]]
+id = "ground.mud"
+name_key = "ground.mud.name"
+move_cost = 2
+flags = 0
+visual = "ground/mud"
+
+[[defs]]
+id = "ground.stone"
+name_key = "ground.stone.name"
+move_cost = 1
+flags = 0
+visual = "ground/stone"

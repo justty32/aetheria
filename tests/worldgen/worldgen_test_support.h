@@ -87,6 +87,20 @@ move_cost = 1
 flags = 0
 visual = "edge/none"
 )");
+    write_text(directory.path() / "ground.toml", R"(
+[[defs]]
+id = "ground.grass"
+name_key = "ground.grass.name"
+move_cost = 1
+flags = 0
+visual = "ground/grass"
+)");
+    write_text(directory.path() / "site_projection.toml", R"(
+[[terrain_ground]]
+terrain = "terrain.grassland"
+ground = "ground.grass"
+rough_ground = "ground.grass"
+)");
     return rules::RulesetLoader::load(directory.path());
 }
 

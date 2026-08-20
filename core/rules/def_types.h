@@ -34,6 +34,11 @@ enum class FeatureId : std::uint16_t {};
 // Ruleset 不變時值持續有效；跨存檔須先由字串 id 重映射。
 enum class EdgeId : std::uint16_t {};
 
+// GroundId 是 Ruleset 中 Site GroundDef 的強型別下標。
+// Ruleset 配發其值，程序生成的 Site ground 只保存值的複本。
+// Ruleset 不變時值持續有效；程序層不進存檔。
+enum class GroundId : std::uint16_t {};
+
 // WorldConnectionId 是 world_graph.toml 中手工配發的穩定通道識別。
 // WorldGraphConnection 與 RegionPortal 保存其值的複本。
 // 同一份世界圖中不得重複，存檔跨版本時不做下標重映射。
@@ -49,6 +54,9 @@ enum class WorldConnectionId : std::uint32_t {};
     return static_cast<std::uint16_t>(id);
 }
 [[nodiscard]] constexpr std::uint16_t value_of(EdgeId id) noexcept {
+    return static_cast<std::uint16_t>(id);
+}
+[[nodiscard]] constexpr std::uint16_t value_of(GroundId id) noexcept {
     return static_cast<std::uint16_t>(id);
 }
 [[nodiscard]] constexpr std::uint32_t value_of(WorldConnectionId id) noexcept {
@@ -120,6 +128,26 @@ struct EdgeDef {
     std::int32_t move_cost{};
     std::uint32_t flags{};
     VisualRef visual;
+};
+
+// GroundDef 描述 Site 格的程序地面種類。
+// Ruleset 擁有所有實例。
+// 所屬 Ruleset 析構後失效。
+struct GroundDef {
+    std::string id;
+    std::string name_key;
+    std::int32_t move_cost{};
+    std::uint32_t flags{};
+    VisualRef visual;
+};
+
+// TerrainGroundMapping 是 Region TerrainDef 到 Site GroundDef 的資料驅動投影規則。
+// Ruleset 依 TerrainId 順序擁有所有項目；rough_ground 只提供最小地表變化。
+// 所屬 Ruleset 析構後失效。
+struct TerrainGroundMapping {
+    TerrainId terrain;
+    GroundId ground;
+    GroundId rough_ground;
 };
 
 }  // namespace aetheria::rules

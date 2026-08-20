@@ -23,6 +23,7 @@
 | `CMakeLists.txt`、`vcpkg.json` | 專案組態與依賴固定；**來源清單不在這裡**，在 `cmake/targets_*.cmake` |
 | `cmake/` | 建置分檔：`targets_core/tests/sim/bridge.cmake`（四 target 的來源與測試登記）、`godot_toolchain.cmake`（Godot 偵測／API dump／submodule revision）、`check_*.cmake`（CTest 用的隔離與跨行程腳本）|
 | `core/` | 純 C++ 玩法核心，**不得依賴 godot-cpp** |
+| `core/site/` | L1→L2 慢／快變數隔離、最小骨架、三層 Site 型別 |
 | `bridge/` | `AetheriaCore` Node 與 GDExtension 註冊；唯一可 include godot-cpp 的自有目錄 |
 | `godot/` | 純顯示／呼叫驗證場景與 `.gdextension` 描述檔 |
 | `tests/` | GoogleTest 單元測試 |
@@ -41,7 +42,7 @@
 | 檔 | 職責 |
 |---|---|
 | `ruleset.h` | 入口：include 下面兩個型別 header + `Ruleset`／`RulesetLoader` 兩個 class |
-| `def_types.h` | id 型別、flag 常數、`Terrain/Relief/Feature/EdgeDef` |
+| `def_types.h` | id／flag、地形 def 與 `TerrainGroundMapping` |
 | `rule_tables.h` | 獨立 `TerrainRule`／`ReliefRule`、`MovementRules`、`CrossingRule`、世界通道與 `CivilizationRules` |
 | `toml_read.h` | 內部共用 TOML 讀取／驗證 helper |
 | `ruleset.cpp` | `Ruleset` 存取器 + `RulesetLoader::load` 的編排 |
@@ -50,6 +51,7 @@
 | `ruleset_load_civilization.cpp`、`ruleset_load_factions.cpp` | 現代城市／道路參數；勢力數與影響力參數 |
 | `ruleset_load_history.cpp`、`ruleset_load_history_{values,references}.cpp` | 上古歷史載入編排；數值／結構限制；道路與廢墟引用（共用宣告在 `ruleset_load_history_detail.h`）|
 | `ruleset_load_crossings.cpp`、`ruleset_load_world_graph.cpp` | 渡河複合 edge 查表與完整性驗證；手工世界通道宣告與 canonical 排序 |
+| `ruleset_load_site.cpp` | Ground def 與 Terrain→Ground 表載入 |
 
 各 `load_*` 入口是 `RulesetLoader` 的 private static 成員；history detail 只接收入口傳入的參考。
 
@@ -85,6 +87,7 @@
 | 目錄 | 內容 |
 |---|---|
 | `support/` | 跨目錄共用的 `ruleset_fixture.h` |
+| `site/` | Site 投影隔離、確定性、映射、存檔白名單、效能 |
 | `sim/` | 世界級正規化雜湊的跨歷史、磁碟列舉、負向控制與錯誤路徑測試 |
 | `time/`、`serialize/` | 曆法邊界與往返；EnTT registry 壓測 |
 | `rules/` | `ruleset_load`／`ruleset_error`（資料不變式錯誤路徑）／`ruleset_zone_codec`（索引重映射）|

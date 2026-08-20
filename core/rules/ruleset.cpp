@@ -13,6 +13,10 @@ const TerrainDef* Ruleset::terrain(TerrainId id) const noexcept { return lookup(
 const ReliefDef* Ruleset::relief(ReliefId id) const noexcept { return lookup(reliefs(), id); }
 const FeatureDef* Ruleset::feature(FeatureId id) const noexcept { return lookup(features(), id); }
 const EdgeDef* Ruleset::edge(EdgeId id) const noexcept { return lookup(edges(), id); }
+const GroundDef* Ruleset::ground(GroundId id) const noexcept { return lookup(grounds(), id); }
+const TerrainGroundMapping* Ruleset::terrain_ground_mapping(TerrainId id) const noexcept {
+    return lookup(terrain_ground_mappings(), id);
+}
 
 std::optional<TerrainId> Ruleset::find_terrain(std::string_view id) const noexcept {
     return find_id(terrain_index_, id);
@@ -26,6 +30,9 @@ std::optional<FeatureId> Ruleset::find_feature(std::string_view id) const noexce
 std::optional<EdgeId> Ruleset::find_edge(std::string_view id) const noexcept {
     return find_id(edge_index_, id);
 }
+std::optional<GroundId> Ruleset::find_ground(std::string_view id) const noexcept {
+    return find_id(ground_index_, id);
+}
 
 Ruleset RulesetLoader::load(const std::filesystem::path& data_directory) {
     Ruleset result;
@@ -36,6 +43,8 @@ Ruleset RulesetLoader::load(const std::filesystem::path& data_directory) {
     load_reliefs(result, data_directory, global_ids);
     load_features(result, data_directory, global_ids, feature_terrain_references);
     load_edges(result, data_directory, global_ids, feature_terrain_references);
+    load_grounds(result, data_directory, global_ids);
+    load_site_projection(result, data_directory);
     load_biome_rule_tables(result, data_directory);
     load_movement_rules(result, data_directory);
     load_faction_rules(result, data_directory);

@@ -4,6 +4,7 @@ add_library(aetheria_core STATIC
     core/api/version.cpp
     core/rules/ruleset.cpp
     core/rules/ruleset_load_defs.cpp
+    core/rules/ruleset_load_site.cpp
     core/rules/ruleset_load_biomes.cpp
     core/rules/ruleset_load_civilization.cpp
     core/rules/ruleset_load_factions.cpp
@@ -13,6 +14,7 @@ add_library(aetheria_core STATIC
     core/rules/ruleset_load_crossings.cpp
     core/rules/ruleset_load_world_graph.cpp
     core/serialize/normalized_state_hash.cpp
+    core/site/site_projection.cpp
     core/time/tick.cpp
     core/serialize/zone_encode.cpp
     core/serialize/zone_decode.cpp

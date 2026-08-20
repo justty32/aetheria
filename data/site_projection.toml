@@ -1,0 +1,24 @@
+[[terrain_ground]]
+terrain = "terrain.grassland"
+ground = "ground.grass"
+rough_ground = "ground.stone"
+
+[[terrain_ground]]
+terrain = "terrain.ocean"
+ground = "ground.water"
+rough_ground = "ground.water"
+
+[[terrain_ground]]
+terrain = "terrain.desert"
+ground = "ground.sand"
+rough_ground = "ground.stone"
+
+[[terrain_ground]]
+terrain = "terrain.tundra"
+ground = "ground.tundra"
+rough_ground = "ground.stone"
+
+[[terrain_ground]]
+terrain = "terrain.swamp"
+ground = "ground.mud"
+rough_ground = "ground.water"
