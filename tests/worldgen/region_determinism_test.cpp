@@ -106,6 +106,31 @@ TEST(RegionGeneration, ChangingClimateParametersCannotMoveStagesOneThroughThree)
     EXPECT_NE(hash_stage(before.climate), hash_stage(after.climate));
 }
 
+TEST(RegionGeneration, ChangingFeatureParametersCannotMoveStagesOneThroughSix) {
+    const RegionSlowVariables slow{23, 128, 96};
+    RegionGenerationConfig original;
+    auto changed = original;
+    changed.features.forest_density_scale = 1;
+
+    const auto before = build_skeleton(slow, UINT64_C(987654321), test_ruleset(), original);
+    const auto after = build_skeleton(slow, UINT64_C(987654321), test_ruleset(), changed);
+
+    std::cout << "stage7_before=" << hash_stage(before.plates) << ',' << hash_stage(before.height)
+              << ',' << hash_stage(before.erosion) << ',' << hash_stage(before.climate) << ','
+              << hash_stage(before.rivers) << ',' << hash_stage(before.biome) << ','
+              << hash_stage(before.features) << "\nstage7_after=" << hash_stage(after.plates) << ','
+              << hash_stage(after.height) << ',' << hash_stage(after.erosion) << ','
+              << hash_stage(after.climate) << ',' << hash_stage(after.rivers) << ','
+              << hash_stage(after.biome) << ',' << hash_stage(after.features) << '\n';
+    EXPECT_EQ(hash_stage(before.plates), hash_stage(after.plates));
+    EXPECT_EQ(hash_stage(before.height), hash_stage(after.height));
+    EXPECT_EQ(hash_stage(before.erosion), hash_stage(after.erosion));
+    EXPECT_EQ(hash_stage(before.climate), hash_stage(after.climate));
+    EXPECT_EQ(hash_stage(before.rivers), hash_stage(after.rivers));
+    EXPECT_EQ(hash_stage(before.biome), hash_stage(after.biome));
+    EXPECT_NE(hash_stage(before.features), hash_stage(after.features));
+}
+
 TEST(RegionGeneration, EditingBiomeDataChangesOnlyDataDrivenStages) {
     TemporaryDirectory directory;
     copy_data_files(directory.path());

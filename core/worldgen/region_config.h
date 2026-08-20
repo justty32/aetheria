@@ -86,7 +86,7 @@ struct BiomeGenerationConfig {
 // 呼叫端擁有值，地物階段只在呼叫期間借用。
 // 呼叫結束後即可失效。
 struct FeatureGenerationConfig {
-    std::uint16_t forest_density_scale{42000};
+    std::uint16_t forest_density_scale{64332};
     std::uint16_t mine_chance{9000};
     std::uint16_t oasis_chance{5000};
     std::uint16_t landmark_chance{180};
