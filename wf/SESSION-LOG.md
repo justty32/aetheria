@@ -19,7 +19,8 @@
 
 ### 實作者（gpt-sol）
 
-- （無）
+- **M1.5 停工等規劃者裁定**：manifest 9→10 組必改磁碟格式、古道跨河缺複合 edge 表示 →
+  `wf/inbox/m1-5-blocked-format-and-ancient-crossings.md`
 
 ### 規劃者（Opus 5）
 
@@ -35,9 +36,17 @@
 - **裁定：歷史層前置成階段 8**，選址／道路順延成 9／10（2026-08-20）。
   原本排最後會與「上古高分選址 → 現代城市優先落腳」形成**循環依賴**。
   理由寫在 [design/worldgen-civ.md](../design/worldgen-civ.md) 的裁定一節；`worldmap.md` 的管線圖已同步。
-- **M1.5 任務書已派工（codex/gpt-sol）、等回報** → `wf/inbox/m1_5-history-layer.md`：
-  階段 8 歷史層（上古選址 + 古道 + 災變廢墟 + 對現代選址的分數回饋）。
+- **M1.5 已派工（codex/gpt-sol）、等回報** → 任務書 `wf/inbox/m1_5-history-layer.md`
+  + 裁定信 `wf/inbox/m1-5-rulings.md`（**裁定信優先於任務書**）。
   核心驗收是**回饋的負向控制**：`ancient_site_bonus = 0` 時現代城市與上古存活點的重疊必須顯著下降。
+- **三條裁定已下**（實作者停工回報兩項阻塞，兩項都成立，是我任務書的疏漏）：
+  ① **存檔格式升 6 → 7**——參數 group 9→10 必然改 manifest 位元格式（125→133 bytes）。
+  不做遷移：管線重排已讓每個既有世界**語意上失效**，拒絕舊檔是正確行為而非附帶損害。
+  ② **古道到河邊就斷**（橋塌了）——不替古道立複合 def，因為複合 def 驗證強制 bridge flag，
+  而 bridge flag 語意是「不付渡河代價」，掛給廢渡口是撒謊。
+  ③ **古道自成一組重用折扣**——`road_path.cpp` 的重用只看 road flag、**不讀 `move_cost`**，
+  所以我原本要求的「古道 move_cost 調高」對道路工程毫無影響，那條作廢。
+- **`design/worldgen-civ.md` 已拆檔** → 歷史層獨立成 `design/worldgen-history.md`（裁定 ②③ 在那裡）。
 - **M1.6（出境點 + 勢力起始，階段 11～12）未寫**，之後 M1 即完成。
   ⚠ 勢力影響力擴散是**第二個順序相依演算法**（多源洪水填充），tie-break 要顯式定死，
   且要有「打亂勢力輸入順序輸出不變」的正負向控制。M1.6 也是**會動存檔格式**的那一輪（portal 欄位）。
@@ -55,8 +64,7 @@
   `tests/zone/file_zone_store_manifest_test.cpp` 7,858、`core/rules/ruleset_load_civilization.cpp` 7,560、
   `core/serialize/zone_decode.cpp` 7,342、`sim/gen_commands.cpp` 7,241、`core/worldgen/city_sites.cpp` 7,155。
   拆法照 [refactor](workflows/refactor.md)，拆完更新 [code-map](workflows/common/code-map.md)。
-- ⚠ **三份設計文件貼著 8 KB 上限**：`interface-lifecycle.md` 8,156、`outline.md` 8,138、
-  `worldgen-civ.md` 7,9xx（M1.5 的裁定寫進去之後）。
+- ⚠ **兩份設計文件貼著 8 KB 上限**：`interface-lifecycle.md` 8,156、`outline.md` 8,138。
   **下次要動它們就得先拆**。已拆過三次的前例都是同一招：**保留主檔名、切出自足子題**
   （zone-model→+zone-addressing、zone-save→+zone-save-format、medps-relation→+medps-inheritance），
   這樣既有的外部連結大多不必改。
