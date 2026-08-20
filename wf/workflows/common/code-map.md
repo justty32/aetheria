@@ -23,7 +23,7 @@
 | `CMakeLists.txt`、`vcpkg.json` | 專案組態與依賴固定；**來源清單不在這裡**，在 `cmake/targets_*.cmake` |
 | `cmake/` | 建置分檔：`targets_core/tests/sim/bridge.cmake`（四 target 的來源與測試登記）、`godot_toolchain.cmake`（Godot 偵測／API dump／submodule revision）、`check_*.cmake`（CTest 用的隔離與跨行程腳本）|
 | `core/` | 純 C++ 玩法核心，**不得依賴 godot-cpp** |
-| `core/site/` | L1→L2 慢／快隔離、骨架／填充、L_COARSE 展開、L_ABSENT 收回／冷載重算與三層資料 |
+| `core/site/` | L1→L2 慢／快隔離、骨架／填充、展開／冷載／收回，以及固定 row 的 L2→L1 歸約表 |
 | `bridge/` | `AetheriaCore` Node 與 GDExtension 註冊；唯一可 include godot-cpp 的自有目錄 |
 | `godot/` | 純顯示／呼叫驗證場景與 `.gdextension` 描述檔 |
 | `tests/` | GoogleTest 單元測試 |
@@ -67,12 +67,12 @@
 
 | 檔 | 職責 |
 |---|---|
-| `region_tiles.*` | SoA 格資料、稀疏 portal 清單與雙邊一致 edge 寫入 |
+| `region_tiles.*`、`reduction_schema.h` | SoA 格資料、私有歸約欄位／row schema、稀疏 portal 與雙邊一致 edge 寫入 |
 | `region_movement.h` | 移動／尋路／旬回合的共同入口 |
 | `region_movement_detail.h` | `in_bounds`／`passable`／`manhattan` |
 | `region_step_cost.cpp` | 整數 MP 單步成本與季節下限 |
 | `region_path.cpp` | A*（admissible heuristic）|
-| `region_turn.cpp` | `RegionTurnPipeline` 下令與旬回合推進 |
+| `region_turn.cpp`、`region_simulation.*` | `RegionTurnPipeline` 下令／旬推進；第 5 階段近似公式與 live Site 跳過計數 |
 
 ### `core/worldgen` — Region 十二階段生成
 
