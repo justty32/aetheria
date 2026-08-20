@@ -54,3 +54,10 @@ name_key = "feature.ruin_city.name"
 move_cost = 1
 flags = 16
 visual = "feature/ruin_city"
+
+[[defs]]
+id = "feature.ancient_foundation"
+name_key = "feature.ancient_foundation.name"
+move_cost = 0
+flags = 0
+visual = "feature/ancient_foundation"

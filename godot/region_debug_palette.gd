@@ -20,6 +20,7 @@ const FEATURE := {
 	"feature.ruin_village": Color8(232, 96, 223),
 	"feature.ruin_town": Color8(203, 55, 195),
 	"feature.ruin_city": Color8(150, 28, 158),
+	"feature.ancient_foundation": Color8(70, 240, 255),
 }
 
 const RELIEF := {

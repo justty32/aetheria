@@ -43,6 +43,9 @@ RegionBuildResult build_skeleton(const RegionSlowVariables& slow, std::uint64_t 
             [&](const std::string& id) { return ruleset.find_feature(id); }, "feature.oasis"),
         require_definition<rules::FeatureId>(
             [&](const std::string& id) { return ruleset.find_feature(id); }, "feature.landmark"),
+        require_definition<rules::FeatureId>(
+            [&](const std::string& id) { return ruleset.find_feature(id); },
+            "feature.ancient_foundation"),
         require_definition<rules::EdgeId>(
             [&](const std::string& id) { return ruleset.find_edge(id); }, "edge.none"),
         require_definition<rules::EdgeId>(

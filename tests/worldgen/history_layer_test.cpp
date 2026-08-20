@@ -1,4 +1,5 @@
 #include "core/worldgen/civ_tiles.h"
+#include "core/worldgen/gen_stage_ids.h"
 #include "core/worldgen/region_generator.h"
 #include "tests/support/ruleset_fixture.h"
 
@@ -15,6 +16,7 @@ namespace {
 using aetheria::rules::EdgeId;
 using aetheria::tests::test_ruleset;
 using aetheria::worldgen::build_skeleton;
+using aetheria::worldgen::derive_region_stage_seed;
 using aetheria::worldgen::generate_history_from_sites;
 using aetheria::worldgen::RegionBuildResult;
 using aetheria::worldgen::RegionSlowVariables;
@@ -32,6 +34,15 @@ using aetheria::worldgen::RegionSlowVariables;
     return hash;
 }
 
+[[nodiscard]] std::uint64_t hash_survivors(const std::vector<std::uint8_t>& survivors) {
+    auto hash = UINT64_C(14695981039346656037);
+    for (const auto value : survivors) {
+        hash ^= value;
+        hash *= UINT64_C(1099511628211);
+    }
+    return hash;
+}
+
 [[nodiscard]] aetheria::worldgen::HistoryStageOutput
 history_from(const RegionBuildResult& terrain,
              aetheria::worldgen::CityStageOutput ancient_sites,
@@ -39,6 +50,7 @@ history_from(const RegionBuildResult& terrain,
     return generate_history_from_sites(
         terrain.skeleton.elevation, terrain.climate, terrain.rivers, terrain.biome,
         terrain.features, std::move(ancient_sites), terrain.skeleton.definitions, test_ruleset(),
+        derive_region_stage_seed(UINT64_C(515151), 51, aetheria::worldgen::detail::kHistoryStageId),
         canonicalize_city_order);
 }
 
@@ -55,9 +67,16 @@ TEST(HistoryGenerationStage, CanonicalOrderIgnoresShuffledSitesAndNegativeContro
     std::cout << "history_canonical_edges_hash_a=" << hash_edges(canonical_a.edges)
               << " history_canonical_edges_hash_b=" << hash_edges(canonical_b.edges)
               << " history_negative_edges_hash_a=" << hash_edges(uncanonical_a.edges)
-              << " history_negative_edges_hash_b=" << hash_edges(uncanonical_b.edges) << '\n';
+              << " history_negative_edges_hash_b=" << hash_edges(uncanonical_b.edges) << '\n'
+              << "cataclysm_canonical_survivor_hash_a=" << hash_survivors(canonical_a.survivor)
+              << " cataclysm_canonical_survivor_hash_b=" << hash_survivors(canonical_b.survivor)
+              << " cataclysm_negative_survivor_hash_a=" << hash_survivors(uncanonical_a.survivor)
+              << " cataclysm_negative_survivor_hash_b=" << hash_survivors(uncanonical_b.survivor)
+              << '\n';
     EXPECT_EQ(canonical_a.edges, canonical_b.edges);
     EXPECT_NE(uncanonical_a.edges, uncanonical_b.edges);
+    EXPECT_EQ(canonical_a.survivor, canonical_b.survivor);
+    EXPECT_NE(uncanonical_a.survivor, uncanonical_b.survivor);
 }
 
 TEST(HistoryGenerationStage, AncientRoadAndSkippedRiverMasksAreSymmetric) {

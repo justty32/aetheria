@@ -90,14 +90,14 @@ generate_history(const QuantizedElevation& elevation, const ClimateStageOutput& 
                  const HistoryGenerationConfig& config);
 
 // generate_history_from_sites 是階段 8 的可測試組合縫：正式路徑由 generate_history 呼叫，
-// 決定論測試可只打亂同一批上古選址，確認古道鋪設順序已 canonicalize。
+// 決定論測試可只打亂同一批上古選址，確認古道與災變順序已 canonicalize。
 [[nodiscard]] HistoryStageOutput
 generate_history_from_sites(const QuantizedElevation& elevation,
                             const ClimateStageOutput& climate,
                             const RiverStageOutput& rivers, const BiomeStageOutput& biome,
                             const FeatureStageOutput& features, CityStageOutput ancient_sites,
                             const RegionDefinitionIds& definitions,
-                            const rules::Ruleset& ruleset,
+                            const rules::Ruleset& ruleset, std::uint64_t stage_seed,
                             bool canonicalize_city_order = true);
 
 [[nodiscard]] CityStageOutput

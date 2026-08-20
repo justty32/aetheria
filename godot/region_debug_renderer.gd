@@ -85,6 +85,12 @@ static func _draw_features(image: Image, snapshot: Dictionary) -> void:
 			image.fill_rect(Rect2i(x + 3, y + 1, 2, 6), color)
 			image.fill_rect(Rect2i(x + 1, y + 3, 6, 2), color)
 			continue
+		if feature_id == "feature.ancient_foundation":
+			image.fill_rect(Rect2i(x + 1, y + 1, 6, 1), color)
+			image.fill_rect(Rect2i(x + 1, y + 6, 6, 1), color)
+			image.fill_rect(Rect2i(x + 1, y + 1, 1, 6), color)
+			image.fill_rect(Rect2i(x + 6, y + 1, 1, 6), color)
+			continue
 		var size := 4
 		if feature_id == "feature.ruin_village":
 			size = 2

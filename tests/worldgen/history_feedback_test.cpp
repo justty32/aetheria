@@ -9,7 +9,6 @@
 #include <fstream>
 #include <iostream>
 #include <iterator>
-#include <limits>
 #include <stdexcept>
 #include <string>
 #include <string_view>
@@ -119,7 +118,10 @@ TEST(HistoryGenerationStage, BonusRuinsSurvivalBoundaryAndRoadReuseAreObservable
     const auto& history_rules = test_ruleset().civilization_rules().history;
     std::array<std::size_t, 3> ruins{};
     for (const auto& site : enabled.history.ancient_sites.cities) {
-        if (enabled.history.survivor[site.canonical_id] == 0) {
+        if (enabled.history.survivor[site.canonical_id] != 0) {
+            EXPECT_EQ(enabled.history.features.feature[site.canonical_id],
+                      enabled.skeleton.definitions.ancient_foundation);
+        } else {
             const auto tier = static_cast<std::size_t>(site.tier) - 1U;
             ASSERT_LT(tier, ruins.size());
             EXPECT_EQ(enabled.history.features.feature[site.canonical_id],
@@ -135,17 +137,6 @@ TEST(HistoryGenerationStage, BonusRuinsSurvivalBoundaryAndRoadReuseAreObservable
               enabled.history.ancient_sites.cities.size() - survivors);
     ASSERT_GT(survivors, 0U);
     ASSERT_GT(ruins[0] + ruins[1] + ruins[2], 0U);
-
-    auto minimum_survivor = std::numeric_limits<std::int32_t>::max();
-    auto maximum_ruined = std::numeric_limits<std::int32_t>::min();
-    for (const auto& site : enabled.history.ancient_sites.cities) {
-        if (enabled.history.survivor[site.canonical_id] != 0) {
-            minimum_survivor = std::min(minimum_survivor, site.score);
-        } else {
-            maximum_ruined = std::max(maximum_ruined, site.score);
-        }
-    }
-    EXPECT_GE(minimum_survivor, maximum_ruined);
 
     const auto reuse = measure_reuse(enabled);
     ASSERT_GT(reuse.eligible, 0U);
@@ -167,9 +158,7 @@ TEST(HistoryGenerationStage, BonusRuinsSurvivalBoundaryAndRoadReuseAreObservable
     std::cout << "history_feedback enabled_overlap=" << enabled_overlap
               << " zero_bonus_overlap=" << zero_overlap << " survivors=" << survivors
               << " ruins_village=" << ruins[0] << " ruins_town=" << ruins[1]
-              << " ruins_city=" << ruins[2]
-              << " min_survivor_score=" << minimum_survivor
-              << " max_ruined_score=" << maximum_ruined << '\n'
+              << " ruins_city=" << ruins[2] << '\n'
               << "ancient_road_reuse reused=" << reuse.reused
               << " eligible_modern_edges=" << reuse.eligible
               << " percent=" << (100.0 * static_cast<double>(reuse.reused) /

@@ -3,6 +3,8 @@
 #include "core/worldgen/city_selection.h"
 #include "core/worldgen/feature_placement.h"
 #include "core/worldgen/history_roads.h"
+#include "core/worldgen/region_seed.h"
+#include "core/worldgen/region_skeleton.h"
 
 #include <algorithm>
 #include <numeric>
@@ -10,6 +12,50 @@
 #include <utility>
 
 namespace aetheria::worldgen {
+namespace {
+
+inline constexpr auto kCataclysmSubseedId = UINT64_C(0x43415441434C5953);
+
+struct CataclysmDraw {
+    std::size_t site_index{};
+    std::uint64_t random_key{};
+};
+
+[[nodiscard]] std::vector<std::size_t> cataclysm_order(const CityStageOutput& ancient_sites,
+                                                       std::uint64_t stage_seed,
+                                                       bool canonicalize_city_order) {
+    std::vector<std::size_t> input_order(ancient_sites.cities.size());
+    std::iota(input_order.begin(), input_order.end(), 0U);
+    if (canonicalize_city_order) {
+        std::ranges::sort(input_order, [&](std::size_t lhs, std::size_t rhs) {
+            return ancient_sites.cities[lhs].canonical_id < ancient_sites.cities[rhs].canonical_id;
+        });
+    }
+
+    auto random_state = splitmix64(stage_seed ^ kCataclysmSubseedId);
+    std::vector<CataclysmDraw> draws;
+    draws.reserve(input_order.size());
+    for (const auto site_index : input_order) {
+        random_state = splitmix64(random_state);
+        draws.push_back({site_index, random_state});
+    }
+    std::ranges::sort(draws, [&](const CataclysmDraw& lhs, const CataclysmDraw& rhs) {
+        if (lhs.random_key != rhs.random_key) {
+            return lhs.random_key < rhs.random_key;
+        }
+        return ancient_sites.cities[lhs.site_index].canonical_id <
+               ancient_sites.cities[rhs.site_index].canonical_id;
+    });
+
+    std::vector<std::size_t> result;
+    result.reserve(draws.size());
+    for (const auto& draw : draws) {
+        result.push_back(draw.site_index);
+    }
+    return result;
+}
+
+}  // namespace
 
 HistoryStageOutput generate_history(const QuantizedElevation& elevation,
                                     const ClimateStageOutput& climate,
@@ -35,7 +81,7 @@ HistoryStageOutput generate_history(const QuantizedElevation& elevation,
         {target, city_count, town_count, civilization.history.minimum_spacing,
          config.minimum_score_bias});
     return generate_history_from_sites(elevation, climate, rivers, biome, features,
-                                       std::move(ancient_sites), definitions, ruleset);
+                                       std::move(ancient_sites), definitions, ruleset, stage_seed);
 }
 
 HistoryStageOutput
@@ -44,7 +90,8 @@ generate_history_from_sites(const QuantizedElevation& elevation,
                             const RiverStageOutput& rivers, const BiomeStageOutput& biome,
                             const FeatureStageOutput& features, CityStageOutput ancient_sites,
                             const RegionDefinitionIds& definitions,
-                            const rules::Ruleset& ruleset, bool canonicalize_city_order) {
+                            const rules::Ruleset& ruleset, std::uint64_t stage_seed,
+                            bool canonicalize_city_order) {
     const auto& civilization = ruleset.civilization_rules();
     const auto count = elevation.meters.size();
     if (!civilization.loaded || ancient_sites.width != elevation.width ||
@@ -57,14 +104,8 @@ generate_history_from_sites(const QuantizedElevation& elevation,
         canonicalize_city_order);
     FeatureStageOutput history_features = features;
     std::vector<std::uint8_t> survivor(count, 0);
-    std::vector<std::size_t> catastrophe_order(ancient_sites.cities.size());
-    std::iota(catastrophe_order.begin(), catastrophe_order.end(), 0U);
-    std::ranges::sort(catastrophe_order, [&](std::size_t lhs, std::size_t rhs) {
-        const auto& lhs_site = ancient_sites.cities[lhs];
-        const auto& rhs_site = ancient_sites.cities[rhs];
-        return lhs_site.score != rhs_site.score ? lhs_site.score > rhs_site.score
-                                                : lhs_site.canonical_id < rhs_site.canonical_id;
-    });
+    const auto catastrophe_order =
+        cataclysm_order(ancient_sites, stage_seed, canonicalize_city_order);
     const auto survivor_count =
         catastrophe_order.size() * civilization.history.survivor_percent / 100U;
     for (std::size_t rank = 0; rank < catastrophe_order.size(); ++rank) {
@@ -77,6 +118,9 @@ generate_history_from_sites(const QuantizedElevation& elevation,
         }
         if (rank < survivor_count) {
             survivor[site.canonical_id] = 1;
+            detail::require_feature_terrain(ruleset, definitions.ancient_foundation,
+                                            biome.terrain[site.canonical_id]);
+            history_features.feature[site.canonical_id] = definitions.ancient_foundation;
             continue;
         }
         const auto tier_index = static_cast<std::size_t>(tier) - 1U;

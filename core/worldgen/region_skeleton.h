@@ -26,6 +26,7 @@ struct RegionDefinitionIds {
     rules::FeatureId mine;
     rules::FeatureId oasis;
     rules::FeatureId landmark;
+    rules::FeatureId ancient_foundation;
     rules::EdgeId no_edge;
     rules::EdgeId stream;
     rules::EdgeId river;

@@ -38,7 +38,7 @@ TEST(RulesetLoader, LoadsFourImmutableDefinitionTypes) {
     const auto& ruleset = test_ruleset();
     ASSERT_EQ(ruleset.terrains().size(), 5U);
     ASSERT_EQ(ruleset.reliefs().size(), 3U);
-    ASSERT_EQ(ruleset.features().size(), 8U);
+    ASSERT_EQ(ruleset.features().size(), 9U);
     ASSERT_EQ(ruleset.edges().size(), 18U);
     ASSERT_EQ(ruleset.terrain_rules().size(), 4U);
     ASSERT_EQ(ruleset.relief_rules().size(), 3U);
@@ -57,6 +57,7 @@ TEST(RulesetLoader, LoadsFourImmutableDefinitionTypes) {
     EXPECT_EQ(ruleset.terrain(*ruleset.find_terrain("terrain.grassland"))->move_cost, 1);
     EXPECT_EQ(ruleset.feature(*ruleset.find_feature("feature.forest"))->required_terrain,
               ruleset.find_terrain("terrain.grassland"));
+    EXPECT_EQ(ruleset.feature(*ruleset.find_feature("feature.ancient_foundation"))->move_cost, 0);
 
     const auto& history = ruleset.civilization_rules().history;
     EXPECT_EQ(history.scoring_weights.freshwater, 500);

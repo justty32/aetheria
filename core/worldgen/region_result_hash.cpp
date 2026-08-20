@@ -30,6 +30,7 @@ std::uint64_t hash_skeleton(const RegionSkeleton& skeleton) noexcept {
     detail::hash_scalar(hash, rules::value_of(skeleton.definitions.mine));
     detail::hash_scalar(hash, rules::value_of(skeleton.definitions.oasis));
     detail::hash_scalar(hash, rules::value_of(skeleton.definitions.landmark));
+    detail::hash_scalar(hash, rules::value_of(skeleton.definitions.ancient_foundation));
     detail::hash_scalar(hash, rules::value_of(skeleton.definitions.no_edge));
     detail::hash_scalar(hash, rules::value_of(skeleton.definitions.stream));
     detail::hash_scalar(hash, rules::value_of(skeleton.definitions.river));
