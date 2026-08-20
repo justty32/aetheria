@@ -140,9 +140,15 @@ std::unique_ptr<zone::Zone> decode_zone(std::string_view bytes, const rules::Rul
             payload = std::move(region);
             break;
         }
-        case 2:
-            payload = zone::SitePayload{};
+        case 2: {
+            zone::SitePayload site_payload;
+            archive_saved_site_layers(archive, site_payload.layers, SavedSiteLayers{});
+            if (!site::valid_persistent_layer(site_payload.layers.persistent)) {
+                throw std::runtime_error{"zone SitePersistentLayer 含無效建築資料"};
+            }
+            payload = std::move(site_payload);
             break;
+        }
         case 3:
             payload = zone::LocalPayload{};
             break;

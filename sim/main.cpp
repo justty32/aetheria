@@ -1,16 +1,19 @@
 #include "core/api/version.h"
 #include "core/rules/ruleset.h"
 #include "core/serialize/zone_codec.h"
+#include "core/site/site_materialize.h"
 #include "core/time/tick.h"
 #include "core/zone/file_zone_store.h"
 #include "core/zone/zone_manager.h"
 #include "sim/gen_commands.h"
 #include "sim/world_hash.h"
 
+#include <algorithm>
 #include <array>
 #include <cstdint>
 #include <iostream>
 #include <string>
+#include <utility>
 
 #include <CLI/CLI.hpp>
 
@@ -75,6 +78,19 @@ int main(int argc, char** argv) {
     const auto site = aetheria::zone::child_key(region, 4, 7);
     const auto local = aetheria::zone::child_key(site, 12, 9);
 
+    const auto make_probe_region = [&]() {
+        aetheria::world::RegionTiles tiles{8, 8};
+        std::ranges::fill(tiles.base, *ruleset.find_terrain("terrain.grassland"));
+        std::ranges::fill(tiles.relief, *ruleset.find_relief("relief.plain"));
+        std::ranges::fill(tiles.feature, *ruleset.find_feature("feature.none"));
+        std::ranges::fill(tiles.edges, *ruleset.find_edge("edge.none"));
+        const auto index = tiles.index_of({4, 7});
+        tiles.owner[index] = static_cast<aetheria::world::FactionId>(1);
+        tiles.settlement[index] = aetheria::world::SettlementTier::Town;
+        tiles.temperature[index] = static_cast<std::uint8_t>(17U);
+        return tiles;
+    };
+
     const auto run_zone_probe = [&](aetheria::zone::ZoneStore& zone_store, bool load_existing,
                                     aetheria::zone::FileZoneStore* file_store) {
         aetheria::zone::ZoneManager zone_manager{zone_store};
@@ -86,9 +102,12 @@ int main(int argc, char** argv) {
                 static_cast<void>(zone_manager.with(handle, [&](aetheria::zone::Zone& zone) {
                     if (aetheria::zone::level_of(key) == aetheria::zone::ZoneLevel::Region) {
                         auto& layers = std::get<aetheria::zone::RegionPayload>(zone.payload).layers;
-                        auto& tiles =
-                            layers.emplace(0, aetheria::world::RegionTiles{2, 2}).first->second;
-                        tiles.temperature.at(0) = static_cast<std::uint8_t>(17U);
+                        layers.emplace(0, make_probe_region());
+                    } else if (aetheria::zone::level_of(key) == aetheria::zone::ZoneLevel::Site) {
+                        auto materialized = aetheria::site::materialize_site_zone(
+                            make_probe_region(), {4, 7}, UINT64_C(0xA37E12A), 1, ruleset);
+                        zone.payload = std::move(materialized.payload);
+                        zone.lod = materialized.lod;
                     }
                 }));
             }

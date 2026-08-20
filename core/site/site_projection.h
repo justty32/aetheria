@@ -6,8 +6,10 @@
 #include "core/world/region_tiles.h"
 
 #include <array>
+#include <compare>
 #include <cstddef>
 #include <cstdint>
+#include <type_traits>
 #include <vector>
 
 namespace aetheria::site {
@@ -30,8 +32,8 @@ struct SiteSlowVars {
     constexpr bool operator==(const SiteSlowVars&) const noexcept = default;
 };
 
-// SiteFastVars 是後續 populate 專用的 Region tile 狀態。
-// 呼叫端擁有值；本輪只建立型別，不提供 populate。
+// SiteFastVars 是 populate 專用的 Region tile 狀態。
+// 呼叫端擁有值，populate 只在呼叫期間借用。
 // 型別刻意不會出現在 build_site_skeleton 簽章。
 struct SiteFastVars {
     world::FactionId owner{};
@@ -48,24 +50,73 @@ struct SiteProjectionVars {
     SiteFastVars fast;
 };
 
+// SiteXY 是單一 Site 64×64 格網內的持久座標。
+// 呼叫端擁有值；值本身永不失效。
+struct SiteXY {
+    std::uint16_t x{};
+    std::uint16_t y{};
+
+    constexpr auto operator<=>(const SiteXY&) const noexcept = default;
+
+    template <typename Archive> void serialize(Archive& archive) { archive(x, y); }
+};
+
+enum class SiteZoning : std::uint8_t {
+    Open,
+    Settlement,
+};
+
+enum class BuildingType : std::uint8_t {
+    SettlementHall,
+};
+
+enum class BuildingState : std::uint8_t {
+    Active,
+    Idle,
+    Derelict,
+    Ruined,
+};
+
+// PersistentBuilding 是 M2.2 的最小真實持久物件，不構成建築系統。
+struct PersistentBuilding {
+    SiteXY tile;
+    BuildingType type{BuildingType::SettlementHall};
+    BuildingState state{BuildingState::Active};
+
+    constexpr bool operator==(const PersistentBuilding&) const noexcept = default;
+
+    template <typename Archive> void serialize(Archive& archive) { archive(tile, type, state); }
+};
+
 // SiteSkeleton 是 64×64 的最小程序層，只含 ground 與每格四向 edges。
 // SiteProceduralLayer 擁有它；不進存檔。
 // vector 重配或擁有者析構後其中參考失效。
 struct SiteSkeleton {
     std::vector<rules::GroundId> ground;
     std::vector<rules::EdgeId> edges;
+    std::vector<std::uint8_t> buildable;
 
     [[nodiscard]] bool valid_layout() const noexcept;
+    [[nodiscard]] bool is_buildable(SiteXY tile) const noexcept;
     bool operator==(const SiteSkeleton&) const = default;
 };
 
 // SiteProceduralLayer 是可由 site_seed + 慢變數重算、永不存檔的資料。
 struct SiteProceduralLayer {
     SiteSkeleton skeleton;
+    std::vector<SiteZoning> zoning;
+
+    [[nodiscard]] bool valid_layout() const noexcept;
 };
 
-// SitePersistentLayer 是未來唯一允許進 Site 存檔的資料層；M2.1 刻意為空。
-struct SitePersistentLayer {};
+// SitePersistentLayer 是唯一允許進 Site 存檔的資料層。
+struct SitePersistentLayer {
+    std::vector<PersistentBuilding> buildings;
+
+    bool operator==(const SitePersistentLayer&) const = default;
+
+    template <typename Archive> void serialize(Archive& archive) { archive(buildings); }
+};
 
 // SiteVolatileLayer 是由持久層與規則重建、永不存檔的資料層；M2.1 刻意為空。
 struct SiteVolatileLayer {};
@@ -75,6 +126,28 @@ struct SiteLayers {
     SiteProceduralLayer procedural;
     SitePersistentLayer persistent;
     SiteVolatileLayer volatile_state;
+
+    template <typename Layer> [[nodiscard]] Layer& get() noexcept {
+        if constexpr (std::is_same_v<Layer, SiteProceduralLayer>) {
+            return procedural;
+        } else if constexpr (std::is_same_v<Layer, SitePersistentLayer>) {
+            return persistent;
+        } else {
+            static_assert(std::is_same_v<Layer, SiteVolatileLayer>);
+            return volatile_state;
+        }
+    }
+
+    template <typename Layer> [[nodiscard]] const Layer& get() const noexcept {
+        if constexpr (std::is_same_v<Layer, SiteProceduralLayer>) {
+            return procedural;
+        } else if constexpr (std::is_same_v<Layer, SitePersistentLayer>) {
+            return persistent;
+        } else {
+            static_assert(std::is_same_v<Layer, SiteVolatileLayer>);
+            return volatile_state;
+        }
+    }
 };
 
 [[nodiscard]] SiteProjectionVars split_site_vars(const world::RegionTiles& tiles,
@@ -87,6 +160,8 @@ struct SiteLayers {
 
 [[nodiscard]] SiteSkeleton build_site_skeleton(const SiteSlowVars& slow, std::uint64_t site_seed,
                                                const rules::Ruleset& ruleset);
+[[nodiscard]] SiteProceduralLayer populate(SiteSkeleton skeleton, const SiteFastVars& fast);
+[[nodiscard]] bool valid_persistent_layer(const SitePersistentLayer& layer) noexcept;
 [[nodiscard]] std::uint64_t hash_site_skeleton(const SiteSkeleton& skeleton) noexcept;
 
 }  // namespace aetheria::site

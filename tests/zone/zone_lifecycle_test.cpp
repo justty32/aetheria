@@ -22,7 +22,7 @@ using aetheria::zone::ZoneMeta;
 
 static_assert(!std::is_copy_constructible_v<Zone>);
 static_assert(std::is_move_constructible_v<Zone>);
-static_assert(std::is_empty_v<aetheria::zone::SitePayload>);
+static_assert(requires(aetheria::zone::SitePayload payload) { payload.layers; });
 static_assert(std::is_empty_v<aetheria::zone::LocalPayload>);
 
 TEST(ZonePersistence, NewZoneStartsWithMatchingPlaceholder) {

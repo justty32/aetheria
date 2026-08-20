@@ -5,6 +5,7 @@
 #include <algorithm>
 #include <stdexcept>
 #include <string>
+#include <tuple>
 #include <type_traits>
 #include <utility>
 #include <vector>
@@ -130,6 +131,23 @@ std::uint64_t normalized_state_hash(const zone::Zone& zone, const rules::Ruleset
             for (const auto& site : tiles.site) {
                 hash_scalar(hash, static_cast<std::uint8_t>(site.ever_realized));
             }
+        }
+    } else if (const auto* site_payload = std::get_if<zone::SitePayload>(&zone.payload)) {
+        hash_scalar(hash, static_cast<std::uint64_t>(zone.payload.index()));
+        if (!site::valid_persistent_layer(site_payload->layers.persistent)) {
+            throw std::runtime_error{"正規化雜湊遇到無效 SitePersistentLayer"};
+        }
+        std::vector<site::PersistentBuilding> buildings = site_payload->layers.persistent.buildings;
+        std::ranges::sort(buildings, [](const auto& left, const auto& right) {
+            return std::tie(left.tile.y, left.tile.x, left.type, left.state) <
+                   std::tie(right.tile.y, right.tile.x, right.type, right.state);
+        });
+        hash_scalar(hash, static_cast<std::uint64_t>(buildings.size()));
+        for (const auto& building : buildings) {
+            hash_scalar(hash, building.tile.x);
+            hash_scalar(hash, building.tile.y);
+            hash_scalar(hash, building.type);
+            hash_scalar(hash, building.state);
         }
     } else {
         hash_scalar(hash, static_cast<std::uint64_t>(zone.payload.index()));

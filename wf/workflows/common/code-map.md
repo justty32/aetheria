@@ -23,7 +23,7 @@
 | `CMakeLists.txt`、`vcpkg.json` | 專案組態與依賴固定；**來源清單不在這裡**，在 `cmake/targets_*.cmake` |
 | `cmake/` | 建置分檔：`targets_core/tests/sim/bridge.cmake`（四 target 的來源與測試登記）、`godot_toolchain.cmake`（Godot 偵測／API dump／submodule revision）、`check_*.cmake`（CTest 用的隔離與跨行程腳本）|
 | `core/` | 純 C++ 玩法核心，**不得依賴 godot-cpp** |
-| `core/site/` | L1→L2 慢／快變數隔離、最小骨架、三層 Site 型別 |
+| `core/site/` | L1→L2 慢／快隔離、骨架／填充、L_COARSE zone 展開與三層資料 |
 | `bridge/` | `AetheriaCore` Node 與 GDExtension 註冊；唯一可 include godot-cpp 的自有目錄 |
 | `godot/` | 純顯示／呼叫驗證場景與 `.gdextension` 描述檔 |
 | `tests/` | GoogleTest 單元測試 |
@@ -87,7 +87,7 @@
 | 目錄 | 內容 |
 |---|---|
 | `support/` | 跨目錄共用的 `ruleset_fixture.h` |
-| `site/` | Site 投影隔離、確定性、映射、存檔白名單、效能 |
+| `site/` | Site 投影隔離、展開、持久建築、存檔／世界雜湊、效能 |
 | `sim/` | 世界級正規化雜湊的跨歷史、磁碟列舉、負向控制與錯誤路徑測試 |
 | `time/`、`serialize/` | 曆法邊界與往返；EnTT registry 壓測 |
 | `rules/` | `ruleset_load`／`ruleset_error`（資料不變式錯誤路徑）／`ruleset_zone_codec`（索引重映射）|

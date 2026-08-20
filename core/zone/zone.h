@@ -1,5 +1,6 @@
 #pragma once
 
+#include "core/site/site_projection.h"
 #include "core/time/tick.h"
 #include "core/world/region_tiles.h"
 #include "core/zone/lod_level.h"
@@ -33,10 +34,12 @@ struct RegionPayload {
     std::map<std::int8_t, world::RegionTiles> layers;
 };
 
-// SitePayload 是 L2 Zone 的 schema 標記；M1.0.1 尚不定義 tile 欄位。
+// SitePayload 是 L2 Zone 的三層資料；只有 persistent 由序列化白名單寫盤。
 // 所屬 Zone 擁有它。
 // payload alternative 被替換或 Zone 析構後失效。
-struct SitePayload {};
+struct SitePayload {
+    site::SiteLayers layers;
+};
 
 // LocalPayload 是 L3 Zone 的 schema 標記；M1.0.1 尚不定義 tile 欄位。
 // 所屬 Zone 擁有它。

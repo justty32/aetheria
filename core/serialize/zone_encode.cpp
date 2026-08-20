@@ -65,6 +65,10 @@ std::string encode_zone(const zone::Zone& value, const rules::Ruleset& ruleset) 
                 throw std::runtime_error{"zone RegionTiles 含無效 SettlementTier"};
             }
         }
+    } else if (const auto* site_payload = std::get_if<zone::SitePayload>(&value.payload)) {
+        if (!site::valid_persistent_layer(site_payload->layers.persistent)) {
+            throw std::runtime_error{"zone SitePersistentLayer 含無效建築資料"};
+        }
     }
     std::ostringstream stream{std::ios::binary};
     {
@@ -99,6 +103,8 @@ std::string encode_zone(const zone::Zone& value, const rules::Ruleset& ruleset) 
                     archive(portal.tile.x, portal.tile.y, rules::value_of(portal.channel));
                 }
             }
+        } else if (const auto* site_payload = std::get_if<zone::SitePayload>(&value.payload)) {
+            archive_saved_site_layers(archive, site_payload->layers, SavedSiteLayers{});
         }
     }
     {

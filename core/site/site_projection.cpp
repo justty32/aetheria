@@ -73,7 +73,16 @@ void validate_slow_vars(const SiteSlowVars& slow, const rules::Ruleset& ruleset)
 }  // namespace
 
 bool SiteSkeleton::valid_layout() const noexcept {
-    return ground.size() == kSiteTileCount && edges.size() == kSiteTileCount * kDirections;
+    return ground.size() == kSiteTileCount && edges.size() == kSiteTileCount * kDirections &&
+           buildable.size() == kSiteTileCount;
+}
+
+bool SiteSkeleton::is_buildable(SiteXY tile) const noexcept {
+    if (!valid_layout() || tile.x >= kSiteWidth || tile.y >= kSiteHeight) {
+        return false;
+    }
+    const auto index = static_cast<std::size_t>(tile.y) * kSiteWidth + tile.x;
+    return buildable[index] != 0;
 }
 
 SiteProjectionVars split_site_vars(const world::RegionTiles& tiles, world::RegionXY coordinate) {
@@ -115,6 +124,7 @@ SiteSkeleton build_site_skeleton(const SiteSlowVars& slow, std::uint64_t site_se
     SiteSkeleton result;
     result.ground.resize(kSiteTileCount, mapping->ground);
     result.edges.resize(kSiteTileCount * kDirections, *no_edge);
+    result.buildable.resize(kSiteTileCount);
 
     const auto variation_seed = surface_seed(slow, site_seed, ruleset);
     const auto relief_cost = static_cast<std::uint64_t>(ruleset.relief(slow.relief)->move_cost);
@@ -138,6 +148,16 @@ SiteSkeleton build_site_skeleton(const SiteSlowVars& slow, std::uint64_t site_se
         result.edges[south * kDirections + kSouth] = slow.edges[kSouth];
         result.edges[west * kDirections + kWest] = slow.edges[kWest];
     }
+
+    for (std::size_t index = 0; index < kSiteTileCount; ++index) {
+        const auto* ground = ruleset.ground(result.ground[index]);
+        bool buildable = ground != nullptr && (ground->flags & rules::kGroundWaterFlag) == 0;
+        for (std::size_t direction = 0; direction < kDirections && buildable; ++direction) {
+            const auto* edge = ruleset.edge(result.edges[index * kDirections + direction]);
+            buildable = edge != nullptr && (edge->flags & rules::kEdgeRiverFlag) == 0;
+        }
+        result.buildable[index] = buildable ? UINT8_C(1) : UINT8_C(0);
+    }
     return result;
 }
 
@@ -145,6 +165,10 @@ std::uint64_t hash_site_skeleton(const SiteSkeleton& skeleton) noexcept {
     auto hash = UINT64_C(14695981039346656037);
     hash_ids(hash, skeleton.ground);
     hash_ids(hash, skeleton.edges);
+    hash_integer(hash, static_cast<std::uint64_t>(skeleton.buildable.size()));
+    for (const auto buildable : skeleton.buildable) {
+        hash_byte(hash, buildable);
+    }
     return hash;
 }
 
