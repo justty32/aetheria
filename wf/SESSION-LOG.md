@@ -19,7 +19,7 @@
 
 ### 實作者（gpt-sol）
 
-- **待任務書**。
+- **M2.0 世界級正規化狀態雜湊實作中** → [任務書](inbox/m2_0-world-state-hash.md)。
 
 ### 規劃者（Opus 5）
 
@@ -47,42 +47,35 @@
 - ✅ **M1 完成**（`aeb8301`，109/109 我自己重跑）。十二階段生成管線全部到位、存檔 v8。
   M1.6 三項裁定都落地：`major_city_count = faction_count × 2`、出境點落點規則、portal 稀疏清單。
   M1.6.1 修掉「山口與地下通道保證落在同一格」的結構性缺陷（候選集合是超集 + 同一取最小成本判準）。
-- ⚠ **實測發現：國界並沒有沿地形長。** 勢力對勢力國界 **50 格**，平均移動成本 **3.04**，
-  全陸地 **2.975**——只高 **2%**。`worldgen-civ.md` 第 12 節說「國界會自然沿山脈河流走，
-  因為那些地方移動成本高、影響力衰減快」，**目前沒有發生**。
-  （我一度誤判是量測混入了無主前緣，實作端查證後糾正我：量測本來就只算兩側非零且相異，數字是真的。）
-  等檢視器看圖再決定是模型問題還是 `influence_max_cost=100` 太小（陸地 50.5% 無主）。
-- ⚠ **這張圖的可通行邊界上完全沒有山地，也沒有邊界廢墟。**
-  所以山口「最低成本鞍部」與地下通道「最深的山／廢墟優先」兩條判準在真實圖上**從未觸發**，
-  兩者都走一般邊界格 fallback（合成探針有驗證判準本身是對的）。
-  這可能是地形生成把地圖邊緣壓成低地所致——檢視器要順便看邊界地形長什麼樣。
-- 🔭 **Region 除錯檢視器實作中**（worktree `~/repo/game_dev/aetheria-viewer`，分支 `m1-viewer`）：
-  只碰 `godot/` 與 `bridge/`，十層可切換圖層（含勢力與出境點），headless 匯出 PNG。
-  裁定：**這是儀器不是遊戲的地圖渲染器**——不准搭正式三層 TileMapLayer + TileSet，
-  沒美術會做出假進度。它的產出是「看到了什麼」，不是通過測試。
+- ✅ **M1 後續全部收線**（M1.7～M1.16，125/125）。四條結構性裁定都已寫進設計文件：
+  地貌與群系分開裁決、地表濕度是空氣含水量、影響力不得吃道路成本、先全域認領再釋回。
+  **國界懸案已結**（+10.23%）、**邊界沒有山地的問題也一併解決**（根因就是 relief 被 moisture 抹平）。
+  Region 檢視器已 merge。**這些都不再是 open 項，細節看 git log 與 `design/worldgen-*.md`。**
+- 📌 **仍待校準（要有玩法才能判斷，不是現在調）**：`governance_max_cost` 讓無主陸地只剩 1.55%，
+  世界第一回合就被瓜分完畢。權衡曲線已量好放在 [worldgen-factions.md](../design/worldgen-factions.md)，
+  ⚠ 查表時**不要只看國界指標**，會被倖存者偏差騙——正確判準是接觸格保留率。
 - 🔧 **派 codex 的操作心得**：`-c model_reasoning_effort="high"` 覆寫掉 config 的 `ultra`，
   同任務從 ~60 分鐘降到 ~12 分鐘且品質沒掉。另外要在 prompt 明令
   **不准為自我審查 fan-out 子 agent**（他會一口氣開五個審自己的 diff）。
   並行用 `git worktree` 隔離有效，但要挑**檔案真正互斥**的兩件事，否則只是把等待換成合併衝突。
-- 🔧 **機器保持安靜的正解**（2026-08-20 深夜踩了一整輪坑才找到）：
-  **`taskset -acp 0-3 <claude 主行程 PID>`**——codex、編譯、MCP server、它們生的 python
-  全都是 claude 的子孫，**fork 時自動繼承 CPU 親和性**，一次到位。四個踩過的坑：
-  ① `taskset -cp` 只改主執行緒，多執行緒要 `-a`；
-  ② `ps` 的 `%CPU` 是生命週期平均，短命行程永遠來不及超過門檻；
-  ③ 短命行程一直換 PID，追子行程沒用要壓父行程；
-  ④ `taskset` 加在 `codex exec` 上無效（codex 透過自己的 process manager 起指令，不是子行程）。
-  另外**派工 prompt 要明令 `--parallel 2`**，不然 `--parallel` 不帶數字會開滿核心。
-  ⚠⚠ **踩過的雷：不要限制共用的 MCP server。**
-  `housecarl-mcp`（Skyrim 模組工具）會在背景跑 collision hull 抽取吃 700～1000% CPU，
-  我把它釘到 2 核 + `nice 19`——結果它**關閉時卡住十分鐘**，因為
-  **Skyrim agent 那邊也在用同一個 server**。使用者的其他 session 依賴它。
-  已全部還原成 0-15。**限制 CPU 只能針對自己這條線生出來的東西**
-  （codex、編譯、Godot），共用服務一律不碰——寧可吵一點。
+- 🔧 **機器保持安靜的鐵律（同一個錯我犯了兩次才學會）**：
+  **限流只能按「行程樹歸屬」，絕不能按「行程名稱」。**
+  名稱比對會打到**別的 agent 的同名實例**——`cc1plus`、`ld`、`housecarl-mcp` 都是。
+  作法：從 watchdog 自己往上走 `/proc/<pid>/status` 的 `PPid:` 找到本 session 的 claude 當歸屬根
+  （**不要寫死 PID，session 重連後會變**），只限流它的子孫；**找不到根就整個不啟動**。
+  **不確定歸屬時，寄信問，不要動手。**
+  ⚠ 我原本以為 `housecarl-mcp` 是共用 server——**錯的**。它是 stdio MCP，
+  **每個 client 各 spawn 一份**（實測同時 9 個實例）。我用名稱比對限流，一次打中全部，
+  害它關閉時卡了十分鐘。是 Skyrim agent 查證後寄信糾正我的。
+  其他坑：`taskset -cp` 只改主執行緒（多執行緒要 `-a`）；`ps` 的 `%CPU` 是生命週期平均，
+  短命行程來不及超過門檻；派工 prompt 要明令 `--parallel 2`（不帶數字會開滿核心）。
   `baloo` 檔案索引仍是 suspend 狀態（`balooctl6 resume` 可恢復）。
-- 📬 **與 Skyrim agent 的往來**：對方收件匣是 `~/repo/moddings/skyrim/inbox/`
-  （另有 elin／rimworld／tome4 各自的）。已架 Monitor 每 30 秒同時監看
-  aetheria 與 skyrim 兩邊的頂層新信。寄信前先讀對方的 `AGENTS.md` 確認收信慣例
-  （照 [CONTACTS.md](workflows/inbox/CONTACTS.md)「專案外的可能對象」那節）。
+- 📬 **與 Skyrim agent 的資源協定（2026-08-21 談定，共八封往返）**：
+  對方收件匣 `~/repo/moddings/skyrim/inbox/`（另有 elin／rimworld／tome4 各自的）。
+  **CPU 我 35%（上限 6 核）／他 45%；GPU 與螢幕鍵鼠我全部讓出**——
+  Godot 一律 headless、檢視器匯出 PNG 讀檔，整晚十六輪沒用過桌面，
+  所以**他要開 Skyrim 不必先問我**（省掉往返）。CPU/GPU 監控權在我，超標我寄信給他，
+  他不爭論；反之亦然。已架 Monitor 每 30 秒監看兩邊收件匣頂層。
 - 📌 **M2 要做世界級正規化雜湊**（M1.3 的是 per-zone）。裁定：它是驗證工具不是執行期狀態，
   直接走訪存檔目錄列舉，不違反成長軸不變量。寫在 `design/zone-save-format.md`。
 - 📌 **校準期要回頭看**：雨影探針 leeward moisture 剛好 0。合成探針裡合理，
@@ -90,11 +83,10 @@
 - ⚠ **M2／M4 的驗收不能用 byte 相等**：EnTT snapshot 只對**同一段建構歷史**決定性，
   不會 canonicalize。跨歷史等價要用正規化狀態雜湊，形狀等 M2 再定。
   寫在 [design/zone-save-format.md](../design/zone-save-format.md)。**這條會在 M4 咬人。**
-- ⚠ **拆檔後仍貼著 8 KB 上限的原始碼**（下次要加東西就得先拆）：
-  `tests/zone/file_zone_store_manifest_test.cpp` 7,858、`core/rules/ruleset_load_civilization.cpp` 7,560、
-  `core/serialize/zone_decode.cpp` 7,342、`sim/gen_commands.cpp` 7,241、`core/worldgen/city_sites.cpp` 7,155。
-  拆法照 [refactor](workflows/refactor.md)，拆完更新 [code-map](workflows/common/code-map.md)。
-- ⚠ **兩份設計文件貼著 8 KB 上限**：`interface-lifecycle.md` 8,156、`outline.md` 8,138。
+- ⚠ **貼著 8 KB 上限的檔**（下次要加東西就得先拆，拆法照 [refactor](workflows/refactor.md)，
+  拆完更新 [code-map](workflows/common/code-map.md)）：原始碼最大的是
+  `tests/rules/ruleset_error_test.cpp` 7,921、`tests/zone/file_zone_store_manifest_test.cpp` 7,858；
+  設計文件是 `README.md` 8,189、`interface-lifecycle.md` 8,156、`outline.md` 8,138。
   **下次要動它們就得先拆**。已拆過三次的前例都是同一招：**保留主檔名、切出自足子題**
   （zone-model→+zone-addressing、zone-save→+zone-save-format、medps-relation→+medps-inheritance），
   這樣既有的外部連結大多不必改。
