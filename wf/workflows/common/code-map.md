@@ -23,7 +23,7 @@
 | `CMakeLists.txt`、`vcpkg.json` | 專案組態與依賴固定；**來源清單不在這裡**，在 `cmake/targets_*.cmake` |
 | `cmake/` | 建置分檔：`targets_core/tests/sim/bridge.cmake`（四 target 的來源與測試登記）、`godot_toolchain.cmake`（Godot 偵測／API dump／submodule revision）、`check_*.cmake`（CTest 用的隔離與跨行程腳本）|
 | `core/` | 純 C++ 玩法核心，**不得依賴 godot-cpp** |
-| `core/site/` | L1→L2 慢／快隔離、骨架／填充、L_COARSE zone 展開與三層資料 |
+| `core/site/` | L1→L2 慢／快隔離、骨架／填充、L_COARSE 展開、L_ABSENT 收回／冷載重算與三層資料 |
 | `bridge/` | `AetheriaCore` Node 與 GDExtension 註冊；唯一可 include godot-cpp 的自有目錄 |
 | `godot/` | 純顯示／呼叫驗證場景與 `.gdextension` 描述檔 |
 | `tests/` | GoogleTest 單元測試 |

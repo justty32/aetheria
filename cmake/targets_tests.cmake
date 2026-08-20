@@ -8,6 +8,8 @@ add_executable(aetheria_tests
     tests/site/site_projection_error_test.cpp
     tests/site/site_materialize_hash_test.cpp
     tests/site/site_materialize_test.cpp
+    tests/site/site_roundtrip_negative_test.cpp
+    tests/site/site_roundtrip_test.cpp
     tests/site/site_projection_test.cpp
     tests/sim/world_hash_error_test.cpp
     tests/sim/world_hash_state_test.cpp
