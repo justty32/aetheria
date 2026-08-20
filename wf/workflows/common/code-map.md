@@ -85,6 +85,7 @@
 | 目錄 | 內容 |
 |---|---|
 | `support/` | 跨目錄共用的 `ruleset_fixture.h` |
+| `sim/` | 世界級正規化雜湊的跨歷史、磁碟列舉、負向控制與錯誤路徑測試 |
 | `time/`、`serialize/` | 曆法邊界與往返；EnTT registry 壓測 |
 | `rules/` | `ruleset_load`／`ruleset_error`（資料不變式錯誤路徑）／`ruleset_zone_codec`（索引重映射）|
 | `world/` | `region_tiles`／`region_step_cost`／`region_path`／`region_turn` |
@@ -93,4 +94,7 @@
 
 ## `sim/`
 
-`main.cpp` 只有 CLI11 wiring；`gen_commands.*` 是 `gen-region`／`gen-verify` 子命令；`stage_dump.*` 集中十二階段 PGM 輸出；`pgm_writer.*` 輸出灰階 PGM。**stdout 文字有 CTest 在比對**（`SimPersistence`、`SimWorldgen`），不要順手改。
+`main.cpp` 只有 CLI11 wiring；`gen_commands.*` 是 `gen-region`／`gen-verify` 子命令；
+`world_hash.*` 是只走訪磁碟的 `verify world-hash` 驗證工具；`stage_dump.*` 集中十二階段 PGM
+輸出；`pgm_writer.*` 輸出灰階 PGM。**stdout 文字有 CTest 在比對**（`SimPersistence`、
+`SimWorldgen`、`SimWorldHash`），不要順手改。

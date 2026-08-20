@@ -5,6 +5,7 @@
 #include "core/zone/file_zone_store.h"
 #include "core/zone/zone_manager.h"
 #include "sim/gen_commands.h"
+#include "sim/world_hash.h"
 
 #include <array>
 #include <cstdint>
@@ -23,6 +24,7 @@ int main(int argc, char** argv) {
     std::uint16_t erosion_iterations{12};
     std::int16_t biome_moisture_bias{};
     std::string dump_stages;
+    std::string world_hash_directory;
     std::uint32_t verify_iterations{100};
     app.add_option("--tick", requested_tick, "額外換算的 Tick（秒）");
     app.add_option("--save-dir", save_directory, "跨程序 zone 存檔目錄");
@@ -39,6 +41,11 @@ int main(int argc, char** argv) {
     auto* gen_verify = gen->add_subcommand("verify", "重複生成並驗證同 seed 決定論");
     gen_verify->add_option("--seed", generation_seed, "起始世界 seed")->required();
     gen_verify->add_option("--iterations", verify_iterations, "驗證 seed 數量");
+    auto* verify = app.add_subcommand("verify", "存檔狀態驗證工具");
+    verify->require_subcommand(1);
+    auto* verify_world_hash =
+        verify->add_subcommand("world-hash", "計算跨 zone 正規化世界狀態雜湊");
+    verify_world_hash->add_option("save_dir", world_hash_directory, "存檔槽目錄")->required();
     CLI11_PARSE(app, argc, argv);
 
     const auto ruleset = aetheria::rules::RulesetLoader::load(data_directory);
@@ -49,6 +56,9 @@ int main(int argc, char** argv) {
     }
     if (*gen_verify) {
         return aetheria::sim::run_gen_verify(ruleset, generation_seed, verify_iterations);
+    }
+    if (*verify_world_hash) {
+        return aetheria::sim::run_world_hash(world_hash_directory, ruleset);
     }
 
     std::cout << "Aetheria core " << aetheria::core_version() << '\n';

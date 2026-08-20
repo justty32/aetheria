@@ -5,6 +5,7 @@ add_executable(aetheria_sim
     sim/gen_commands.cpp
     sim/stage_dump.cpp
     sim/pgm_writer.cpp
+    sim/world_hash.cpp
 )
 target_link_libraries(aetheria_sim PRIVATE aetheria_core CLI11::CLI11)
 target_compile_definitions(aetheria_sim PRIVATE
@@ -24,4 +25,17 @@ add_test(
         -DSIM=$<TARGET_FILE:aetheria_sim>
         -DTEST_DIR=${CMAKE_BINARY_DIR}/sim-worldgen-test
         -P "${PROJECT_SOURCE_DIR}/cmake/check_sim_worldgen.cmake"
+)
+add_test(
+    NAME SimWorldHash.Command
+    COMMAND "${CMAKE_COMMAND}"
+        -DSIM=$<TARGET_FILE:aetheria_sim>
+        -DTEST_DIR=${CMAKE_BINARY_DIR}/sim-world-hash-test
+        -P "${PROJECT_SOURCE_DIR}/cmake/check_sim_world_hash.cmake"
+)
+add_test(
+    NAME VerificationBoundary.WorldHash
+    COMMAND "${CMAKE_COMMAND}"
+        -DPROJECT_ROOT=${PROJECT_SOURCE_DIR}
+        -P "${PROJECT_SOURCE_DIR}/cmake/check_world_hash_boundary.cmake"
 )

@@ -5,6 +5,9 @@ add_executable(aetheria_tests
     tests/rules/ruleset_error_test.cpp
     tests/rules/ruleset_zone_codec_test.cpp
     tests/serialize/registry_codec_test.cpp
+    tests/sim/world_hash_error_test.cpp
+    tests/sim/world_hash_state_test.cpp
+    sim/world_hash.cpp
     tests/time/tick_test.cpp
     tests/world/region_step_cost_test.cpp
     tests/world/region_path_test.cpp

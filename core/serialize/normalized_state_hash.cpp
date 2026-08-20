@@ -82,11 +82,15 @@ std::uint64_t normalized_state_hash(const zone::Zone& zone, const rules::Ruleset
     hash_scalar(hash, zone::value_of(zone.key));
 
     const auto clocks = zone.reg.view<const world::TurnClock>();
-    if (clocks.size() != 1U) {
-        throw std::runtime_error{"正規化雜湊要求恰有一個 TurnClock"};
+    if (clocks.size() > 1U) {
+        throw std::runtime_error{"正規化雜湊至多允許一個 TurnClock"};
     }
-    hash_scalar(hash,
-                static_cast<std::int64_t>(clocks.get<const world::TurnClock>(*clocks.begin()).now));
+    hash_scalar(hash, static_cast<std::uint64_t>(clocks.size()));
+    if (!clocks.empty()) {
+        hash_scalar(
+            hash,
+            static_cast<std::int64_t>(clocks.get<const world::TurnClock>(*clocks.begin()).now));
+    }
 
     if (const auto* region = std::get_if<zone::RegionPayload>(&zone.payload)) {
         hash_scalar(hash, static_cast<std::uint64_t>(region->layers.size()));
