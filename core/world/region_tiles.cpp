@@ -102,7 +102,8 @@ bool RegionTiles::valid_layout() const noexcept {
             return false;
         }
         for (std::size_t previous = 0; previous < index; ++previous) {
-            if (portals[previous].channel == portal.channel) {
+            if (portals[previous].channel == portal.channel ||
+                portals[previous].tile == portal.tile) {
                 return false;
             }
         }

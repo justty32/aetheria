@@ -33,6 +33,7 @@ add_library(aetheria_core STATIC
     core/worldgen/capital_selection.cpp
     core/worldgen/portal_generation.cpp
     core/worldgen/portal_candidates.cpp
+    core/worldgen/portal_boundary_candidates.cpp
     core/worldgen/faction_generation.cpp
     core/worldgen/road_path.cpp
     core/worldgen/road_loops.cpp

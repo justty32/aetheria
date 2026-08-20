@@ -5,9 +5,11 @@
 #include "core/worldgen/road_path.h"
 
 #include <algorithm>
+#include <cstdint>
 #include <cstdlib>
 #include <optional>
 #include <stdexcept>
+#include <vector>
 
 namespace aetheria::worldgen {
 namespace {
@@ -74,6 +76,7 @@ PortalStageOutput generate_portals(
     for (const auto& city : output.cities.cities) {
         tiles.settlement.at(city.canonical_id) = city.tier;
     }
+    std::vector<std::uint8_t> occupied(tiles.tile_count());
     for (const auto& connection : ruleset.world_connections()) {
         if (connection.region_a != region_id && connection.region_b != region_id) {
             continue;
@@ -82,18 +85,23 @@ PortalStageOutput generate_portals(
         std::size_t portal{};
         switch (connection.type) {
         case rules::WorldConnectionType::SeaRoute:
-            portal = detail::resolve_sea_portal(tiles, output.cities, ruleset);
+            portal = detail::resolve_sea_portal(tiles, output.cities, ruleset, occupied);
             break;
         case rules::WorldConnectionType::MountainPass:
-            portal = detail::resolve_boundary_portal(tiles, ruleset, false);
+            portal = detail::resolve_boundary_portal(tiles, ruleset, false, occupied);
             break;
         case rules::WorldConnectionType::Underground:
-            portal = detail::resolve_boundary_portal(tiles, ruleset, true);
+            portal = detail::resolve_boundary_portal(tiles, ruleset, true, occupied);
             break;
         case rules::WorldConnectionType::Teleport:
-            portal = detail::resolve_teleport_portal(tiles, connection, endpoint_a, ruleset);
+            portal =
+                detail::resolve_teleport_portal(tiles, connection, endpoint_a, ruleset, occupied);
             break;
         }
+        if (occupied.at(portal) != 0) {
+            throw std::runtime_error{"出境點解析重複使用已佔用格"};
+        }
+        occupied[portal] = 1;
         install_road(tiles, rivers, output.cities.cities, portal, ruleset, config.road_tier);
         output.portals.push_back({detail::coordinate(portal, tiles.width), connection.id});
     }

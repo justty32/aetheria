@@ -39,7 +39,7 @@ struct RegionXY {
 
 // RegionPortal 是 Region 中稀疏的 WorldGraph 出境點綁定。
 // RegionTiles 擁有所有實例；channel 指向手工 WorldGraph 通道識別。
-// 同一 channel 在單一 Region 只能出現一次。
+// 同一 channel 與同一 tile 在單一 Region 都只能出現一次。
 struct RegionPortal {
     RegionXY tile;
     rules::WorldConnectionId channel{};

@@ -9,6 +9,7 @@
 namespace {
 
 using aetheria::rules::EdgeId;
+using aetheria::rules::WorldConnectionId;
 using aetheria::tests::test_ruleset;
 using aetheria::world::RegionTiles;
 using aetheria::world::RegionXY;
@@ -37,6 +38,13 @@ TEST(RegionTiles, ReportsActualStorageForDesignedRegionSize) {
     RecordProperty("all_soa_storage_bytes", tiles.dynamic_storage_bytes());
     std::cout << "RegionTiles 128x96 edge_bytes=" << tiles.edge_storage_bytes()
               << " all_soa_bytes=" << tiles.dynamic_storage_bytes() << '\n';
+}
+
+TEST(RegionTiles, RejectsDuplicatePortalTiles) {
+    RegionTiles tiles{3, 2};
+    tiles.portals = {{{1, 1}, WorldConnectionId{1}}, {{1, 1}, WorldConnectionId{2}}};
+
+    EXPECT_FALSE(tiles.valid_layout());
 }
 
 }  // namespace

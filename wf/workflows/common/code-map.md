@@ -77,7 +77,7 @@
 
 內部共用：`gen_stage_ids.h`（stage id 與高度上下限）、`gen_grid.h`（尺寸檢查、四鄰格、陸地連通分量）、`gen_noise.h`（SplitMix64 stream、value noise、fbm）、`gen_hash.h`（FNV 與灰階化）。
 
-實作：`region_seed.cpp`（種子推導與參數 hash）、`stage_plates/height/erosion/climate/rivers/biomes.cpp`（階段 1–7；量化閘口在 `stage_erosion.cpp`）、`civ_tiles.*`（階段 8～12 共用底圖）、`settlement_scoring.cpp`＋`city_scoring.*`（共用純評分）、`city_selection.*`（canonical 分級選點）、`history_layer.cpp`＋`history_roads.*`（階段 8 選址／災變／古道）、`city_sites.cpp`（階段 9）、`road_path.*`＋`road_loops.*`＋`road_network.cpp`（階段 10 工程路徑／MST／補環路）、`portal_candidates.*`＋`portal_generation.cpp`（階段 11 落點與補路）、`capital_selection.cpp`＋`influence_spread.*`＋`faction_generation.cpp`（階段 12 首都與勢力）、`region_build.cpp`（建骨架）、`region_populate.cpp`（落地）、`region_stage_hash.cpp`＋`region_result_hash.cpp`（決定論 hash）、`region_debug.cpp`（陸地比例、連通性、灰階圖）。
+實作：`region_seed.cpp`（種子推導與參數 hash）、`stage_plates/height/erosion/climate/rivers/biomes.cpp`（階段 1–7；量化閘口在 `stage_erosion.cpp`）、`civ_tiles.*`（階段 8～12 共用底圖）、`settlement_scoring.cpp`＋`city_scoring.*`（共用純評分）、`city_selection.*`（canonical 分級選點）、`history_layer.cpp`＋`history_roads.*`（階段 8 選址／災變／古道）、`city_sites.cpp`（階段 9）、`road_path.*`＋`road_loops.*`＋`road_network.cpp`（階段 10 工程路徑／MST／補環路）、`portal_candidates.*`＋`portal_boundary_candidates.cpp`＋`portal_generation.cpp`（階段 11 落點與補路）、`capital_selection.cpp`＋`influence_spread.*`＋`faction_generation.cpp`（階段 12 首都與勢力）、`region_build.cpp`（建骨架）、`region_populate.cpp`（落地）、`region_stage_hash.cpp`＋`region_result_hash.cpp`（決定論 hash）、`region_debug.cpp`（陸地比例、連通性、灰階圖）。
 
 ## `tests/`
 
@@ -88,7 +88,7 @@
 | `rules/` | `ruleset_load`／`ruleset_error`（資料不變式錯誤路徑）／`ruleset_zone_codec`（索引重映射）|
 | `world/` | `region_tiles`／`region_step_cost`／`region_path`／`region_turn` |
 | `zone/` | `zone_key`／`zone_lifecycle`／`zone_store_contract`（兩種 store 共用契約）／`file_zone_store`／`file_zone_store_manifest`／`zone_codec`／`zone_manager`／`zone_manager_tick` |
-| `worldgen/` | `region_stage_functions`／`region_determinism`（階段隔離、同種子位元相同）／`region_output_validation`／`region_perf`（十二階段三秒預算）／`history_layer`／`history_feedback`／`history_identity`（權重分家與道路探針）／`history_isolation`／`city_sites`／`road_network`／`portal_stage`／`faction_stage`／`late_stage_isolation` |
+| `worldgen/` | `region_stage_functions`／`region_determinism`（階段隔離、同種子位元相同）／`region_output_validation`／`region_perf`（十二階段三秒預算）／`history_layer`／`history_feedback`／`history_identity`（權重分家與道路探針）／`history_isolation`／`city_sites`／`road_network`／`portal_stage`／`portal_collision`（落點互異與判準）／`faction_stage`／`late_stage_isolation` |
 
 ## `sim/`
 
