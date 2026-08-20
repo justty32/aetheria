@@ -36,6 +36,35 @@
 aetheria 不跟這條——版本欄位把「靜默讀壞」變成「大聲拒讀」，
 而 `AllComponents` 清單一動就會默默改變位元組流，這正是它值得先行的理由。
 
+### Site 的第三塊：持久層（v9 起）
+
+Site zone 多一塊，**而且它的內容由一份白名單決定，不由呼叫者自律**：
+
+```cpp
+using SavedSiteLayers = entt::type_list<SitePersistentLayer>;   // 只有這一層會被存
+```
+
+`interface-world-mid.md` 的三層資料（Procedural／Persistent／Volatile）是**三個獨立型別**，
+codec 直接從這份 type list 展開欄位。編譯期斷言 Persistent 在清單內、
+Procedural 與 Volatile **不在**。
+
+> **「什麼會被存」只有一個結構性入口。**
+> 這是為了 M4——重載補算時不必靠 tag 分支或呼叫者記得，型別系統已經回答了。
+
+⚠ **加一層就是改位元流**，跟 `AllComponents` 同一個道理，要升版。
+
+### 版本沿革
+
+| 版本 | 改了什麼 | 里程碑 |
+|---:|---|---|
+| 6 | 城市選址與道路（`SettlementTier` 進 `RegionTiles`） | M1.4 |
+| 7 | 生成參數 group 9 → 10（歷史層前置成階段 8） | M1.5 |
+| 8 | portal 稀疏清單 | M1.6 |
+| 9 | Site 持久層位元流（`SavedSiteLayers`） | M2.2 |
+
+**一律不做遷移。** 理由見 M1.5 的裁定：生成管線一改，既有世界在**語意上**就失效了——
+就算 manifest 讀得進去，載入後也不是原本那個世界。拒絕舊檔是正確行為，不是附帶損害。
+
 ## `AllComponents`：唯一清單
 
 ```cpp
