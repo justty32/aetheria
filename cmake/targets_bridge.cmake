@@ -6,6 +6,9 @@ add_library(aetheria_bridge SHARED
 )
 target_include_directories(aetheria_bridge PRIVATE "${PROJECT_SOURCE_DIR}")
 target_link_libraries(aetheria_bridge PRIVATE aetheria_core godot-cpp)
+target_compile_definitions(aetheria_bridge PRIVATE
+    AETHERIA_DEFAULT_DATA_DIR="${PROJECT_SOURCE_DIR}/data"
+)
 set_target_properties(aetheria_bridge PROPERTIES
     OUTPUT_NAME aetheria_bridge
     LIBRARY_OUTPUT_DIRECTORY "${PROJECT_SOURCE_DIR}/godot/bin"
