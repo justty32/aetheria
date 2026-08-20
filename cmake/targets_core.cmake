@@ -27,6 +27,7 @@ add_library(aetheria_core STATIC
     core/worldgen/city_sites.cpp
     core/worldgen/history_roads.cpp
     core/worldgen/history_layer.cpp
+    core/worldgen/influence_spread.cpp
     core/worldgen/road_path.cpp
     core/worldgen/road_loops.cpp
     core/worldgen/road_network.cpp

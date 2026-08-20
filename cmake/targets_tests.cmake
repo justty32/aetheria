@@ -15,6 +15,7 @@ add_executable(aetheria_tests
     tests/worldgen/history_identity_test.cpp
     tests/worldgen/history_isolation_test.cpp
     tests/worldgen/history_layer_test.cpp
+    tests/worldgen/influence_spread_test.cpp
     tests/worldgen/region_determinism_test.cpp
     tests/worldgen/region_output_validation_test.cpp
     tests/worldgen/region_perf_test.cpp
