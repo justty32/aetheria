@@ -56,25 +56,29 @@ TEST(InfluenceSpread, CanonicalTieBreakIgnoresInputOrderAndNegativeControlDoesNo
     const auto tiles = plain_tiles(11, 7);
     std::vector<InfluenceCapital> capitals{{FactionId{1}, {2, 3}}, {FactionId{2}, {8, 3}}};
     const FactionRules config{2, 16, 1};
+    const auto claims_a =
+        aetheria::worldgen::claim_all_land(tiles, capitals, test_ruleset(), 1);
     const auto owners_a =
         aetheria::worldgen::spread_influence(tiles, capitals, test_ruleset(), config);
     const auto distances_a =
-        single_source_costs(tiles, capitals[0].tile, config.influence_max_cost);
+        single_source_costs(tiles, capitals[0].tile, config.governance_max_cost);
     const auto distances_b =
-        single_source_costs(tiles, capitals[1].tile, config.influence_max_cost);
+        single_source_costs(tiles, capitals[1].tile, config.governance_max_cost);
     const auto negative_a =
-        sequential_first_wins(tiles, capitals, config.influence_max_cost);
+        sequential_first_wins(tiles, capitals, config.governance_max_cost);
     std::ranges::reverse(capitals);
+    const auto claims_b =
+        aetheria::worldgen::claim_all_land(tiles, capitals, test_ruleset(), 1);
     const auto owners_b =
         aetheria::worldgen::spread_influence(tiles, capitals, test_ruleset(), config);
     const auto negative_b =
-        sequential_first_wins(tiles, capitals, config.influence_max_cost);
+        sequential_first_wins(tiles, capitals, config.governance_max_cost);
 
     std::size_t ties{};
     std::size_t unowned{};
     for (std::size_t index = 0; index < tiles.tile_count(); ++index) {
         const auto minimum = std::min(distances_a[index], distances_b[index]);
-        ties += minimum <= config.influence_max_cost && distances_a[index] == minimum &&
+        ties += minimum <= config.governance_max_cost && distances_a[index] == minimum &&
                 distances_b[index] == minimum;
         unowned += owners_a[index] == FactionId{0};
     }
@@ -84,6 +88,11 @@ TEST(InfluenceSpread, CanonicalTieBreakIgnoresInputOrderAndNegativeControlDoesNo
               << " negative_b=" << owner_hash(negative_b) << " tied_tiles=" << ties
               << " unowned=" << unowned << '/' << tiles.tile_count() << '\n';
     EXPECT_EQ(owners_a, owners_b);
+    EXPECT_EQ(claims_a.owner, claims_b.owner);
+    EXPECT_TRUE(std::ranges::none_of(claims_a.owner,
+                                    [](FactionId owner) { return owner == FactionId{0}; }));
+    EXPECT_GT(*std::ranges::max_element(claims_a.capital_cost),
+              config.governance_max_cost);
     EXPECT_NE(negative_a, negative_b);
     EXPECT_GT(ties, 0U);
     EXPECT_GT(unowned, 0U);

@@ -120,7 +120,7 @@ struct PortalGenerationConfig {
 };
 
 // FactionGenerationConfig 是階段 12 配發連續勢力 id 的起點。
-// 勢力數、影響力預算與季節全部來自 civilization.toml [factions]。
+// 勢力數、治理距離與影響力季節全部來自 civilization.toml [factions]。
 struct FactionGenerationConfig {
     std::uint16_t first_faction_id{1};
 };

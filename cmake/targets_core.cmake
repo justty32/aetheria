@@ -31,6 +31,8 @@ add_library(aetheria_core STATIC
     core/worldgen/history_roads.cpp
     core/worldgen/history_layer.cpp
     core/worldgen/influence_spread.cpp
+    core/worldgen/influence_claim.cpp
+    core/worldgen/governance_release.cpp
     core/worldgen/capital_selection.cpp
     core/worldgen/portal_generation.cpp
     core/worldgen/portal_candidates.cpp

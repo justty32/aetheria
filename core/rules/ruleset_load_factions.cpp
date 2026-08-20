@@ -29,17 +29,17 @@ void RulesetLoader::load_faction_rules(Ruleset& result,
         throw std::runtime_error{"civilization.toml 缺少 [factions]"};
     }
     const auto faction_count = detail::require_integer(*factions, "faction_count", path);
-    const auto influence_max_cost =
-        detail::require_integer(*factions, "influence_max_cost", path);
+    const auto governance_max_cost =
+        detail::require_integer(*factions, "governance_max_cost", path);
     const auto influence_season =
         detail::require_integer(*factions, "influence_season", path);
-    if (faction_count <= 0 || faction_count > UINT16_MAX / 2 || influence_max_cost < 0 ||
+    if (faction_count <= 0 || faction_count > UINT16_MAX / 2 || governance_max_cost < 0 ||
         influence_season < 1 || influence_season > 4) {
         throw std::runtime_error{"civilization.toml factions 參數無效"};
     }
     auto& rules = result.civilization_rules_.factions;
     rules.faction_count = static_cast<std::uint16_t>(faction_count);
-    rules.influence_max_cost = influence_max_cost;
+    rules.governance_max_cost = governance_max_cost;
     rules.influence_season = static_cast<std::uint8_t>(influence_season);
 }
 

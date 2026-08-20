@@ -125,6 +125,16 @@ TEST(RulesetLoader, RejectsNonPositiveBottleneckBarrierCost) {
     EXPECT_THROW(static_cast<void>(RulesetLoader::load(directory.path())), std::runtime_error);
 }
 
+TEST(RulesetLoader, RejectsNegativeGovernanceDistance) {
+    TemporaryDirectory directory;
+    copy_default_ruleset(directory.path());
+    auto civilization = read_text(directory.path() / "civilization.toml");
+    replace_once(civilization, "governance_max_cost = 256", "governance_max_cost = -1");
+    write_text(directory.path() / "civilization.toml", civilization);
+
+    EXPECT_THROW(static_cast<void>(RulesetLoader::load(directory.path())), std::runtime_error);
+}
+
 TEST(RulesetLoader, RejectsDifferentCrossingKeysSharingResult) {
     TemporaryDirectory directory;
     copy_default_ruleset(directory.path());

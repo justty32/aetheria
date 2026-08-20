@@ -38,7 +38,9 @@ FactionStageOutput generate_factions(
         output.capitals.push_back(
             {static_cast<world::FactionId>(config.first_faction_id + index), selected[index].tile});
     }
-    output.owner = spread_influence(tiles, output.capitals, ruleset, factions);
+    const auto claims =
+        claim_all_land(tiles, output.capitals, ruleset, factions.influence_season);
+    output.owner = release_beyond_governance(claims, factions.governance_max_cost);
     return output;
 }
 

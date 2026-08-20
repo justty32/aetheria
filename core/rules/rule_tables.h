@@ -124,11 +124,11 @@ struct CivilizationRules {
         std::array<FeatureId, 3> ruin_features{};
     };
 
-    // FactionRules 是階段 12 的權威勢力數與影響力預算。
+    // FactionRules 是階段 12 的權威勢力數、治理距離與影響力季節。
     // CivilizationRules 擁有值，worldgen 只借用 const 參考。
     struct FactionRules {
         std::uint16_t faction_count{};
-        std::int64_t influence_max_cost{};
+        std::int64_t governance_max_cost{};
         std::uint8_t influence_season{};
     };
 

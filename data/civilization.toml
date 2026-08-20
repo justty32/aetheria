@@ -96,5 +96,6 @@ ruin_features = ["feature.ruin_village", "feature.ruin_town", "feature.ruin_city
 
 [factions]
 faction_count = 3
-influence_max_cost = 100
+# 128 格寬的標準 Region：半幅 64 格 × 最低陸地成本 4。
+governance_max_cost = 256
 influence_season = 1
