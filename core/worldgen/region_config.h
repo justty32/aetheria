@@ -1,6 +1,6 @@
 #pragma once
 
-// region_config.h 收斂 Region 生成器的慢變數入口與九階段可調參數。
+// region_config.h 收斂 Region 生成器的慢變數入口與十階段可調參數。
 
 #include <array>
 #include <cstdint>
@@ -91,21 +91,28 @@ struct FeatureGenerationConfig {
     std::uint16_t landmark_chance{180};
 };
 
-// CityGenerationConfig 是階段 8 的整體分數偏移探針。
+// HistoryGenerationConfig 是階段 8 的整體分數偏移探針。
+// 呼叫端擁有值；上古數量、間距、存活率與回饋仍全部來自 civilization.toml。
+// 呼叫結束後即可失效。
+struct HistoryGenerationConfig {
+    std::int16_t minimum_score_bias{};
+};
+
+// CityGenerationConfig 是階段 9 的整體分數偏移探針。
 // 呼叫端擁有值；各因子權重仍全部來自 civilization.toml。
 // 呼叫結束後即可失效。
 struct CityGenerationConfig {
     std::int16_t minimum_score_bias{};
 };
 
-// RoadGenerationConfig 是階段 9 的環路比例覆寫探針，0 表示採資料檔值。
+// RoadGenerationConfig 是階段 10 的環路比例覆寫探針，0 表示採資料檔值。
 // 呼叫端擁有值；道路工程成本仍全部來自 civilization.toml。
 // 呼叫結束後即可失效。
 struct RoadGenerationConfig {
     std::uint8_t loop_percent_override{};
 };
 
-// RegionGenerationConfig 將九階段參數分槽，避免後段參數污染前段。
+// RegionGenerationConfig 將十階段參數分槽，避免後段參數污染前段。
 // 呼叫端擁有值，各階段只借用自己的子設定。
 // 呼叫結束後即可失效。
 struct RegionGenerationConfig {
@@ -116,15 +123,16 @@ struct RegionGenerationConfig {
     RiverGenerationConfig rivers;
     BiomeGenerationConfig biome;
     FeatureGenerationConfig features;
+    HistoryGenerationConfig history;
     CityGenerationConfig cities;
     RoadGenerationConfig roads;
 };
 
-// GenerationParameterHashes 是 manifest 固定的九階段參數身分。
+// GenerationParameterHashes 是 manifest 固定的十階段參數身分。
 // SaveManifest 擁有值，FileZoneStore 與生成器只讀取複本。
 // 值本身永不失效；任一分組不同即不得載入既有世界。
 struct GenerationParameterHashes {
-    std::array<std::uint64_t, 9> groups{};
+    std::array<std::uint64_t, 10> groups{};
 
     constexpr bool operator==(const GenerationParameterHashes&) const noexcept = default;
 };
@@ -133,8 +141,8 @@ struct GenerationParameterHashes {
 generation_parameter_hashes(const RegionGenerationConfig& config = {}) noexcept;
 [[nodiscard]] constexpr std::string_view
 generation_parameter_group_name(std::size_t index) noexcept {
-    constexpr std::array names{"plates", "height", "erosion", "climate", "rivers",
-                               "biome",  "features", "cities", "roads"};
+    constexpr std::array names{"plates", "height",   "erosion", "climate", "rivers",
+                               "biome",  "features", "history", "cities",  "roads"};
     return index < names.size() ? names[index] : "unknown";
 }
 

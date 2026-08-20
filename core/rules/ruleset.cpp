@@ -39,6 +39,7 @@ Ruleset RulesetLoader::load(const std::filesystem::path& data_directory) {
     load_biome_rules(result, data_directory);
     load_movement_rules(result, data_directory);
     load_civilization_rules(result, data_directory);
+    load_history_rules(result, data_directory);
 
     return result;
 }

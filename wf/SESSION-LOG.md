@@ -19,8 +19,7 @@
 
 ### 實作者（gpt-sol）
 
-- **M1.5 停工等規劃者裁定**：manifest 9→10 組必改磁碟格式、古道跨河缺複合 edge 表示 →
-  `wf/inbox/m1-5-blocked-format-and-ancient-crossings.md`
+- （無）
 
 ### 規劃者（Opus 5）
 

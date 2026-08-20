@@ -72,3 +72,15 @@ result = "edge.bridge_wood_great_river_road"
 river = "edge.great_river"
 road = "edge.highway"
 result = "edge.bridge_stone_great_river_highway"
+
+[history]
+ancient_site_count = 24
+ancient_city_count = 8
+ancient_town_count = 8
+minimum_spacing = [3, 5, 8]
+survivor_percent = 25
+ancient_site_bonus = 10000
+ancient_road_reuse_numerator = 1
+ancient_road_reuse_denominator = 2
+road_edge = "edge.ancient_road"
+ruin_features = ["feature.ruin_village", "feature.ruin_town", "feature.ruin_city"]

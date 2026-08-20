@@ -59,6 +59,7 @@ TEST(RegionGeneration, EveryStageHasAFullSizeVisualization) {
     EXPECT_EQ(grayscale(result.rivers).size(), expected);
     EXPECT_EQ(grayscale(result.biome).size(), expected);
     EXPECT_EQ(grayscale(result.features).size(), expected);
+    EXPECT_EQ(grayscale(result.history).size(), expected);
     EXPECT_EQ(grayscale(result.cities).size(), expected);
     EXPECT_EQ(grayscale(result.roads).size(), expected);
 }

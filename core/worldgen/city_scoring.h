@@ -1,7 +1,7 @@
 #pragma once
 
-// 城市選址評分內部 helper，供 city_sites.cpp 的 generate_cities 使用，
-// 從 civilization_generator.cpp 拆出。
+// 聚落選址評分內部 helper，供 settlement_scoring.cpp 的上古／現代共用評分使用，
+// 從原 city_sites.cpp 拆出。
 
 #include "core/worldgen/region_generator.h"
 

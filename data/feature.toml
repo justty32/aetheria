@@ -33,3 +33,24 @@ name_key = "feature.landmark.name"
 move_cost = 1
 flags = 8
 visual = "feature/landmark"
+
+[[defs]]
+id = "feature.ruin_village"
+name_key = "feature.ruin_village.name"
+move_cost = 1
+flags = 16
+visual = "feature/ruin_village"
+
+[[defs]]
+id = "feature.ruin_town"
+name_key = "feature.ruin_town.name"
+move_cost = 1
+flags = 16
+visual = "feature/ruin_town"
+
+[[defs]]
+id = "feature.ruin_city"
+name_key = "feature.ruin_city.name"
+move_cost = 1
+flags = 16
+visual = "feature/ruin_city"

@@ -56,7 +56,7 @@
 - `edge.ancient_road` 只需要**一個** def，**不新增任何 crossing**。
 - 驗收的「古道重用比例」**分母排除被跳過的渡河邊**，並另外貼「古道被河截斷了幾處」。
 
-已寫進新檔 [`design/worldgen-history.md`](../../design/worldgen-history.md)。
+已寫進新檔 [`design/worldgen-history.md`](../../../design/worldgen-history.md)。
 
 ## 裁定 3：重用折扣要能區分古道（你附帶那條是對的，我的指示作廢）
 

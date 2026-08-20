@@ -39,6 +39,7 @@ TEST(RegionGeneration, SameSeedIsBitIdenticalAcrossEveryStageAndWorldField) {
     EXPECT_EQ(hash_stage(first.rivers), hash_stage(second.rivers));
     EXPECT_EQ(hash_stage(first.biome), hash_stage(second.biome));
     EXPECT_EQ(hash_stage(first.features), hash_stage(second.features));
+    EXPECT_EQ(hash_stage(first.history), hash_stage(second.history));
     EXPECT_EQ(hash_stage(first.cities), hash_stage(second.cities));
     EXPECT_EQ(hash_stage(first.roads), hash_stage(second.roads));
     EXPECT_EQ(hash_skeleton(first.skeleton), hash_skeleton(second.skeleton));

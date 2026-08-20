@@ -4,7 +4,7 @@
 **收件人**：**gpt-sol 實作者**
 **回信地址**：`~/repo/game_dev/aetheria/wf/inbox/`
 **派發方式**：規劃者直接以 codex CLI 派工，不經使用者轉交。
-**必讀設計**：[`design/worldgen-civ.md`](../../design/worldgen-civ.md)（**已改**，先讀「管線」的裁定與第 8 節）
+**必讀設計**：[`design/worldgen-civ.md`](../../../design/worldgen-civ.md)（**已改**，先讀「管線」的裁定與第 8 節）
 **基準**：`0d672b0`
 
 ---
@@ -61,7 +61,7 @@ for (const auto& crossing : civilization.crossings) {
 （設計原話），所以要抽成可重用的純函式。
 
 ⚠ `city_sites.cpp` 已經 7,155 bytes，貼著 8 KB 上限。**先拆檔再加東西**，
-拆法照 [refactor](../workflows/refactor.md)，拆完更新 [code-map](../workflows/common/code-map.md)。
+拆法照 [refactor](../../workflows/refactor.md)，拆完更新 [code-map](../../workflows/common/code-map.md)。
 
 ### 2. 上古選址 + 古道 + 災變
 

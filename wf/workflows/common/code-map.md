@@ -11,7 +11,7 @@
 | `xxx.h` + 同名 `xxx.cpp` | 對外介面與其實作 |
 | **門面 header**（`region_generator.h`、`ruleset.h`） | 內容只有 `#include`。被很多地方 include 的舊入口，拆檔後保留原檔名讓呼叫端不必改 |
 | `*_detail.h`、`gen_*.h`、`toml_read.h` | **內部**共用 helper，放 `detail` sub-namespace，只給同目錄的 `.cpp` 用，不是對外介面 |
-| `stage_*.cpp` | worldgen 九階段，一階段一檔 |
+| `stage_*.cpp` | worldgen 階段 1～7 的地形／氣候實作；人文三階段依職責命名 |
 | `*_test_support.h` | 該測試目錄專用的 fixture／helper（header-only）|
 
 只被單一 `.cpp` 用到的 helper 一律留在該檔匿名 namespace，不進 `detail`。
@@ -47,7 +47,7 @@
 | `ruleset.cpp` | `Ruleset` 存取器 + `RulesetLoader::load` 的編排 |
 | `ruleset_load_defs.cpp` | terrain／relief／feature／edge 四份 def |
 | `ruleset_load_biomes.cpp` | biome 第一命中規則表、movement 季節分母 |
-| `ruleset_load_civilization.cpp`、`ruleset_load_crossings.cpp` | 城市／道路參數；渡河複合 edge 查表與完整性驗證 |
+| `ruleset_load_civilization.cpp`、`ruleset_load_history.cpp`、`ruleset_load_crossings.cpp` | 現代城市／道路參數；上古歷史參數；渡河複合 edge 查表與完整性驗證 |
 
 各段是 `RulesetLoader` 的 **private static 成員函式**（自由函式碰不到 `Ruleset` 的 private）。
 
@@ -70,13 +70,13 @@
 | `region_path.cpp` | A*（admissible heuristic）|
 | `region_turn.cpp` | `RegionTurnPipeline` 下令與旬回合推進 |
 
-### `core/worldgen` — Region 九階段生成
+### `core/worldgen` — Region 十階段生成
 
-門面 `region_generator.h` → `region_config.h`（慢／快變數、九階段 config、參數 hash）、`region_seed.h`、`region_relief_stages.h`（1–4）、`region_climate_stages.h`（5–7）、`region_civ_stages.h`（8–9）、`region_skeleton.h`、`region_diagnostics.h`。
+門面 `region_generator.h` → `region_config.h`（慢／快變數、十階段 config、參數 hash）、`region_seed.h`、`region_relief_stages.h`（1–4）、`region_climate_stages.h`（5–7）、`region_civ_stages.h`（8–10）、`region_skeleton.h`、`region_diagnostics.h`。
 
 內部共用：`gen_stage_ids.h`（stage id 與高度上下限）、`gen_grid.h`（尺寸檢查、四鄰格、陸地連通分量）、`gen_noise.h`（SplitMix64 stream、value noise、fbm）、`gen_hash.h`（FNV 與灰階化）。
 
-實作：`region_seed.cpp`（種子推導與參數 hash）、`stage_plates/height/erosion/climate/rivers/biomes.cpp`（階段 1–7；量化閘口在 `stage_erosion.cpp`）、`civ_tiles.*`（階段 8–9 共用的底圖組裝）、`city_scoring.*`＋`city_sites.cpp`（階段 8 選址）、`road_path.*`＋`road_loops.*`＋`road_network.cpp`（階段 9 工程路徑／MST 與補環路／canonical edge 寫入）、`region_build.cpp`（`build_skeleton`、`populate`）、`region_stage_hash.cpp`＋`region_result_hash.cpp`（決定論驗證用 hash）、`region_debug.cpp`（陸地比例、連通性、灰階視覺化）。
+實作：`region_seed.cpp`（種子推導與參數 hash）、`stage_plates/height/erosion/climate/rivers/biomes.cpp`（階段 1–7；量化閘口在 `stage_erosion.cpp`）、`civ_tiles.*`（階段 8～10 共用底圖）、`settlement_scoring.cpp`＋`city_scoring.*`（共用純評分）、`city_selection.*`（canonical 分級選點）、`history_layer.cpp`＋`history_roads.*`（階段 8 選址／災變／古道）、`city_sites.cpp`（階段 9）、`road_path.*`＋`road_loops.*`＋`road_network.cpp`（階段 10 工程路徑／MST／補環路）、`region_build.cpp`（建骨架／populate）、`region_stage_hash.cpp`＋`region_result_hash.cpp`（決定論 hash）、`region_debug.cpp`（陸地比例、連通性、灰階圖）。
 
 ## `tests/`
 
@@ -84,10 +84,10 @@
 |---|---|
 | `support/` | 跨目錄共用的 `ruleset_fixture.h` |
 | `time/`、`serialize/` | 曆法邊界與往返；EnTT registry 壓測 |
-| `rules/` | `ruleset_load`／`ruleset_error`（8 條錯誤路徑）／`ruleset_zone_codec`（索引重映射）|
+| `rules/` | `ruleset_load`／`ruleset_error`（資料不變式錯誤路徑）／`ruleset_zone_codec`（索引重映射）|
 | `world/` | `region_tiles`／`region_step_cost`／`region_path`／`region_turn` |
 | `zone/` | `zone_key`／`zone_lifecycle`／`zone_store_contract`（兩種 store 共用契約）／`file_zone_store`／`file_zone_store_manifest`／`zone_codec`／`zone_manager`／`zone_manager_tick` |
-| `worldgen/` | `region_stage_functions`／`region_determinism`（階段隔離、同種子位元相同）／`region_output_validation`／`region_perf`（三秒預算）／`city_sites`／`road_network` |
+| `worldgen/` | `region_stage_functions`／`region_determinism`（階段隔離、同種子位元相同）／`region_output_validation`／`region_perf`（十階段三秒預算）／`history_layer`／`history_feedback`／`history_isolation`／`city_sites`／`road_network` |
 
 ## `sim/`
 

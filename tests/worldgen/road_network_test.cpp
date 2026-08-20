@@ -40,7 +40,7 @@ using aetheria::worldgen::RegionSlowVariables;
 roads_from(const RegionBuildResult& result, const CityStageOutput& cities, bool canonicalize = true,
            const aetheria::worldgen::RoadGenerationConfig& config = {}) {
     return generate_roads(result.skeleton.elevation, result.climate, result.rivers, result.biome,
-                          result.features, cities, result.skeleton.definitions, test_ruleset(),
+                          result.history, cities, result.skeleton.definitions, test_ruleset(),
                           UINT64_C(0x9009), config, canonicalize);
 }
 
@@ -131,7 +131,7 @@ TEST(RoadGenerationStage, AddsLoopsCompoundCrossingsAndSymmetricEdges) {
     }
 }
 
-TEST(RegionGeneration, ChangingRoadParametersCannotMoveStagesOneThroughEight) {
+TEST(RegionGeneration, ChangingRoadParametersCannotMoveStagesOneThroughNine) {
     RegionGenerationConfig original;
     auto changed = original;
     changed.roads.loop_percent_override = 20;
@@ -146,6 +146,7 @@ TEST(RegionGeneration, ChangingRoadParametersCannotMoveStagesOneThroughEight) {
     EXPECT_EQ(hash_stage(before.rivers), hash_stage(after.rivers));
     EXPECT_EQ(hash_stage(before.biome), hash_stage(after.biome));
     EXPECT_EQ(hash_stage(before.features), hash_stage(after.features));
+    EXPECT_EQ(hash_stage(before.history), hash_stage(after.history));
     EXPECT_EQ(hash_stage(before.cities), hash_stage(after.cities));
     EXPECT_NE(hash_stage(before.roads), hash_stage(after.roads));
 }

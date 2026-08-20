@@ -11,6 +11,7 @@ namespace aetheria::rules {
 
 void RulesetLoader::load_crossing_rules(const Ruleset& result, CivilizationRules& rules) {
     std::set<std::pair<std::uint16_t, std::uint16_t>> crossing_keys;
+    std::set<std::uint16_t> crossing_results;
     const std::array river_names{"edge.stream", "edge.river", "edge.great_river"};
     for (const auto road : rules.road_edges) {
         const auto* road_definition = result.edge(road);
@@ -22,10 +23,16 @@ void RulesetLoader::load_crossing_rules(const Ruleset& result, CivilizationRules
     for (const auto& crossing : rules.crossings) {
         const auto key = std::pair{value_of(crossing.river), value_of(crossing.road)};
         const auto* compound = result.edge(crossing.result);
-        if (!crossing_keys.insert(key).second || compound == nullptr ||
+        if (!crossing_keys.insert(key).second) {
+            throw std::runtime_error{"civilization.toml crossing key 重複"};
+        }
+        if (!crossing_results.insert(value_of(crossing.result)).second) {
+            throw std::runtime_error{"civilization.toml crossing result 重複"};
+        }
+        if (compound == nullptr ||
             (compound->flags & (kEdgeRoadFlag | kEdgeRiverFlag | kEdgeBridgeFlag)) !=
                 (kEdgeRoadFlag | kEdgeRiverFlag | kEdgeBridgeFlag)) {
-            throw std::runtime_error{"civilization.toml crossing 重複或不是複合 def"};
+            throw std::runtime_error{"civilization.toml crossing result 不是複合 def"};
         }
     }
     for (const auto river_name : river_names) {

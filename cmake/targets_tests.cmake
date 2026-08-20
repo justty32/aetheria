@@ -11,6 +11,9 @@ add_executable(aetheria_tests
     tests/world/region_turn_test.cpp
     tests/world/region_tiles_test.cpp
     tests/worldgen/city_sites_test.cpp
+    tests/worldgen/history_feedback_test.cpp
+    tests/worldgen/history_isolation_test.cpp
+    tests/worldgen/history_layer_test.cpp
     tests/worldgen/region_determinism_test.cpp
     tests/worldgen/region_output_validation_test.cpp
     tests/worldgen/region_perf_test.cpp

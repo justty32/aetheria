@@ -90,6 +90,8 @@ class RulesetLoader {
     static void load_movement_rules(Ruleset& result, const std::filesystem::path& data_directory);
     static void load_civilization_rules(Ruleset& result,
                                         const std::filesystem::path& data_directory);
+    static void load_history_rules(Ruleset& result,
+                                   const std::filesystem::path& data_directory);
     static void load_crossing_rules(const Ruleset& result, CivilizationRules& rules);
 };
 

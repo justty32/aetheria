@@ -14,8 +14,9 @@ inline constexpr std::uint64_t kClimateStageId = UINT64_C(0x434C494D41544504);
 inline constexpr std::uint64_t kRiverStageId = UINT64_C(0x5249564552530005);
 inline constexpr std::uint64_t kBiomeStageId = UINT64_C(0x42494F4D45530006);
 inline constexpr std::uint64_t kFeatureStageId = UINT64_C(0x4645415455524507);
-inline constexpr std::uint64_t kCityStageId = UINT64_C(0x4349544945530008);
-inline constexpr std::uint64_t kRoadStageId = UINT64_C(0x524F414453000009);
+inline constexpr std::uint64_t kHistoryStageId = UINT64_C(0x484953544F525908);
+inline constexpr std::uint64_t kCityStageId = UINT64_C(0x4349544945530009);
+inline constexpr std::uint64_t kRoadStageId = UINT64_C(0x524F41445300000A);
 inline constexpr double kMinWorldElevation = -4096.0;
 inline constexpr double kMaxWorldElevation = 61439.0;
 

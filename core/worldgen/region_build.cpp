@@ -77,18 +77,22 @@ RegionBuildResult build_skeleton(const RegionSlowVariables& slow, std::uint64_t 
         plates, elevation, climate, rivers, biome, definitions,
         derive_region_stage_seed(world_seed, slow.region_id, detail::kFeatureStageId),
         config.features);
+    auto history = generate_history(
+        elevation, climate, rivers, biome, features, definitions, ruleset,
+        derive_region_stage_seed(world_seed, slow.region_id, detail::kHistoryStageId),
+        config.history);
     auto cities = generate_cities(
-        elevation, climate, rivers, biome, features, ruleset,
+        elevation, climate, rivers, biome, history, ruleset,
         derive_region_stage_seed(world_seed, slow.region_id, detail::kCityStageId), config.cities);
     auto roads = generate_roads(
-        elevation, climate, rivers, biome, features, cities, definitions, ruleset,
+        elevation, climate, rivers, biome, history, cities, definitions, ruleset,
         derive_region_stage_seed(world_seed, slow.region_id, detail::kRoadStageId), config.roads);
-    RegionSkeleton skeleton{elevation, climate, rivers, biome, features, cities, roads,
+    RegionSkeleton skeleton{elevation, climate, rivers, biome, features, history, cities, roads,
                             definitions};
     return {std::move(plates),   std::move(height),   std::move(erosion),
             std::move(climate),  std::move(rivers),   std::move(biome),
-            std::move(features), std::move(cities),   std::move(roads),
-            std::move(skeleton)};
+            std::move(features), std::move(history),  std::move(cities),
+            std::move(roads),    std::move(skeleton)};
 }
 
 world::RegionTiles populate(const RegionSkeleton& skeleton, const RegionFastVariables& fast) {
@@ -99,6 +103,16 @@ world::RegionTiles populate(const RegionSkeleton& skeleton, const RegionFastVari
         skeleton.rivers.moisture.size() != count || skeleton.rivers.downstream.size() != count ||
         skeleton.rivers.river_class.size() != count || skeleton.biome.terrain.size() != count ||
         skeleton.biome.relief.size() != count || skeleton.features.feature.size() != count ||
+        skeleton.history.ancient_sites.width != skeleton.elevation.width ||
+        skeleton.history.ancient_sites.height != skeleton.elevation.height ||
+        skeleton.history.ancient_sites.score.size() != count ||
+        skeleton.history.ancient_sites.bottleneck.size() != count ||
+        skeleton.history.features.width != skeleton.elevation.width ||
+        skeleton.history.features.height != skeleton.elevation.height ||
+        skeleton.history.features.feature.size() != count ||
+        skeleton.history.edges.size() != count * 4U ||
+        skeleton.history.survivor.size() != count ||
+        skeleton.history.skipped_river_edges.size() != count * 4U ||
         skeleton.cities.score.size() != count || skeleton.cities.bottleneck.size() != count ||
         skeleton.roads.edges.size() != count * 4U ||
         skeleton.roads.usage.size() != count * 4U ||
@@ -111,7 +125,7 @@ world::RegionTiles populate(const RegionSkeleton& skeleton, const RegionFastVari
     for (std::size_t index = 0; index < count; ++index) {
         tiles.base[index] = skeleton.biome.terrain[index];
         tiles.relief[index] = skeleton.biome.relief[index];
-        tiles.feature[index] = skeleton.features.feature[index];
+        tiles.feature[index] = skeleton.history.features.feature[index];
         tiles.temperature[index] = static_cast<std::uint8_t>(std::clamp<std::int32_t>(
             (static_cast<std::int32_t>(skeleton.climate.temperature_tenths[index]) + 500) * 255 /
                 1000,

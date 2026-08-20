@@ -17,6 +17,7 @@ std::uint64_t hash_skeleton(const RegionSkeleton& skeleton) noexcept {
     detail::hash_scalar(hash, hash_stage(skeleton.rivers));
     detail::hash_scalar(hash, hash_stage(skeleton.biome));
     detail::hash_scalar(hash, hash_stage(skeleton.features));
+    detail::hash_scalar(hash, hash_stage(skeleton.history));
     detail::hash_scalar(hash, hash_stage(skeleton.cities));
     detail::hash_scalar(hash, hash_stage(skeleton.roads));
     detail::hash_scalar(hash, rules::value_of(skeleton.definitions.land));

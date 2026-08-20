@@ -1,6 +1,6 @@
 #pragma once
 
-// region_diagnostics.h 收斂九階段雜湊、骨架／tile 雜湊、陸地連通檢查與灰階視覺化宣告。
+// region_diagnostics.h 收斂十階段雜湊、骨架／tile 雜湊、陸地連通檢查與灰階視覺化宣告。
 
 #include "core/world/region_tiles.h"
 #include "core/worldgen/region_civ_stages.h"
@@ -20,6 +20,7 @@ namespace aetheria::worldgen {
 [[nodiscard]] std::uint64_t hash_stage(const RiverStageOutput& stage) noexcept;
 [[nodiscard]] std::uint64_t hash_stage(const BiomeStageOutput& stage) noexcept;
 [[nodiscard]] std::uint64_t hash_stage(const FeatureStageOutput& stage) noexcept;
+[[nodiscard]] std::uint64_t hash_stage(const HistoryStageOutput& stage) noexcept;
 [[nodiscard]] std::uint64_t hash_stage(const CityStageOutput& stage) noexcept;
 [[nodiscard]] std::uint64_t hash_stage(const RoadStageOutput& stage) noexcept;
 [[nodiscard]] std::uint64_t hash_skeleton(const RegionSkeleton& skeleton) noexcept;
@@ -34,6 +35,7 @@ namespace aetheria::worldgen {
 [[nodiscard]] std::vector<std::uint8_t> grayscale(const RiverStageOutput& stage);
 [[nodiscard]] std::vector<std::uint8_t> grayscale(const BiomeStageOutput& stage);
 [[nodiscard]] std::vector<std::uint8_t> grayscale(const FeatureStageOutput& stage);
+[[nodiscard]] std::vector<std::uint8_t> grayscale(const HistoryStageOutput& stage);
 [[nodiscard]] std::vector<std::uint8_t> grayscale(const CityStageOutput& stage);
 [[nodiscard]] std::vector<std::uint8_t> grayscale(const RoadStageOutput& stage);
 

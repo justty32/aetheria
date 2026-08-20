@@ -1,3 +1,4 @@
+#include "core/worldgen/gen_stage_ids.h"
 #include "core/worldgen/region_generator.h"
 #include "tests/support/ruleset_fixture.h"
 
@@ -13,6 +14,7 @@ using aetheria::tests::test_ruleset;
 using aetheria::worldgen::build_skeleton;
 using aetheria::worldgen::ClimateStageOutput;
 using aetheria::worldgen::generate_rivers;
+using aetheria::worldgen::generate_history;
 using aetheria::worldgen::hash_stage;
 using aetheria::worldgen::populate;
 using aetheria::worldgen::QuantizedElevation;
@@ -65,14 +67,29 @@ TEST(RegionGenerationStage, RiverRuntimeScalesWithCellCount) {
 }
 
 TEST(RegionGeneration, DefaultRegionFitsThreeSecondBudget) {
+    constexpr auto seed = UINT64_C(20260816);
+    const RegionSlowVariables slow{9, 128, 96};
     const auto start = std::chrono::steady_clock::now();
-    const auto result =
-        build_skeleton(RegionSlowVariables{9, 128, 96}, UINT64_C(20260816), test_ruleset());
+    const auto result = build_skeleton(slow, seed, test_ruleset());
     const auto tiles = populate(result.skeleton, RegionFastVariables{});
     const auto elapsed = std::chrono::steady_clock::now() - start;
 
+    const auto history_start = std::chrono::steady_clock::now();
+    const auto history = generate_history(
+        result.skeleton.elevation, result.climate, result.rivers, result.biome, result.features,
+        result.skeleton.definitions, test_ruleset(),
+        aetheria::worldgen::derive_region_stage_seed(
+            seed, slow.region_id, aetheria::worldgen::detail::kHistoryStageId),
+        {});
+    const auto history_elapsed = std::chrono::steady_clock::now() - history_start;
+    const auto elapsed_ms = std::chrono::duration<double, std::milli>{elapsed}.count();
+    const auto history_ms = std::chrono::duration<double, std::milli>{history_elapsed}.count();
+
     EXPECT_TRUE(tiles.valid_layout());
+    EXPECT_EQ(hash_stage(history), hash_stage(result.history));
     EXPECT_LT(elapsed, std::chrono::seconds{3});
+    std::cout << "ten_stage_region_ms=" << elapsed_ms << " history_stage_ms=" << history_ms
+              << " budget_remaining_ms=" << 3000.0 - elapsed_ms << '\n';
 }
 
 }  // namespace

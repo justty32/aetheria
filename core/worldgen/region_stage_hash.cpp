@@ -85,6 +85,23 @@ std::uint64_t hash_stage(const FeatureStageOutput& stage) noexcept {
     return hash;
 }
 
+std::uint64_t hash_stage(const HistoryStageOutput& stage) noexcept {
+    auto hash = UINT64_C(14695981039346656037);
+    detail::hash_scalar(hash, hash_stage(stage.ancient_sites));
+    detail::hash_scalar(hash, hash_stage(stage.features));
+    detail::hash_vector(hash, stage.edges);
+    detail::hash_vector(hash, stage.survivor);
+    detail::hash_scalar(hash, static_cast<std::uint64_t>(stage.connections.size()));
+    for (const auto& connection : stage.connections) {
+        detail::hash_scalar(hash, connection.first_city);
+        detail::hash_scalar(hash, connection.second_city);
+        detail::hash_scalar(hash, connection.terrain_cost);
+        detail::hash_scalar(hash, static_cast<std::uint8_t>(connection.loop));
+    }
+    detail::hash_vector(hash, stage.skipped_river_edges);
+    return hash;
+}
+
 std::uint64_t hash_stage(const CityStageOutput& stage) noexcept {
     auto hash = UINT64_C(14695981039346656037);
     detail::hash_scalar(hash, stage.width);

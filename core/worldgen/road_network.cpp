@@ -15,16 +15,17 @@ using detail::CandidateConnection;
 
 RoadStageOutput generate_roads(const QuantizedElevation& elevation,
                                const ClimateStageOutput& climate, const RiverStageOutput& rivers,
-                               const BiomeStageOutput& biome, const FeatureStageOutput& features,
+                               const BiomeStageOutput& biome, const HistoryStageOutput& history,
                                const CityStageOutput& cities,
                                const RegionDefinitionIds& definitions,
                                const rules::Ruleset& ruleset, std::uint64_t stage_seed,
                                const RoadGenerationConfig& config, bool canonicalize_city_order) {
     static_cast<void>(stage_seed);
-    detail::require_civilization_inputs(elevation, climate, rivers, biome, features);
+    detail::require_civilization_inputs(elevation, climate, rivers, biome, history.features);
     const auto& civilization = ruleset.civilization_rules();
     if (!civilization.loaded || cities.width != elevation.width ||
-        cities.height != elevation.height || cities.cities.size() < 2) {
+        cities.height != elevation.height || cities.cities.size() < 2 ||
+        history.edges.size() != elevation.meters.size() * 4U) {
         throw std::invalid_argument{"道路階段缺少有效文明規則或城市"};
     }
     auto ordered_cities = cities.cities;
@@ -44,7 +45,9 @@ RoadStageOutput generate_roads(const QuantizedElevation& elevation,
             throw std::invalid_argument{"道路階段 canonical city id 與座標不符"};
         }
     }
-    auto tiles = detail::make_base_tiles(elevation, climate, rivers, biome, features, definitions);
+    auto tiles =
+        detail::make_base_tiles(elevation, climate, rivers, biome, history.features, definitions);
+    tiles.edges = history.edges;
     auto [candidates, tree] = detail::build_minimum_spanning_tree(tiles, ordered_cities, ruleset);
     auto selected = tree;
     for (auto& edge : detail::select_loop_connections(candidates, tree, ordered_cities,

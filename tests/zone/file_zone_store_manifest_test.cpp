@@ -160,7 +160,7 @@ TEST(FileZoneStore, RejectsManifestFormatVersionMismatch) {
 
     EXPECT_THROW(static_cast<void>(FileZoneStore{directory.path(), test_ruleset()}),
                  std::runtime_error);
-    EXPECT_EQ(read_file(directory.path() / "manifest.bin").size(), 125U);
+    EXPECT_EQ(read_file(directory.path() / "manifest.bin").size(), 133U);
 }
 
 TEST(FileZoneStore, RejectsGenerationParameterGroupMismatchByName) {

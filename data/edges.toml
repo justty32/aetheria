@@ -116,3 +116,10 @@ name_key = "edge.bridge_stone_great_river_highway.name"
 move_cost = 2
 flags = 7
 visual = "edge/bridge_stone_great_river_highway"
+
+[[defs]]
+id = "edge.ancient_road"
+name_key = "edge.ancient_road.name"
+move_cost = 2
+flags = 1
+visual = "edge/ancient_road"

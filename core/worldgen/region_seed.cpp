@@ -60,9 +60,11 @@ generation_parameter_hashes(const RegionGenerationConfig& config) noexcept {
     detail::hash_scalar(result.groups[6], config.features.oasis_chance);
     detail::hash_scalar(result.groups[6], config.features.landmark_chance);
     result.groups[7] = begin_group();
-    detail::hash_scalar(result.groups[7], config.cities.minimum_score_bias);
+    detail::hash_scalar(result.groups[7], config.history.minimum_score_bias);
     result.groups[8] = begin_group();
-    detail::hash_scalar(result.groups[8], config.roads.loop_percent_override);
+    detail::hash_scalar(result.groups[8], config.cities.minimum_score_bias);
+    result.groups[9] = begin_group();
+    detail::hash_scalar(result.groups[9], config.roads.loop_percent_override);
     return result;
 }
 

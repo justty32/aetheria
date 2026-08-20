@@ -6,6 +6,7 @@ add_library(aetheria_core STATIC
     core/rules/ruleset_load_defs.cpp
     core/rules/ruleset_load_biomes.cpp
     core/rules/ruleset_load_civilization.cpp
+    core/rules/ruleset_load_history.cpp
     core/rules/ruleset_load_crossings.cpp
     core/serialize/normalized_state_hash.cpp
     core/time/tick.cpp
@@ -21,7 +22,11 @@ add_library(aetheria_core STATIC
     core/world/region_turn.cpp
     core/worldgen/civ_tiles.cpp
     core/worldgen/city_scoring.cpp
+    core/worldgen/settlement_scoring.cpp
+    core/worldgen/city_selection.cpp
     core/worldgen/city_sites.cpp
+    core/worldgen/history_roads.cpp
+    core/worldgen/history_layer.cpp
     core/worldgen/road_path.cpp
     core/worldgen/road_loops.cpp
     core/worldgen/road_network.cpp

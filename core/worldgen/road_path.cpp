@@ -43,7 +43,11 @@ namespace {
     if ((edge_definition->flags & rules::kEdgeRiverFlag) != 0) {
         cost += civilization.road_river_crossing_penalty;
     }
-    if ((edge_definition->flags & rules::kEdgeRoadFlag) != 0) {
+    if (edge == civilization.history.road_edge) {
+        cost = std::max<std::int64_t>(
+            1, cost * civilization.history.ancient_road_reuse_numerator /
+                   civilization.history.ancient_road_reuse_denominator);
+    } else if ((edge_definition->flags & rules::kEdgeRoadFlag) != 0) {
         cost = std::max<std::int64_t>(1, cost * civilization.road_reuse_numerator /
                                              civilization.road_reuse_denominator);
     }

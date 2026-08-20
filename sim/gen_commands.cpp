@@ -24,6 +24,7 @@ void print_generation(const aetheria::worldgen::RegionBuildResult& result,
               << "river_hash=" << aetheria::worldgen::hash_stage(result.rivers) << '\n'
               << "biome_hash=" << aetheria::worldgen::hash_stage(result.biome) << '\n'
               << "feature_hash=" << aetheria::worldgen::hash_stage(result.features) << '\n'
+              << "history_hash=" << aetheria::worldgen::hash_stage(result.history) << '\n'
               << "city_hash=" << aetheria::worldgen::hash_stage(result.cities) << '\n'
               << "road_hash=" << aetheria::worldgen::hash_stage(result.roads) << '\n'
               << "skeleton_hash=" << aetheria::worldgen::hash_skeleton(result.skeleton) << '\n'
@@ -69,9 +70,11 @@ int run_gen_region(const aetheria::rules::Ruleset& ruleset, std::uint64_t seed,
                   aetheria::worldgen::grayscale(result.biome));
         write_pgm(dump_directory / "07-features.pgm", result.features.width, result.features.height,
                   aetheria::worldgen::grayscale(result.features));
-        write_pgm(dump_directory / "08-cities.pgm", result.cities.width, result.cities.height,
+        write_pgm(dump_directory / "08-history.pgm", result.history.features.width,
+                  result.history.features.height, aetheria::worldgen::grayscale(result.history));
+        write_pgm(dump_directory / "09-cities.pgm", result.cities.width, result.cities.height,
                   aetheria::worldgen::grayscale(result.cities));
-        write_pgm(dump_directory / "09-roads.pgm", result.roads.width, result.roads.height,
+        write_pgm(dump_directory / "10-roads.pgm", result.roads.width, result.roads.height,
                   aetheria::worldgen::grayscale(result.roads));
     }
     print_generation(result, tiles, elapsed);
@@ -107,6 +110,8 @@ int run_gen_verify(const aetheria::rules::Ruleset& ruleset, std::uint64_t seed,
                 aetheria::worldgen::hash_stage(second.biome) ||
             aetheria::worldgen::hash_stage(first.features) !=
                 aetheria::worldgen::hash_stage(second.features) ||
+            aetheria::worldgen::hash_stage(first.history) !=
+                aetheria::worldgen::hash_stage(second.history) ||
             aetheria::worldgen::hash_stage(first.cities) !=
                 aetheria::worldgen::hash_stage(second.cities) ||
             aetheria::worldgen::hash_stage(first.roads) !=

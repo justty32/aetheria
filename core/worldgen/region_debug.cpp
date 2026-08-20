@@ -94,6 +94,27 @@ std::vector<std::uint8_t> grayscale(const FeatureStageOutput& stage) {
     return pixels;
 }
 
+std::vector<std::uint8_t> grayscale(const HistoryStageOutput& stage) {
+    std::vector<std::uint8_t> pixels(stage.features.feature.size());
+    for (std::size_t index = 0; index < pixels.size(); ++index) {
+        const auto begin = index * 4U;
+        const bool marked_edge = begin + 4U <= stage.edges.size() &&
+                                 std::ranges::any_of(
+                                     stage.edges.begin() + static_cast<std::ptrdiff_t>(begin),
+                                     stage.edges.begin() + static_cast<std::ptrdiff_t>(begin + 4U),
+                                     [](rules::EdgeId edge) { return rules::value_of(edge) != 0; });
+        pixels[index] = marked_edge ? 96U : 0U;
+    }
+    for (const auto& site : stage.ancient_sites.cities) {
+        if (site.canonical_id < pixels.size() && site.canonical_id < stage.survivor.size()) {
+            pixels[site.canonical_id] = stage.survivor[site.canonical_id] != 0
+                                            ? UINT8_MAX
+                                            : static_cast<std::uint8_t>(site.tier) * 64U;
+        }
+    }
+    return pixels;
+}
+
 std::vector<std::uint8_t> grayscale(const CityStageOutput& stage) {
     std::vector<std::uint8_t> pixels(stage.score.size());
     for (const auto& city : stage.cities) {

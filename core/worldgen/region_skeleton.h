@@ -1,6 +1,6 @@
 #pragma once
 
-// region_skeleton.h 收斂已量化的穩定 Region 骨架、九階段除錯產物，以及骨架建構／落地入口。
+// region_skeleton.h 收斂已量化的穩定 Region 骨架、十階段除錯產物，以及骨架建構／落地入口。
 
 #include "core/rules/ruleset.h"
 #include "core/world/region_tiles.h"
@@ -40,12 +40,13 @@ struct RegionSkeleton {
     RiverStageOutput rivers;
     BiomeStageOutput biome;
     FeatureStageOutput features;
+    HistoryStageOutput history;
     CityStageOutput cities;
     RoadStageOutput roads;
     RegionDefinitionIds definitions;
 };
 
-// RegionBuildResult 同時帶穩定骨架與九階段除錯產物。
+// RegionBuildResult 同時帶穩定骨架與十階段除錯產物。
 // 呼叫端擁有整個回傳值。
 // 回傳值析構後所有 stage 與 skeleton 參考失效。
 struct RegionBuildResult {
@@ -56,6 +57,7 @@ struct RegionBuildResult {
     RiverStageOutput rivers;
     BiomeStageOutput biome;
     FeatureStageOutput features;
+    HistoryStageOutput history;
     CityStageOutput cities;
     RoadStageOutput roads;
     RegionSkeleton skeleton;

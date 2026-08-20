@@ -47,9 +47,25 @@ struct CrossingRule {
 };
 
 // CivilizationRules 是城市評分、間距、道路工程與渡河查表的資料規則。
-// Ruleset 擁有值，worldgen 階段 8～9 只借用 const 參考。
+// Ruleset 擁有值，worldgen 階段 8～10 只借用 const 參考。
 // 所屬 Ruleset 析構後失效；所有分數與成本均為整數。
 struct CivilizationRules {
+    // HistoryRules 是上古選址、災變、古道與現代回饋的資料規則。
+    // CivilizationRules 擁有值，worldgen 階段 8～10 只借用 const 參考。
+    // 所屬 Ruleset 析構後失效；三級陣列依序為村莊、城鎮、大城。
+    struct HistoryRules {
+        std::uint16_t ancient_site_count{};
+        std::uint16_t ancient_city_count{};
+        std::uint16_t ancient_town_count{};
+        std::array<std::uint16_t, 3> minimum_spacing{};
+        std::uint8_t survivor_percent{};
+        std::int32_t ancient_site_bonus{};
+        std::uint16_t ancient_road_reuse_numerator{};
+        std::uint16_t ancient_road_reuse_denominator{};
+        EdgeId road_edge{};
+        std::array<FeatureId, 3> ruin_features{};
+    };
+
     std::int32_t freshwater_weight{};
     std::int32_t farmland_weight{};
     std::int32_t harbor_weight{};
@@ -78,6 +94,7 @@ struct CivilizationRules {
     std::array<EdgeId, 3> road_edges{};
     TerrainId swamp_terrain;
     std::vector<CrossingRule> crossings;
+    HistoryRules history{};
     bool loaded{};
 };
 

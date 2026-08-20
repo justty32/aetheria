@@ -18,6 +18,7 @@ using aetheria::worldgen::build_skeleton;
 using aetheria::worldgen::ClimateStageOutput;
 using aetheria::worldgen::FeatureStageOutput;
 using aetheria::worldgen::generate_cities;
+using aetheria::worldgen::score_city_sites;
 using aetheria::worldgen::QuantizedElevation;
 using aetheria::worldgen::RegionSlowVariables;
 using aetheria::worldgen::RiverStageOutput;
@@ -73,9 +74,8 @@ struct CityFixture {
 
 TEST(CityGenerationStage, TerrainBottleneckOutscoresNearbyOpenGround) {
     const auto fixture = bottleneck_fixture();
-    const auto cities =
-        generate_cities(fixture.elevation, fixture.climate, fixture.rivers, fixture.biome,
-                        fixture.features, test_ruleset(), UINT64_C(8008), {});
+    const auto cities = score_city_sites(fixture.elevation, fixture.climate, fixture.rivers,
+                                         fixture.biome, fixture.features, test_ruleset());
     const auto choke = index_of(fixture.elevation.width, {9, 4});
     const auto plain = index_of(fixture.elevation.width, {3, 4});
 
@@ -92,7 +92,7 @@ TEST(CityGenerationStage, FullRegionScoresAll12288TilesWithinBudgetAndRespectsSp
     const auto start = std::chrono::steady_clock::now();
     const auto cities =
         generate_cities(terrain.skeleton.elevation, terrain.climate, terrain.rivers, terrain.biome,
-                        terrain.features, test_ruleset(), UINT64_C(8008), {});
+                        terrain.history, test_ruleset(), UINT64_C(9009), {});
     const auto elapsed = std::chrono::steady_clock::now() - start;
 
     std::cout << "bottleneck_12288_ms="
