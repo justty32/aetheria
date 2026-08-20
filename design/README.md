@@ -54,7 +54,8 @@
 | [midmap.md](midmap.md) | L2：Site 種類、小時回合、城建／SRPG／荒野 |
 | [lowmap.md](lowmap.md) | L3：人身尺度、垂直層、探索、持久層 |
 | [interface-world-mid.md](interface-world-mid.md) | **L1↔L2 界面**：投影／歸約、慢快變數、歸約量表、事件升級 |
-| [interface-lifecycle.md](interface-lifecycle.md) | **生命週期**：LOD 狀態機、Digest、重載補算、一致性驗證 |
+| [interface-lifecycle.md](interface-lifecycle.md) | **生命週期**：LOD 狀態機、Digest、重載補算、骨架失效 |
+| [interface-verification.md](interface-verification.md) | **界面驗證**：M4 判準、七條測試、負向控制與假通過陷阱 |
 | [lowmap-streaming.md](lowmap-streaming.md) | 串流；**看可以跨、改必須經中介**；實體搬移 |
 
 ### 三條 LOD 軸
