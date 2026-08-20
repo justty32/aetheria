@@ -72,8 +72,17 @@
   ③ 短命行程一直換 PID，追子行程沒用要壓父行程；
   ④ `taskset` 加在 `codex exec` 上無效（codex 透過自己的 process manager 起指令，不是子行程）。
   另外**派工 prompt 要明令 `--parallel 2`**，不然 `--parallel` 不帶數字會開滿核心。
-  ⚠ **housecarl MCP server 會自己在背景跑 Skyrim collision hull 抽取**（吃 700～1000% CPU），
-  我從沒呼叫過它的工具。已壓到 2 核未殺掉。`baloo` 檔案索引也已 suspend（`balooctl6 resume` 可恢復）。
+  ⚠⚠ **踩過的雷：不要限制共用的 MCP server。**
+  `housecarl-mcp`（Skyrim 模組工具）會在背景跑 collision hull 抽取吃 700～1000% CPU，
+  我把它釘到 2 核 + `nice 19`——結果它**關閉時卡住十分鐘**，因為
+  **Skyrim agent 那邊也在用同一個 server**。使用者的其他 session 依賴它。
+  已全部還原成 0-15。**限制 CPU 只能針對自己這條線生出來的東西**
+  （codex、編譯、Godot），共用服務一律不碰——寧可吵一點。
+  `baloo` 檔案索引仍是 suspend 狀態（`balooctl6 resume` 可恢復）。
+- 📬 **與 Skyrim agent 的往來**：對方收件匣是 `~/repo/moddings/skyrim/inbox/`
+  （另有 elin／rimworld／tome4 各自的）。已架 Monitor 每 30 秒同時監看
+  aetheria 與 skyrim 兩邊的頂層新信。寄信前先讀對方的 `AGENTS.md` 確認收信慣例
+  （照 [CONTACTS.md](workflows/inbox/CONTACTS.md)「專案外的可能對象」那節）。
 - 📌 **M2 要做世界級正規化雜湊**（M1.3 的是 per-zone）。裁定：它是驗證工具不是執行期狀態，
   直接走訪存檔目錄列舉，不違反成長軸不變量。寫在 `design/zone-save-format.md`。
 - 📌 **校準期要回頭看**：雨影探針 leeward moisture 剛好 0。合成探針裡合理，
