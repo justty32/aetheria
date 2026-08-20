@@ -110,7 +110,19 @@ TEST(RegionGenerationStage, OnePassClimateProducesAMeasurableRainShadow) {
     ASSERT_EQ(climate.prevailing_wind_x, (std::vector<std::int8_t>{1}));
     std::cout << "rain_shadow windward=" << climate.moisture.at(4)
               << " leeward=" << climate.moisture.at(5) << '\n';
-    EXPECT_GT(climate.moisture.at(4), climate.moisture.at(5) * 10U);
+    EXPECT_GT(climate.moisture.at(4), climate.moisture.at(5));
+    EXPECT_GT(climate.moisture.at(5), 0U);
+}
+
+TEST(RegionGenerationStage, FlatLandMoistureFollowsAirWithoutHittingZero) {
+    QuantizedElevation elevation{128, 1, {}, {}, 4096};
+    elevation.meters.assign(128, 4200);
+    elevation.land.assign(128, 1);
+    const auto climate =
+        generate_climate(RegionSlowVariables{0, 128, 1, 35}, elevation, UINT64_C(4004), {});
+
+    EXPECT_GT(climate.moisture.front(), climate.moisture.back() * 3U);
+    EXPECT_TRUE(std::ranges::all_of(climate.moisture, [](auto value) { return value > 0; }));
 }
 
 TEST(RegionGenerationStage, PriorityFloodFillsAClosedDepressionAndTerminates) {

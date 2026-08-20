@@ -44,7 +44,7 @@ generation_parameter_hashes(const RegionGenerationConfig& config) noexcept {
     detail::hash_double(result.groups[2], config.erosion.transfer_fraction);
     result.groups[3] = begin_group();
     detail::hash_scalar(result.groups[3], config.climate.lapse_tenths_per_km);
-    detail::hash_scalar(result.groups[3], config.climate.air_decay);
+    detail::hash_scalar(result.groups[3], config.climate.air_retention_percent);
     detail::hash_scalar(result.groups[3], config.climate.uplift_rain);
     result.groups[4] = begin_group();
     detail::hash_scalar(result.groups[4], config.rivers.stream_threshold);

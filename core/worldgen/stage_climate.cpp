@@ -17,8 +17,9 @@ ClimateStageOutput generate_climate(const RegionSlowVariables& slow,
     const auto count = detail::checked_count(elevation.width, elevation.height);
     if (slow.width != elevation.width || slow.height != elevation.height ||
         elevation.meters.size() != count || elevation.land.size() != count ||
-        slow.latitude_degrees < -90 || slow.latitude_degrees > 90) {
-        throw std::invalid_argument{"氣候階段輸入尺寸或緯度無效"};
+        slow.latitude_degrees < -90 || slow.latitude_degrees > 90 ||
+        config.air_retention_percent > 100U) {
+        throw std::invalid_argument{"氣候階段輸入尺寸、緯度或水氣保留率無效"};
     }
     constexpr std::array<std::int16_t, 7> latitude_temperature{300, 280, 230, 160, 70, -50, -180};
     ClimateStageOutput output{elevation.width, elevation.height, {}, {}, {}};
@@ -61,11 +62,17 @@ ClimateStageOutput generate_climate(const RegionSlowVariables& slow,
                 output.moisture[index] = UINT16_MAX;
             } else {
                 const auto rise = std::max(0, encoded_elevation - previous_elevation);
-                const auto rain = std::min<std::uint32_t>(
-                    air, 900U + static_cast<std::uint32_t>(rise) * config.uplift_rain);
-                output.moisture[index] = static_cast<std::uint16_t>(rain);
-                const auto spent = std::min<std::uint32_t>(air, rain + config.air_decay);
-                air -= spent;
+                const auto uplift_force =
+                    static_cast<std::uint32_t>(rise) * config.uplift_rain;
+                const auto uplift_rain = static_cast<std::uint32_t>(
+                    static_cast<std::uint64_t>(air) * uplift_force /
+                    (static_cast<std::uint64_t>(UINT16_MAX) + uplift_force));
+                output.moisture[index] = static_cast<std::uint16_t>(
+                    std::min<std::uint32_t>(UINT16_MAX, air + uplift_rain));
+                air -= uplift_rain;
+                constexpr auto percent_denominator = UINT32_C(100);
+                air = (air * config.air_retention_percent + percent_denominator - 1U) /
+                      percent_denominator;
             }
             previous_elevation = encoded_elevation;
         }

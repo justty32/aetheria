@@ -84,7 +84,8 @@ TEST(RegionGeneration, EveryRiverPathTerminatesAtSeaOrLakeAndEdgesAreSymmetric) 
             const auto target = static_cast<std::size_t>(result.rivers.downstream[current]);
             ASSERT_LT(target, count);
             ASSERT_LT(++steps, count) << "river cycle from tile " << source;
-            if (result.skeleton.elevation.land[target] != 0) {
+            if (result.skeleton.elevation.land[target] != 0 &&
+                result.rivers.lake[target] == 0) {
                 EXPECT_NE(result.rivers.river_class[target], 0)
                     << "river discontinuity after tile " << current;
             }

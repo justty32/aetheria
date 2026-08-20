@@ -14,7 +14,7 @@ namespace aetheria::worldgen {
 // RegionDefinitionIds 定義於 region_skeleton.h；此處僅需引用型別供函式宣告的 const 參考使用。
 struct RegionDefinitionIds;
 
-// ClimateStageOutput 是固定點溫度、降水與緯度風帶的產物。
+// ClimateStageOutput 是固定點溫度、地表濕度與緯度風帶的產物。
 // build_skeleton 的回傳值擁有它，不含任何浮點欄位。
 // 所屬回傳值析構或 vector 重配後其中參考失效。
 struct ClimateStageOutput {

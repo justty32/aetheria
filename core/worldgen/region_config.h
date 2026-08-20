@@ -54,12 +54,13 @@ struct ErosionGenerationConfig {
     double transfer_fraction{0.18};
 };
 
-// ClimateGenerationConfig 是固定點氣候與線性雨影的參數。
+// ClimateGenerationConfig 是固定點氣候與比例衰減雨影的參數。
 // 呼叫端擁有值，氣候階段只在呼叫期間借用。
 // 呼叫結束後即可失效。
 struct ClimateGenerationConfig {
     std::uint16_t lapse_tenths_per_km{65};
-    std::uint16_t air_decay{1800};
+    // 每個 8 km 格保留的空氣水氣百分比；99 對應約 800 km 的衰減尺度。
+    std::uint8_t air_retention_percent{99};
     std::uint16_t uplift_rain{24};
 };
 

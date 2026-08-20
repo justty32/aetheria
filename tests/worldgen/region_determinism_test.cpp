@@ -86,6 +86,26 @@ TEST(RegionGeneration, ChangingBiomeParametersCannotMoveStagesOneThroughFive) {
     EXPECT_NE(hash_stage(before.biome), hash_stage(after.biome));
 }
 
+TEST(RegionGeneration, ChangingClimateParametersCannotMoveStagesOneThroughThree) {
+    const RegionSlowVariables slow{23, 128, 96};
+    RegionGenerationConfig original;
+    auto changed = original;
+    changed.climate.air_retention_percent = 98;
+
+    const auto before = build_skeleton(slow, UINT64_C(987654321), test_ruleset(), original);
+    const auto after = build_skeleton(slow, UINT64_C(987654321), test_ruleset(), changed);
+
+    std::cout << "stage4_before=" << hash_stage(before.plates) << ',' << hash_stage(before.height)
+              << ',' << hash_stage(before.erosion) << ',' << hash_stage(before.climate)
+              << "\nstage4_after=" << hash_stage(after.plates) << ','
+              << hash_stage(after.height) << ',' << hash_stage(after.erosion) << ','
+              << hash_stage(after.climate) << '\n';
+    EXPECT_EQ(hash_stage(before.plates), hash_stage(after.plates));
+    EXPECT_EQ(hash_stage(before.height), hash_stage(after.height));
+    EXPECT_EQ(hash_stage(before.erosion), hash_stage(after.erosion));
+    EXPECT_NE(hash_stage(before.climate), hash_stage(after.climate));
+}
+
 TEST(RegionGeneration, EditingBiomeDataChangesOnlyDataDrivenStages) {
     TemporaryDirectory directory;
     copy_data_files(directory.path());
