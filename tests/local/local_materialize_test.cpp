@@ -1,14 +1,16 @@
 #include "core/local/local_materialize.h"
-#include "core/serialize/zone_codec.h"
-#include "tests/local/local_test_support.h"
+
+#include <gtest/gtest.h>
 
 #include <concepts>
 #include <cstdint>
 
-#include <gtest/gtest.h>
+#include "core/serialize/zone_codec.h"
+#include "tests/local/local_test_support.h"
 
 namespace {
 
+using aetheria::tests::building_site_layer;
 using aetheria::tests::kLocalCenter;
 using aetheria::tests::kLocalSiteSeed;
 using aetheria::tests::open_site_layer;
@@ -29,7 +31,9 @@ TEST(LocalMaterialize, PayloadHasAllFiveTileFieldsAndCorrectKey) {
     EXPECT_EQ(aetheria::zone::local_x_of(local.key), kLocalCenter.x);
     EXPECT_EQ(aetheria::zone::local_y_of(local.key), kLocalCenter.y);
     EXPECT_EQ(local.lod, aetheria::zone::LodLevel::Full);
-    EXPECT_TRUE(std::get<aetheria::zone::LocalPayload>(local.payload).tiles.valid_layout());
+    const auto& layers = std::get<aetheria::zone::LocalPayload>(local.payload).layers;
+    ASSERT_EQ(layers.size(), 1U);
+    EXPECT_TRUE(layers.at(0).valid_layout());
 }
 
 TEST(LocalMaterialize, LoadAndRematerializeAreDistinctEntrypoints) {
@@ -45,15 +49,28 @@ TEST(LocalMaterialize, LoadAndRematerializeAreDistinctEntrypoints) {
     const auto loaded = aetheria::local::load_local_zone(manager, materialized.key);
     ASSERT_TRUE(loaded.has_value());
     ASSERT_TRUE(manager.with(*loaded, [](const aetheria::zone::Zone& zone) {
-        EXPECT_TRUE(std::get<aetheria::zone::LocalPayload>(zone.payload).tiles.empty());
+        EXPECT_TRUE(std::get<aetheria::zone::LocalPayload>(zone.payload).layers.empty());
     }));
     ASSERT_TRUE(manager.unload(materialized.key));
 
     const auto rematerialized = aetheria::local::rematerialize_local_zone(
         manager, site_key, parent, kLocalCenter, kLocalSiteSeed, feature, test_ruleset());
     ASSERT_TRUE(manager.with(rematerialized, [](const aetheria::zone::Zone& zone) {
-        EXPECT_TRUE(std::get<aetheria::zone::LocalPayload>(zone.payload).tiles.valid_layout());
+        const auto& layers = std::get<aetheria::zone::LocalPayload>(zone.payload).layers;
+        EXPECT_TRUE(layers.at(0).valid_layout());
     }));
+}
+
+TEST(LocalMaterialize, BuildingStructureDispatchesRouteAWithVerticalLayers) {
+    const auto parent = building_site_layer();
+    const auto feature = *test_ruleset().find_feature("feature.none");
+    const auto local = aetheria::local::materialize_local_zone(
+        sample_site_key(), parent, kLocalCenter, kLocalSiteSeed, feature, test_ruleset());
+    const auto& layers = std::get<aetheria::zone::LocalPayload>(local.payload).layers;
+    EXPECT_EQ(layers.size(), 3U);
+    EXPECT_TRUE(layers.contains(-1));
+    EXPECT_TRUE(layers.contains(0));
+    EXPECT_TRUE(layers.contains(1));
 }
 
 }  // namespace

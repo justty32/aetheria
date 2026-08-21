@@ -23,7 +23,7 @@
 | `CMakeLists.txt`、`vcpkg.json` | 專案組態與依賴固定；**來源清單不在這裡**，在 `cmake/targets_*.cmake` |
 | `cmake/` | `targets_*.cmake` 來源／測試；`godot_toolchain.cmake` 工具鏈；`check_*.cmake` CTest 檢查 |
 | `core/` | 純 C++ 玩法核心，**不得依賴 godot-cpp** |
-| `core/site/`、`core/local/`、`core/spatial/` | L1→L2 Site、L2→L3 Local 路線 B，以及兩層共用的規範邊界剖面 |
+| `core/site/`、`core/local/`、`core/spatial/` | L1→L2 Site、L2→L3 Local 路線 A/B，以及兩層共用的規範邊界剖面與遞迴矩形切分 |
 | `bridge/` | `AetheriaCore` Node 與 GDExtension 註冊；唯一可 include godot-cpp 的自有目錄 |
 | `godot/` | 純顯示／呼叫驗證場景與 `.gdextension` 描述檔 |
 | `tests/` | GoogleTest 單元測試 |
@@ -43,7 +43,7 @@
 |---|---|
 | `ruleset.h` | 入口：include 下面兩個型別 header + `Ruleset`／`RulesetLoader` 兩個 class |
 | `def_types.h` | id／flag、地形 def 與 `TerrainGroundMapping` |
-| `rule_tables.h` | 地形／移動／文明規則，以及 Site 骨架、F1～F5 填充與建築 def 型別 |
+| `rule_tables.h` | 地形／移動／文明規則，以及 Site 與 Local 生成、填充和建築 def 型別 |
 | `toml_read.h` | 內部共用 TOML 讀取／驗證 helper |
 | `ruleset.cpp` | `Ruleset` 存取器 + `RulesetLoader::load` 的編排 |
 | `ruleset_load_defs.cpp` | terrain／relief／feature／edge 四份 def |
@@ -79,6 +79,8 @@
 | `region_turn.cpp`、`region_simulation.*` | `RegionTurnPipeline` 下令／旬推進；第 5 階段近似公式與 live Site 跳過計數 |
 
 [core/site 詳圖](code-map-site.md)：城區骨架 S1～S4、投影／填充、生命週期、歸約與事件升級。
+
+[core/local 詳圖](code-map-local.md)：路線 A/B、垂直層、資料規則與 Site/Local 共用切分。
 
 ### `core/worldgen` — Region 十二階段生成
 

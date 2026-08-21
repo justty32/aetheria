@@ -2,7 +2,7 @@
 
 // worldgen 測試共用的 fixture 與 helper（暫存目錄、規則資料覆寫等）。
 
-#include "core/rules/ruleset.h"
+#include <gtest/gtest.h>
 
 #include <cstdint>
 #include <filesystem>
@@ -10,7 +10,7 @@
 #include <string>
 #include <string_view>
 
-#include <gtest/gtest.h>
+#include "core/rules/ruleset.h"
 
 namespace aetheria::tests {
 
@@ -110,6 +110,30 @@ name_key = "moat"
 move_cost = 1000
 flags = 128
 visual = "moat"
+[[defs]]
+id = "edge.house_wall"
+name_key = "house_wall"
+move_cost = 1000
+flags = 8
+visual = "house_wall"
+[[defs]]
+id = "edge.house_door"
+name_key = "house_door"
+move_cost = 1
+flags = 56
+visual = "house_door"
+[[defs]]
+id = "edge.shop_door"
+name_key = "shop_door"
+move_cost = 1
+flags = 56
+visual = "shop_door"
+[[defs]]
+id = "edge.house_window"
+name_key = "house_window"
+move_cost = 1000
+flags = 264
+visual = "house_window"
 )");
     write_text(directory.path() / "ground.toml", R"(
 [[defs]]
@@ -118,6 +142,12 @@ name_key = "ground.grass.name"
 move_cost = 1
 flags = 0
 visual = "ground/grass"
+[[defs]]
+id = "ground.stone"
+name_key = "ground.stone.name"
+move_cost = 1
+flags = 0
+visual = "ground/stone"
 )");
     write_text(directory.path() / "site_projection.toml", R"(
 [city_skeleton]
@@ -209,7 +239,10 @@ ruin_keep_max_percent = 40
     std::filesystem::copy_file(std::filesystem::path{AETHERIA_SOURCE_DIR} / "data" /
                                    "site_build.toml",
                                directory.path() / "site_build.toml");
+    std::filesystem::copy_file(std::filesystem::path{AETHERIA_SOURCE_DIR} / "data" /
+                                   "local_buildings.toml",
+                               directory.path() / "local_buildings.toml");
     return rules::RulesetLoader::load(directory.path());
 }
 
-}  // namespace aetheria::tests
+} // namespace aetheria::tests

@@ -151,3 +151,31 @@ name_key = "edge.city_moat.name"
 move_cost = 1000
 flags = 128
 visual = "edge/city_moat"
+
+[[defs]]
+id = "edge.house_wall"
+name_key = "edge.house_wall.name"
+move_cost = 1000
+flags = 8
+visual = "edge/house_wall"
+
+[[defs]]
+id = "edge.house_door"
+name_key = "edge.house_door.name"
+move_cost = 1
+flags = 56
+visual = "edge/house_door"
+
+[[defs]]
+id = "edge.shop_door"
+name_key = "edge.shop_door.name"
+move_cost = 1
+flags = 56
+visual = "edge/shop_door"
+
+[[defs]]
+id = "edge.house_window"
+name_key = "edge.house_window.name"
+move_cost = 1000
+flags = 264
+visual = "edge/house_window"

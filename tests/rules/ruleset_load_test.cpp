@@ -1,5 +1,4 @@
-#include "core/rules/ruleset.h"
-#include "tests/support/ruleset_fixture.h"
+#include <gtest/gtest.h>
 
 #include <array>
 #include <concepts>
@@ -7,14 +6,15 @@
 #include <span>
 #include <type_traits>
 
-#include <gtest/gtest.h>
+#include "core/rules/ruleset.h"
+#include "tests/support/ruleset_fixture.h"
 
 namespace {
 
-using aetheria::rules::Ruleset;
-using aetheria::rules::TerrainDef;
 using aetheria::rules::kEdgeRoadFlag;
 using aetheria::rules::kFeatureRuinFlag;
+using aetheria::rules::Ruleset;
+using aetheria::rules::TerrainDef;
 using aetheria::tests::test_ruleset;
 
 template <typename Rule>
@@ -26,8 +26,8 @@ concept HasTemperatureBounds = requires(Rule rule) { rule.min_temperature_tenths
 template <typename Rule>
 concept HasRuggednessBounds = requires(Rule rule) { rule.min_ruggedness; };
 
-static_assert(std::same_as<decltype(std::declval<const Ruleset&>().terrains()),
-                           std::span<const TerrainDef>>);
+static_assert(
+    std::same_as<decltype(std::declval<const Ruleset&>().terrains()), std::span<const TerrainDef>>);
 static_assert(!std::is_assignable_v<
               decltype((std::declval<const Ruleset&>().terrains()[0].move_cost)), std::int32_t>);
 static_assert(!HasMoistureBounds<aetheria::rules::ReliefRule>);
@@ -39,10 +39,11 @@ TEST(RulesetLoader, LoadsImmutableDefinitionTypesAndSiteProjectionMapping) {
     ASSERT_EQ(ruleset.terrains().size(), 5U);
     ASSERT_EQ(ruleset.reliefs().size(), 3U);
     ASSERT_EQ(ruleset.features().size(), 9U);
-    ASSERT_EQ(ruleset.edges().size(), 22U);
+    ASSERT_EQ(ruleset.edges().size(), 26U);
     ASSERT_EQ(ruleset.grounds().size(), 6U);
     ASSERT_EQ(ruleset.buildings().size(), 8U);
     ASSERT_EQ(ruleset.city_buildings().size(), 5U);
+    ASSERT_EQ(ruleset.furniture().size(), 4U);
     ASSERT_EQ(ruleset.terrain_ground_mappings().size(), ruleset.terrains().size());
     ASSERT_EQ(ruleset.terrain_rules().size(), 4U);
     ASSERT_EQ(ruleset.relief_rules().size(), 3U);
@@ -52,17 +53,21 @@ TEST(RulesetLoader, LoadsImmutableDefinitionTypesAndSiteProjectionMapping) {
     EXPECT_TRUE(ruleset.site_generation_rules().loaded);
     EXPECT_TRUE(ruleset.site_fill_rules().loaded);
     EXPECT_TRUE(ruleset.site_build_rules().loaded);
-    EXPECT_EQ(ruleset.city_building(*ruleset.find_city_building("city.workshop"))
-                  ->production_per_hour,
-              2U);
-    EXPECT_EQ(ruleset.city_building(*ruleset.find_city_building("city.workshop"))
-                  ->adjacency.size(),
+    EXPECT_TRUE(ruleset.local_building_rules().loaded);
+    EXPECT_EQ(
+        ruleset.city_building(*ruleset.find_city_building("city.workshop"))->production_per_hour,
+        2U);
+    EXPECT_EQ(ruleset.city_building(*ruleset.find_city_building("city.workshop"))->adjacency.size(),
               1U);
     ASSERT_EQ(ruleset.site_fill_rules().quotas.size(), 2U);
     EXPECT_EQ(ruleset.site_fill_rules().quotas[0].units_per_block, 250U);
     EXPECT_EQ(ruleset.site_fill_rules().quotas[1].units_per_block, 2U);
     EXPECT_EQ(ruleset.building(*ruleset.find_building("building.cottage"))->frontage, 2U);
     EXPECT_TRUE(ruleset.building(*ruleset.find_building("building.palace"))->landmark);
+    EXPECT_EQ(ruleset.furniture(*ruleset.find_furniture("furniture.bed"))->minimum, 1U);
+    EXPECT_NE(ruleset.edge(ruleset.local_building_rules().window_edge)->flags &
+                  aetheria::rules::kEdgeWindowFlag,
+              0U);
     ASSERT_EQ(ruleset.site_fill_rules().faction_styles.size(), 4U);
     EXPECT_EQ(ruleset.site_fill_rules().faction_styles[1].faction, 1U);
     EXPECT_EQ(ruleset.site_fill_rules().faction_styles[1].landmarks.size(), 2U);

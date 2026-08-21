@@ -1,12 +1,12 @@
 #pragma once
 
-#include "core/local/local_tiles.h"
-#include "tests/support/ruleset_fixture.h"
-
 #include <algorithm>
 #include <cstddef>
 #include <cstdint>
 #include <stdexcept>
+
+#include "core/local/local_tiles.h"
+#include "tests/support/ruleset_fixture.h"
 
 namespace aetheria::tests {
 
@@ -32,13 +32,35 @@ inline constexpr site::SiteXY kLocalCenter{32, 32};
         }
     }
     auto edges = skeleton.edges;
-    return {std::move(skeleton), std::move(edges),
+    return {std::move(skeleton),
+            std::move(edges),
             std::vector<site::SiteZoning>(site::kSiteTileCount, site::SiteZoning::Open),
-            {}, {}, {}, {}, {}, 0};
+            {},
+            {},
+            {},
+            {},
+            {},
+            0};
 }
 
-inline void set_site_edge(site::SiteProceduralLayer& layer, site::SiteXY first,
-                          site::SiteXY second, rules::EdgeId edge) {
+[[nodiscard]] inline site::SiteProceduralLayer building_site_layer(
+    site::SiteZoning zoning = site::SiteZoning::Residential) {
+    auto result = open_site_layer();
+    result.zoning[static_cast<std::size_t>(kLocalCenter.y) * site::kSiteWidth + kLocalCenter.x] =
+        zoning;
+    result.buildings.push_back({*test_ruleset().find_building(zoning == site::SiteZoning::Commercial
+                                                                  ? "building.shop"
+                                                                  : "building.row_house"),
+                                {31, 31},
+                                3,
+                                3,
+                                site::SiteBoundarySide::North,
+                                site::ProceduralBuildingDamage::Intact});
+    return result;
+}
+
+inline void set_site_edge(site::SiteProceduralLayer& layer, site::SiteXY first, site::SiteXY second,
+                          rules::EdgeId edge) {
     const auto first_index = static_cast<std::size_t>(first.y) * site::kSiteWidth + first.x;
     const auto second_index = static_cast<std::size_t>(second.y) * site::kSiteWidth + second.x;
     spatial::BoundarySide first_side;
