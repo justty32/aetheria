@@ -21,14 +21,21 @@
 
 Amit Patel 的站上與本題直接相關的幾篇（自己找正確網址，別猜）：
 
-- **Polygonal Map Generation for Games** — 尤其是 **noisy edges**（用中點位移把
-  Voronoi 多邊形邊界弄成碎形）。**這一招正對著「海岸線太規整太尖銳」。**
-- **Making maps with noise functions** — 特別是
-  **redistribution**（對高度做 `e^exponent` 之類的重分布來命中目標分布）、
-  **island shapes / radial falloff**、以及 terraces。
-- **elevation 與 moisture 的指派**：他的作法是
-  **elevation = 距海岸的距離**、**moisture = 距淡水的距離**，
-  而不是各自獨立取噪聲。⚠ 這跟我們現在的作法是**結構性的不同**，是本輪最重要的對照點。
+使用者指名了這四個網址，**全部都要讀**：
+
+1. <https://www.redblobgames.com/maps/terrain-from-noise/>
+   —— **redistribution**（對高度做 `e^exponent` 重分布來命中目標分布）、
+   **island shapes / radial falloff**、terraces。
+2. <https://www.redblobgames.com/articles/noise/introduction.html>
+   —— 噪聲的頻譜與 octave 到底在做什麼。⚠ **我們的 `gen_noise.h` 已經有 fbm，
+   所以重點是「噪聲該作用在哪一步」，不是「有沒有噪聲」。**
+3. <http://www-cs-students.stanford.edu/~amitp/game-programming/polygon-map-generation/>
+   —— 尤其是 **noisy edges**（用中點位移把多邊形邊界弄成碎形）。
+   **這一招正對著「海岸線太規整太尖銳」。**
+   也看他的 **elevation = 距海岸距離**、**moisture = 距淡水距離**——
+   ⚠ 那跟我們各自獨立取噪聲是**結構性的不同**，是本輪最重要的對照點。
+4. <https://www.redblobgames.com/x/2022-voronoi-maps-tutorial/>
+   —— Voronoi 版本的作法，對照我們的 `stage_plates.cpp`。
 
 ## 要交什麼
 
