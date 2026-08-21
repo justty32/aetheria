@@ -90,12 +90,11 @@ struct CityEconomy {
     std::uint64_t food_stock{};
     std::uint64_t production_stock{};
     std::int64_t population_micro_remainder{};
-    std::uint16_t hours_into_xun{};
     std::uint8_t satisfaction{};
 
     template <typename Archive> void serialize(Archive& archive) {
         archive(population, food_stock, production_stock, population_micro_remainder,
-                hours_into_xun, satisfaction);
+                satisfaction);
     }
     constexpr bool operator==(const CityEconomy&) const noexcept = default;
 };

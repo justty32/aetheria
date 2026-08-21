@@ -26,10 +26,11 @@
 | `site_fortifications.cpp` | F3：街廓外緣牆環、主幹道城門、雙重牆、塔樓與護城河 EdgeDef |
 | `site_landmarks.cpp` | F4：owner 勢力風格表選取、城心附近最高分街廓放置地標 |
 | `site_damage.cpp` | F5：牆缺口與依城門／缺口距離優先的瓦礫／焚毀狀態 |
-| `site_materialize.*` | 依聚落有無分流城區／荒野，首次展開、冷重算展開、收回與持久建築座標疊加 |
+| `site_materialize.*` | 依聚落有無分流城區／荒野，首次／冷重算展開、Frozen 凍結／解凍與持久層收回 |
+| `site_streaming.*` | 玩家跨格重算 3×3 FULL／5×5 COARSE 場，尾端升降級、延遲逐出並批次推進 FULL Site |
 | `site_reduction.*` | 固定 row 的 Site→Region 歸約 |
 | `site_event_escalation.*` | 建築事件先落持久來源；達 Region 級才立即同步歸約快變數 |
-| `site_build_loop.*` | `L_FULL` 批次逐小時／共同旬界編排、`ZoneKey` 正規化、工地命令、持久 `CityBuildState` 與 Region 回填 |
+| `site_build_loop.*` | `L_FULL` 批次逐小時／全局時鐘旬界編排、`ZoneKey` 正規化、工地命令、持久 `CityBuildState` 與 Region 回填 |
 | `site_build_economy.cpp` | 建造進度、每小時糧食／生產、相鄰效果與人口成長 |
 | `site_build_loop_detail.h` | 城建命令與每小時經濟結算的內部介面 |
 | `site_lifecycle.*` | `SiteDigest`、持久物件閉式補算／飽和，以及骨架失效時的保留／就近搬移／災變毀壞與敘事事件 |

@@ -62,6 +62,8 @@ TEST(SiteBuildLoop, PendingConstructionSurvivesColdRematerializeWithRemainingHou
     const auto report =
         pipeline.advance_hours(fixture.site, fixture.region, 0, kBuildCoordinate, 36);
     ASSERT_EQ(report.constructions_completed, 1U);
+    EXPECT_EQ(aetheria::world::turn_clock(fixture.region).now,
+              aetheria::time::Tick{} + aetheria::time::kHour * 36);
     store.save(fixture.site);
 
     auto& tiles = std::get<aetheria::zone::RegionPayload>(fixture.region.payload).layers.at(0);
@@ -78,7 +80,6 @@ TEST(SiteBuildLoop, PendingConstructionSurvivesColdRematerializeWithRemainingHou
         ASSERT_EQ(state.pending.size(), 1U);
         EXPECT_EQ(state.pending.front().definition_id, "city.farm");
         EXPECT_EQ(state.pending.front().remaining_hours, 12U);
-        EXPECT_EQ(state.economy.hours_into_xun, 36U);
     }));
     std::cout << "site_pending_cold_roundtrip completed=1 pending=1 remaining_hours=12 "
                  "cold_absent_assertion=1\n";

@@ -30,6 +30,18 @@ namespace aetheria::site {
     world::RegionXY coordinate, std::uint64_t world_seed, std::uint32_t region_id,
     time::Tick now, const rules::Ruleset& ruleset, SiteCatchUpReport* report = nullptr);
 
+// L_FROZEN 保留 SiteDigest 在記憶體；thaw 重建程序層但不經磁碟。
+void freeze_site_zone(zone::ZoneManager& manager, zone::ZoneHandle handle,
+                      world::RegionTiles& region_tiles, world::RegionXY coordinate,
+                      std::uint64_t world_seed, std::uint32_t region_id, time::Tick now);
+void thaw_site_zone(zone::ZoneManager& manager, zone::ZoneHandle handle,
+                    world::RegionTiles& region_tiles, world::RegionXY coordinate,
+                    std::uint64_t world_seed, std::uint32_t region_id, time::Tick now,
+                    const rules::Ruleset& ruleset, SiteCatchUpReport* report = nullptr);
+void evict_frozen_site_zone(zone::ZoneManager& manager, zone::ZoneHandle handle,
+                            world::RegionTiles& region_tiles,
+                            world::RegionXY coordinate, time::Tick now);
+
 // collapse_site_zone 先強制歸約，再把 L_COARSE Site 寫盤並移出 manager。
 void collapse_site_zone(zone::ZoneManager& manager, zone::ZoneHandle handle,
                         world::RegionTiles& region_tiles, world::RegionXY coordinate);

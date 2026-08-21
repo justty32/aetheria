@@ -57,6 +57,19 @@ ZoneHandle ZoneManager::materialize(ZoneKey key) {
     return ZoneHandle{key};
 }
 
+ZoneHandle ZoneManager::adopt(std::unique_ptr<Zone> zone) {
+    AETH_CHECK(!in_tick_);
+    if (zone == nullptr) {
+        throw std::invalid_argument{"ZoneManager 不能接管空 zone"};
+    }
+    const auto key = zone->key;
+    if (zones_.contains(key)) {
+        throw std::logic_error{"ZoneManager 不能重複接管已載入 zone"};
+    }
+    add_loaded(std::move(zone));
+    return ZoneHandle{key};
+}
+
 bool ZoneManager::unload(ZoneKey key) {
     AETH_CHECK(!in_tick_);
     if (key == kRootZone) {

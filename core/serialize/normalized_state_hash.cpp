@@ -136,7 +136,6 @@ void hash_city_build_state(std::uint64_t& hash, const zone::Zone& zone,
     hash_scalar(hash, state.economy.food_stock);
     hash_scalar(hash, state.economy.production_stock);
     hash_scalar(hash, state.economy.population_micro_remainder);
-    hash_scalar(hash, state.economy.hours_into_xun);
     hash_scalar(hash, state.economy.satisfaction);
     hash_scalar(hash,
                 static_cast<std::uint64_t>(state.migration.destroyed_objects.size()));

@@ -11,15 +11,24 @@
 #include <vector>
 
 namespace aetheria::world {
-namespace {
 
-[[nodiscard]] TurnClock& require_clock(zone::Zone& region) {
+TurnClock& turn_clock(zone::Zone& region) {
     auto clocks = region.reg.view<TurnClock>();
     if (clocks.size() != 1U) {
         throw std::runtime_error{"Region 必須恰有一個 TurnClock"};
     }
     return clocks.get<TurnClock>(*clocks.begin());
 }
+
+const TurnClock& turn_clock(const zone::Zone& region) {
+    const auto clocks = region.reg.view<const TurnClock>();
+    if (clocks.size() != 1U) {
+        throw std::runtime_error{"Region 必須恰有一個 TurnClock"};
+    }
+    return clocks.get<const TurnClock>(*clocks.begin());
+}
+
+namespace {
 
 [[nodiscard]] const RegionTiles& require_layer(const zone::Zone& region, std::int8_t z) {
     const auto* payload = std::get_if<zone::RegionPayload>(&region.payload);
@@ -60,6 +69,34 @@ void RegionTurnPipeline::issue_move(zone::Zone& region, StableId unit, RegionXY 
 
 void RegionTurnPipeline::advance_xun(zone::Zone& region, const TurnStageObserver& observer,
                                      const LiveSiteReductionPass& live_site_reduction) const {
+    auto& clock = turn_clock(region);
+    const auto next = clock.now + time::kXun;
+    if (!time::is_representable(next)) {
+        throw std::overflow_error{"旬回合推進超出 Tick 可表達範圍"};
+    }
+    run_xun_stages(region, clock.now, observer, live_site_reduction);
+    clock.now = next;
+    region.last_saved_tick = clock.now;
+    store_.save(region);
+}
+
+void RegionTurnPipeline::settle_elapsed_xun(
+    zone::Zone& region, const TurnStageObserver& observer,
+    const LiveSiteReductionPass& live_site_reduction) const {
+    auto& clock = turn_clock(region);
+    const auto raw_now = static_cast<std::int64_t>(clock.now);
+    const auto raw_xun = static_cast<std::int64_t>(time::kXun);
+    if (raw_now % raw_xun != 0) {
+        throw std::logic_error{"下層旬結算要求全局時鐘位於旬界"};
+    }
+    run_xun_stages(region, clock.now - time::kXun, observer, live_site_reduction);
+    region.last_saved_tick = clock.now;
+    store_.save(region);
+}
+
+void RegionTurnPipeline::run_xun_stages(
+    zone::Zone& region, time::Tick simulation_start, const TurnStageObserver& observer,
+    const LiveSiteReductionPass& live_site_reduction) const {
     if (zone::level_of(region.key) != zone::ZoneLevel::Region) {
         throw std::invalid_argument{"RegionTurnPipeline 只接受 Region zone"};
     }
@@ -71,8 +108,7 @@ void RegionTurnPipeline::advance_xun(zone::Zone& region, const TurnStageObserver
     if (has_live_site && !live_site_reduction) {
         throw std::logic_error{"Region 有 live Site，但本旬未提供歸約 pass"};
     }
-    auto& clock = require_clock(region);
-    const auto date = time::to_date(clock.now);
+    const auto date = time::to_date(simulation_start);
 
     notify(observer, TurnStage::PlayerCommands);
     for (const auto entity : region.reg.view<RegionMoveCommand>()) {
@@ -132,13 +168,6 @@ void RegionTurnPipeline::advance_xun(zone::Zone& region, const TurnStageObserver
     }
     notify(observer, TurnStage::Events);
     notify(observer, TurnStage::TurnEnd);
-    const auto next = clock.now + time::kXun;
-    if (!time::is_representable(next)) {
-        throw std::overflow_error{"旬回合推進超出 Tick 可表達範圍"};
-    }
-    clock.now = next;
-    region.last_saved_tick = clock.now;
-    store_.save(region);
 }
 
 }  // namespace aetheria::world

@@ -11,6 +11,7 @@
 #include <map>
 #include <memory>
 #include <optional>
+#include <span>
 #include <stdexcept>
 #include <type_traits>
 #include <utility>
@@ -46,6 +47,7 @@ public:
     [[nodiscard]] ZoneHandle require(ZoneKey key);
     [[nodiscard]] bool load(ZoneKey key);
     [[nodiscard]] ZoneHandle materialize(ZoneKey key);
+    [[nodiscard]] ZoneHandle adopt(std::unique_ptr<Zone> zone);
     [[nodiscard]] bool unload(ZoneKey key);
     [[nodiscard]] bool destroy(ZoneKey key);
     void save_all();
@@ -71,6 +73,23 @@ public:
             return false;
         }
         std::invoke(std::forward<Borrower>(borrower), std::as_const(*found->second));
+        return true;
+    }
+
+    template <typename Borrower>
+        requires std::invocable<Borrower, std::span<Zone* const>> &&
+                 std::same_as<std::invoke_result_t<Borrower, std::span<Zone* const>>, void>
+    [[nodiscard]] bool with_many(std::span<const ZoneHandle> handles, Borrower&& borrower) {
+        std::vector<Zone*> borrowed;
+        borrowed.reserve(handles.size());
+        for (const auto handle : handles) {
+            const auto found = zones_.find(handle.key());
+            if (found == zones_.end()) {
+                return false;
+            }
+            borrowed.push_back(found->second.get());
+        }
+        std::invoke(std::forward<Borrower>(borrower), std::span<Zone* const>{borrowed});
         return true;
     }
 

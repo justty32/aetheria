@@ -97,7 +97,8 @@ TEST(FileZoneStore, RejectsZoneFormatVersionMismatch) {
 
     auto raw = zstd_decompress(read_file(store.path_for(key)));
     ASSERT_GE(raw.size(), 9U);
-    const std::uint32_t bad_version = kSaveFormatVersion + 1;
+    static_assert(kSaveFormatVersion == 14);
+    const std::uint32_t bad_version = 13;
     for (std::size_t index = 0; index < sizeof(bad_version); ++index) {
         raw[5 + index] = static_cast<char>((bad_version >> (index * 8U)) & UINT32_C(0xFF));
     }
