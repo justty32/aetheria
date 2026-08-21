@@ -105,7 +105,6 @@
 
 ## `sim/`
 
-`main.cpp` 只有 CLI11 wiring；`gen_commands.*` 是 `gen-region`／`gen-verify` 子命令；
-`world_hash.*` 是只走訪磁碟的 `verify world-hash` 驗證工具；`stage_dump.*` 集中十二階段 PGM
-輸出；`pgm_writer.*` 輸出灰階 PGM。**stdout 文字有 CTest 在比對**（`SimPersistence`、
-`SimWorldgen`、`SimWorldHash`），不要順手改。
+`main.cpp` 只接 CLI11。子命令：`gen_commands.*`（Region）、`local_viewer.*`／
+`site_viewer.*`（分層 PNG）、`world_hash.*`（磁碟狀態）。輸出：`debug_canvas.*`（RGB PNG）、
+`stage_dump.*`／`pgm_writer.*`（階段 PGM）。**stdout 有 CTest 比對，不要順手改。**
