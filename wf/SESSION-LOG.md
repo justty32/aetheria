@@ -26,21 +26,32 @@
 > **完成的不留這裡。** M0～M2.3 的結論都在 git log 與 `design/` 裡；
 > 下面只留**還沒完成、或會在未來咬人**的東西。
 
-**in-flight（M5，兩個 worktree 並行，基準 `ffb8759`）**
+**🔴 main 目前有一個紅燈（收工時的狀態，明天第一件事）**
 
-- 🔄 **M5.0 Local 最小可展開**（分支 `m5-0-local`）——`LocalTiles`、`local_seed`、
-  路線 B、接邊剖面提取為兩層共用。任務書 [m5-0-local-minimal.md](inbox/m5-0-local-minimal.md)。
-- 🔄 **M5-pre 批次推進**（分支 `m5-pre-batch`）——修 `SiteTurnPipeline` 每個 Site
-  各自呼叫 `RegionTurnPipeline` 的**雙算**缺陷。任務書 [m5-pre-batch-advance.md](inbox/m5-pre-batch-advance.md)。
-  已明令**不得新增檔案**，避免兩邊同時改 `CMakeLists.txt`。
+- ❌ `RegionGenerationStage.EveryTerrainRuleHitsAcrossReferenceSeeds`
+  —— `above_three_percent 4 vs 5`、`largest*2 3918 vs land 3686`。
+  **這是真的回歸**：M5.7 改了高度分布 → 生態帶分布跟著垮回 4 類。
+  ⚠ **但它同時是好消息**：這條 guard 是 M5.6 才加的，**上線一輪就抓到東西**，
+  而不是等幾週後有人畫圖才發現。
 
-**M5 的判準不是「Local 能生出來」**。`outline.md` 只寫了「Local 串流與探索」，太薄；
-[lowmap.md](../design/lowmap.md) 與 [localgen.md](../design/localgen.md) 自己給了更硬的一條：
-**L2↔L3 若需要新機制，就表示 L1↔L2 的抽象抽錯了**。M5 是對前四個里程碑的回頭檢驗。
+**明天的第一輪（M5.10）：把 M5.7 的 warp 幅度推回去，同時重新平衡生態帶計分。**
+**兩件必須一起做**，它們動的是同一條分布鏈。理由：
 
-- ⚠ **兩層寬度剛好都是 64**（`site_projection.h:17` `kSiteWidth = 64`，Local 也 64×64）。
-  所以「真的複用」與「複製一份改參數」會給出**完全相同的測試結果**——測試沒有偵測力。
-  複用性改用**結構證據**驗收：**改壞共用碼，兩層的接邊測試必須同時變紅；只紅一邊就是複製**。
+> M5.7 第 4 輪（warp 幅度 16）**圖最好、海岸格 +53.6%**，但因勢力校準失敗一路退到幅度 8。
+> **綁住它的正是 M5.8 已經修掉的那條錯斷言**——所以現在的幅度 8 **不是調校最佳點，
+> 是被一條壞測試壓下來的**。M5.8 已合併，這個約束沒了。
+
+**M5.9 的排序建議（redblobgames 對照，一次只做一項）**
+
+1. 完成 domain warp 並以圖裁決。**noisy edges 與 warp 同尺度是替代，不要疊**
+2. 若海岸自然但內陸仍怪：固定 land mask，用 coast distance 取代陸上低頻高度基底
+3. 若河谷濕潤帶仍只有一格：river bonus 改成距淡水衰減（不取代風／雨影）
+
+⚠ **不做**：radial island falloff（會把 Region 推成中心島、壓過板塊意圖）、terraces、加 octave。
+
+⚠ **coast distance 的相容性裁定**：L1 Region 整張生成，**相容**；
+但**各 Site／Local 自行 flood-fill 會覆寫邊界，與降維裁決鏈衝突**。
+下放時必須由 parent 全域先算再經 `BoundaryProfile` 傳邊界值，不能各面自算。
 
 - 📌 **待校準（要有玩法才能判斷，不是現在調）**：`governance_max_cost` 讓無主陸地只剩 1.55%，
   世界第一回合就被瓜分完畢。權衡曲線已量好在 [worldgen-factions.md](../design/worldgen-factions.md)，
