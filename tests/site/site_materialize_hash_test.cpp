@@ -1,6 +1,7 @@
 #include "core/site/site_materialize.h"
 #include "core/zone/file_zone_store.h"
 #include "sim/world_hash.h"
+#include "tests/support/performance.h"
 #include "tests/support/ruleset_fixture.h"
 #include "tests/zone/zone_test_support.h"
 
@@ -72,24 +73,24 @@ TEST(SiteMaterialize, WorldHashMatchesTwiceAndChangesWithBuildingState) {
 }
 
 TEST(SiteMaterialize, FitsThirtyMillisecondBudget) {
-    auto warmup_tiles = sample_region();
-    static_cast<void>(aetheria::site::materialize_site_zone(
-        warmup_tiles, kCoordinate, kWorldSeed, kRegionId, test_ruleset()));
-    auto tiles = sample_region();
-    const auto start = std::chrono::steady_clock::now();
-    const auto site = aetheria::site::materialize_site_zone(tiles, kCoordinate, kWorldSeed,
-                                                            kRegionId, test_ruleset());
-    const auto elapsed = std::chrono::steady_clock::now() - start;
-    const auto milliseconds = std::chrono::duration<double, std::milli>{elapsed}.count();
+    const auto minimum_milliseconds = aetheria::tests::minimum_milliseconds_after_warmup([&] {
+        auto tiles = sample_region();
+        const auto start = std::chrono::steady_clock::now();
+        const auto site = aetheria::site::materialize_site_zone(
+            tiles, kCoordinate, kWorldSeed, kRegionId, test_ruleset());
+        const auto elapsed = std::chrono::steady_clock::now() - start;
+        EXPECT_EQ(site.lod, aetheria::zone::LodLevel::Coarse);
+        return std::chrono::duration<double, std::milli>{elapsed}.count();
+    });
 
 #ifdef NDEBUG
     constexpr auto build_kind = "Release";
 #else
     constexpr auto build_kind = "Debug";
 #endif
-    std::cout << "site_materialize_" << build_kind << "_ms=" << milliseconds << '\n';
-    EXPECT_EQ(site.lod, aetheria::zone::LodLevel::Coarse);
-    EXPECT_LT(elapsed, std::chrono::milliseconds{30});
+    std::cout << "site_materialize_" << build_kind << "_min_of_5_ms="
+              << minimum_milliseconds << '\n';
+    EXPECT_LT(minimum_milliseconds, 30.0);
 }
 
 }  // namespace

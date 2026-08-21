@@ -1,4 +1,5 @@
 #include "core/worldgen/region_generator.h"
+#include "tests/support/performance.h"
 #include "tests/support/ruleset_fixture.h"
 #include "tests/worldgen/influence_test_support.h"
 
@@ -40,17 +41,30 @@ TEST(FactionGenerationStage, RealRegionIsCanonicalDistributedAndMeasured) {
     auto capitals = result.factions.capitals;
     std::ranges::reverse(capitals);
     aetheria::worldgen::InfluenceSpreadDiagnostics diagnostics;
-    const auto start = std::chrono::steady_clock::now();
-    const auto global_claims = aetheria::worldgen::claim_all_land(
+    auto global_claims = aetheria::worldgen::claim_all_land(
         tiles, capitals, test_ruleset(),
         test_ruleset().civilization_rules().factions.influence_season);
-    const auto released = aetheria::worldgen::release_beyond_governance(
+    auto released = aetheria::worldgen::release_beyond_governance(
         global_claims,
         test_ruleset().civilization_rules().factions.governance_max_cost);
-    const auto shuffled = aetheria::worldgen::spread_influence(
+    auto shuffled = aetheria::worldgen::spread_influence(
         tiles, capitals, test_ruleset(), test_ruleset().civilization_rules().factions,
         &diagnostics);
-    const auto elapsed = std::chrono::steady_clock::now() - start;
+    const auto minimum_milliseconds = aetheria::tests::minimum_milliseconds_after_warmup([&] {
+        diagnostics = {};
+        const auto start = std::chrono::steady_clock::now();
+        global_claims = aetheria::worldgen::claim_all_land(
+            tiles, capitals, test_ruleset(),
+            test_ruleset().civilization_rules().factions.influence_season);
+        released = aetheria::worldgen::release_beyond_governance(
+            global_claims,
+            test_ruleset().civilization_rules().factions.governance_max_cost);
+        shuffled = aetheria::worldgen::spread_influence(
+            tiles, capitals, test_ruleset(), test_ruleset().civilization_rules().factions,
+            &diagnostics);
+        const auto elapsed = std::chrono::steady_clock::now() - start;
+        return std::chrono::duration<double, std::milli>{elapsed}.count();
+    });
     EXPECT_EQ(shuffled, result.factions.owner);
     EXPECT_EQ(released, result.factions.owner);
 
@@ -131,8 +145,7 @@ TEST(FactionGenerationStage, RealRegionIsCanonicalDistributedAndMeasured) {
     std::cout << "real_influence owner_hash=" << owner_hash(result.factions.owner)
               << " shuffled_hash=" << owner_hash(shuffled)
               << " negative_hash=" << owner_hash(negative)
-              << " elapsed_ms="
-              << std::chrono::duration<double, std::milli>{elapsed}.count()
+              << " min_of_5_ms=" << minimum_milliseconds
               << " unowned=" << unowned << '/' << tiles.tile_count()
               << " unowned_land=" << unowned_land << '/' << land
               << " global_unowned_land=" << global_unowned_land << '/' << land

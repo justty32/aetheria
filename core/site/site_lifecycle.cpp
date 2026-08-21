@@ -103,7 +103,6 @@ SiteCatchUpReport restore_site_digest(zone::Zone& site, const SiteFastVars& fast
     state.economy.population = fast.population;
     state.economy.food_stock = fast.food_stock;
     state.economy.production_stock = fast.production_stock;
-    state.economy.population_micro_remainder = 0;
     const auto elapsed_hours = static_cast<std::uint64_t>(raw_elapsed) /
                                static_cast<std::uint64_t>(time::kHour);
     for (auto& construction : state.pending) {

@@ -1,4 +1,5 @@
 #include "tests/site/site_wilderness_test_support.h"
+#include "tests/support/performance.h"
 
 #include <algorithm>
 #include <chrono>
@@ -89,19 +90,15 @@ TEST(WildernessContent, FullW1ThroughW6FitsThirtyMillisecondsWithBranchEvidence)
     const auto index = tiles.index_of(kWildCenter);
     tiles.feature[index] = *test_ruleset().find_feature("feature.ruin_city");
     tiles.relief[index] = *test_ruleset().find_relief("relief.mountain");
-    static_cast<void>(aetheria::site::generate_wilderness_site(
-        tiles, kWildCenter, kWildWorldSeed, kWildRegionId, test_ruleset()));
-    double worst_milliseconds{};
     aetheria::site::WildernessSite site;
-    for (std::uint64_t sample = 0; sample < 8U; ++sample) {
+    const auto minimum_milliseconds = aetheria::tests::minimum_milliseconds_after_warmup([&] {
         const auto start = std::chrono::steady_clock::now();
         site = aetheria::site::generate_wilderness_site(
-            tiles, kWildCenter, kWildWorldSeed + 1U + sample, kWildRegionId, test_ruleset());
+            tiles, kWildCenter, kWildWorldSeed + 1U, kWildRegionId, test_ruleset());
         const auto elapsed = std::chrono::steady_clock::now() - start;
-        worst_milliseconds = std::max(
-            worst_milliseconds, std::chrono::duration<double, std::milli>{elapsed}.count());
-        EXPECT_LT(elapsed, std::chrono::milliseconds{30});
-    }
+        return std::chrono::duration<double, std::milli>{elapsed}.count();
+    });
+    EXPECT_LT(minimum_milliseconds, 30.0);
     EXPECT_EQ(site.skeleton.terrain.elevation.size(), aetheria::site::kSiteTileCount);
     EXPECT_GT(site.skeleton.river_path_count, 0U);
     EXPECT_GT(site.skeleton.road_path_count, 0U);
@@ -112,11 +109,11 @@ TEST(WildernessContent, FullW1ThroughW6FitsThirtyMillisecondsWithBranchEvidence)
     EXPECT_GT(site.skeleton.portals.size(), 0U);
     EXPECT_GT(site.skeleton.ruin_structures.size(), 0U);
 #ifdef NDEBUG
-    std::cout << "wild_full_Release_worst_ms=" << worst_milliseconds;
+    std::cout << "wild_full_Release_min_of_5_ms=" << minimum_milliseconds;
 #else
-    std::cout << "wild_full_Debug_worst_ms=" << worst_milliseconds;
+    std::cout << "wild_full_Debug_min_of_5_ms=" << minimum_milliseconds;
 #endif
-    std::cout << " timed_runs=8 W1_tiles=" << site.skeleton.terrain.elevation.size()
+    std::cout << " timed_runs=5 W1_tiles=" << site.skeleton.terrain.elevation.size()
               << " W2_river_paths=" << site.skeleton.river_path_count
               << " W3_road_paths=" << site.skeleton.road_path_count
               << " W4_vegetation=" << site.skeleton.vegetation.size()

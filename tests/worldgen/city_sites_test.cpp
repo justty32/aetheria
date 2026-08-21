@@ -1,4 +1,5 @@
 #include "core/worldgen/region_generator.h"
+#include "tests/support/performance.h"
 #include "tests/support/ruleset_fixture.h"
 
 #include <algorithm>
@@ -115,14 +116,18 @@ TEST(CityGenerationStage, PassThroughMountainBarrierIsBottleneck) {
 TEST(CityGenerationStage, FullRegionScoresAll12288TilesWithinBudgetAndRespectsSpacing) {
     const auto terrain =
         build_skeleton(RegionSlowVariables{44, 128, 96}, UINT64_C(440044), test_ruleset());
-    const auto start = std::chrono::steady_clock::now();
-    const auto cities =
+    auto cities =
         generate_cities(terrain.skeleton.elevation, terrain.climate, terrain.rivers, terrain.biome,
                         terrain.history, test_ruleset(), UINT64_C(9009), {});
-    const auto elapsed = std::chrono::steady_clock::now() - start;
+    const auto minimum_milliseconds = aetheria::tests::minimum_milliseconds_after_warmup([&] {
+        const auto start = std::chrono::steady_clock::now();
+        cities = generate_cities(terrain.skeleton.elevation, terrain.climate, terrain.rivers,
+                                 terrain.biome, terrain.history, test_ruleset(), UINT64_C(9009), {});
+        const auto elapsed = std::chrono::steady_clock::now() - start;
+        return std::chrono::duration<double, std::milli>{elapsed}.count();
+    });
 
-    std::cout << "bottleneck_12288_ms="
-              << std::chrono::duration<double, std::milli>{elapsed}.count()
+    std::cout << "bottleneck_12288_min_of_5_ms=" << minimum_milliseconds
               << " city_count=" << cities.cities.size() << '\n';
     EXPECT_EQ(cities.score.size(), 12288U);
     EXPECT_EQ(cities.cities.size(), test_ruleset().civilization_rules().target_city_count);

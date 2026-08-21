@@ -1,6 +1,7 @@
 #include "core/site/site_build_loop.h"
 #include "core/world/region_simulation.h"
 #include "tests/site/site_build_loop_test_support.h"
+#include "tests/support/performance.h"
 
 #include <chrono>
 #include <cstdint>
@@ -24,7 +25,6 @@ TEST(SiteBuildLoop, PopulationChangesAcrossOneFiveAndTwentyXunWithBranchEvidence
         std::get<aetheria::zone::SitePayload>(fixture.site.payload).layers.procedural.skeleton);
     InMemoryZoneStore store{test_ruleset()};
     aetheria::site::SiteTurnPipeline pipeline{test_ruleset(), store};
-    const auto start = std::chrono::steady_clock::now();
     const auto first =
         pipeline.advance_hours(fixture.site, fixture.region, 0, kBuildCoordinate, 240);
     const auto population_1 = aetheria::site::city_build_state(fixture.site).economy.population;
@@ -34,10 +34,21 @@ TEST(SiteBuildLoop, PopulationChangesAcrossOneFiveAndTwentyXunWithBranchEvidence
     const auto twentieth =
         pipeline.advance_hours(fixture.site, fixture.region, 0, kBuildCoordinate, 3'600);
     const auto population_20 = aetheria::site::city_build_state(fixture.site).economy.population;
-    const auto elapsed = std::chrono::steady_clock::now() - start;
     const auto skeleton_after = aetheria::site::hash_site_skeleton(
         std::get<aetheria::zone::SitePayload>(fixture.site.payload).layers.procedural.skeleton);
     const auto& state = aetheria::site::city_build_state(fixture.site);
+    const auto minimum_milliseconds = aetheria::tests::minimum_milliseconds_after_warmup([&] {
+        auto measured = build_fixture();
+        queue_layout(measured.site, true);
+        InMemoryZoneStore measured_store{test_ruleset()};
+        aetheria::site::SiteTurnPipeline measured_pipeline{test_ruleset(), measured_store};
+        const auto start = std::chrono::steady_clock::now();
+        const auto report = measured_pipeline.advance_hours(
+            measured.site, measured.region, 0, kBuildCoordinate, 4'800);
+        const auto elapsed = std::chrono::steady_clock::now() - start;
+        EXPECT_EQ(report.xun_boundaries, 20U);
+        return std::chrono::duration<double, std::milli>{elapsed}.count();
+    });
 
     EXPECT_GT(population_1, 100U);
     EXPECT_GT(population_5, population_1);
@@ -66,8 +77,8 @@ TEST(SiteBuildLoop, PopulationChangesAcrossOneFiveAndTwentyXunWithBranchEvidence
               << " food_produced_total="
               << first.food_produced + fifth.food_produced + twentieth.food_produced
               << " production_stock=" << state.economy.production_stock << '\n'
-              << "site_build_loop_" << build_kind << "_20xun_ms="
-              << std::chrono::duration<double, std::milli>{elapsed}.count()
+              << "site_build_loop_" << build_kind << "_20xun_min_of_5_ms="
+              << minimum_milliseconds
               << " skeleton_hash=" << skeleton_before << '\n';
 }
 

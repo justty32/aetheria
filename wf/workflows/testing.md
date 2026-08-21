@@ -38,4 +38,10 @@ Godot 全新專案第一次 editor 掃描可能 exit 139；若掃描已完成，
 - `headless`：`aetheria_sim`，驗證 core 可獨立執行與穩定文字輸出。
 - `integration`：Godot headless editor + 主場景，驗證 GDExtension 註冊與 Variant 轉換。
 
+## 效能斷言
+
+共用機器上的競爭只會把 wall-clock 樣本拉高。所有效能測試必須先暖機，再固定量至少 5 次
+並以最小值斷言；不得用單次、平均值或「重跑到通過」。固定樣本數同時守住測試時間上界。
+共用 helper 在 `tests/support/performance.h`。
+
 跑不了的環境依賴驗證 → 記 [WAIT_USER](../WAIT_USER.md)。

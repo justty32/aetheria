@@ -5,6 +5,7 @@
 #include "core/zone/file_zone_store.h"
 #include "sim/world_hash.h"
 #include "tests/site/site_reduction_test_support.h"
+#include "tests/support/performance.h"
 #include "tests/zone/zone_test_support.h"
 
 #include <chrono>
@@ -68,14 +69,28 @@ TEST(SiteEventEscalation, RegionSignificanceChangesRegionImmediatelyAndWorldHash
                                        layers.persistent.buildings.front().tile,
                                        BuildingState::Idle};
 
-    const auto start = std::chrono::steady_clock::now();
     const bool escalated = aetheria::site::apply_site_building_state_event(
         region_tiles, kReductionCoordinate, live_site, event);
-    const auto milliseconds = std::chrono::duration<double, std::milli>{
-                                  std::chrono::steady_clock::now() - start}
-                                  .count();
     store.save(region);
     const auto after_hash = aetheria::sim::world_state_hash(directory.path(), test_ruleset());
+
+    const auto minimum_milliseconds = aetheria::tests::minimum_milliseconds_after_warmup([&] {
+        auto performance_tiles = reduction_region();
+        auto performance_site = aetheria::site::materialize_site_zone(
+            performance_tiles, kReductionCoordinate, kReductionWorldSeed, kReductionRegionId,
+            test_ruleset());
+        auto& performance_layers =
+            std::get<aetheria::zone::SitePayload>(performance_site.payload).layers;
+        const SiteBuildingStateEvent performance_event{
+            Significance::Region, performance_layers.persistent.buildings.front().tile,
+            BuildingState::Idle};
+        const auto start = std::chrono::steady_clock::now();
+        const bool performance_escalated = aetheria::site::apply_site_building_state_event(
+            performance_tiles, kReductionCoordinate, performance_site, performance_event);
+        const auto elapsed = std::chrono::steady_clock::now() - start;
+        EXPECT_TRUE(performance_escalated);
+        return std::chrono::duration<double, std::milli>{elapsed}.count();
+    });
 
     EXPECT_TRUE(escalated);
     EXPECT_EQ(region_tiles.reduction_value<PopulationReduction>(kReductionCoordinate), 75U);
@@ -84,11 +99,16 @@ TEST(SiteEventEscalation, RegionSignificanceChangesRegionImmediatelyAndWorldHash
     EXPECT_EQ(before_hash.zone_count, 2U);
     EXPECT_EQ(after_hash.zone_count, 2U);
     EXPECT_NE(before_hash.hash, after_hash.hash);
-    EXPECT_LT(milliseconds, 30.0);
+    EXPECT_LT(minimum_milliseconds, 30.0);
+#ifdef NDEBUG
+    constexpr auto build_kind = "Release";
+#else
+    constexpr auto build_kind = "Debug";
+#endif
     std::cout << "event_immediate significance=Region tick_before=1234 tick_after=1234 "
                  "before_population=100 after_population=75 region_turns=0 before_hash="
               << before_hash.hash << " after_hash=" << after_hash.hash
-              << " Debug_ms=" << milliseconds << '\n';
+              << ' ' << build_kind << "_min_of_5_ms=" << minimum_milliseconds << '\n';
 }
 
 TEST(SiteEventEscalation, SiteSignificanceWaitsForTheXunReduction) {

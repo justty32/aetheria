@@ -92,7 +92,7 @@
 
 | 目錄 | 內容 |
 |---|---|
-| `support/` | 跨目錄共用的 `ruleset_fixture.h` |
+| `support/` | 跨目錄共用的 ruleset fixture 與固定暖機、min-of-N 效能量測 helper |
 | `site/` | Site 投影隔離、展開、持久建築、存檔／世界雜湊、效能 |
 | `sim/` | 世界級正規化雜湊的跨歷史、磁碟列舉、負向控制與錯誤路徑測試 |
 | `time/`、`serialize/` | 曆法邊界與往返；EnTT registry 壓測 |
