@@ -147,25 +147,28 @@ zone::ZoneHandle rematerialize_site_zone(zone::ZoneManager& manager,
             install_wilderness_entities(loaded, *prepared.wilderness, vars.slow.feature,
                                         vars.fast.owner);
         }
-        const auto digests = loaded.reg.view<const SiteDigest>();
+        auto digests = loaded.reg.view<SiteDigest>();
         if (!digests.empty()) {
             if (digests.size() != 1U) {
                 throw std::runtime_error{"重載 Site 含多份 SiteDigest"};
             }
-            const auto& digest = digests.get<const SiteDigest>(*digests.begin());
+            auto& digest = digests.get<SiteDigest>(*digests.begin());
             const auto expected_seed =
                 derive_site_seed(world_seed, region_id,
                                  static_cast<std::uint16_t>(coordinate.x),
                                  static_cast<std::uint16_t>(coordinate.y));
             const auto rebuilt_hash = hash_site_skeleton(layers.procedural.skeleton);
-            if (digest.site_seed != expected_seed || digest.skeleton_hash != rebuilt_hash) {
+            if (digest.site_seed != expected_seed) {
                 throw std::runtime_error{
-                    "SiteDigest 骨架指紋不符；M4-0 不含骨架遷移（seed=" +
-                    std::to_string(digest.site_seed) + "/" + std::to_string(expected_seed) +
-                    " hash=" + std::to_string(digest.skeleton_hash) + "/" +
-                    std::to_string(rebuilt_hash) + ")"};
+                    "SiteDigest seed 不符（" + std::to_string(digest.site_seed) + "/" +
+                    std::to_string(expected_seed) + ")"};
             }
-            const auto caught_up = restore_site_digest(loaded, vars.fast, now, ruleset);
+            SiteMigrationReport migration;
+            if (digest.skeleton_hash != rebuilt_hash) {
+                migration = migrate_site_digest(digest, layers.procedural.skeleton, ruleset);
+            }
+            auto caught_up = restore_site_digest(loaded, vars.fast, now, ruleset);
+            caught_up.migration = migration;
             if (report != nullptr) {
                 *report = caught_up;
             }
@@ -220,6 +223,7 @@ void unload_site_zone(zone::ZoneManager& manager, zone::ZoneHandle handle,
             .pending = state.pending,
             .economy = state.economy,
             .story_flags = {},
+            .migration = state.migration,
         };
         loaded.reg.emplace_or_replace<SiteDigest>(state_entity, std::move(digest));
         loaded.reg.remove<CityBuildState>(state_entity);

@@ -28,11 +28,13 @@
 | `site_build_loop.*` | `L_FULL` 逐小時／旬界編排、工地命令、持久 `CityBuildState` 與 Region 回填 |
 | `site_build_economy.cpp` | 建造進度、每小時糧食／生產、相鄰效果與人口成長 |
 | `site_build_loop_detail.h` | 城建命令與每小時經濟結算的內部介面 |
-| `site_lifecycle.*` | `SiteDigest`、持久物件老化與未完成建造的閉式補算／飽和報告 |
+| `site_lifecycle.*` | `SiteDigest`、持久物件閉式補算／飽和，以及骨架失效時的保留／就近搬移／災變毀壞與敘事事件 |
 
 `site_materialize.*` 另提供 M4 的時鐘式 `unload_site_zone`／重載補算 overload；既有
 `collapse_site_zone` 保留 M2 無時間往返語意。`site_unload_equivalence_test.cpp` 以
-N=1/5/20/100 旬驗證 L_FULL／L_ABSENT 的四列歸約誤差、持久物件集合、負向控制與 24 旬老化上限。
+N=1/5/20/100 旬驗證 L_FULL／L_ABSENT 的四列歸約誤差、持久物件集合、負向控制與 24 旬老化上限，
+並固定 20 旬量測 0/2/5/10/20 次卸載的偏差。`site_migration_test.cpp` 人工改 Region 慢變數後冷重載，
+驗證三種遷移結局、無非法 live 座標、毀壞／事件持久化，以及只有搬移時仍會產生敘事事件。
 
 `data/site_projection.toml` 保存 Terrain→Ground 映射與城區骨架規則；`data/site_city.toml`
 保存 F1/F2 配額與建築、F3 城防引用、F4 勢力風格及 F5 缺口比例。載入型別分別是

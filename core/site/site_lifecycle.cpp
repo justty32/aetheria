@@ -3,9 +3,13 @@
 #include "core/site/site_lifecycle.h"
 
 #include <algorithm>
+#include <array>
 #include <limits>
+#include <optional>
 #include <stdexcept>
+#include <string>
 #include <utility>
+#include <vector>
 
 namespace aetheria::site {
 namespace {
@@ -31,6 +35,117 @@ namespace {
     return BuildingState::Active;
 }
 
+struct Footprint {
+    std::uint8_t width{1};
+    std::uint8_t height{1};
+};
+
+[[nodiscard]] bool can_place(const SiteSkeleton& skeleton,
+                             const std::array<std::uint8_t, kSiteTileCount>& occupied,
+                             SiteXY origin, Footprint footprint) noexcept {
+    const auto x_end = static_cast<std::uint32_t>(origin.x) + footprint.width;
+    const auto y_end = static_cast<std::uint32_t>(origin.y) + footprint.height;
+    if (!skeleton.valid_layout() || x_end > kSiteWidth || y_end > kSiteHeight) {
+        return false;
+    }
+    for (std::uint32_t y = origin.y; y < y_end; ++y) {
+        for (std::uint32_t x = origin.x; x < x_end; ++x) {
+            const auto index = static_cast<std::size_t>(y) * kSiteWidth + x;
+            if (skeleton.buildable[index] == 0 || occupied[index] != 0) {
+                return false;
+            }
+        }
+    }
+    return true;
+}
+
+void occupy(std::array<std::uint8_t, kSiteTileCount>& occupied, SiteXY origin,
+            Footprint footprint) noexcept {
+    for (std::uint32_t y = origin.y;
+         y < static_cast<std::uint32_t>(origin.y) + footprint.height; ++y) {
+        for (std::uint32_t x = origin.x;
+             x < static_cast<std::uint32_t>(origin.x) + footprint.width; ++x) {
+            occupied[static_cast<std::size_t>(y) * kSiteWidth + x] = UINT8_C(1);
+        }
+    }
+}
+
+[[nodiscard]] std::optional<SiteXY> nearest_legal_origin(
+    const SiteSkeleton& skeleton,
+    const std::array<std::uint8_t, kSiteTileCount>& occupied, SiteXY former,
+    Footprint footprint) noexcept {
+    std::optional<SiteXY> best;
+    std::uint32_t best_distance = std::numeric_limits<std::uint32_t>::max();
+    for (std::uint16_t y = 0; y < kSiteHeight; ++y) {
+        for (std::uint16_t x = 0; x < kSiteWidth; ++x) {
+            const SiteXY candidate{x, y};
+            if (!can_place(skeleton, occupied, candidate, footprint)) {
+                continue;
+            }
+            const auto x_distance = former.x > x ? former.x - x : x - former.x;
+            const auto y_distance = former.y > y ? former.y - y : y - former.y;
+            const auto distance = static_cast<std::uint32_t>(x_distance) + y_distance;
+            if (distance < best_distance) {
+                best = candidate;
+                best_distance = distance;
+            }
+        }
+    }
+    return best;
+}
+
+[[nodiscard]] Footprint city_footprint(std::string_view definition_id,
+                                       const rules::Ruleset& ruleset) {
+    const auto found = ruleset.find_city_building(definition_id);
+    const auto* definition = found.has_value() ? ruleset.city_building(*found) : nullptr;
+    if (definition == nullptr) {
+        throw std::runtime_error{"骨架遷移引用不存在的 building def：" +
+                                 std::string{definition_id}};
+    }
+    return {definition->width, definition->height};
+}
+
+template <typename Object, typename Origin, typename FootprintFor, typename DestroyedRecord>
+void migrate_group(std::vector<Object>& objects, const SiteSkeleton& skeleton,
+                   std::array<std::uint8_t, kSiteTileCount>& occupied, Origin origin_of,
+                   FootprintFor footprint_for, DestroyedRecord destroyed_record,
+                   SiteMigrationHistory& history, SiteMigrationReport& report) {
+    std::vector<std::uint8_t> needs_migration(objects.size());
+    for (std::size_t index = 0; index < objects.size(); ++index) {
+        const auto footprint = footprint_for(objects[index]);
+        const auto origin = origin_of(objects[index]);
+        if (can_place(skeleton, occupied, origin, footprint)) {
+            occupy(occupied, origin, footprint);
+            ++report.retained;
+        } else {
+            needs_migration[index] = UINT8_C(1);
+        }
+    }
+
+    std::vector<Object> survivors;
+    survivors.reserve(objects.size());
+    for (std::size_t index = 0; index < objects.size(); ++index) {
+        auto& object = objects[index];
+        if (needs_migration[index] == 0) {
+            survivors.push_back(std::move(object));
+            continue;
+        }
+        const auto footprint = footprint_for(object);
+        const auto destination =
+            nearest_legal_origin(skeleton, occupied, origin_of(object), footprint);
+        if (destination.has_value()) {
+            origin_of(object) = *destination;
+            occupy(occupied, *destination, footprint);
+            survivors.push_back(std::move(object));
+            ++report.relocated;
+        } else {
+            history.destroyed_objects.push_back(destroyed_record(object));
+            ++report.destroyed;
+        }
+    }
+    objects = std::move(survivors);
+}
+
 }  // namespace
 
 bool valid_site_digest(const SiteDigest& digest, const rules::Ruleset& ruleset) noexcept {
@@ -38,7 +153,8 @@ bool valid_site_digest(const SiteDigest& digest, const rules::Ruleset& ruleset) 
         return false;
     }
     SitePersistentLayer persistent{digest.objects};
-    CityBuildState state{digest.city_buildings, digest.pending, digest.economy};
+    CityBuildState state{digest.city_buildings, digest.pending, digest.economy,
+                         digest.migration};
     return valid_persistent_layer(persistent) && valid_city_build_state(state, ruleset);
 }
 
@@ -77,6 +193,81 @@ SiteCatchUpReport advance_persistent_objects(SitePersistentLayer& persistent,
     return report;
 }
 
+SiteMigrationReport migrate_site_digest(SiteDigest& digest,
+                                         const SiteSkeleton& new_skeleton,
+                                         const rules::Ruleset& ruleset) {
+    if (!new_skeleton.valid_layout()) {
+        throw std::invalid_argument{"骨架遷移要求有效的新 Site 骨架"};
+    }
+    const auto new_hash = hash_site_skeleton(new_skeleton);
+    if (digest.skeleton_hash == new_hash) {
+        return {};
+    }
+    if (!valid_site_digest(digest, ruleset)) {
+        throw std::runtime_error{"骨架遷移收到無效 SiteDigest"};
+    }
+
+    SiteMigrationReport report{.applied = true};
+    std::array<std::uint8_t, kSiteTileCount> occupied{};
+    migrate_group(
+        digest.objects, new_skeleton, occupied,
+        [](auto& building) -> SiteXY& { return building.tile; },
+        [](const auto&) { return Footprint{}; },
+        [](const PersistentBuilding& building) {
+            return SiteMigrationDestroyedObject{
+                .kind = SiteMigrationObjectKind::PersistentBuilding,
+                .definition_id = {},
+                .former_coordinate = building.tile,
+                .persistent_type = building.type,
+                .persistent_state = building.state,
+                .aging_seconds = building.aging_seconds,
+            };
+        },
+        digest.migration, report);
+    migrate_group(
+        digest.city_buildings, new_skeleton, occupied,
+        [](auto& building) -> SiteXY& { return building.origin; },
+        [&](const auto& building) { return city_footprint(building.definition_id, ruleset); },
+        [](const CityBuilding& building) {
+            return SiteMigrationDestroyedObject{
+                .kind = SiteMigrationObjectKind::CityBuilding,
+                .definition_id = building.definition_id,
+                .former_coordinate = building.origin,
+            };
+        },
+        digest.migration, report);
+    migrate_group(
+        digest.pending, new_skeleton, occupied,
+        [](auto& construction) -> SiteXY& { return construction.origin; },
+        [&](const auto& construction) {
+            return city_footprint(construction.definition_id, ruleset);
+        },
+        [](const PendingConstruction& construction) {
+            return SiteMigrationDestroyedObject{
+                .kind = SiteMigrationObjectKind::PendingConstruction,
+                .definition_id = construction.definition_id,
+                .former_coordinate = construction.origin,
+                .remaining_hours = construction.remaining_hours,
+            };
+        },
+        digest.migration, report);
+
+    const auto old_hash = digest.skeleton_hash;
+    digest.skeleton_hash = new_hash;
+    digest.migration.events.push_back({
+        .old_skeleton_hash = old_hash,
+        .new_skeleton_hash = new_hash,
+        .retained = report.retained,
+        .relocated = report.relocated,
+        .destroyed = report.destroyed,
+        .narrative = "地貌異變重塑了城區：保留 " + std::to_string(report.retained) +
+                     " 個物件，就近搬移 " + std::to_string(report.relocated) +
+                     " 個，另有 " + std::to_string(report.destroyed) + " 個毀於災變。",
+    });
+    report.events_generated = 1;
+    return report;
+}
+
 SiteCatchUpReport restore_site_digest(zone::Zone& site, const SiteFastVars& fast,
                                       time::Tick now, const rules::Ruleset& ruleset) {
     auto digests = site.reg.view<SiteDigest>();
@@ -99,7 +290,7 @@ SiteCatchUpReport restore_site_digest(zone::Zone& site, const SiteFastVars& fast
     auto report = advance_persistent_objects(persistent, fast, elapsed);
 
     CityBuildState state{std::move(digest.city_buildings), std::move(digest.pending),
-                         digest.economy};
+                         digest.economy, std::move(digest.migration)};
     state.economy.population = fast.population;
     state.economy.food_stock = fast.food_stock;
     state.economy.production_stock = fast.production_stock;

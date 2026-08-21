@@ -138,6 +138,27 @@ void hash_city_build_state(std::uint64_t& hash, const zone::Zone& zone,
     hash_scalar(hash, state.economy.population_micro_remainder);
     hash_scalar(hash, state.economy.hours_into_xun);
     hash_scalar(hash, state.economy.satisfaction);
+    hash_scalar(hash,
+                static_cast<std::uint64_t>(state.migration.destroyed_objects.size()));
+    for (const auto& object : state.migration.destroyed_objects) {
+        hash_scalar(hash, object.kind);
+        hash_string(hash, object.definition_id);
+        hash_scalar(hash, object.former_coordinate.x);
+        hash_scalar(hash, object.former_coordinate.y);
+        hash_scalar(hash, object.persistent_type);
+        hash_scalar(hash, object.persistent_state);
+        hash_scalar(hash, object.aging_seconds);
+        hash_scalar(hash, object.remaining_hours);
+    }
+    hash_scalar(hash, static_cast<std::uint64_t>(state.migration.events.size()));
+    for (const auto& event : state.migration.events) {
+        hash_scalar(hash, event.old_skeleton_hash);
+        hash_scalar(hash, event.new_skeleton_hash);
+        hash_scalar(hash, event.retained);
+        hash_scalar(hash, event.relocated);
+        hash_scalar(hash, event.destroyed);
+        hash_string(hash, event.narrative);
+    }
 }
 
 }  // namespace

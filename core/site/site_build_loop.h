@@ -34,6 +34,56 @@ struct PendingConstruction {
     bool operator==(const PendingConstruction&) const = default;
 };
 
+enum class SiteMigrationObjectKind : std::uint8_t {
+    PersistentBuilding,
+    CityBuilding,
+    PendingConstruction,
+};
+
+// 毀於骨架變動的物件保留完整可辨識資料，但 former_coordinate 只作歷史記錄，
+// 不再是 live Site 上的座標。
+struct SiteMigrationDestroyedObject {
+    SiteMigrationObjectKind kind{SiteMigrationObjectKind::PersistentBuilding};
+    std::string definition_id;
+    SiteXY former_coordinate;
+    BuildingType persistent_type{BuildingType::SettlementHall};
+    BuildingState persistent_state{BuildingState::Active};
+    std::uint32_t aging_seconds{};
+    std::uint16_t remaining_hours{};
+
+    template <typename Archive> void serialize(Archive& archive) {
+        archive(kind, definition_id, former_coordinate, persistent_type, persistent_state,
+                aging_seconds, remaining_hours);
+    }
+    bool operator==(const SiteMigrationDestroyedObject&) const = default;
+};
+
+// 敘事事件是 core 對顯示層的玩家可見資料；migration 不得只有靜默座標修正。
+struct SiteMigrationEvent {
+    std::uint64_t old_skeleton_hash{};
+    std::uint64_t new_skeleton_hash{};
+    std::uint32_t retained{};
+    std::uint32_t relocated{};
+    std::uint32_t destroyed{};
+    std::string narrative;
+
+    template <typename Archive> void serialize(Archive& archive) {
+        archive(old_skeleton_hash, new_skeleton_hash, retained, relocated, destroyed,
+                narrative);
+    }
+    bool operator==(const SiteMigrationEvent&) const = default;
+};
+
+struct SiteMigrationHistory {
+    std::vector<SiteMigrationDestroyedObject> destroyed_objects;
+    std::vector<SiteMigrationEvent> events;
+
+    template <typename Archive> void serialize(Archive& archive) {
+        archive(destroyed_objects, events);
+    }
+    bool operator==(const SiteMigrationHistory&) const = default;
+};
+
 struct CityEconomy {
     std::uint32_t population{};
     std::uint64_t food_stock{};
@@ -54,9 +104,10 @@ struct CityBuildState {
     std::vector<CityBuilding> buildings;
     std::vector<PendingConstruction> pending;
     CityEconomy economy;
+    SiteMigrationHistory migration;
 
     template <typename Archive> void serialize(Archive& archive) {
-        archive(buildings, pending, economy);
+        archive(buildings, pending, economy, migration);
     }
     bool operator==(const CityBuildState&) const = default;
 };

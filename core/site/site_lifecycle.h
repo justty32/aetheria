@@ -23,14 +23,23 @@ struct SiteDigest {
     std::vector<PendingConstruction> pending;
     CityEconomy economy;
     std::vector<std::uint64_t> story_flags;
+    SiteMigrationHistory migration;
 
     template <typename Archive> void serialize(Archive& archive) {
         auto raw_tick = static_cast<std::int64_t>(unload_tick);
         archive(raw_tick, site_seed, skeleton_hash, objects, city_buildings, pending, economy,
-                story_flags);
+                story_flags, migration);
         unload_tick = time::Tick{raw_tick};
     }
     bool operator==(const SiteDigest&) const = default;
+};
+
+struct SiteMigrationReport {
+    bool applied{};
+    std::uint32_t retained{};
+    std::uint32_t relocated{};
+    std::uint32_t destroyed{};
+    std::uint32_t events_generated{};
 };
 
 struct SiteCatchUpReport {
@@ -41,6 +50,7 @@ struct SiteCatchUpReport {
     std::uint32_t persistent_objects_advanced{};
     std::uint32_t aging_transitions{};
     bool aging_cap_hit{};
+    SiteMigrationReport migration;
 };
 
 [[nodiscard]] bool valid_site_digest(const SiteDigest& digest,
@@ -49,6 +59,11 @@ struct SiteCatchUpReport {
 // 對 live 持久物件推進 elapsed；L_FULL 可小步呼叫，重載可一次閉式呼叫。
 [[nodiscard]] SiteCatchUpReport advance_persistent_objects(
     SitePersistentLayer& persistent, const SiteFastVars& fast, time::Duration elapsed);
+
+// skeleton_hash 改變時，把 digest 中所有有座標的持久物件遷到新骨架；
+// 找不到合法位置的物件會進毀壞紀錄，且每次實際遷移必產生敘事事件。
+[[nodiscard]] SiteMigrationReport migrate_site_digest(
+    SiteDigest& digest, const SiteSkeleton& new_skeleton, const rules::Ruleset& ruleset);
 
 // 把 digest 疊回已重建的 Site，並依 now-unload_tick 一次完成補算。
 [[nodiscard]] SiteCatchUpReport restore_site_digest(zone::Zone& site,
