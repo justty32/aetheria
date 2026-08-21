@@ -15,7 +15,7 @@ namespace {
     const rules::Ruleset& ruleset, rules::SiteFillZone zone) {
     std::vector<rules::BuildingDefId> result;
     for (std::size_t index = 0; index < ruleset.buildings().size(); ++index) {
-        if (ruleset.buildings()[index].zone == zone) {
+        if (!ruleset.buildings()[index].landmark && ruleset.buildings()[index].zone == zone) {
             result.push_back(static_cast<rules::BuildingDefId>(index));
         }
     }
@@ -97,7 +97,8 @@ void fill_site_buildings(SiteProceduralLayer& layer, const SiteFastVars& fast,
                     }
                     mark_building_occupied(occupied, placement);
                     layer.buildings.push_back({def_id, placement.origin, placement.width,
-                                               placement.height, side});
+                                               placement.height, side,
+                                               ProceduralBuildingDamage::Intact});
                     occupied_area += static_cast<std::uint32_t>(placement.width) * placement.height;
                     break;
                 }

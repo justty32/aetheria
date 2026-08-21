@@ -21,6 +21,9 @@ add_library(aetheria_core STATIC
     core/site/site_zoning.cpp
     core/site/site_buildings.cpp
     core/site/site_building_placement.cpp
+    core/site/site_fortifications.cpp
+    core/site/site_landmarks.cpp
+    core/site/site_damage.cpp
     core/site/site_projection.cpp
     core/site/site_skeleton_common.cpp
     core/site/site_skeleton_center.cpp

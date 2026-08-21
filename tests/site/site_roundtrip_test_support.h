@@ -31,8 +31,13 @@ inline constexpr auto kRoundTripSiteKey = zone::child_key(kRoundTripRegionKey, 4
     std::ranges::fill(tiles.feature, *ruleset.find_feature("feature.none"));
     std::ranges::fill(tiles.edges, *ruleset.find_edge("edge.none"));
     const auto index = tiles.index_of(kRoundTripCoordinate);
+    const auto road = *ruleset.find_edge("edge.road");
+    std::ranges::fill(tiles.edges.begin() + static_cast<std::ptrdiff_t>(index * 4U),
+                      tiles.edges.begin() + static_cast<std::ptrdiff_t>(index * 4U + 4U), road);
     tiles.owner[index] = static_cast<world::FactionId>(2);
     tiles.settlement[index] = world::SettlementTier::Town;
+    tiles.defense[index] = 100;
+    tiles.damage[index] = 25;
     site::SiteLayers reduced;
     reduced.persistent.buildings.push_back(
         {{1, 1}, site::BuildingType::SettlementHall, site::BuildingState::Idle});
@@ -53,6 +58,12 @@ inline constexpr auto kRoundTripSiteKey = zone::child_key(kRoundTripRegionKey, 4
                                     [](site::SiteZoning zone) {
                                         return zone != site::SiteZoning::Open;
                                     }));
+    EXPECT_EQ(layers.procedural.wall_ring_count, 2U);
+    EXPECT_FALSE(layers.procedural.wall_gates.empty());
+    EXPECT_FALSE(layers.procedural.wall_breaches.empty());
+    EXPECT_TRUE(std::ranges::any_of(layers.procedural.buildings, [](const auto& building) {
+        return building.damage != site::ProceduralBuildingDamage::Intact;
+    }));
     layers.persistent.buildings.front().state = site::BuildingState::Idle;
     auto expected_procedural = layers.procedural;
     store.save(materialized);

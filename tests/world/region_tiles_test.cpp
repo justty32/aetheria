@@ -47,4 +47,11 @@ TEST(RegionTiles, RejectsDuplicatePortalTiles) {
     EXPECT_FALSE(tiles.valid_layout());
 }
 
+TEST(RegionTiles, RejectsDamageAboveOneHundredPercent) {
+    RegionTiles tiles{1, 1};
+    tiles.damage[0] = 101;
+
+    EXPECT_FALSE(tiles.valid_layout());
+}
+
 }  // namespace

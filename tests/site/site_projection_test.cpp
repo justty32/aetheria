@@ -34,7 +34,12 @@ concept HasSettlement = requires(Value value) { value.settlement; };
 template <typename Value>
 concept HasSite = requires(Value value) { value.site; };
 template <typename Value>
-concept HasFillVars = requires(Value value) { value.population; value.development_level; };
+concept HasFillVars = requires(Value value) {
+    value.population;
+    value.development_level;
+    value.defense;
+    value.damage;
+};
 template <typename Value>
 concept HasBase = requires(Value value) { value.base; };
 template <typename Value>
@@ -87,22 +92,32 @@ TEST(SiteProjection, FastVariablesCannotAffectSkeleton) {
     const auto changed_settlement = skeleton_hash(tiles, seed);
     tiles.site[0].ever_realized = true;
     const auto changed_site = skeleton_hash(tiles, seed);
+    tiles.defense[0] = 100;
+    const auto changed_defense = skeleton_hash(tiles, seed);
+    tiles.damage[0] = 75;
+    const auto changed_damage = skeleton_hash(tiles, seed);
     aetheria::site::SiteLayers measured;
-    measured.persistent.buildings.resize(10, {{1, 1}, aetheria::site::BuildingType::SettlementHall,
+    measured.persistent.buildings.resize(10, {{1, 1},
+                                              aetheria::site::BuildingType::SettlementHall,
                                               aetheria::site::BuildingState::Active});
-    aetheria::site::ReductionTable::apply(
-        tiles, RegionXY{0, 0}, aetheria::site::ReductionTable::reduce(measured));
+    aetheria::site::ReductionTable::apply(tiles, RegionXY{0, 0},
+                                          aetheria::site::ReductionTable::reduce(measured));
     const auto changed_population_development = skeleton_hash(tiles, seed);
     const auto projected_fast = aetheria::site::split_site_vars(tiles, RegionXY{0, 0}).fast;
 
     EXPECT_EQ(changed_owner, baseline);
     EXPECT_EQ(changed_settlement, baseline);
     EXPECT_EQ(changed_site, baseline);
+    EXPECT_EQ(changed_defense, baseline);
+    EXPECT_EQ(changed_damage, baseline);
     EXPECT_EQ(changed_population_development, baseline);
     EXPECT_EQ(projected_fast.population, 1000U);
     EXPECT_EQ(projected_fast.development_level, 10U);
+    EXPECT_EQ(projected_fast.defense, 100U);
+    EXPECT_EQ(projected_fast.damage, 75U);
     std::cout << "site_fast_control baseline=" << baseline << " owner=" << changed_owner
               << " settlement=" << changed_settlement << " site=" << changed_site
+              << " defense=" << changed_defense << " damage=" << changed_damage
               << " population_development=" << changed_population_development << '\n';
 }
 

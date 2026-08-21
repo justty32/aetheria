@@ -3,6 +3,17 @@ base_density_percent = 20
 development_density_per_level = 4
 max_density_percent = 88
 
+[fortification]
+double_wall_defense = 80
+tower_defense = 40
+tower_spacing = 8
+moat_defense = 60
+breach_percent_at_full_damage = 12
+wall_edge = "edge.city_wall"
+gate_edge = "edge.city_gate"
+tower_edge = "edge.city_wall_tower"
+moat_edge = "edge.city_moat"
+
 [[quotas]]
 zone = "residential"
 driver = "population"
@@ -38,3 +49,47 @@ id = "building.trading_house"
 zone = "commercial"
 frontage = 3
 depth = 3
+
+[[building_defs]]
+id = "building.market_square"
+zone = "commercial"
+frontage = 4
+depth = 3
+landmark = true
+
+[[building_defs]]
+id = "building.palace"
+zone = "commercial"
+frontage = 4
+depth = 4
+landmark = true
+
+[[building_defs]]
+id = "building.grand_temple"
+zone = "commercial"
+frontage = 3
+depth = 4
+landmark = true
+
+[[building_defs]]
+id = "building.guild_hall"
+zone = "commercial"
+frontage = 3
+depth = 3
+landmark = true
+
+[[faction_styles]]
+faction = 0
+landmarks = ["building.market_square"]
+
+[[faction_styles]]
+faction = 1
+landmarks = ["building.palace", "building.grand_temple"]
+
+[[faction_styles]]
+faction = 2
+landmarks = ["building.grand_temple", "building.guild_hall"]
+
+[[faction_styles]]
+faction = 3
+landmarks = ["building.guild_hall", "building.market_square"]

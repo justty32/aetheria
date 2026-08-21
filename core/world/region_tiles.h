@@ -39,6 +39,9 @@ class RegionSimulation;
 // 所屬世界狀態存在期間有效。
 enum class FactionId : std::uint16_t {};
 
+using DefenseValue = std::uint16_t;
+using DamageValue = std::uint8_t;
+
 // SettlementTier 是 Region tile 上城市選址的持久三級結果。
 // RegionTiles 擁有每格的值複本，Site 生成只讀取它。
 // 值本身永不失效；None 代表該格沒有聚落。
@@ -117,6 +120,8 @@ struct RegionTiles {
     std::vector<rules::EdgeId> edges;
     std::vector<FactionId> owner;
     std::vector<SettlementTier> settlement;
+    std::vector<DefenseValue> defense;
+    std::vector<DamageValue> damage;
     std::vector<SiteState> site;
     std::vector<RegionPortal> portals;
 
@@ -155,6 +160,8 @@ static_assert(detail::IsIntegerWorldStateVector<decltype(RegionTiles::elevation)
 static_assert(detail::IsIntegerWorldStateVector<decltype(RegionTiles::edges)>::value);
 static_assert(detail::IsIntegerWorldStateVector<decltype(RegionTiles::owner)>::value);
 static_assert(detail::IsIntegerWorldStateVector<decltype(RegionTiles::settlement)>::value);
+static_assert(detail::IsIntegerWorldStateVector<decltype(RegionTiles::defense)>::value);
+static_assert(detail::IsIntegerWorldStateVector<decltype(RegionTiles::damage)>::value);
 static_assert(detail::IsIntegerWorldStateVector<decltype(RegionTiles::site)>::value);
 static_assert(detail::IsIntegerWorldStateVector<decltype(RegionTiles::portals)>::value);
 
@@ -164,7 +171,8 @@ inline constexpr std::size_t kDeclaredRegionTilesStorageSize =
     sizeof(decltype(RegionTiles::feature)) + sizeof(decltype(RegionTiles::temperature)) +
     sizeof(decltype(RegionTiles::moisture)) + sizeof(decltype(RegionTiles::elevation)) +
     sizeof(decltype(RegionTiles::edges)) + sizeof(decltype(RegionTiles::owner)) +
-    sizeof(decltype(RegionTiles::settlement)) + sizeof(decltype(RegionTiles::site)) +
+    sizeof(decltype(RegionTiles::settlement)) + sizeof(decltype(RegionTiles::defense)) +
+    sizeof(decltype(RegionTiles::damage)) + sizeof(decltype(RegionTiles::site)) +
     sizeof(decltype(RegionTiles::portals)) + sizeof(RegionReductionStorage);
 static_assert(sizeof(RegionTiles) == kDeclaredRegionTilesStorageSize,
               "新增 RegionTiles 世界狀態欄位時必須登記並驗證其為整數或 enum");

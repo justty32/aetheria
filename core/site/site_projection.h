@@ -41,6 +41,8 @@ struct SiteFastVars {
     world::SiteState site;
     world::PopulationReduction::Value population{};
     world::DevelopmentLevelReduction::Value development_level{};
+    world::DefenseValue defense{};
+    world::DamageValue damage{};
 
     constexpr bool operator==(const SiteFastVars&) const noexcept = default;
 };
@@ -107,6 +109,20 @@ struct SiteGate {
     constexpr bool operator==(const SiteGate&) const noexcept = default;
 };
 
+// SiteEdgeRef 指向一條 Site 格邊；F3/F5 metadata 只保存 canonical 的單側參考。
+struct SiteEdgeRef {
+    SiteXY tile;
+    SiteBoundarySide side{SiteBoundarySide::North};
+
+    constexpr bool operator==(const SiteEdgeRef&) const noexcept = default;
+};
+
+enum class ProceduralBuildingDamage : std::uint8_t {
+    Intact,
+    Rubble,
+    Burned,
+};
+
 // ProceduralBuilding 是 F2 底稿中的矩形建築，不進存檔；持久層疊加時優先於它。
 struct ProceduralBuilding {
     rules::BuildingDefId def{};
@@ -114,6 +130,7 @@ struct ProceduralBuilding {
     std::uint8_t width{};
     std::uint8_t height{};
     SiteBoundarySide frontage{SiteBoundarySide::North};
+    ProceduralBuildingDamage damage{ProceduralBuildingDamage::Intact};
 
     constexpr bool operator==(const ProceduralBuilding&) const noexcept = default;
 };
@@ -154,9 +171,15 @@ struct SiteSkeleton {
 // SiteProceduralLayer 是可由 site_seed + 慢變數重算、永不存檔的資料。
 struct SiteProceduralLayer {
     SiteSkeleton skeleton;
+    // F3 的最終邊層；初值是 skeleton.edges，填充只改這份，不回寫骨架。
+    std::vector<rules::EdgeId> edges;
     std::vector<SiteZoning> zoning;
     std::vector<SiteZoning> block_zoning;
     std::vector<ProceduralBuilding> buildings;
+    std::vector<SiteEdgeRef> wall_edges;
+    std::vector<SiteEdgeRef> wall_gates;
+    std::vector<SiteEdgeRef> wall_breaches;
+    std::uint8_t wall_ring_count{};
 
     [[nodiscard]] bool valid_layout() const noexcept;
 };

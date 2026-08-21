@@ -108,7 +108,7 @@ std::unique_ptr<zone::Zone> decode_zone(std::string_view bytes, const rules::Rul
                 std::vector<std::uint8_t> ever_realized;
                 archive(z, tiles.width, tiles.height, tiles.base, tiles.relief, tiles.feature,
                         tiles.temperature, tiles.moisture, tiles.elevation, tiles.edges,
-                        tiles.owner, tiles.settlement, ever_realized,
+                        tiles.owner, tiles.settlement, tiles.defense, tiles.damage, ever_realized,
                         tiles.reduction_fields_.fields);
                 detail::load_region_portals(archive, tiles);
                 const auto count64 = static_cast<std::uint64_t>(tiles.width) * tiles.height;

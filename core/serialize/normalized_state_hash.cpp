@@ -135,6 +135,8 @@ std::uint64_t normalized_state_hash(const zone::Zone& zone, const rules::Ruleset
                 hash_scalar(hash, owner);
             }
             hash_numeric_vector(hash, tiles.settlement);
+            hash_numeric_vector(hash, tiles.defense);
+            hash_numeric_vector(hash, tiles.damage);
             std::apply(
                 [&](auto... row) {
                     (hash_reduction_row<std::remove_cvref_t<decltype(row)>>(hash, tiles), ...);

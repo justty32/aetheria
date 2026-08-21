@@ -39,9 +39,9 @@ TEST(RulesetLoader, LoadsImmutableDefinitionTypesAndSiteProjectionMapping) {
     ASSERT_EQ(ruleset.terrains().size(), 5U);
     ASSERT_EQ(ruleset.reliefs().size(), 3U);
     ASSERT_EQ(ruleset.features().size(), 9U);
-    ASSERT_EQ(ruleset.edges().size(), 18U);
+    ASSERT_EQ(ruleset.edges().size(), 22U);
     ASSERT_EQ(ruleset.grounds().size(), 6U);
-    ASSERT_EQ(ruleset.buildings().size(), 4U);
+    ASSERT_EQ(ruleset.buildings().size(), 8U);
     ASSERT_EQ(ruleset.terrain_ground_mappings().size(), ruleset.terrains().size());
     ASSERT_EQ(ruleset.terrain_rules().size(), 4U);
     ASSERT_EQ(ruleset.relief_rules().size(), 3U);
@@ -54,6 +54,14 @@ TEST(RulesetLoader, LoadsImmutableDefinitionTypesAndSiteProjectionMapping) {
     EXPECT_EQ(ruleset.site_fill_rules().quotas[0].units_per_block, 250U);
     EXPECT_EQ(ruleset.site_fill_rules().quotas[1].units_per_block, 2U);
     EXPECT_EQ(ruleset.building(*ruleset.find_building("building.cottage"))->frontage, 2U);
+    EXPECT_TRUE(ruleset.building(*ruleset.find_building("building.palace"))->landmark);
+    ASSERT_EQ(ruleset.site_fill_rules().faction_styles.size(), 4U);
+    EXPECT_EQ(ruleset.site_fill_rules().faction_styles[1].faction, 1U);
+    EXPECT_EQ(ruleset.site_fill_rules().faction_styles[1].landmarks.size(), 2U);
+    const auto& fortification = ruleset.site_fill_rules().fortification;
+    EXPECT_EQ(fortification.double_wall_defense, 80U);
+    EXPECT_NE(ruleset.edge(fortification.gate_edge)->flags & aetheria::rules::kEdgeOpenableFlag,
+              0U);
     EXPECT_EQ(ruleset.site_generation_rules().block_split_depth, 5U);
     EXPECT_EQ(ruleset.site_generation_rules().block_cut_min_percent, 36U);
     EXPECT_EQ(ruleset.site_generation_rules().block_cut_max_percent, 44U);

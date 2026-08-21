@@ -1,6 +1,7 @@
 #pragma once
 
-// core/rules/def_types.h：Ruleset 的基礎 id 型別、flag 常數與地形／地物／邊 def。
+// core/rules/def_types.h：Ruleset 的基礎 id 型別、flag 常數與地形／地物／邊
+// def。
 
 #include <cstdint>
 #include <optional>
@@ -14,6 +15,11 @@ inline constexpr std::uint32_t kFeatureRuinFlag = UINT32_C(1) << 4U;
 inline constexpr std::uint32_t kEdgeRoadFlag = UINT32_C(1);
 inline constexpr std::uint32_t kEdgeRiverFlag = UINT32_C(1) << 1U;
 inline constexpr std::uint32_t kEdgeBridgeFlag = UINT32_C(1) << 2U;
+inline constexpr std::uint32_t kEdgeWallFlag = UINT32_C(1) << 3U;
+inline constexpr std::uint32_t kEdgeGateFlag = UINT32_C(1) << 4U;
+inline constexpr std::uint32_t kEdgeOpenableFlag = UINT32_C(1) << 5U;
+inline constexpr std::uint32_t kEdgeTowerFlag = UINT32_C(1) << 6U;
+inline constexpr std::uint32_t kEdgeMoatFlag = UINT32_C(1) << 7U;
 
 // TerrainId 是 Ruleset 中 TerrainDef 的強型別下標。
 // Ruleset 配發其值，tile 只保存值的複本。
@@ -127,7 +133,7 @@ struct FeatureDef {
     std::optional<TerrainId> required_terrain;
 };
 
-// EdgeDef 描述一種位於相鄰 tile 之間的河流或道路。
+// EdgeDef 描述一種位於相鄰 tile 之間的河流、道路或 Site 防禦工事。
 // Ruleset 擁有所有實例。
 // 所屬 Ruleset 析構後失效。
 struct EdgeDef {
@@ -149,9 +155,9 @@ struct GroundDef {
     VisualRef visual;
 };
 
-// TerrainGroundMapping 是 Region TerrainDef 到 Site GroundDef 的資料驅動投影規則。
-// Ruleset 依 TerrainId 順序擁有所有項目；rough_ground 只提供最小地表變化。
-// 所屬 Ruleset 析構後失效。
+// TerrainGroundMapping 是 Region TerrainDef 到 Site GroundDef
+// 的資料驅動投影規則。 Ruleset 依 TerrainId 順序擁有所有項目；rough_ground
+// 只提供最小地表變化。 所屬 Ruleset 析構後失效。
 struct TerrainGroundMapping {
     TerrainId terrain;
     GroundId ground;

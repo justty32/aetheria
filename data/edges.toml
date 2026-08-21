@@ -123,3 +123,31 @@ name_key = "edge.ancient_road.name"
 move_cost = 2
 flags = 1
 visual = "edge/ancient_road"
+
+[[defs]]
+id = "edge.city_wall"
+name_key = "edge.city_wall.name"
+move_cost = 1000
+flags = 8
+visual = "edge/city_wall"
+
+[[defs]]
+id = "edge.city_gate"
+name_key = "edge.city_gate.name"
+move_cost = 1
+flags = 57
+visual = "edge/city_gate"
+
+[[defs]]
+id = "edge.city_wall_tower"
+name_key = "edge.city_wall_tower.name"
+move_cost = 1000
+flags = 72
+visual = "edge/city_wall_tower"
+
+[[defs]]
+id = "edge.city_moat"
+name_key = "edge.city_moat.name"
+move_cost = 1000
+flags = 128
+visual = "edge/city_moat"

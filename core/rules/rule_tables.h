@@ -93,11 +93,31 @@ struct BuildingDef {
     SiteFillZone zone{SiteFillZone::Residential};
     std::uint8_t frontage{};
     std::uint8_t depth{};
+    bool landmark{};
 };
 
-// SiteFillRules 是 F1 配額與 F2 建築密度的資料驅動規則。
+struct FactionLandmarkStyle {
+    std::uint16_t faction{};
+    std::vector<BuildingDefId> landmarks;
+};
+
+struct SiteFortificationRules {
+    std::uint16_t double_wall_defense{};
+    std::uint16_t tower_defense{};
+    std::uint8_t tower_spacing{};
+    std::uint16_t moat_defense{};
+    std::uint8_t breach_percent_at_full_damage{};
+    EdgeId wall_edge{};
+    EdgeId gate_edge{};
+    EdgeId tower_edge{};
+    EdgeId moat_edge{};
+};
+
+// SiteFillRules 是 F1～F5 城區填充的資料驅動規則。
 struct SiteFillRules {
     std::vector<SiteZoneQuota> quotas;
+    std::vector<FactionLandmarkStyle> faction_styles;
+    SiteFortificationRules fortification;
     std::uint8_t base_density_percent{};
     std::uint8_t development_density_per_level{};
     std::uint8_t max_density_percent{};

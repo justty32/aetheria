@@ -1,6 +1,7 @@
 #pragma once
 
-// tests/rules 底下 Ruleset 載入／驗證測試共用的暫存目錄與最小合法 ruleset fixture。
+// tests/rules 底下 Ruleset 載入／驗證測試共用的暫存目錄與最小合法 ruleset
+// fixture。
 
 #include <atomic>
 #include <chrono>
@@ -14,13 +15,13 @@
 namespace aetheria::tests {
 
 class TemporaryDirectory {
-public:
+  public:
     TemporaryDirectory() {
         static std::atomic_uint64_t sequence{};
         const auto stamp = std::chrono::steady_clock::now().time_since_epoch().count();
-        path_ = std::filesystem::temp_directory_path() /
-                ("aetheria-ruleset-" + std::to_string(stamp) + "-" +
-                 std::to_string(sequence.fetch_add(1)));
+        path_ =
+            std::filesystem::temp_directory_path() / ("aetheria-ruleset-" + std::to_string(stamp) +
+                                                      "-" + std::to_string(sequence.fetch_add(1)));
         if (!std::filesystem::create_directories(path_)) {
             throw std::runtime_error{"無法建立 Ruleset 測試目錄"};
         }
@@ -36,7 +37,7 @@ public:
 
     [[nodiscard]] const std::filesystem::path& path() const noexcept { return path_; }
 
-private:
+  private:
     std::filesystem::path path_;
 };
 
@@ -80,6 +81,16 @@ constexpr std::string_view kSiteFillRules = R"toml([fill]
 base_density_percent=20
 development_density_per_level=4
 max_density_percent=88
+[fortification]
+double_wall_defense=80
+tower_defense=40
+tower_spacing=8
+moat_defense=60
+breach_percent_at_full_damage=12
+wall_edge="edge.city_wall"
+gate_edge="edge.city_gate"
+tower_edge="edge.city_wall_tower"
+moat_edge="edge.city_moat"
 [[quotas]]
 zone="residential"
 driver="population"
@@ -100,6 +111,15 @@ id="building.shop"
 zone="commercial"
 frontage=2
 depth=2
+[[building_defs]]
+id="building.market"
+zone="commercial"
+frontage=2
+depth=2
+landmark=true
+[[faction_styles]]
+faction=0
+landmarks=["building.market"]
 )toml";
 
 inline void write_valid_ruleset(const std::filesystem::path& path, std::string_view terrain,
@@ -129,6 +149,30 @@ name_key="none"
 move_cost=1
 flags=0
 visual="none"
+[[defs]]
+id="edge.city_wall"
+name_key="wall"
+move_cost=1000
+flags=8
+visual="wall"
+[[defs]]
+id="edge.city_gate"
+name_key="gate"
+move_cost=1
+flags=57
+visual="gate"
+[[defs]]
+id="edge.city_wall_tower"
+name_key="tower"
+move_cost=1000
+flags=72
+visual="tower"
+[[defs]]
+id="edge.city_moat"
+name_key="moat"
+move_cost=1000
+flags=128
+visual="moat"
 )toml");
     write_text(path / "ground.toml", R"toml([[defs]]
 id="ground.grass"

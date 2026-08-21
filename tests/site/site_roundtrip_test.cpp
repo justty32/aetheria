@@ -64,6 +64,8 @@ TEST(SiteRoundTrip, ThreeColdRoundTripsKeepEveryHashAndRecomputeProceduralLayer)
                     std::get<aetheria::zone::SitePayload>(materialized.payload).layers.procedural;
                 EXPECT_EQ(recomputed.skeleton, expected_procedural.skeleton);
                 EXPECT_EQ(recomputed.zoning, expected_procedural.zoning);
+                EXPECT_EQ(aetheria::site::hash_site_fill(recomputed),
+                          aetheria::site::hash_site_fill(expected_procedural));
             }));
         }
 
@@ -113,7 +115,8 @@ TEST(SiteRoundTrip, ThreeColdRoundTripsKeepEveryHashAndRecomputeProceduralLayer)
               << "site_roundtrip_building_state="
               << static_cast<unsigned>(BuildingState::Idle) << " (Idle)\n"
               << "site_roundtrip_cold_assertions=3 procedural_disk_empty=1 "
-                 "procedural_fill_nonempty=1 procedural_recomputed_after_cache_corruption=1\n"
+                 "procedural_fill_nonempty=1 procedural_f3_f5_nonempty=1 "
+                 "procedural_recomputed_after_cache_corruption=1\n"
               << "site_rematerialize_Debug_max_ms=" << max_expand << '\n'
               << "site_collapse_Debug_max_ms=" << max_collapse << '\n';
     EXPECT_LT(max_expand, 30.0);

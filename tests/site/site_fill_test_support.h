@@ -56,6 +56,13 @@ struct FillCounts {
                           test_ruleset());
 }
 
+[[nodiscard]] inline site::SiteProceduralLayer generate_fill(const site::SiteFastVars& fast,
+                                                             const site::SiteSlowVars& slow) {
+    constexpr auto seed = UINT64_C(0xF1131);
+    return site::populate(site::build_site_skeleton(slow, seed, test_ruleset()), fast,
+                          test_ruleset());
+}
+
 [[nodiscard]] inline std::size_t fill_tile_index(std::uint16_t x, std::uint16_t y) {
     return static_cast<std::size_t>(y) * site::kSiteWidth + x;
 }

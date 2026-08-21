@@ -1,5 +1,6 @@
 #include "core/world/region_tiles.h"
 
+#include <algorithm>
 #include <limits>
 #include <stdexcept>
 #include <utility>
@@ -69,6 +70,8 @@ RegionTiles::RegionTiles(std::uint32_t grid_width, std::uint32_t grid_height)
     edges.resize(count * 4U);
     owner.resize(count);
     settlement.resize(count);
+    defense.resize(count);
+    damage.resize(count);
     site.resize(count);
     std::apply([count](auto&... field) { (field.values.resize(count), ...); },
                reduction_fields_.fields);
@@ -99,9 +102,13 @@ bool RegionTiles::valid_layout() const noexcept {
         [count](const auto&... field) { return ((field.values.size() == count) && ...); },
         reduction_fields_.fields);
     if (!(base.size() == count && relief.size() == count &&
-           feature.size() == count && temperature.size() == count && moisture.size() == count &&
-           elevation.size() == count && edges.size() == count * 4U && owner.size() == count &&
-           settlement.size() == count && site.size() == count && reduction_layout_valid)) {
+          feature.size() == count && temperature.size() == count && moisture.size() == count &&
+          elevation.size() == count && edges.size() == count * 4U && owner.size() == count &&
+          settlement.size() == count && defense.size() == count && damage.size() == count &&
+          site.size() == count && reduction_layout_valid)) {
+        return false;
+    }
+    if (std::ranges::any_of(damage, [](DamageValue value) { return value > 100U; })) {
         return false;
     }
     for (std::size_t index = 0; index < portals.size(); ++index) {
@@ -140,7 +147,7 @@ std::size_t RegionTiles::edge_storage_bytes() const noexcept { return bytes(edge
 std::size_t RegionTiles::dynamic_storage_bytes() const noexcept {
     return bytes(base) + bytes(relief) + bytes(feature) + bytes(temperature) + bytes(moisture) +
            bytes(elevation) + bytes(edges) + bytes(owner) + bytes(settlement) + bytes(site) +
-           bytes(portals) + reduction_bytes(reduction_fields_);
+           bytes(defense) + bytes(damage) + bytes(portals) + reduction_bytes(reduction_fields_);
 }
 
 }  // namespace aetheria::world

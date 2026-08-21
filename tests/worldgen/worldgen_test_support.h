@@ -15,7 +15,7 @@
 namespace aetheria::tests {
 
 class TemporaryDirectory {
-    public:
+  public:
     TemporaryDirectory() {
         static std::uint64_t serial{};
         path_ = std::filesystem::temp_directory_path() /
@@ -28,7 +28,7 @@ class TemporaryDirectory {
 
     [[nodiscard]] const std::filesystem::path& path() const noexcept { return path_; }
 
-    private:
+  private:
     std::filesystem::path path_;
 };
 
@@ -86,6 +86,30 @@ name_key = "edge.none.name"
 move_cost = 1
 flags = 0
 visual = "edge/none"
+[[defs]]
+id = "edge.city_wall"
+name_key = "wall"
+move_cost = 1000
+flags = 8
+visual = "wall"
+[[defs]]
+id = "edge.city_gate"
+name_key = "gate"
+move_cost = 1
+flags = 57
+visual = "gate"
+[[defs]]
+id = "edge.city_wall_tower"
+name_key = "tower"
+move_cost = 1000
+flags = 72
+visual = "tower"
+[[defs]]
+id = "edge.city_moat"
+name_key = "moat"
+move_cost = 1000
+flags = 128
+visual = "moat"
 )");
     write_text(directory.path() / "ground.toml", R"(
 [[defs]]
@@ -116,6 +140,17 @@ base_density_percent = 20
 development_density_per_level = 4
 max_density_percent = 88
 
+[fortification]
+double_wall_defense = 80
+tower_defense = 40
+tower_spacing = 8
+moat_defense = 60
+breach_percent_at_full_damage = 12
+wall_edge = "edge.city_wall"
+gate_edge = "edge.city_gate"
+tower_edge = "edge.city_wall_tower"
+moat_edge = "edge.city_moat"
+
 [[quotas]]
 zone = "residential"
 driver = "population"
@@ -139,6 +174,17 @@ id = "building.shop"
 zone = "commercial"
 frontage = 2
 depth = 2
+
+[[building_defs]]
+id = "building.market"
+zone = "commercial"
+frontage = 2
+depth = 2
+landmark = true
+
+[[faction_styles]]
+faction = 0
+landmarks = ["building.market"]
 )");
     return rules::RulesetLoader::load(directory.path());
 }

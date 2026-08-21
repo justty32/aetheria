@@ -103,8 +103,10 @@ TEST(SiteReduction, RegionTurnRequiresAndRunsOneLiveSiteReductionPassPerXun) {
     EXPECT_EQ(tiles.reduction_value<PopulationReduction>(kReductionCoordinate), 100U);
 }
 
-TEST(SiteReduction, CollapseAlwaysReducesBeforeUnloadAndV10PersistsFastFields) {
+TEST(SiteReduction, CollapseAlwaysReducesBeforeUnloadAndV11PersistsFastFields) {
     auto tiles = reduction_region();
+    tiles.defense[0] = 87;
+    tiles.damage[0] = 42;
     aetheria::zone::InMemoryZoneStore store{test_ruleset()};
     auto first = aetheria::site::materialize_site_zone(
         tiles, kReductionCoordinate, kReductionWorldSeed, kReductionRegionId, test_ruleset());
@@ -136,8 +138,11 @@ TEST(SiteReduction, CollapseAlwaysReducesBeforeUnloadAndV10PersistsFastFields) {
         std::get<aetheria::zone::RegionPayload>(loaded->payload).layers.at(0);
     EXPECT_EQ(loaded_tiles.reduction_value<PopulationReduction>(kReductionCoordinate), 25U);
     EXPECT_EQ(loaded_tiles.reduction_value<DevelopmentLevelReduction>(kReductionCoordinate), 0U);
+    EXPECT_EQ(loaded_tiles.defense[0], 87U);
+    EXPECT_EQ(loaded_tiles.damage[0], 42U);
     EXPECT_FALSE(loaded_tiles.site[0].has_live_site);
-    std::cout << "collapse_reduction population=25 development=0 has_live_site=0 format_v="
+    std::cout << "collapse_reduction population=25 development=0 has_live_site=0 "
+                 "format_v="
               << aetheria::serialize::kSaveFormatVersion << '\n';
 }
 

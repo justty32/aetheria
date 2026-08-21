@@ -90,4 +90,33 @@ TEST(WorldStateHash, ComponentChangesHashButRuntimeStateDoesNot) {
     EXPECT_NE(original.hash, component_hash.hash);
 }
 
+TEST(WorldStateHash, RegionDefenseAndDamageBothChangeHash) {
+    TemporaryDirectory directory;
+    create_world_hash_save(directory.path());
+    const auto original = world_state_hash(directory.path(), test_ruleset());
+    FileZoneStore store{directory.path(), test_ruleset()};
+    const auto key = kWorldHashRegionKeys.front();
+
+    auto defense_changed = store.load(key);
+    ASSERT_NE(defense_changed, nullptr);
+    auto& defense_tiles =
+        std::get<aetheria::zone::RegionPayload>(defense_changed->payload).layers.at(0);
+    defense_tiles.defense[0] = 80;
+    store.save(*defense_changed);
+    const auto defense_hash = world_state_hash(directory.path(), test_ruleset());
+
+    auto damage_changed = store.load(key);
+    ASSERT_NE(damage_changed, nullptr);
+    auto& damage_tiles =
+        std::get<aetheria::zone::RegionPayload>(damage_changed->payload).layers.at(0);
+    damage_tiles.defense[0] = 0;
+    damage_tiles.damage[0] = 40;
+    store.save(*damage_changed);
+    const auto damage_hash = world_state_hash(directory.path(), test_ruleset());
+
+    EXPECT_NE(original.hash, defense_hash.hash);
+    EXPECT_NE(original.hash, damage_hash.hash);
+    EXPECT_NE(defense_hash.hash, damage_hash.hash);
+}
+
 }  // namespace

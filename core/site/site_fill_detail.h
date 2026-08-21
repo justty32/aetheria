@@ -1,6 +1,6 @@
 #pragma once
 
-// site_fill_detail.h 是 F1 分區與 F2 建築填充的內部共用介面。
+// site_fill_detail.h 是 F1～F5 城區填充的內部共用介面。
 
 #include "core/site/site_projection.h"
 
@@ -25,6 +25,13 @@ void assign_site_zones(SiteProceduralLayer& layer, const SiteFastVars& fast,
                        const rules::Ruleset& ruleset);
 void fill_site_buildings(SiteProceduralLayer& layer, const SiteFastVars& fast,
                          const rules::Ruleset& ruleset);
+void generate_site_fortifications(SiteProceduralLayer& layer, const SiteFastVars& fast,
+                                  const rules::Ruleset& ruleset);
+void place_site_landmark(SiteProceduralLayer& layer, const SiteFastVars& fast,
+                         const rules::Ruleset& ruleset);
+void apply_site_damage(SiteProceduralLayer& layer, const SiteFastVars& fast,
+                       const rules::Ruleset& ruleset);
+void set_site_edge(SiteProceduralLayer& layer, SiteEdgeRef edge, rules::EdgeId kind);
 [[nodiscard]] BuildingPlacement placement_for(const SiteBlock& block, SiteBoundarySide side,
                                               std::uint16_t offset,
                                               const rules::BuildingDef& def);

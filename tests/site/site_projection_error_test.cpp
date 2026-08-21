@@ -101,4 +101,39 @@ max_percent = 70
     }
 }
 
+TEST(SiteProjectionRules, FactionStyleRejectsNonLandmarkReference) {
+    aetheria::tests::TemporaryDirectory directory;
+    aetheria::tests::copy_data_files(directory.path());
+    const auto path = directory.path() / "site_city.toml";
+    std::ifstream input{path};
+    ASSERT_TRUE(input.is_open());
+    std::string text{std::istreambuf_iterator<char>{input}, std::istreambuf_iterator<char>{}};
+    constexpr std::string_view existing{
+        "landmarks = [\"building.palace\", \"building.grand_temple\"]"};
+    const auto position = text.find(existing);
+    ASSERT_NE(position, std::string::npos);
+    text.replace(position, existing.size(), "landmarks = [\"building.cottage\"]");
+    aetheria::tests::write_text(path, text);
+
+    EXPECT_THROW(static_cast<void>(aetheria::rules::RulesetLoader::load(directory.path())),
+                 std::runtime_error);
+}
+
+TEST(SiteProjectionRules, GateDefinitionMustBeWallGateAndOpenable) {
+    aetheria::tests::TemporaryDirectory directory;
+    aetheria::tests::copy_data_files(directory.path());
+    const auto path = directory.path() / "site_city.toml";
+    std::ifstream input{path};
+    ASSERT_TRUE(input.is_open());
+    std::string text{std::istreambuf_iterator<char>{input}, std::istreambuf_iterator<char>{}};
+    constexpr std::string_view existing{"gate_edge = \"edge.city_gate\""};
+    const auto position = text.find(existing);
+    ASSERT_NE(position, std::string::npos);
+    text.replace(position, existing.size(), "gate_edge = \"edge.road\"");
+    aetheria::tests::write_text(path, text);
+
+    EXPECT_THROW(static_cast<void>(aetheria::rules::RulesetLoader::load(directory.path())),
+                 std::runtime_error);
+}
+
 }  // namespace
