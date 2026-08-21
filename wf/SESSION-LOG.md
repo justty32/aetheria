@@ -26,16 +26,21 @@
 > **完成的不留這裡。** M0～M2.3 的結論都在 git log 與 `design/` 裡；
 > 下面只留**還沒完成、或會在未來咬人**的東西。
 
-**還沒完成**
+**in-flight（M5，兩個 worktree 並行，基準 `ffb8759`）**
 
-- ✅ **M2 完成**（`c7f76e4`，156/156 我自己重跑）。判準「展開／收回／三次往返不漂移」達成，
-  界面雙向都通（歸約表 + 事件升級）。⚠ **但有三件事現有測試證不了**，
-  清單在 [interface-verification.md](../design/interface-verification.md) 末段：
-  `城破 → owner`（機制用的真例不是 owner）、真實校準誤差（目前必然為 0）、
-  M4 的卸載等價（人口還不隨時間演化）。**不要拿現有測試宣稱這三件已完成。**
-- 📌 **下一步 M3**（城區生成 + 城建循環）。**M3 是 M4 的前置不是順序偏好**——
-  M4 要測「卸載後推進 N 旬」，而目前人口是建築狀態的純函數、推進 N 旬什麼都不會變，
-  測起來必然通過。
+- 🔄 **M5.0 Local 最小可展開**（分支 `m5-0-local`）——`LocalTiles`、`local_seed`、
+  路線 B、接邊剖面提取為兩層共用。任務書 [m5-0-local-minimal.md](inbox/m5-0-local-minimal.md)。
+- 🔄 **M5-pre 批次推進**（分支 `m5-pre-batch`）——修 `SiteTurnPipeline` 每個 Site
+  各自呼叫 `RegionTurnPipeline` 的**雙算**缺陷。任務書 [m5-pre-batch-advance.md](inbox/m5-pre-batch-advance.md)。
+  已明令**不得新增檔案**，避免兩邊同時改 `CMakeLists.txt`。
+
+**M5 的判準不是「Local 能生出來」**。`outline.md` 只寫了「Local 串流與探索」，太薄；
+[lowmap.md](../design/lowmap.md) 與 [localgen.md](../design/localgen.md) 自己給了更硬的一條：
+**L2↔L3 若需要新機制，就表示 L1↔L2 的抽象抽錯了**。M5 是對前四個里程碑的回頭檢驗。
+
+- ⚠ **兩層寬度剛好都是 64**（`site_projection.h:17` `kSiteWidth = 64`，Local 也 64×64）。
+  所以「真的複用」與「複製一份改參數」會給出**完全相同的測試結果**——測試沒有偵測力。
+  複用性改用**結構證據**驗收：**改壞共用碼，兩層的接邊測試必須同時變紅；只紅一邊就是複製**。
 
 - 📌 **待校準（要有玩法才能判斷，不是現在調）**：`governance_max_cost` 讓無主陸地只剩 1.55%，
   世界第一回合就被瓜分完畢。權衡曲線已量好在 [worldgen-factions.md](../design/worldgen-factions.md)，
