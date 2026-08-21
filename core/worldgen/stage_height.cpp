@@ -13,6 +13,20 @@
 namespace aetheria::worldgen {
 namespace {
 
+inline constexpr std::uint32_t kCoastWarpWavelength = 16;
+inline constexpr double kCoastWarpAmplitude = 8.0;
+
+[[nodiscard]] std::size_t warped_plate_index(const PlateStageOutput& plates,
+                                             std::uint64_t stage_seed, std::uint32_t x,
+                                             std::uint32_t y) noexcept {
+    const auto warped =
+        detail::domain_warp(stage_seed, x, y, kCoastWarpWavelength, kCoastWarpAmplitude);
+    const auto sample_x = std::clamp<std::int64_t>(warped.x, 0, plates.width - 1U);
+    const auto sample_y = std::clamp<std::int64_t>(warped.y, 0, plates.height - 1U);
+    return static_cast<std::size_t>(sample_y) * plates.width +
+           static_cast<std::size_t>(sample_x);
+}
+
 [[nodiscard]] std::vector<std::uint8_t>
 repair_land_connectivity(const std::vector<double>& elevation,
                          const std::vector<std::uint8_t>& initial_land, std::uint32_t width,
@@ -86,7 +100,12 @@ HeightStageOutput generate_height(const PlateStageOutput& plates, std::uint64_t 
             if (plate_index >= plates.plates.size()) {
                 throw std::invalid_argument{"板塊階段輸出含無效 plate index"};
             }
-            output.elevation[index] = plates.plates[plate_index].base_elevation +
+            const auto base_plate_index = plates.plate_index[warped_plate_index(
+                plates, stage_seed, x, y)];
+            if (base_plate_index >= plates.plates.size()) {
+                throw std::invalid_argument{"板塊階段輸出含無效 plate index"};
+            }
+            output.elevation[index] = plates.plates[base_plate_index].base_elevation +
                                       plates.boundary_effect[index] +
                                       detail::fbm(stage_seed, x, y, config.noise_octaves);
         }

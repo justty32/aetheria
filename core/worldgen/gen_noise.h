@@ -5,6 +5,7 @@
 #include "core/worldgen/region_seed.h"
 
 #include <algorithm>
+#include <cmath>
 #include <cstdint>
 
 namespace aetheria::worldgen::detail {
@@ -55,6 +56,24 @@ class SplitMix64Stream {
     const auto south = interpolate(lattice_noise(seed, grid_x, grid_y + 1U),
                                    lattice_noise(seed, grid_x + 1U, grid_y + 1U), fraction_x);
     return interpolate(north, south, fraction_y);
+}
+
+struct WarpedCoordinate {
+    std::int64_t x{};
+    std::int64_t y{};
+};
+
+[[nodiscard]] inline WarpedCoordinate domain_warp(std::uint64_t seed, std::uint32_t x,
+                                                  std::uint32_t y, std::uint32_t wavelength,
+                                                  double amplitude) noexcept {
+    const auto offset_x = value_noise(
+        splitmix64(seed ^ UINT64_C(0xA24BAED4963EE407)), x, y, wavelength);
+    const auto offset_y = value_noise(
+        splitmix64(seed ^ UINT64_C(0x9FB21C651E98DF25)), x, y, wavelength);
+    return {static_cast<std::int64_t>(x) +
+                static_cast<std::int64_t>(std::llround(offset_x * amplitude)),
+            static_cast<std::int64_t>(y) +
+                static_cast<std::int64_t>(std::llround(offset_y * amplitude))};
 }
 
 [[nodiscard]] inline double fbm(std::uint64_t seed, std::uint32_t x, std::uint32_t y,
