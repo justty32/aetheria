@@ -1,18 +1,73 @@
+[[terrain_defs]]
+id = "terrain.taiga"
+name_key = "terrain.taiga.name"
+move_cost = 2
+flags = 1
+visual = "terrain/taiga"
+yield = { food = 1, production = 2, wealth = 0, mana = 0 }
+
+[[terrain_defs]]
+id = "terrain.steppe"
+name_key = "terrain.steppe.name"
+move_cost = 1
+flags = 1
+visual = "terrain/steppe"
+yield = { food = 1, production = 1, wealth = 1, mana = 0 }
+
+[[terrain_ground]]
+terrain = "terrain.taiga"
+ground = "ground.grass"
+rough_ground = "ground.stone"
+
+[[terrain_ground]]
+terrain = "terrain.steppe"
+ground = "ground.grass"
+rough_ground = "ground.stone"
+
 [[terrain_rules]]
-max_temperature_tenths = 80
+temperature_target_tenths = 20
+temperature_scale_tenths = 161
 terrain = "terrain.tundra"
 
 [[terrain_rules]]
-max_moisture = 36200
+temperature_target_tenths = 80
+temperature_scale_tenths = 120
+moisture_target = 52000
+moisture_scale = 30000
+terrain = "terrain.taiga"
+
+[[terrain_rules]]
+temperature_target_tenths = 170
+temperature_scale_tenths = 160
+moisture_target = 18000
+moisture_scale = 18000
 terrain = "terrain.desert"
 
 [[terrain_rules]]
-min_moisture = 65535
-max_elevation = 5700
+temperature_target_tenths = 140
+temperature_scale_tenths = 180
+moisture_target = 34000
+moisture_scale = 14000
+elevation_target = 5200
+elevation_scale = 3000
+terrain = "terrain.steppe"
+
+[[terrain_rules]]
+temperature_target_tenths = 150
+temperature_scale_tenths = 180
+moisture_target = 65535
+moisture_scale = 14000
+elevation_target = 4800
+elevation_scale = 1800
 terrain = "terrain.swamp"
 
 [[terrain_rules]]
-fallback = true
+temperature_target_tenths = 140
+temperature_scale_tenths = 160
+moisture_target = 48000
+moisture_scale = 26000
+elevation_target = 5000
+elevation_scale = 3000
 terrain = "terrain.grassland"
 
 [[relief_rules]]

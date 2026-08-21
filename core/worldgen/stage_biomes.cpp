@@ -10,19 +10,56 @@
 #include <stdexcept>
 
 namespace aetheria::worldgen {
+namespace {
+
+template <typename Value>
+[[nodiscard]] std::int64_t normalized_distance(Value value, Value target,
+                                               std::uint16_t scale) noexcept {
+    const auto distance = std::abs(static_cast<std::int64_t>(value) -
+                                   static_cast<std::int64_t>(target));
+    return distance * INT64_C(65536) / scale;
+}
+
+[[nodiscard]] std::int64_t terrain_score(const rules::TerrainRule& rule,
+                                         TerrainClassificationInput input) noexcept {
+    auto penalty = std::int64_t{};
+    auto axes = std::int64_t{};
+    if (rule.temperature_scale_tenths != 0) {
+        penalty += normalized_distance(input.temperature_tenths,
+                                       rule.temperature_target_tenths,
+                                       rule.temperature_scale_tenths);
+        ++axes;
+    }
+    if (rule.moisture_scale != 0) {
+        penalty += normalized_distance(input.moisture, rule.moisture_target, rule.moisture_scale);
+        ++axes;
+    }
+    if (rule.elevation_scale != 0) {
+        penalty +=
+            normalized_distance(input.elevation, rule.elevation_target, rule.elevation_scale);
+        ++axes;
+    }
+    return static_cast<std::int64_t>(rule.score_bias) * INT64_C(65536) - penalty / axes;
+}
+
+}  // namespace
 
 rules::TerrainId classify_terrain(const rules::Ruleset& ruleset,
                                   TerrainClassificationInput input) {
-    for (const auto& rule : ruleset.terrain_rules()) {
-        if (rule.fallback ||
-            (input.temperature_tenths >= rule.min_temperature_tenths &&
-             input.temperature_tenths <= rule.max_temperature_tenths &&
-             input.moisture >= rule.min_moisture && input.moisture <= rule.max_moisture &&
-             input.elevation >= rule.min_elevation && input.elevation <= rule.max_elevation)) {
-            return rule.terrain;
+    const auto rules = ruleset.terrain_rules();
+    if (rules.empty()) {
+        throw std::runtime_error{"TerrainRule 計分表為空"};
+    }
+    auto best_index = std::size_t{};
+    auto best_score = terrain_score(rules.front(), input);
+    for (std::size_t index = 1; index < rules.size(); ++index) {
+        const auto score = terrain_score(rules[index], input);
+        if (score > best_score) {
+            best_score = score;
+            best_index = index;
         }
     }
-    throw std::runtime_error{"TerrainRule 沒有 fallback 命中"};
+    return rules[best_index].terrain;
 }
 
 rules::ReliefId classify_relief(const rules::Ruleset& ruleset,

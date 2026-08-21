@@ -6,6 +6,7 @@
 #include <toml++/toml.hpp>
 
 #include <limits>
+#include <set>
 #include <stdexcept>
 #include <string>
 
@@ -35,31 +36,27 @@ void RulesetLoader::load_biome_rule_tables(Ruleset& result,
                                            const std::filesystem::path& data_directory) {
     const auto biome_path = data_directory / "biomes.toml";
     if (std::filesystem::is_regular_file(biome_path)) {
-        bool saw_terrain_fallback{};
+        std::set<TerrainId> scored_terrains;
         for (const auto& node : read_array(biome_path, "terrain_rules")) {
             const auto& table = require_table(node, biome_path);
-            if (saw_terrain_fallback) {
-                throw std::runtime_error{"Terrain fallback 後不得再有規則：" +
-                                         biome_path.string()};
-            }
             TerrainRule rule;
-            rule.fallback = table["fallback"].value_or(false);
-            rule.min_temperature_tenths = optional_bounded_integer<std::int16_t>(
-                table, "min_temperature_tenths", rule.min_temperature_tenths, biome_path);
-            rule.max_temperature_tenths = optional_bounded_integer<std::int16_t>(
-                table, "max_temperature_tenths", rule.max_temperature_tenths, biome_path);
-            rule.min_moisture = optional_bounded_integer<std::uint16_t>(
-                table, "min_moisture", rule.min_moisture, biome_path);
-            rule.max_moisture = optional_bounded_integer<std::uint16_t>(
-                table, "max_moisture", rule.max_moisture, biome_path);
-            rule.min_elevation = optional_bounded_integer<std::uint16_t>(
-                table, "min_elevation", rule.min_elevation, biome_path);
-            rule.max_elevation = optional_bounded_integer<std::uint16_t>(
-                table, "max_elevation", rule.max_elevation, biome_path);
-            if (rule.min_temperature_tenths > rule.max_temperature_tenths ||
-                rule.min_moisture > rule.max_moisture ||
-                rule.min_elevation > rule.max_elevation) {
-                throw std::runtime_error{"TerrainRule 範圍上下界顛倒：" +
+            rule.temperature_target_tenths = optional_bounded_integer<std::int16_t>(
+                table, "temperature_target_tenths", rule.temperature_target_tenths, biome_path);
+            rule.temperature_scale_tenths = optional_bounded_integer<std::uint16_t>(
+                table, "temperature_scale_tenths", rule.temperature_scale_tenths, biome_path);
+            rule.moisture_target = optional_bounded_integer<std::uint16_t>(
+                table, "moisture_target", rule.moisture_target, biome_path);
+            rule.moisture_scale = optional_bounded_integer<std::uint16_t>(
+                table, "moisture_scale", rule.moisture_scale, biome_path);
+            rule.elevation_target = optional_bounded_integer<std::uint16_t>(
+                table, "elevation_target", rule.elevation_target, biome_path);
+            rule.elevation_scale = optional_bounded_integer<std::uint16_t>(
+                table, "elevation_scale", rule.elevation_scale, biome_path);
+            rule.score_bias = optional_bounded_integer<std::int32_t>(
+                table, "score_bias", rule.score_bias, biome_path);
+            if (rule.temperature_scale_tenths == 0 && rule.moisture_scale == 0 &&
+                rule.elevation_scale == 0) {
+                throw std::runtime_error{"TerrainRule 至少需要一個正尺度：" +
                                          biome_path.string()};
             }
             const auto terrain_string = require_string(table, "terrain", biome_path);
@@ -68,12 +65,13 @@ void RulesetLoader::load_biome_rule_tables(Ruleset& result,
                 throw std::runtime_error{"TerrainRule 引用不存在的 def：" + terrain_string};
             }
             rule.terrain = *terrain;
-            saw_terrain_fallback = rule.fallback;
+            if (!scored_terrains.insert(rule.terrain).second) {
+                throw std::runtime_error{"TerrainRule 重複引用 def：" + terrain_string};
+            }
             result.terrain_rules_.push_back(rule);
         }
-        if (result.terrain_rules_.empty() || !saw_terrain_fallback) {
-            throw std::runtime_error{"TerrainRule 最後一條必須是 fallback：" +
-                                     biome_path.string()};
+        if (result.terrain_rules_.empty()) {
+            throw std::runtime_error{"biomes.toml 至少需要一條 TerrainRule"};
         }
 
         bool saw_relief_fallback{};

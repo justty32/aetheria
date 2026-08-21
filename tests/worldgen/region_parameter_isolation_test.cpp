@@ -107,8 +107,12 @@ TEST(RegionGeneration, EditingBiomeDataChangesOnlyDataDrivenStages) {
     TemporaryDirectory directory;
     copy_data_files(directory.path());
     write_text(directory.path() / "biomes.toml", R"(
+terrain_defs = []
+terrain_ground = []
+
 [[terrain_rules]]
-fallback = true
+temperature_target_tenths = 0
+temperature_scale_tenths = 1
 terrain = "terrain.tundra"
 
 [[relief_rules]]

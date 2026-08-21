@@ -42,7 +42,7 @@ struct RiverStageOutput {
     std::vector<std::uint8_t> lake;
 };
 
-// BiomeStageOutput 是兩張獨立第一命中規則表產生的 terrain／relief 下標。
+// BiomeStageOutput 是 terrain 計分競爭與 relief 第一命中表產生的兩張正交下標。
 // build_skeleton 的回傳值擁有它。
 // 所屬回傳值析構或 vector 重配後其中參考失效。
 struct BiomeStageOutput {
