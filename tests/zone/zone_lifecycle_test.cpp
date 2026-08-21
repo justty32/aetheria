@@ -23,7 +23,7 @@ using aetheria::zone::ZoneMeta;
 static_assert(!std::is_copy_constructible_v<Zone>);
 static_assert(std::is_move_constructible_v<Zone>);
 static_assert(requires(aetheria::zone::SitePayload payload) { payload.layers; });
-static_assert(std::is_empty_v<aetheria::zone::LocalPayload>);
+static_assert(requires(aetheria::zone::LocalPayload payload) { payload.tiles; });
 
 TEST(ZonePersistence, NewZoneStartsWithMatchingPlaceholder) {
     const auto key = child_key(kRootZone, UINT16_C(0x4321), 0);

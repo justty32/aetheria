@@ -17,6 +17,9 @@ add_library(aetheria_core STATIC
     core/rules/ruleset_load_crossings.cpp
     core/rules/ruleset_load_world_graph.cpp
     core/serialize/normalized_state_hash.cpp
+    core/local/local_generation.cpp
+    core/local/local_materialize.cpp
+    core/local/local_projection.cpp
     core/site/site_event_escalation.cpp
     core/site/site_build_loop.cpp
     core/site/site_build_economy.cpp

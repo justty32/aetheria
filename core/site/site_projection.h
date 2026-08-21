@@ -3,6 +3,7 @@
 // site_projection.h 定義 L1→L2 投影的慢／快變數界面、城區程序骨架與三層資料型別。
 
 #include "core/rules/ruleset.h"
+#include "core/spatial/boundary_profile.h"
 #include "core/world/region_tiles.h"
 
 #include <array>
@@ -98,12 +99,7 @@ struct PersistentBuilding {
     }
 };
 
-enum class SiteBoundarySide : std::uint8_t {
-    North,
-    East,
-    South,
-    West,
-};
+using SiteBoundarySide = spatial::BoundarySide;
 
 // SiteGate 是 Region 道路 crossing 在 Site 邊界上的落點。
 struct SiteGate {

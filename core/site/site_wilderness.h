@@ -14,23 +14,8 @@ struct Zone;
 
 namespace aetheria::site {
 
-struct BoundaryCrossing {
-    std::uint8_t pos{};
-    std::uint8_t width{};
-    rules::EdgeId kind{};
-
-    constexpr bool operator==(const BoundaryCrossing&) const noexcept = default;
-};
-
-struct BoundaryProfile {
-    std::array<std::uint16_t, kSiteWidth> elevation{};
-    std::array<rules::GroundId, kSiteWidth> ground{};
-    std::array<std::uint8_t, kSiteWidth> water_depth{};
-    std::array<rules::EdgeId, kSiteWidth> edges{};
-    std::vector<BoundaryCrossing> crossings;
-
-    bool operator==(const BoundaryProfile&) const = default;
-};
+using BoundaryCrossing = spatial::BoundaryCrossing;
+using BoundaryProfile = spatial::BoundaryProfile;
 
 // 四個 profile 一律以規範方向排列：垂直邊北→南，水平邊西→東。
 struct WildernessSlowVars {

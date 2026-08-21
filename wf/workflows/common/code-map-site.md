@@ -4,6 +4,10 @@
 
 `core/site/` 是 L1→L2 的界面與城區生成邊界，全部為純 C++，不得依賴 godot-cpp。
 
+`core/spatial/boundary_profile.h` 是兩層共用的 canonical edge/corner、角錨定與剖面生成；
+`core/local/local_tiles.h` + `local_{projection,generation,materialize}.cpp` 是 L2→L3 的單層
+`LocalTiles`、路線 B、正規化雜湊，以及彼此分離的首次展開／純冷載／冷重算入口。
+
 | 檔案 | 職責 |
 |---|---|
 | `site_projection.h` | 慢／快變數隔離、64×64 骨架與三層資料的公開型別／入口 |
