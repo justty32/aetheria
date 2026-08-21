@@ -47,6 +47,10 @@ TEST(RulesetLoader, LoadsImmutableDefinitionTypesAndSiteProjectionMapping) {
     EXPECT_TRUE(ruleset.terrain_rules().back().fallback);
     EXPECT_TRUE(ruleset.relief_rules().back().fallback);
     EXPECT_TRUE(ruleset.movement_rules().loaded);
+    EXPECT_TRUE(ruleset.site_generation_rules().loaded);
+    EXPECT_EQ(ruleset.site_generation_rules().block_split_depth, 5U);
+    EXPECT_EQ(ruleset.site_generation_rules().block_cut_min_percent, 36U);
+    EXPECT_EQ(ruleset.site_generation_rules().block_cut_max_percent, 44U);
     EXPECT_TRUE(ruleset.civilization_rules().loaded);
     EXPECT_EQ(ruleset.civilization_rules().factions.faction_count, 3U);
     EXPECT_EQ(ruleset.civilization_rules().major_city_count, 6U);

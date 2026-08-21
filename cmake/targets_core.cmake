@@ -18,6 +18,11 @@ add_library(aetheria_core STATIC
     core/site/site_materialize.cpp
     core/site/site_population.cpp
     core/site/site_projection.cpp
+    core/site/site_skeleton_common.cpp
+    core/site/site_skeleton_center.cpp
+    core/site/site_skeleton_terrain.cpp
+    core/site/site_skeleton_roads.cpp
+    core/site/site_skeleton_blocks.cpp
     core/site/site_reduction.cpp
     core/time/tick.cpp
     core/serialize/zone_encode.cpp

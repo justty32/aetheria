@@ -1,10 +1,9 @@
 #include "core/site/site_projection.h"
 
+#include "core/site/site_skeleton_detail.h"
 #include "core/worldgen/region_seed.h"
 
-#include <algorithm>
 #include <stdexcept>
-#include <string_view>
 #include <type_traits>
 
 namespace aetheria::site {
@@ -35,24 +34,6 @@ template <typename Id> void hash_ids(std::uint64_t& hash, const std::vector<Id>&
     }
 }
 
-[[nodiscard]] std::uint64_t stable_string_hash(std::string_view value) noexcept {
-    auto hash = UINT64_C(14695981039346656037);
-    for (const auto character : value) {
-        hash_byte(hash, static_cast<std::uint8_t>(character));
-    }
-    return hash;
-}
-
-[[nodiscard]] std::uint64_t surface_seed(const SiteSlowVars& slow,
-                                         std::uint64_t site_seed,
-                                         const rules::Ruleset& ruleset) noexcept {
-    auto value = worldgen::splitmix64(
-        site_seed ^ stable_string_hash(ruleset.terrain(slow.base)->id));
-    value = worldgen::splitmix64(value ^ stable_string_hash(ruleset.relief(slow.relief)->id));
-    value = worldgen::splitmix64(value ^ stable_string_hash(ruleset.feature(slow.feature)->id));
-    return worldgen::splitmix64(value ^ slow.elevation);
-}
-
 void validate_slow_vars(const SiteSlowVars& slow, const rules::Ruleset& ruleset) {
     if (ruleset.terrain(slow.base) == nullptr) {
         throw std::runtime_error{"SiteSlowVars 含不存在的 TerrainId"};
@@ -74,15 +55,30 @@ void validate_slow_vars(const SiteSlowVars& slow, const rules::Ruleset& ruleset)
 
 bool SiteSkeleton::valid_layout() const noexcept {
     return ground.size() == kSiteTileCount && edges.size() == kSiteTileCount * kDirections &&
-           buildable.size() == kSiteTileCount;
+           elevation.size() == kSiteTileCount && water.size() == kSiteTileCount &&
+           roads.size() == kSiteTileCount && buildable.size() == kSiteTileCount &&
+           city_center.x < kSiteWidth && city_center.y < kSiteHeight;
+}
+
+bool SiteSkeleton::is_water(SiteXY tile) const noexcept {
+    if (!valid_layout() || tile.x >= kSiteWidth || tile.y >= kSiteHeight) {
+        return false;
+    }
+    return water[detail::tile_index(tile)] != 0;
+}
+
+bool SiteSkeleton::is_road(SiteXY tile) const noexcept {
+    if (!valid_layout() || tile.x >= kSiteWidth || tile.y >= kSiteHeight) {
+        return false;
+    }
+    return roads[detail::tile_index(tile)] != 0;
 }
 
 bool SiteSkeleton::is_buildable(SiteXY tile) const noexcept {
     if (!valid_layout() || tile.x >= kSiteWidth || tile.y >= kSiteHeight) {
         return false;
     }
-    const auto index = static_cast<std::size_t>(tile.y) * kSiteWidth + tile.x;
-    return buildable[index] != 0;
+    return buildable[detail::tile_index(tile)] != 0;
 }
 
 SiteProjectionVars split_site_vars(const world::RegionTiles& tiles, world::RegionXY coordinate) {
@@ -120,44 +116,21 @@ SiteSkeleton build_site_skeleton(const SiteSlowVars& slow, std::uint64_t site_se
     if (no_edge == std::nullopt) {
         throw std::runtime_error{"Site 骨架缺少 EdgeDef：edge.none"};
     }
+    if (!ruleset.site_generation_rules().loaded) {
+        throw std::runtime_error{"Site 骨架缺少 city_skeleton 資料規則"};
+    }
 
     SiteSkeleton result;
     result.ground.resize(kSiteTileCount, mapping->ground);
     result.edges.resize(kSiteTileCount * kDirections, *no_edge);
+    result.elevation.resize(kSiteTileCount);
+    result.water.resize(kSiteTileCount);
+    result.roads.resize(kSiteTileCount);
     result.buildable.resize(kSiteTileCount);
-
-    const auto variation_seed = surface_seed(slow, site_seed, ruleset);
-    const auto relief_cost = static_cast<std::uint64_t>(ruleset.relief(slow.relief)->move_cost);
-    const auto feature_cost = static_cast<std::uint64_t>(ruleset.feature(slow.feature)->move_cost);
-    const auto roughness = static_cast<std::uint32_t>(std::min<std::uint64_t>(
-        96U, 4U + relief_cost * 12U + feature_cost * 2U + slow.elevation / 1024U));
-    for (std::size_t index = 0; index < result.ground.size(); ++index) {
-        const auto sample = worldgen::splitmix64(variation_seed ^ index) & UINT64_C(0xFF);
-        if (sample < roughness) {
-            result.ground[index] = mapping->rough_ground;
-        }
-    }
-
-    for (std::size_t coordinate = 0; coordinate < kSiteWidth; ++coordinate) {
-        const auto north = coordinate;
-        const auto south = (kSiteHeight - 1U) * kSiteWidth + coordinate;
-        const auto west = coordinate * kSiteWidth;
-        const auto east = west + kSiteWidth - 1U;
-        result.edges[north * kDirections + kNorth] = slow.edges[kNorth];
-        result.edges[east * kDirections + kEast] = slow.edges[kEast];
-        result.edges[south * kDirections + kSouth] = slow.edges[kSouth];
-        result.edges[west * kDirections + kWest] = slow.edges[kWest];
-    }
-
-    for (std::size_t index = 0; index < kSiteTileCount; ++index) {
-        const auto* ground = ruleset.ground(result.ground[index]);
-        bool buildable = ground != nullptr && (ground->flags & rules::kGroundWaterFlag) == 0;
-        for (std::size_t direction = 0; direction < kDirections && buildable; ++direction) {
-            const auto* edge = ruleset.edge(result.edges[index * kDirections + direction]);
-            buildable = edge != nullptr && (edge->flags & rules::kEdgeRiverFlag) == 0;
-        }
-        result.buildable[index] = buildable ? UINT8_C(1) : UINT8_C(0);
-    }
+    detail::generate_site_terrain(result, slow, site_seed, ruleset);
+    detail::generate_site_roads(result, slow, site_seed, ruleset);
+    detail::generate_site_blocks(result, site_seed, ruleset);
+    detail::mark_site_buildable(result, ruleset);
     return result;
 }
 
@@ -165,9 +138,37 @@ std::uint64_t hash_site_skeleton(const SiteSkeleton& skeleton) noexcept {
     auto hash = UINT64_C(14695981039346656037);
     hash_ids(hash, skeleton.ground);
     hash_ids(hash, skeleton.edges);
+    hash_integer(hash, static_cast<std::uint64_t>(skeleton.elevation.size()));
+    for (const auto elevation : skeleton.elevation) {
+        hash_integer(hash, elevation);
+    }
+    hash_integer(hash, static_cast<std::uint64_t>(skeleton.water.size()));
+    for (const auto water : skeleton.water) {
+        hash_byte(hash, water);
+    }
+    hash_integer(hash, static_cast<std::uint64_t>(skeleton.roads.size()));
+    for (const auto road : skeleton.roads) {
+        hash_byte(hash, road);
+    }
     hash_integer(hash, static_cast<std::uint64_t>(skeleton.buildable.size()));
     for (const auto buildable : skeleton.buildable) {
         hash_byte(hash, buildable);
+    }
+    hash_integer(hash, skeleton.city_center.x);
+    hash_integer(hash, skeleton.city_center.y);
+    hash_integer(hash, static_cast<std::uint64_t>(skeleton.gates.size()));
+    for (const auto& gate : skeleton.gates) {
+        hash_byte(hash, static_cast<std::uint8_t>(gate.side));
+        hash_integer(hash, gate.tile.x);
+        hash_integer(hash, gate.tile.y);
+        hash_integer(hash, rules::value_of(gate.kind));
+    }
+    hash_integer(hash, static_cast<std::uint64_t>(skeleton.blocks.size()));
+    for (const auto& block : skeleton.blocks) {
+        hash_integer(hash, block.origin.x);
+        hash_integer(hash, block.origin.y);
+        hash_integer(hash, block.width);
+        hash_integer(hash, block.height);
     }
     return hash;
 }

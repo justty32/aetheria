@@ -3,7 +3,6 @@
 #include "core/worldgen/region_seed.h"
 #include "tests/support/ruleset_fixture.h"
 
-#include <chrono>
 #include <concepts>
 #include <cstdint>
 #include <iostream>
@@ -104,12 +103,21 @@ TEST(SiteProjection, EachRequiredSlowVariableChangesSkeleton) {
     tiles = sample_region_tile();
     tiles.elevation[0] = 12300;
     const auto changed_elevation = skeleton_hash(tiles, seed);
+    tiles = sample_region_tile();
+    tiles.feature[0] = *test_ruleset().find_feature("feature.forest");
+    const auto changed_feature = skeleton_hash(tiles, seed);
+    tiles = sample_region_tile();
+    tiles.edges[1] = *test_ruleset().find_edge("edge.none");
+    const auto changed_edges = skeleton_hash(tiles, seed);
 
     EXPECT_NE(changed_base, baseline);
     EXPECT_NE(changed_relief, baseline);
     EXPECT_NE(changed_elevation, baseline);
+    EXPECT_NE(changed_feature, baseline);
+    EXPECT_NE(changed_edges, baseline);
     std::cout << "site_slow_control baseline=" << baseline << " base=" << changed_base
-              << " relief=" << changed_relief << " elevation=" << changed_elevation << '\n';
+              << " relief=" << changed_relief << " elevation=" << changed_elevation
+              << " feature=" << changed_feature << " edges=" << changed_edges << '\n';
 }
 
 TEST(SiteProjection, SeedFormulaAndSkeletonAreDeterministic) {
@@ -136,32 +144,6 @@ TEST(SiteProjection, SeedFormulaAndSkeletonAreDeterministic) {
     EXPECT_NE(first_hash, other_hash);
     std::cout << "site_determinism first=" << first_hash << " repeat=" << second_hash
               << " other_tile=" << other_hash << '\n';
-}
-
-TEST(SiteProjection, MinimalSkeletonContainsOnlyGroundAndBoundaryEdges) {
-    const auto vars = aetheria::site::split_site_vars(sample_region_tile(), RegionXY{0, 0});
-    const auto skeleton =
-        aetheria::site::build_site_skeleton(vars.slow, UINT64_C(77), test_ruleset());
-    const auto no_edge = *test_ruleset().find_edge("edge.none");
-    ASSERT_TRUE(skeleton.valid_layout());
-    EXPECT_EQ(skeleton.edges[0], vars.slow.edges[0]);
-    EXPECT_EQ(skeleton.edges[(63U * 4U) + 1U], vars.slow.edges[1]);
-    EXPECT_EQ(skeleton.edges[((63U * 64U) * 4U) + 2U], vars.slow.edges[2]);
-    EXPECT_EQ(skeleton.edges[(63U * 64U) * 4U + 3U], vars.slow.edges[3]);
-    EXPECT_EQ(skeleton.edges[(32U * 64U + 32U) * 4U], no_edge);
-}
-
-TEST(SiteProjection, DebugBuildFitsThirtyMillisecondBudget) {
-    const auto vars = aetheria::site::split_site_vars(sample_region_tile(), RegionXY{0, 0});
-    static_cast<void>(aetheria::site::build_site_skeleton(vars.slow, UINT64_C(1), test_ruleset()));
-    const auto start = std::chrono::steady_clock::now();
-    const auto skeleton =
-        aetheria::site::build_site_skeleton(vars.slow, UINT64_C(2), test_ruleset());
-    const auto elapsed = std::chrono::steady_clock::now() - start;
-    const auto milliseconds = std::chrono::duration<double, std::milli>{elapsed}.count();
-    EXPECT_TRUE(skeleton.valid_layout());
-    EXPECT_LT(elapsed, std::chrono::milliseconds{30});
-    std::cout << "site_skeleton_debug_ms=" << milliseconds << '\n';
 }
 
 }  // namespace

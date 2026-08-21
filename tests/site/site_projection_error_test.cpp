@@ -32,4 +32,21 @@ TEST(SiteProjectionRules, MissingGroundDefinitionFailsDuringRulesetLoad) {
     }
 }
 
+TEST(SiteProjectionRules, InvalidBlockCutDistributionFailsDuringRulesetLoad) {
+    aetheria::tests::TemporaryDirectory directory;
+    aetheria::tests::copy_data_files(directory.path());
+    const auto path = directory.path() / "site_projection.toml";
+    std::ifstream input{path};
+    ASSERT_TRUE(input.is_open());
+    std::string text{std::istreambuf_iterator<char>{input}, std::istreambuf_iterator<char>{}};
+    constexpr std::string_view existing{"block_cut_min_percent = 36"};
+    const auto position = text.find(existing);
+    ASSERT_NE(position, std::string::npos);
+    text.replace(position, existing.size(), "block_cut_min_percent = 50");
+    aetheria::tests::write_text(path, text);
+
+    EXPECT_THROW(static_cast<void>(aetheria::rules::RulesetLoader::load(directory.path())),
+                 std::runtime_error);
+}
+
 }  // namespace

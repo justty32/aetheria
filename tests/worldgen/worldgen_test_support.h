@@ -96,6 +96,15 @@ flags = 0
 visual = "ground/grass"
 )");
     write_text(directory.path() / "site_projection.toml", R"(
+[city_skeleton]
+block_split_depth = 5
+block_cut_min_percent = 36
+block_cut_max_percent = 44
+block_min_extent = 3
+height_noise_amplitude = 96
+max_buildable_slope = 8
+water_inland_reach = 18
+
 [[terrain_ground]]
 terrain = "terrain.grassland"
 ground = "ground.grass"

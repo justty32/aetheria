@@ -57,6 +57,19 @@ struct CrossingRule {
     EdgeId result;
 };
 
+// SiteGenerationRules 是城區骨架 S1～S4 的資料驅動限制。
+// Ruleset 擁有值，Site 生成器只讀取複本；比例皆為整數百分比。
+struct SiteGenerationRules {
+    std::uint8_t block_split_depth{};
+    std::uint8_t block_cut_min_percent{};
+    std::uint8_t block_cut_max_percent{};
+    std::uint8_t block_min_extent{};
+    std::uint16_t height_noise_amplitude{};
+    std::uint16_t max_buildable_slope{};
+    std::uint8_t water_inland_reach{};
+    bool loaded{};
+};
+
 // SettlementScoringWeights 是同一套選址因子的整數權重。
 // 現代與上古文明各自持有一份，worldgen 評分函式只借用 const 參考。
 struct SettlementScoringWeights {

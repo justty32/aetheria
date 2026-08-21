@@ -66,6 +66,16 @@ visual="ocean"
 yield={food=1,production=0,wealth=1,mana=0}
 )toml";
 
+constexpr std::string_view kSiteSkeletonRules = R"toml([city_skeleton]
+block_split_depth=5
+block_cut_min_percent=36
+block_cut_max_percent=44
+block_min_extent=3
+height_noise_amplitude=96
+max_buildable_slope=8
+water_inland_reach=18
+)toml";
+
 inline void write_valid_ruleset(const std::filesystem::path& path, std::string_view terrain,
                                 std::string_view feature_reference = {}) {
     write_text(path / "terrain.toml", terrain);
@@ -107,7 +117,7 @@ move_cost=0
 flags=1
 visual="water"
 )toml");
-    std::string projection;
+    std::string projection{kSiteSkeletonRules};
     if (terrain.find("terrain.grassland") != std::string_view::npos) {
         projection += R"toml([[terrain_ground]]
 terrain="terrain.grassland"

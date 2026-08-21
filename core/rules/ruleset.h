@@ -57,6 +57,9 @@ class Ruleset {
         return relief_rules_;
     }
     [[nodiscard]] const MovementRules& movement_rules() const noexcept { return movement_rules_; }
+    [[nodiscard]] const SiteGenerationRules& site_generation_rules() const noexcept {
+        return site_generation_rules_;
+    }
     [[nodiscard]] const CivilizationRules& civilization_rules() const noexcept {
         return civilization_rules_;
     }
@@ -77,6 +80,7 @@ class Ruleset {
     std::vector<TerrainRule> terrain_rules_;
     std::vector<ReliefRule> relief_rules_;
     MovementRules movement_rules_;
+    SiteGenerationRules site_generation_rules_;
     CivilizationRules civilization_rules_;
     std::vector<WorldGraphConnection> world_connections_;
     std::map<std::string, TerrainId, std::less<>> terrain_index_;

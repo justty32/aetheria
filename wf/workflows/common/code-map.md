@@ -78,8 +78,7 @@
 | `region_path.cpp` | A*（admissible heuristic）|
 | `region_turn.cpp`、`region_simulation.*` | `RegionTurnPipeline` 下令／旬推進；第 5 階段近似公式與 live Site 跳過計數 |
 
-`core/site/site_event_escalation.*` 不保存／不聚合事件；它把建築狀態事件先落到 Site
-持久來源，達 `Region` 等級才立即同步既有歸約快變數，較低等級等待旬末歸約。
+[core/site 詳圖](code-map-site.md)：城區骨架 S1～S4、投影／填充、生命週期、歸約與事件升級。
 
 ### `core/worldgen` — Region 十二階段生成
 

@@ -1,6 +1,6 @@
 #pragma once
 
-// site_projection.h 定義 L1→L2 投影的慢／快變數界面、最小程序骨架與三層資料型別。
+// site_projection.h 定義 L1→L2 投影的慢／快變數界面、城區程序骨架與三層資料型別。
 
 #include "core/rules/ruleset.h"
 #include "core/world/region_tiles.h"
@@ -88,15 +88,51 @@ struct PersistentBuilding {
     template <typename Archive> void serialize(Archive& archive) { archive(tile, type, state); }
 };
 
-// SiteSkeleton 是 64×64 的最小程序層，只含 ground 與每格四向 edges。
+enum class SiteBoundarySide : std::uint8_t {
+    North,
+    East,
+    South,
+    West,
+};
+
+// SiteGate 是 Region 道路 crossing 在 Site 邊界上的落點。
+struct SiteGate {
+    SiteBoundarySide side{SiteBoundarySide::North};
+    SiteXY tile;
+    rules::EdgeId kind{};
+
+    constexpr bool operator==(const SiteGate&) const noexcept = default;
+};
+
+// SiteBlock 是次級街道遞迴二分後的矩形街廓，不包含切分街道本身。
+struct SiteBlock {
+    SiteXY origin;
+    std::uint16_t width{};
+    std::uint16_t height{};
+
+    [[nodiscard]] constexpr std::uint32_t area() const noexcept {
+        return static_cast<std::uint32_t>(width) * height;
+    }
+    constexpr bool operator==(const SiteBlock&) const noexcept = default;
+};
+
+// SiteSkeleton 是 64×64 的 S1～S4 程序層：地形、道路、街廓與可建地。
 // SiteProceduralLayer 擁有它；不進存檔。
 // vector 重配或擁有者析構後其中參考失效。
 struct SiteSkeleton {
     std::vector<rules::GroundId> ground;
     std::vector<rules::EdgeId> edges;
+    std::vector<std::uint16_t> elevation;
+    std::vector<std::uint8_t> water;
+    std::vector<std::uint8_t> roads;
     std::vector<std::uint8_t> buildable;
+    SiteXY city_center;
+    std::vector<SiteGate> gates;
+    std::vector<SiteBlock> blocks;
 
     [[nodiscard]] bool valid_layout() const noexcept;
+    [[nodiscard]] bool is_water(SiteXY tile) const noexcept;
+    [[nodiscard]] bool is_road(SiteXY tile) const noexcept;
     [[nodiscard]] bool is_buildable(SiteXY tile) const noexcept;
     bool operator==(const SiteSkeleton&) const = default;
 };

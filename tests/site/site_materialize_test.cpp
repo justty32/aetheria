@@ -92,7 +92,10 @@ TEST(SiteMaterialize, DerivesZoneKeyAndCreatesOnePersistentBuildingAtCoarseLod) 
     const auto& layers = std::get<aetheria::zone::SitePayload>(site.payload).layers;
     ASSERT_TRUE(layers.procedural.valid_layout());
     ASSERT_EQ(layers.persistent.buildings.size(), 1U);
-    EXPECT_TRUE(layers.procedural.skeleton.is_buildable(layers.persistent.buildings.front().tile));
+    const auto building_tile = layers.persistent.buildings.front().tile;
+    EXPECT_TRUE(layers.procedural.skeleton.is_buildable(building_tile));
+    EXPECT_FALSE(layers.procedural.skeleton.is_water(building_tile));
+    EXPECT_FALSE(layers.procedural.skeleton.is_road(building_tile));
 }
 
 TEST(SiteMaterialize, PersistentBuildingRoundTripsButProceduralLayerDoesNotSave) {
