@@ -314,8 +314,6 @@ SiteCatchUpReport restore_site_digest(zone::Zone& site, const SiteFastVars& fast
         iterator = state.pending.erase(iterator);
         ++report.constructions_completed;
     }
-    state.economy.hours_into_xun = static_cast<std::uint16_t>(
-        (state.economy.hours_into_xun + elapsed_hours) % 240U);
     site.reg.emplace_or_replace<CityBuildState>(entity, std::move(state));
     site.reg.remove<SiteDigest>(entity);
     return report;

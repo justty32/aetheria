@@ -159,8 +159,6 @@ SiteBatchAdvanceReport SiteTurnPipeline::advance_hours(zone::Zone& region,
 
     SiteBatchAdvanceReport batch;
     batch.sites.reserve(ordered.size());
-    std::uint16_t common_xun_hour{};
-    bool has_common_xun_hour{};
     zone::ZoneKey previous_key{};
     bool has_previous_key{};
     for (const auto& target : ordered) {
@@ -184,13 +182,21 @@ SiteBatchAdvanceReport SiteTurnPipeline::advance_hours(zone::Zone& region,
         if (!tiles.site.at(tiles.index_of(target.coordinate)).has_live_site) {
             throw std::logic_error{"SiteTurnPipeline 只推進 Region 已標記 live 的 Site"};
         }
-        const auto xun_hour = city_build_state(site).economy.hours_into_xun;
-        if (has_common_xun_hour && xun_hour != common_xun_hour) {
-            throw std::logic_error{"SiteTurnPipeline 批次 Site 不在同一旬內小時"};
-        }
-        common_xun_hour = xun_hour;
-        has_common_xun_hour = true;
+        static_cast<void>(city_build_state(site));
         batch.sites.push_back({site.key, {}});
+    }
+
+    if (ordered.empty()) {
+        return batch;
+    }
+    auto& clock = world::turn_clock(region);
+    const auto raw_hour = static_cast<std::int64_t>(time::kHour);
+    if (static_cast<std::int64_t>(clock.now) % raw_hour != 0) {
+        throw std::logic_error{"SiteTurnPipeline 要求全局時鐘位於整點"};
+    }
+    const auto final_tick = clock.now + time::kHour * static_cast<std::int64_t>(hours);
+    if (!time::is_representable(final_tick)) {
+        throw std::overflow_error{"Site 小時推進超出 Tick 可表達範圍"};
     }
 
     for (std::uint32_t hour = 0; hour < hours; ++hour) {
@@ -217,12 +223,14 @@ SiteBatchAdvanceReport SiteTurnPipeline::advance_hours(zone::Zone& region,
             }
         }
 
+        clock.now = clock.now + time::kHour;
+        region.last_saved_tick = clock.now;
         const bool reached_xun =
-            !ordered.empty() && std::ranges::all_of(ordered, [](const auto& target) {
-                return city_build_state(*target.site).economy.hours_into_xun == 0;
-            });
+            static_cast<std::int64_t>(clock.now) %
+                static_cast<std::int64_t>(time::kXun) ==
+            0;
         if (reached_xun) {
-            region_turn_.advance_xun(region, {}, [&](zone::Zone& reducing_region) {
+            region_turn_.settle_elapsed_xun(region, {}, [&](zone::Zone& reducing_region) {
                 for (const auto& target : ordered) {
                     auto& reducing_tiles = require_region_layer(reducing_region, target.region_z);
                     reduce_live_site_xun(reducing_tiles, target.coordinate, *target.site);

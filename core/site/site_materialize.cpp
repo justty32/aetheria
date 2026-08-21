@@ -10,6 +10,7 @@
 #include <optional>
 #include <stdexcept>
 #include <utility>
+#include <vector>
 
 namespace aetheria::site {
 namespace {
@@ -57,6 +58,56 @@ struct PreparedSite {
     SiteProceduralLayer procedural;
     std::optional<WildernessSite> wilderness;
 };
+
+void clear_wilderness_entities(zone::Zone& loaded) {
+    std::vector<entt::entity> entities;
+    for (const auto entity : loaded.reg.view<SitePosition>()) {
+        entities.push_back(entity);
+    }
+    for (const auto entity : entities) {
+        loaded.reg.destroy(entity);
+    }
+}
+
+void restore_loaded_site(zone::Zone& loaded, PreparedSite prepared,
+                         const SiteProjectionVars& vars, std::uint64_t expected_seed,
+                         time::Tick now, const rules::Ruleset& ruleset,
+                         SiteCatchUpReport* report) {
+    auto& layers = std::get<zone::SitePayload>(loaded.payload).layers;
+    layers.procedural = std::move(prepared.procedural);
+    layers.volatile_state = SiteVolatileLayer{};
+    if (prepared.wilderness.has_value()) {
+        install_wilderness_entities(loaded, *prepared.wilderness, vars.slow.feature,
+                                    vars.fast.owner);
+    }
+    auto digests = loaded.reg.view<SiteDigest>();
+    if (digests.empty()) {
+        if (report != nullptr) {
+            *report = {};
+        }
+        loaded.lod = zone::LodLevel::Coarse;
+        return;
+    }
+    if (digests.size() != 1U) {
+        throw std::runtime_error{"重載 Site 含多份 SiteDigest"};
+    }
+    auto& digest = digests.get<SiteDigest>(*digests.begin());
+    const auto rebuilt_hash = hash_site_skeleton(layers.procedural.skeleton);
+    if (digest.site_seed != expected_seed) {
+        throw std::runtime_error{"SiteDigest seed 不符（" + std::to_string(digest.site_seed) +
+                                 "/" + std::to_string(expected_seed) + ")"};
+    }
+    SiteMigrationReport migration;
+    if (digest.skeleton_hash != rebuilt_hash) {
+        migration = migrate_site_digest(digest, layers.procedural.skeleton, ruleset);
+    }
+    auto caught_up = restore_site_digest(loaded, vars.fast, now, ruleset);
+    caught_up.migration = migration;
+    if (report != nullptr) {
+        *report = caught_up;
+    }
+    loaded.lod = zone::LodLevel::Coarse;
+}
 
 [[nodiscard]] PreparedSite prepare_site(const world::RegionTiles& region_tiles,
                                         world::RegionXY coordinate, std::uint64_t world_seed,
@@ -140,42 +191,12 @@ zone::ZoneHandle rematerialize_site_zone(zone::ZoneManager& manager,
 
     const auto handle = *manager.get(site_key);
     const bool borrowed = manager.with(handle, [&](zone::Zone& loaded) {
-        auto& layers = std::get<zone::SitePayload>(loaded.payload).layers;
-        layers.procedural = std::move(prepared.procedural);
-        layers.volatile_state = SiteVolatileLayer{};
-        if (prepared.wilderness.has_value()) {
-            install_wilderness_entities(loaded, *prepared.wilderness, vars.slow.feature,
-                                        vars.fast.owner);
-        }
-        auto digests = loaded.reg.view<SiteDigest>();
-        if (!digests.empty()) {
-            if (digests.size() != 1U) {
-                throw std::runtime_error{"重載 Site 含多份 SiteDigest"};
-            }
-            auto& digest = digests.get<SiteDigest>(*digests.begin());
-            const auto expected_seed =
-                derive_site_seed(world_seed, region_id,
-                                 static_cast<std::uint16_t>(coordinate.x),
-                                 static_cast<std::uint16_t>(coordinate.y));
-            const auto rebuilt_hash = hash_site_skeleton(layers.procedural.skeleton);
-            if (digest.site_seed != expected_seed) {
-                throw std::runtime_error{
-                    "SiteDigest seed 不符（" + std::to_string(digest.site_seed) + "/" +
-                    std::to_string(expected_seed) + ")"};
-            }
-            SiteMigrationReport migration;
-            if (digest.skeleton_hash != rebuilt_hash) {
-                migration = migrate_site_digest(digest, layers.procedural.skeleton, ruleset);
-            }
-            auto caught_up = restore_site_digest(loaded, vars.fast, now, ruleset);
-            caught_up.migration = migration;
-            if (report != nullptr) {
-                *report = caught_up;
-            }
-        } else if (report != nullptr) {
-            *report = {};
-        }
-        loaded.lod = zone::LodLevel::Coarse;
+        const auto expected_seed =
+            derive_site_seed(world_seed, region_id,
+                             static_cast<std::uint16_t>(coordinate.x),
+                             static_cast<std::uint16_t>(coordinate.y));
+        restore_loaded_site(loaded, std::move(prepared), vars, expected_seed, now, ruleset,
+                            report);
     });
     if (!borrowed) {
         throw std::logic_error{"Site rematerialize 冷載後未留在 ZoneManager"};
@@ -187,30 +208,30 @@ zone::ZoneHandle rematerialize_site_zone(zone::ZoneManager& manager,
     return handle;
 }
 
-void unload_site_zone(zone::ZoneManager& manager, zone::ZoneHandle handle,
+void freeze_site_zone(zone::ZoneManager& manager, zone::ZoneHandle handle,
                       world::RegionTiles& region_tiles, world::RegionXY coordinate,
                       std::uint64_t world_seed, std::uint32_t region_id, time::Tick now) {
     if (zone::level_of(handle.key()) != zone::ZoneLevel::Site) {
-        throw std::invalid_argument{"Site unload 只接受 Site ZoneKey"};
+        throw std::invalid_argument{"Site freeze 只接受 Site ZoneKey"};
     }
     const auto region_index = region_tiles.index_of(coordinate);
     if (!region_tiles.site.at(region_index).has_live_site) {
-        throw std::logic_error{"Site unload 要求 Region tile 標記為 live"};
+        throw std::logic_error{"Site freeze 要求 Region tile 標記為 live"};
     }
     const bool borrowed = manager.with(handle, [&](zone::Zone& loaded) {
         if (loaded.lod != zone::LodLevel::Full && loaded.lod != zone::LodLevel::Coarse) {
-            throw std::logic_error{"Site unload 要求起點為 L_FULL/L_COARSE"};
+            throw std::logic_error{"Site freeze 要求起點為 L_FULL/L_COARSE"};
         }
         reduce_live_site_xun(region_tiles, coordinate, loaded);
         auto states = loaded.reg.view<CityBuildState>();
         if (states.size() != 1U) {
-            throw std::logic_error{"M4 Site unload 要求恰有一個 CityBuildState"};
+            throw std::logic_error{"Site freeze 要求恰有一個 CityBuildState"};
         }
         const auto state_entity = *states.begin();
         const auto& state = states.get<CityBuildState>(state_entity);
         auto& layers = std::get<zone::SitePayload>(loaded.payload).layers;
         if (!layers.procedural.skeleton.valid_layout()) {
-            throw std::logic_error{"Site unload 不能從只有持久層的冷 load 建立 digest"};
+            throw std::logic_error{"Site freeze 不能從只有持久層的冷 load 建立 digest"};
         }
         SiteDigest digest{
             .unload_tick = now,
@@ -227,19 +248,84 @@ void unload_site_zone(zone::ZoneManager& manager, zone::ZoneHandle handle,
         };
         loaded.reg.emplace_or_replace<SiteDigest>(state_entity, std::move(digest));
         loaded.reg.remove<CityBuildState>(state_entity);
+        clear_wilderness_entities(loaded);
         layers.persistent.buildings.clear();
-        loaded.lod = zone::LodLevel::Absent;
+        layers.procedural = {};
+        layers.volatile_state = {};
+        loaded.lod = zone::LodLevel::Frozen;
     });
     if (!borrowed) {
-        throw std::logic_error{"Site unload 要求 zone 已載入"};
+        throw std::logic_error{"Site freeze 要求 zone 已載入"};
+    }
+    auto& site_state = region_tiles.site.at(region_index);
+    site_state.lod = zone::LodLevel::Frozen;
+    site_state.has_live_site = false;
+}
+
+void thaw_site_zone(zone::ZoneManager& manager, zone::ZoneHandle handle,
+                    world::RegionTiles& region_tiles, world::RegionXY coordinate,
+                    std::uint64_t world_seed, std::uint32_t region_id, time::Tick now,
+                    const rules::Ruleset& ruleset, SiteCatchUpReport* report) {
+    if (zone::level_of(handle.key()) != zone::ZoneLevel::Site) {
+        throw std::invalid_argument{"Site thaw 只接受 Site ZoneKey"};
+    }
+    const auto region_index = region_tiles.index_of(coordinate);
+    const auto& site_state = region_tiles.site.at(region_index);
+    if (site_state.has_live_site || site_state.lod != zone::LodLevel::Frozen) {
+        throw std::logic_error{"Site thaw 要求起點為 L_FROZEN"};
+    }
+    const auto vars = split_site_vars(region_tiles, coordinate);
+    auto prepared = prepare_site(region_tiles, coordinate, world_seed, region_id, vars, ruleset);
+    const auto expected_seed =
+        derive_site_seed(world_seed, region_id, static_cast<std::uint16_t>(coordinate.x),
+                         static_cast<std::uint16_t>(coordinate.y));
+    const bool borrowed = manager.with(handle, [&](zone::Zone& loaded) {
+        if (loaded.lod != zone::LodLevel::Frozen || loaded.reg.view<SiteDigest>().size() != 1U) {
+            throw std::logic_error{"Site thaw 的記憶體 zone 不是單一 digest 的 L_FROZEN"};
+        }
+        restore_loaded_site(loaded, std::move(prepared), vars, expected_seed, now, ruleset,
+                            report);
+    });
+    if (!borrowed) {
+        throw std::logic_error{"Site thaw 要求 zone 仍在記憶體"};
+    }
+    auto& mutable_state = region_tiles.site.at(region_index);
+    mutable_state.lod = zone::LodLevel::Coarse;
+    mutable_state.has_live_site = true;
+    mutable_state.ever_realized = true;
+}
+
+void evict_frozen_site_zone(zone::ZoneManager& manager, zone::ZoneHandle handle,
+                            world::RegionTiles& region_tiles,
+                            world::RegionXY coordinate, time::Tick now) {
+    const auto region_index = region_tiles.index_of(coordinate);
+    const auto& site_state = region_tiles.site.at(region_index);
+    if (site_state.has_live_site || site_state.lod != zone::LodLevel::Frozen) {
+        throw std::logic_error{"Site evict 要求起點為 L_FROZEN"};
+    }
+    const bool borrowed = manager.with(handle, [](const zone::Zone& loaded) {
+        if (loaded.lod != zone::LodLevel::Frozen ||
+            loaded.reg.view<const SiteDigest>().size() != 1U) {
+            throw std::logic_error{"Site evict 的記憶體 zone 不是單一 digest 的 L_FROZEN"};
+        }
+    });
+    if (!borrowed) {
+        throw std::logic_error{"Site evict 要求 zone 仍在記憶體"};
     }
     manager.tick(now);
     if (!manager.unload(handle.key())) {
-        throw std::logic_error{"Site unload 無法寫盤並進入 L_ABSENT"};
+        throw std::logic_error{"Site evict 無法寫盤並進入 L_ABSENT"};
     }
-    auto& site_state = region_tiles.site.at(region_index);
-    site_state.lod = zone::LodLevel::Absent;
-    site_state.has_live_site = false;
+    auto& mutable_state = region_tiles.site.at(region_index);
+    mutable_state.lod = zone::LodLevel::Absent;
+    mutable_state.has_live_site = false;
+}
+
+void unload_site_zone(zone::ZoneManager& manager, zone::ZoneHandle handle,
+                      world::RegionTiles& region_tiles, world::RegionXY coordinate,
+                      std::uint64_t world_seed, std::uint32_t region_id, time::Tick now) {
+    freeze_site_zone(manager, handle, region_tiles, coordinate, world_seed, region_id, now);
+    evict_frozen_site_zone(manager, handle, region_tiles, coordinate, now);
 }
 
 void collapse_site_zone(zone::ZoneManager& manager, zone::ZoneHandle handle,

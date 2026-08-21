@@ -144,8 +144,6 @@ std::uint32_t simulate_hour(CityBuildState& state, const rules::Ruleset& ruleset
         iterator = state.pending.erase(iterator);
         ++completed;
     }
-    state.economy.hours_into_xun =
-        static_cast<std::uint16_t>((state.economy.hours_into_xun + 1U) % kHoursPerXun);
     return completed;
 }
 
@@ -155,7 +153,7 @@ namespace aetheria::site {
 
 bool valid_city_build_state(const CityBuildState& state,
                             const rules::Ruleset& ruleset) noexcept {
-    if (state.economy.hours_into_xun >= 240U || state.economy.satisfaction > 100U) {
+    if (state.economy.satisfaction > 100U) {
         return false;
     }
     const auto valid_building = [&](std::string_view id, SiteXY origin) {

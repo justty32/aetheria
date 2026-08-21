@@ -74,6 +74,10 @@ struct TurnClock {
     constexpr bool operator==(const TurnClock&) const noexcept = default;
 };
 
+// Region 上的 TurnClock 是唯一全局時鐘；下層流水線只透過這個入口讀寫。
+[[nodiscard]] TurnClock& turn_clock(zone::Zone& region);
+[[nodiscard]] const TurnClock& turn_clock(const zone::Zone& region);
+
 // RegionPath 是包含起點與終點的四鄰接路徑及其整數總成本。
 // 呼叫端擁有回傳值。
 // 值本身永不失效；空 optional 代表無可行路徑。
@@ -116,8 +120,15 @@ public:
     void issue_move(zone::Zone& region, StableId unit, RegionXY target) const;
     void advance_xun(zone::Zone& region, const TurnStageObserver& observer = {},
                      const LiveSiteReductionPass& live_site_reduction = {}) const;
+    // 下層逐小時流水線已把全局時鐘推到旬界後，只結算剛結束的一旬，不再推時鐘。
+    void settle_elapsed_xun(zone::Zone& region, const TurnStageObserver& observer = {},
+                            const LiveSiteReductionPass& live_site_reduction = {}) const;
 
 private:
+    void run_xun_stages(zone::Zone& region, time::Tick simulation_start,
+                        const TurnStageObserver& observer,
+                        const LiveSiteReductionPass& live_site_reduction) const;
+
     const rules::Ruleset& ruleset_;
     zone::ZoneStore& store_;
 };
