@@ -52,6 +52,7 @@ Ruleset RulesetLoader::load(const std::filesystem::path& data_directory) {
     load_grounds(result, data_directory, global_ids);
     load_site_projection(result, data_directory);
     load_site_city(result, data_directory, global_ids);
+    load_site_wilderness(result, data_directory);
     load_biome_rule_tables(result, data_directory);
     load_movement_rules(result, data_directory);
     load_faction_rules(result, data_directory);

@@ -70,6 +70,29 @@ struct SiteGenerationRules {
     bool loaded{};
 };
 
+// WildernessGenerationRules 是荒野 W1～W6 的資料驅動密度與有界成本參數。
+// 百分比皆為 0～100；Ruleset 擁有值，荒野生成器只讀取複本。
+struct WildernessGenerationRules {
+    std::uint16_t height_noise_amplitude{};
+    std::uint16_t plain_passable_slope{};
+    std::uint16_t hills_passable_slope{};
+    std::uint16_t mountain_passable_slope{};
+    std::uint8_t jitter_cell_extent{};
+    std::uint8_t sparse_vegetation_percent{};
+    std::uint8_t forest_vegetation_percent{};
+    std::uint8_t base_resource_points{};
+    std::uint8_t mine_resource_points{};
+    std::uint8_t owned_encounter_points{};
+    std::uint8_t unowned_encounter_points{};
+    std::uint8_t road_traveler_points{};
+    std::uint8_t wilderness_portals{};
+    std::uint8_t mountain_portals{};
+    std::uint8_t ruin_portals{};
+    std::uint8_t ruin_keep_min_percent{};
+    std::uint8_t ruin_keep_max_percent{};
+    bool loaded{};
+};
+
 // SiteFillZone 目前只列出能由既有快變數驅動的 F1 分區。
 enum class SiteFillZone : std::uint8_t {
     Residential,

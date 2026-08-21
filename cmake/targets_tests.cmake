@@ -16,6 +16,10 @@ add_executable(aetheria_tests
     tests/site/site_roundtrip_test.cpp
     tests/site/site_projection_test.cpp
     tests/site/site_skeleton_test.cpp
+    tests/site/site_wilderness_boundary_test.cpp
+    tests/site/site_wilderness_generation_test.cpp
+    tests/site/site_wilderness_content_test.cpp
+    tests/site/site_wilderness_lifecycle_test.cpp
     tests/sim/world_hash_error_test.cpp
     tests/sim/world_hash_state_test.cpp
     sim/world_hash.cpp

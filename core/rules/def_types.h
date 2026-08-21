@@ -11,6 +11,8 @@ namespace aetheria::rules {
 
 inline constexpr std::uint32_t kTerrainWaterFlag = UINT32_C(1) << 1U;
 inline constexpr std::uint32_t kGroundWaterFlag = UINT32_C(1);
+inline constexpr std::uint32_t kFeatureForestFlag = UINT32_C(1);
+inline constexpr std::uint32_t kFeatureMineFlag = UINT32_C(1) << 1U;
 inline constexpr std::uint32_t kFeatureRuinFlag = UINT32_C(1) << 4U;
 inline constexpr std::uint32_t kEdgeRoadFlag = UINT32_C(1);
 inline constexpr std::uint32_t kEdgeRiverFlag = UINT32_C(1) << 1U;

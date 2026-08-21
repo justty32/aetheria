@@ -6,6 +6,7 @@ add_library(aetheria_core STATIC
     core/rules/ruleset_load_defs.cpp
     core/rules/ruleset_load_site.cpp
     core/rules/ruleset_load_site_city.cpp
+    core/rules/ruleset_load_site_wilderness.cpp
     core/rules/ruleset_load_biomes.cpp
     core/rules/ruleset_load_civilization.cpp
     core/rules/ruleset_load_factions.cpp
@@ -30,6 +31,14 @@ add_library(aetheria_core STATIC
     core/site/site_skeleton_terrain.cpp
     core/site/site_skeleton_roads.cpp
     core/site/site_skeleton_blocks.cpp
+    core/site/site_wilderness.cpp
+    core/site/site_wilderness_entities.cpp
+    core/site/site_wilderness_boundary.cpp
+    core/site/site_wilderness_boundary_seed.cpp
+    core/site/site_wilderness_terrain.cpp
+    core/site/site_wilderness_pathfinding.cpp
+    core/site/site_wilderness_paths.cpp
+    core/site/site_wilderness_content.cpp
     core/site/site_reduction.cpp
     core/time/tick.cpp
     core/serialize/zone_encode.cpp

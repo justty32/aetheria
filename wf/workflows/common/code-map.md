@@ -23,7 +23,7 @@
 | `CMakeLists.txt`、`vcpkg.json` | 專案組態與依賴固定；**來源清單不在這裡**，在 `cmake/targets_*.cmake` |
 | `cmake/` | `targets_*.cmake` 來源／測試；`godot_toolchain.cmake` 工具鏈；`check_*.cmake` CTest 檢查 |
 | `core/` | 純 C++ 玩法核心，**不得依賴 godot-cpp** |
-| `core/site/` | L1→L2 慢／快隔離、骨架／填充、展開／冷載／收回、固定 row 歸約，以及最小事件升級界面 |
+| `core/site/` | L1→L2 慢／快隔離、城區／荒野生成、展開／冷載／收回、固定 row 歸約，以及最小事件升級界面 |
 | `bridge/` | `AetheriaCore` Node 與 GDExtension 註冊；唯一可 include godot-cpp 的自有目錄 |
 | `godot/` | 純顯示／呼叫驗證場景與 `.gdextension` 描述檔 |
 | `tests/` | GoogleTest 單元測試 |

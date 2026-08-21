@@ -122,6 +122,26 @@ faction=0
 landmarks=["building.market"]
 )toml";
 
+constexpr std::string_view kSiteWildRules = R"toml([wilderness]
+height_noise_amplitude=72
+plain_passable_slope=28
+hills_passable_slope=20
+mountain_passable_slope=9
+jitter_cell_extent=3
+sparse_vegetation_percent=12
+forest_vegetation_percent=70
+base_resource_points=3
+mine_resource_points=12
+owned_encounter_points=2
+unowned_encounter_points=6
+road_traveler_points=3
+wilderness_portals=1
+mountain_portals=2
+ruin_portals=4
+ruin_keep_min_percent=20
+ruin_keep_max_percent=40
+)toml";
+
 inline void write_valid_ruleset(const std::filesystem::path& path, std::string_view terrain,
                                 std::string_view feature_reference = {}) {
     write_text(path / "terrain.toml", terrain);
@@ -204,6 +224,7 @@ rough_ground="ground.water"
     }
     write_text(path / "site_projection.toml", projection);
     write_text(path / "site_city.toml", kSiteFillRules);
+    write_text(path / "site_wild.toml", kSiteWildRules);
 }
 
 }  // namespace aetheria::tests

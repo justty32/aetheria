@@ -66,6 +66,9 @@ class Ruleset {
     [[nodiscard]] const SiteFillRules& site_fill_rules() const noexcept {
         return site_fill_rules_;
     }
+    [[nodiscard]] const WildernessGenerationRules& wilderness_generation_rules() const noexcept {
+        return wilderness_generation_rules_;
+    }
     [[nodiscard]] const CivilizationRules& civilization_rules() const noexcept {
         return civilization_rules_;
     }
@@ -89,6 +92,7 @@ class Ruleset {
     MovementRules movement_rules_;
     SiteGenerationRules site_generation_rules_;
     SiteFillRules site_fill_rules_;
+    WildernessGenerationRules wilderness_generation_rules_;
     CivilizationRules civilization_rules_;
     std::vector<WorldGraphConnection> world_connections_;
     std::map<std::string, TerrainId, std::less<>> terrain_index_;
@@ -124,6 +128,8 @@ class RulesetLoader {
     static void load_site_projection(Ruleset& result, const std::filesystem::path& data_directory);
     static void load_site_city(Ruleset& result, const std::filesystem::path& data_directory,
                                std::set<std::string, std::less<>>& global_ids);
+    static void load_site_wilderness(Ruleset& result,
+                                     const std::filesystem::path& data_directory);
     static void load_biome_rule_tables(Ruleset& result,
                                        const std::filesystem::path& data_directory);
     static void load_movement_rules(Ruleset& result, const std::filesystem::path& data_directory);

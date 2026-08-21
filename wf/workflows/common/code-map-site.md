@@ -22,13 +22,29 @@
 | `site_fortifications.cpp` | F3：街廓外緣牆環、主幹道城門、雙重牆、塔樓與護城河 EdgeDef |
 | `site_landmarks.cpp` | F4：owner 勢力風格表選取、城心附近最高分街廓放置地標 |
 | `site_damage.cpp` | F5：牆缺口與依城門／缺口距離優先的瓦礫／焚毀狀態 |
-| `site_materialize.*` | 首次展開、冷重算展開、收回與持久建築座標疊加 |
+| `site_materialize.*` | 依聚落有無分流城區／荒野，首次展開、冷重算展開、收回與持久建築座標疊加 |
 | `site_reduction.*` | 固定 row 的 Site→Region 歸約 |
 | `site_event_escalation.*` | 建築事件先落持久來源；達 Region 級才立即同步歸約快變數 |
 
 `data/site_projection.toml` 保存 Terrain→Ground 映射與城區骨架規則；`data/site_city.toml`
 保存 F1/F2 配額與建築、F3 城防引用、F4 勢力風格及 F5 缺口比例。載入型別分別是
 `rules::SiteGenerationRules` 與 `rules::SiteFillRules`，已啟用分區缺配額或建築 def 時載入失敗。
+
+### 荒野 W1～W6
+
+| 檔案 | 職責 |
+|---|---|
+| `site_wilderness.h` | `BoundaryProfile`、荒野慢／快分段輸出與不進存檔白名單的 live component |
+| `site_wilderness.cpp` | W1～W6 編排、W5 唯一快變數入口與結果驗證 |
+| `site_wilderness_boundary*.{h,cpp}` | 規範 edge／corner id、共享邊界剖面與 Region 慢變數投影 |
+| `site_wilderness_terrain.cpp` | W1：四邊內插、relief 噪聲、海域與通行遮罩 |
+| `site_wilderness_pathfinding.cpp`、`site_wilderness_paths.cpp` | 有界 A*；W2 河流／湖泊與 W3 道路／橋 |
+| `site_wilderness_content.cpp` | W4 抖動網格植被、廢墟街廓複用與 W6 L3 入口 |
+| `site_wilderness_entities.cpp` | 完整荒野 hash 與 W4～W6 live registry 實體安裝 |
+
+`data/site_wild.toml` 保存荒野坡度、密度、入口與廢墟保留比例。對應測試是
+`site_wilderness_{boundary,generation,content,lifecycle}_test.cpp`：共享邊五項判準、W1～W6
+分支證據、海域／廢墟變體、零玩法持久物與冷重算，以及 Debug／Release 30 ms 預算。
 
 對應測試在 `tests/site/`：`site_skeleton_test.cpp` 驗 S1～S4；`site_fill_test.cpp` 驗快慢隔離、
 有牆必有門／雙重牆、owner 地標、損毀距離偏好、packing 與 S+F 效能；既有 `site_materialize_test.cpp` 的持久
