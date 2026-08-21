@@ -71,6 +71,9 @@ struct SiteAdvanceReport {
     std::uint64_t production_produced{};
     std::uint32_t population_births{};
     std::uint32_t population_deaths{};
+    std::uint64_t persistent_object_advances{};
+    std::uint32_t aging_transitions{};
+    bool aging_cap_hit{};
 };
 
 void enter_full_site(zone::Zone& site, world::RegionTiles& tiles,

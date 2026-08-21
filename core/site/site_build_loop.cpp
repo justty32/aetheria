@@ -1,6 +1,7 @@
 #include "core/site/site_build_loop.h"
 
 #include "core/site/site_build_loop_detail.h"
+#include "core/site/site_lifecycle.h"
 #include "core/site/site_reduction.h"
 #include "core/zone/zone_key.h"
 
@@ -144,6 +145,13 @@ SiteAdvanceReport SiteTurnPipeline::advance_hours(zone::Zone& site, zone::Zone& 
     auto& tiles = require_region_layer(region, region_z);
     SiteAdvanceReport report;
     for (std::uint32_t hour = 0; hour < hours; ++hour) {
+        auto& layers = std::get<zone::SitePayload>(site.payload).layers;
+        const auto aging =
+            advance_persistent_objects(layers.persistent, split_site_vars(tiles, coordinate).fast,
+                                       time::kHour);
+        report.persistent_object_advances += aging.persistent_objects_advanced;
+        report.aging_transitions += aging.aging_transitions;
+        report.aging_cap_hit = report.aging_cap_hit || aging.aging_cap_hit;
         auto& state = city_build_state(site);
         const auto completed = build_detail::simulate_hour(state, ruleset_, report);
         ++report.hours_advanced;

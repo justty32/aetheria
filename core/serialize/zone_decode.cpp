@@ -4,6 +4,7 @@
 #include "core/serialize/registry_codec.h"
 #include "core/serialize/zone_codec_detail.h"
 #include "core/serialize/zone_region_portals.h"
+#include "core/site/site_lifecycle.h"
 
 #include <cereal/archives/portable_binary.hpp>
 #include <cereal/types/string.hpp>
@@ -173,6 +174,15 @@ std::unique_ptr<zone::Zone> decode_zone(std::string_view bytes, const rules::Rul
          !site::valid_city_build_state(
              city_states.get<const site::CityBuildState>(*city_states.begin()), ruleset))) {
         throw std::runtime_error{"zone 含無效 CityBuildState"};
+    }
+    const auto digests = value->reg.view<const site::SiteDigest>();
+    if (digests.size() > 1U ||
+        (!digests.empty() && zone::level_of(value->key) != zone::ZoneLevel::Site) ||
+        (!digests.empty() && !city_states.empty()) ||
+        (!digests.empty() &&
+         !site::valid_site_digest(digests.get<const site::SiteDigest>(*digests.begin()),
+                                  ruleset))) {
+        throw std::runtime_error{"zone 含無效 SiteDigest"};
     }
     if (stream.peek() != std::char_traits<char>::eof()) {
         throw std::runtime_error{"zone 檔含未解析的尾端資料"};

@@ -12,6 +12,7 @@ add_executable(aetheria_tests
     tests/site/site_projection_error_test.cpp
     tests/site/site_materialize_hash_test.cpp
     tests/site/site_materialize_test.cpp
+    tests/site/site_unload_equivalence_test.cpp
     tests/site/site_reduction_calibration_test.cpp
     tests/site/site_reduction_test.cpp
     tests/site/site_roundtrip_negative_test.cpp

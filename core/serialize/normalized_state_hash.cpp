@@ -1,6 +1,7 @@
 #include "core/serialize/normalized_state_hash.h"
 
 #include "core/site/site_build_loop.h"
+#include "core/site/site_lifecycle.h"
 #include "core/world/region_movement.h"
 
 #include <algorithm>
@@ -218,6 +219,7 @@ std::uint64_t normalized_state_hash(const zone::Zone& zone, const rules::Ruleset
             hash_scalar(hash, building.tile.y);
             hash_scalar(hash, building.type);
             hash_scalar(hash, building.state);
+            hash_scalar(hash, building.aging_seconds);
         }
     } else {
         hash_scalar(hash, static_cast<std::uint64_t>(zone.payload.index()));

@@ -41,6 +41,8 @@ struct SiteFastVars {
     world::SiteState site;
     world::PopulationReduction::Value population{};
     world::DevelopmentLevelReduction::Value development_level{};
+    world::FoodStockReduction::Value food_stock{};
+    world::ProductionStockReduction::Value production_stock{};
     world::DefenseValue defense{};
     world::DamageValue damage{};
 
@@ -87,10 +89,13 @@ struct PersistentBuilding {
     SiteXY tile;
     BuildingType type{BuildingType::SettlementHall};
     BuildingState state{BuildingState::Active};
+    std::uint32_t aging_seconds{};
 
     constexpr bool operator==(const PersistentBuilding&) const noexcept = default;
 
-    template <typename Archive> void serialize(Archive& archive) { archive(tile, type, state); }
+    template <typename Archive> void serialize(Archive& archive) {
+        archive(tile, type, state, aging_seconds);
+    }
 };
 
 enum class SiteBoundarySide : std::uint8_t {

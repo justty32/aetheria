@@ -3,6 +3,7 @@
 #include "core/serialize/all_components.h"
 #include "core/serialize/registry_codec.h"
 #include "core/serialize/zone_codec_detail.h"
+#include "core/site/site_lifecycle.h"
 
 #include <cereal/archives/portable_binary.hpp>
 #include <cereal/types/string.hpp>
@@ -57,6 +58,15 @@ std::string encode_zone(const zone::Zone& value, const rules::Ruleset& ruleset) 
          !site::valid_city_build_state(
              city_states.get<const site::CityBuildState>(*city_states.begin()), ruleset))) {
         throw std::runtime_error{"zone 含無效 CityBuildState"};
+    }
+    const auto digests = value.reg.view<const site::SiteDigest>();
+    if (digests.size() > 1U ||
+        (!digests.empty() && zone::level_of(value.key) != zone::ZoneLevel::Site) ||
+        (!digests.empty() && !city_states.empty()) ||
+        (!digests.empty() &&
+         !site::valid_site_digest(digests.get<const site::SiteDigest>(*digests.begin()),
+                                  ruleset))) {
+        throw std::runtime_error{"zone 含無效 SiteDigest"};
     }
     if (const auto* region = std::get_if<zone::RegionPayload>(&value.payload)) {
         for (const auto& [z, tiles] : region->layers) {

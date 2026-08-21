@@ -97,6 +97,8 @@ SiteProjectionVars split_site_vars(const world::RegionTiles& tiles, world::Regio
         SiteFastVars{tiles.owner.at(index), tiles.settlement.at(index), tiles.site.at(index),
                      tiles.reduction_value<world::PopulationReduction>(coordinate),
                      tiles.reduction_value<world::DevelopmentLevelReduction>(coordinate),
+                     tiles.reduction_value<world::FoodStockReduction>(coordinate),
+                     tiles.reduction_value<world::ProductionStockReduction>(coordinate),
                      tiles.defense.at(index), tiles.damage.at(index)},
     };
 }

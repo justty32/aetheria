@@ -35,10 +35,19 @@ RegionFormulaResult region_formula(SettlementTier settlement,
     if (current > std::numeric_limits<PopulationReduction::Value>::max() - growth) {
         throw std::overflow_error{"Region 人口近似推進溢位"};
     }
-    return {.population = static_cast<PopulationReduction::Value>(current + growth),
+    constexpr PopulationReduction::Value housing_capacity = 500;
+    constexpr FoodStockReduction::Value food_per_xun = 720;
+    constexpr ProductionStockReduction::Value production_per_xun = 1'440;
+    if (food_stock > std::numeric_limits<FoodStockReduction::Value>::max() - food_per_xun ||
+        production_stock >
+            std::numeric_limits<ProductionStockReduction::Value>::max() - production_per_xun) {
+        throw std::overflow_error{"Region 城市資源近似推進溢位"};
+    }
+    return {.population = std::min<PopulationReduction::Value>(
+                housing_capacity, static_cast<PopulationReduction::Value>(current + growth)),
             .development_level = baseline.development_level,
-            .food_stock = food_stock,
-            .production_stock = production_stock};
+            .food_stock = food_stock + food_per_xun,
+            .production_stock = production_stock + production_per_xun};
 }
 
 RegionSimulationReport RegionSimulation::advance_xun(RegionTiles& tiles) {

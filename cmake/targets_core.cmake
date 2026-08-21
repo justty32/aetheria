@@ -20,6 +20,7 @@ add_library(aetheria_core STATIC
     core/site/site_event_escalation.cpp
     core/site/site_build_loop.cpp
     core/site/site_build_economy.cpp
+    core/site/site_lifecycle.cpp
     core/site/site_materialize.cpp
     core/site/site_population.cpp
     core/site/site_zoning.cpp

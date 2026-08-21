@@ -103,7 +103,7 @@ TEST(SiteReduction, RegionTurnRequiresAndRunsOneLiveSiteReductionPassPerXun) {
     EXPECT_EQ(tiles.reduction_value<PopulationReduction>(kReductionCoordinate), 100U);
 }
 
-TEST(SiteReduction, CollapseAlwaysReducesBeforeUnloadAndV12PersistsFastFields) {
+TEST(SiteReduction, CollapseAlwaysReducesBeforeUnloadAndCurrentFormatPersistsFastFields) {
     auto tiles = reduction_region();
     tiles.defense[0] = 87;
     tiles.damage[0] = 42;
