@@ -70,6 +70,14 @@ struct LocalFastVars {
     std::uint8_t hour{};
 };
 
+// 單一 crossing 沒有同類出口時，由生成器留下可驗證的明確終點。
+struct LocalPathEndpoint {
+    LocalXY tile;
+    std::uint32_t edge_flags{};
+
+    constexpr bool operator==(const LocalPathEndpoint&) const noexcept = default;
+};
+
 struct OpenLocalSkeleton {
     LocalTiles tiles;
     std::vector<std::uint16_t> elevation;
@@ -78,6 +86,7 @@ struct OpenLocalSkeleton {
     std::uint16_t river_path_count{};
     std::uint16_t scatter_count{};
     std::uint16_t object_count{};
+    std::vector<LocalPathEndpoint> path_endpoints;
 
     [[nodiscard]] bool valid_layout() const noexcept;
     bool operator==(const OpenLocalSkeleton&) const = default;
@@ -95,6 +104,10 @@ struct OpenLocalSkeleton {
 [[nodiscard]] OpenLocalSkeleton build_open_local_skeleton(
     const LocalSlowVars& slow, std::uint64_t local_seed,
     const rules::Ruleset& ruleset);
+
+// 從每個邊界 crossing 沿實際 tiles 尋找同類出口或明確終點；回傳未解決數量。
+[[nodiscard]] std::size_t count_unresolved_open_paths(
+    const OpenLocalSkeleton& skeleton, const rules::Ruleset& ruleset);
 
 [[nodiscard]] std::uint64_t hash_open_local_skeleton(
     const OpenLocalSkeleton& skeleton) noexcept;

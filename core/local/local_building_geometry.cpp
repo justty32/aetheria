@@ -10,6 +10,8 @@ namespace {
 
 constexpr std::uint64_t kHouseSalt = UINT64_C(0x6D43F21AB895C70E);
 constexpr std::uint64_t kRoomSalt = UINT64_C(0x947C02D5A613EB8F);
+constexpr std::uint64_t kDoorSalt = UINT64_C(0xC2A7184E39B065DF);
+constexpr std::uint16_t kHouseGap = 1;
 
 struct Segment {
     std::uint16_t start{};
@@ -19,14 +21,17 @@ struct Segment {
 [[nodiscard]] std::vector<Segment> split_frontage(std::uint16_t start, std::uint16_t extent,
                                                   std::uint8_t minimum, std::uint8_t maximum,
                                                   std::uint64_t seed) {
-    const auto minimum_count = static_cast<std::uint16_t>((extent + maximum - 1U) / maximum);
-    const auto maximum_count = static_cast<std::uint16_t>(extent / minimum);
+    const auto minimum_count = static_cast<std::uint16_t>(
+        (extent + kHouseGap + maximum + kHouseGap - 1U) / (maximum + kHouseGap));
+    const auto maximum_count =
+        static_cast<std::uint16_t>((extent + kHouseGap) / (minimum + kHouseGap));
     const auto count = static_cast<std::uint16_t>(
         minimum_count + worldgen::splitmix64(seed) % (maximum_count - minimum_count + 1U));
     std::vector<Segment> result;
     result.reserve(count);
     auto cursor = start;
-    auto remaining = extent;
+    auto remaining =
+        static_cast<std::uint16_t>(extent - (count - 1U) * kHouseGap);
     for (std::uint16_t index = 0; index < count; ++index) {
         const auto segments_after = static_cast<std::uint16_t>(count - index - 1U);
         const auto maximum_after = static_cast<std::uint16_t>(segments_after * maximum);
@@ -41,7 +46,7 @@ struct Segment {
         const auto width =
             static_cast<std::uint16_t>(smallest + sample % (largest - smallest + 1U));
         result.push_back({cursor, width});
-        cursor = static_cast<std::uint16_t>(cursor + width);
+        cursor = static_cast<std::uint16_t>(cursor + width + kHouseGap);
         remaining = static_cast<std::uint16_t>(remaining - width);
     }
     return result;
@@ -103,13 +108,15 @@ void paint_cut(LocalTiles& tiles, const spatial::PartitionCut& cut, rules::EdgeI
 
 void open_frontage(LocalTiles& tiles, const LocalHouse& house, rules::EdgeId door,
                    rules::EdgeId window, bool include_door, bool include_windows,
-                   std::uint16_t& door_count, std::uint16_t& window_count) {
+                   std::uint64_t seed, std::uint16_t& door_count,
+                   std::uint16_t& window_count) {
     const auto& rect = house.footprint;
     const bool horizontal = house.frontage == spatial::BoundarySide::North ||
                             house.frontage == spatial::BoundarySide::South;
     const auto start = horizontal ? rect.x : rect.y;
     const auto extent = horizontal ? rect.width : rect.height;
-    const auto door_position = static_cast<std::uint16_t>(start + extent / 2U);
+    const auto door_position = static_cast<std::uint16_t>(
+        start + 1U + worldgen::splitmix64(seed ^ kDoorSalt) % (extent - 2U));
     auto edge_tile = [&](std::uint16_t position) {
         switch (house.frontage) {
             case spatial::BoundarySide::North:
@@ -168,8 +175,8 @@ void build_floor(BuildingLocalSkeleton& result, const LocalSlowVars& slow,
     for (const auto& cut : partition.cuts) {
         paint_cut(tiles, cut, config.wall_edge, door, result.door_count);
     }
-    open_frontage(tiles, house, door, config.window_edge, z == 0, z >= 0, result.door_count,
-                  result.window_count);
+    open_frontage(tiles, house, door, config.window_edge, z == 0, z >= 0, seed,
+                  result.door_count, result.window_count);
 }
 
 void add_vertical_link(BuildingLocalSkeleton& result, std::uint16_t house_index,
@@ -193,17 +200,23 @@ void build_house_geometry(BuildingLocalSkeleton& result, const LocalSlowVars& sl
     const auto depth = static_cast<std::uint16_t>(config.house_depth);
     const auto outer_extent = static_cast<std::uint16_t>(kLocalWidth - margin * 2U);
     const auto middle_start = static_cast<std::uint16_t>(margin + depth);
-    const auto middle_extent = static_cast<std::uint16_t>(kLocalHeight - 2U * middle_start);
+    const auto side_start = static_cast<std::uint16_t>(middle_start + 1U);
+    const auto side_extent = static_cast<std::uint16_t>(kLocalHeight - 2U * side_start);
     add_row(result.houses, spatial::BoundarySide::North, margin, outer_extent, margin, config,
             local_seed ^ kHouseSalt);
     add_row(result.houses, spatial::BoundarySide::South, margin, outer_extent,
             static_cast<std::uint16_t>(kLocalHeight - margin - depth), config,
             local_seed ^ kHouseSalt ^ UINT64_C(0x10));
-    add_row(result.houses, spatial::BoundarySide::West, middle_start, middle_extent, margin, config,
+    add_row(result.houses, spatial::BoundarySide::West, side_start, side_extent, margin,
+            config,
             local_seed ^ kHouseSalt ^ UINT64_C(0x20));
-    add_row(result.houses, spatial::BoundarySide::East, middle_start, middle_extent,
+    add_row(result.houses, spatial::BoundarySide::East, side_start, side_extent,
             static_cast<std::uint16_t>(kLocalWidth - margin - depth), config,
             local_seed ^ kHouseSalt ^ UINT64_C(0x30));
+    result.houses.push_back(
+        {{static_cast<std::uint16_t>(middle_start + 1U),
+          static_cast<std::uint16_t>(middle_start + 1U), config.house_frontage_min, depth},
+         spatial::BoundarySide::East});
 
     const auto no_edge = *ruleset.find_edge("edge.none");
     for (std::size_t index = 0; index < result.houses.size(); ++index) {
