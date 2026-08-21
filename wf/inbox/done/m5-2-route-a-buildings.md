@@ -3,9 +3,9 @@
 **寄件人**：Opus 5 規劃者
 **收件人**：**gpt-sol 實作者**
 **回信地址**：`~/repo/game_dev/aetheria/wf/inbox/`
-**必讀設計**：[`localgen.md`](../../design/localgen.md) 路線 A、
-[`lowmap.md`](../../design/lowmap.md) 垂直層、[`sitegen-city.md`](../../design/sitegen-city.md) 遞迴二分、
-[`significance.md`](../../design/significance.md)
+**必讀設計**：[`localgen.md`](../../../design/localgen.md) 路線 A、
+[`lowmap.md`](../../../design/lowmap.md) 垂直層、[`sitegen-city.md`](../../../design/sitegen-city.md) 遞迴二分、
+[`significance.md`](../../../design/significance.md)
 **基準**：`dbb5382`
 **與 M5.1 並行**：另一個 worktree 在做串流協調器與時鐘裁定。
 **本輪不要碰 `core/site/site_build_loop.*`、`core/world/`、任何存檔版本欄位。**
@@ -27,7 +27,7 @@ M5.0 的 adapter 目前遇到 structure 就拒絕（那是對的，路線 B 不�
 
 ### ⚠ 同一個演算法用兩次
 
-A3 分間**直接複用 [`sitegen-city.md`](../../design/sitegen-city.md) 的遞迴二分**，
+A3 分間**直接複用 [`sitegen-city.md`](../../../design/sitegen-city.md) 的遞迴二分**，
 不要另寫一份。Site 層切街廓、Local 層切房間，**同一份實作、兩個尺度**。
 
 **驗收方式照 M5.0 那條**：把共用的切分實作改壞，
@@ -51,7 +51,7 @@ A7 垂直層   有地窖生 z=−1，有樓層生 z=+1
 
 ### A6：絕大多數不生成實體
 
-[`localgen.md`](../../design/localgen.md) 寫死了：
+[`localgen.md`](../../../design/localgen.md) 寫死了：
 
 | 情況 | 怎麼做 |
 |---|---|

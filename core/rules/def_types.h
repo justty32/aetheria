@@ -22,6 +22,7 @@ inline constexpr std::uint32_t kEdgeGateFlag = UINT32_C(1) << 4U;
 inline constexpr std::uint32_t kEdgeOpenableFlag = UINT32_C(1) << 5U;
 inline constexpr std::uint32_t kEdgeTowerFlag = UINT32_C(1) << 6U;
 inline constexpr std::uint32_t kEdgeMoatFlag = UINT32_C(1) << 7U;
+inline constexpr std::uint32_t kEdgeWindowFlag = UINT32_C(1) << 8U;
 
 // TerrainId 是 Ruleset 中 TerrainDef 的強型別下標。
 // Ruleset 配發其值，tile 只保存值的複本。
@@ -56,6 +57,10 @@ enum class BuildingDefId : std::uint16_t {};
 // 持久狀態保存字串 id；載入後每次由 Ruleset 重查，避免下標跨版本漂移。
 enum class CityBuildingDefId : std::uint16_t {};
 
+// FurnitureDefId 是 Local 程序家具 def 的執行期強型別下標。
+// Local 程序層保存值的複本且不進存檔。
+enum class FurnitureDefId : std::uint16_t {};
+
 // WorldConnectionId 是 world_graph.toml 中手工配發的穩定通道識別。
 // WorldGraphConnection 與 RegionPortal 保存其值的複本。
 // 同一份世界圖中不得重複，存檔跨版本時不做下標重映射。
@@ -80,6 +85,9 @@ enum class WorldConnectionId : std::uint32_t {};
     return static_cast<std::uint16_t>(id);
 }
 [[nodiscard]] constexpr std::uint16_t value_of(CityBuildingDefId id) noexcept {
+    return static_cast<std::uint16_t>(id);
+}
+[[nodiscard]] constexpr std::uint16_t value_of(FurnitureDefId id) noexcept {
     return static_cast<std::uint16_t>(id);
 }
 [[nodiscard]] constexpr std::uint32_t value_of(WorldConnectionId id) noexcept {

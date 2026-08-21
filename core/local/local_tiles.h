@@ -2,14 +2,14 @@
 
 // local_tiles.h：L3 單一 z 層的 LocalTiles、慢變數骨架輸入與路線 B 輸出。
 
-#include "core/site/site_projection.h"
-#include "core/spatial/boundary_profile.h"
-
 #include <array>
 #include <cstddef>
 #include <cstdint>
 #include <optional>
 #include <vector>
+
+#include "core/site/site_projection.h"
+#include "core/spatial/boundary_profile.h"
 
 namespace aetheria::local {
 
@@ -18,13 +18,15 @@ inline constexpr std::uint32_t kLocalHeight = 64;
 inline constexpr std::size_t kLocalTileCount =
     static_cast<std::size_t>(kLocalWidth) * kLocalHeight;
 
-// OverlayId 目前只表達路線 B 的程序覆蓋物；0 永遠是空。
+// OverlayId 表達 Local 程序覆蓋物；0 永遠是空。
 enum class OverlayId : std::uint16_t {
     None,
     Road,
     Vegetation,
     Stone,
     ScatteredObject,
+    Furniture,
+    Stairs,
 };
 
 using EntityId = std::uint64_t;
@@ -36,7 +38,7 @@ struct LocalXY {
     constexpr auto operator<=>(const LocalXY&) const noexcept = default;
 };
 
-// LocalTiles 是一個 z 層的 64×64 SoA；本里程碑只生成地面層，不建立垂直層容器。
+// LocalTiles 是一個 z 層的 64×64 SoA；垂直層由 LocalPayload 的 z map 擁有。
 struct LocalTiles {
     std::vector<rules::GroundId> ground;
     std::vector<OverlayId> overlay;
@@ -81,16 +83,18 @@ struct OpenLocalSkeleton {
     bool operator==(const OpenLocalSkeleton&) const = default;
 };
 
-[[nodiscard]] std::uint64_t derive_local_seed(std::uint64_t site_seed, std::uint16_t x,
+[[nodiscard]] std::uint64_t derive_local_seed(std::uint64_t site_seed,
+                                              std::uint16_t x,
                                               std::uint16_t y) noexcept;
 
 [[nodiscard]] LocalSlowVars project_local_slow_vars(
-    const site::SiteProceduralLayer& parent, site::SiteXY coordinate, std::uint64_t site_seed,
-    rules::FeatureId feature, const rules::Ruleset& ruleset);
+    const site::SiteProceduralLayer& parent, site::SiteXY coordinate,
+    std::uint64_t site_seed, rules::FeatureId feature,
+    const rules::Ruleset& ruleset);
 
-[[nodiscard]] OpenLocalSkeleton build_open_local_skeleton(const LocalSlowVars& slow,
-                                                          std::uint64_t local_seed,
-                                                          const rules::Ruleset& ruleset);
+[[nodiscard]] OpenLocalSkeleton build_open_local_skeleton(
+    const LocalSlowVars& slow, std::uint64_t local_seed,
+    const rules::Ruleset& ruleset);
 
 [[nodiscard]] std::uint64_t hash_open_local_skeleton(
     const OpenLocalSkeleton& skeleton) noexcept;

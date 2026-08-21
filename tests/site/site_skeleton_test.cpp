@@ -1,6 +1,4 @@
-#include "core/site/site_projection.h"
-#include "tests/support/performance.h"
-#include "tests/support/ruleset_fixture.h"
+#include <gtest/gtest.h>
 
 #include <algorithm>
 #include <array>
@@ -10,7 +8,9 @@
 #include <iostream>
 #include <vector>
 
-#include <gtest/gtest.h>
+#include "core/site/site_projection.h"
+#include "tests/support/performance.h"
+#include "tests/support/ruleset_fixture.h"
 
 namespace {
 
@@ -101,6 +101,7 @@ TEST(SiteSkeleton, RoadlessRegionCreatesNoInventedGate) {
 TEST(SiteSkeleton, RecursiveBlocksAreOffCenterAndDataBounded) {
   const auto skeleton = aetheria::site::build_site_skeleton(
       sample_slow_vars(), UINT64_C(0xB10C5), test_ruleset());
+  ASSERT_EQ(skeleton.blocks.size(), 32U);
   ASSERT_GE(skeleton.blocks.size(), 30U);
   ASSERT_LE(skeleton.blocks.size(), 60U);
   std::vector<std::uint32_t> areas;
@@ -163,19 +164,22 @@ TEST(SiteSkeleton, BuildableMaskExcludesWaterRoadsAndSteepSlopes) {
 TEST(SiteSkeleton, FitsThirtyMillisecondBudget) {
   auto slow = sample_slow_vars();
   std::ranges::fill(slow.edges, *test_ruleset().find_edge("edge.road"));
-  const auto minimum_milliseconds = aetheria::tests::minimum_milliseconds_after_warmup([&] {
-    const auto start = std::chrono::steady_clock::now();
-    const auto skeleton =
-        aetheria::site::build_site_skeleton(slow, UINT64_C(2), test_ruleset());
-    const auto elapsed = std::chrono::steady_clock::now() - start;
-    EXPECT_TRUE(skeleton.valid_layout());
-    return std::chrono::duration<double, std::milli>{elapsed}.count();
-  });
+  const auto minimum_milliseconds =
+      aetheria::tests::minimum_milliseconds_after_warmup([&] {
+        const auto start = std::chrono::steady_clock::now();
+        const auto skeleton = aetheria::site::build_site_skeleton(
+            slow, UINT64_C(2), test_ruleset());
+        const auto elapsed = std::chrono::steady_clock::now() - start;
+        EXPECT_TRUE(skeleton.valid_layout());
+        return std::chrono::duration<double, std::milli>{elapsed}.count();
+      });
   EXPECT_LT(minimum_milliseconds, 30.0);
 #ifdef NDEBUG
-  std::cout << "site_skeleton_Release_min_of_5_ms=" << minimum_milliseconds << '\n';
+  std::cout << "site_skeleton_Release_min_of_5_ms=" << minimum_milliseconds
+            << '\n';
 #else
-  std::cout << "site_skeleton_Debug_min_of_5_ms=" << minimum_milliseconds << '\n';
+  std::cout << "site_skeleton_Debug_min_of_5_ms=" << minimum_milliseconds
+            << '\n';
 #endif
 }
 

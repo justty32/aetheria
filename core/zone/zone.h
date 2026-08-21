@@ -1,19 +1,18 @@
 #pragma once
 
+#include <cstdint>
+#include <entt/entity/registry.hpp>
+#include <map>
+#include <stdexcept>
+#include <utility>
+#include <variant>
+
 #include "core/local/local_tiles.h"
 #include "core/site/site_projection.h"
 #include "core/time/tick.h"
 #include "core/world/region_tiles.h"
 #include "core/zone/lod_level.h"
 #include "core/zone/zone_key.h"
-
-#include <cstdint>
-#include <map>
-#include <stdexcept>
-#include <utility>
-#include <variant>
-
-#include <entt/entity/registry.hpp>
 
 namespace aetheria::zone {
 
@@ -42,11 +41,11 @@ struct SitePayload {
     site::SiteLayers layers;
 };
 
-// LocalPayload 是 L3 Zone 的單一地面層程序 tiles；本里程碑尚無持久 Local 欄位。
+// LocalPayload 是 L3 Zone 的 z→程序 tiles；本里程碑尚無持久 Local 欄位。
 // 所屬 Zone 擁有它。
 // payload alternative 被替換或 Zone 析構後失效。
 struct LocalPayload {
-    local::LocalTiles tiles;
+    std::map<std::int8_t, local::LocalTiles> layers;
 };
 
 // SpatialPayload 將三層異質 tile schema 收在單一 Zone 欄位。
@@ -113,4 +112,4 @@ struct Zone {
     time::Tick last_saved_tick{};
 };
 
-}  // namespace aetheria::zone
+} // namespace aetheria::zone

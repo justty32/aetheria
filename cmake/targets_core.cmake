@@ -8,6 +8,7 @@ add_library(aetheria_core STATIC
     core/rules/ruleset_load_site_city.cpp
     core/rules/ruleset_load_site_build.cpp
     core/rules/ruleset_load_site_wilderness.cpp
+    core/rules/ruleset_load_local_buildings.cpp
     core/rules/ruleset_load_biomes.cpp
     core/rules/ruleset_load_civilization.cpp
     core/rules/ruleset_load_factions.cpp
@@ -17,7 +18,11 @@ add_library(aetheria_core STATIC
     core/rules/ruleset_load_crossings.cpp
     core/rules/ruleset_load_world_graph.cpp
     core/serialize/normalized_state_hash.cpp
+    core/spatial/recursive_partition.cpp
     core/local/local_generation.cpp
+    core/local/local_building_generation.cpp
+    core/local/local_building_geometry.cpp
+    core/local/local_building_content.cpp
     core/local/local_materialize.cpp
     core/local/local_projection.cpp
     core/site/site_event_escalation.cpp

@@ -1,11 +1,11 @@
-#include "core/zone/zone.h"
-#include "core/zone/zone_key.h"
-#include "tests/zone/zone_test_support.h"
+#include <gtest/gtest.h>
 
 #include <concepts>
 #include <type_traits>
 
-#include <gtest/gtest.h>
+#include "core/zone/zone.h"
+#include "core/zone/zone_key.h"
+#include "tests/zone/zone_test_support.h"
 
 namespace {
 
@@ -23,7 +23,7 @@ using aetheria::zone::ZoneMeta;
 static_assert(!std::is_copy_constructible_v<Zone>);
 static_assert(std::is_move_constructible_v<Zone>);
 static_assert(requires(aetheria::zone::SitePayload payload) { payload.layers; });
-static_assert(requires(aetheria::zone::LocalPayload payload) { payload.tiles; });
+static_assert(requires(aetheria::zone::LocalPayload payload) { payload.layers; });
 
 TEST(ZonePersistence, NewZoneStartsWithMatchingPlaceholder) {
     const auto key = child_key(kRootZone, UINT16_C(0x4321), 0);

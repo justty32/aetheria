@@ -1,0 +1,42 @@
+[building]
+house_margin = 2
+house_depth = 18
+house_frontage_min = 10
+house_frontage_max = 14
+room_split_depth = 2
+room_cut_min_percent = 40
+room_cut_max_percent = 46
+room_min_extent = 5
+upper_floor_percent = 55
+cellar_percent = 35
+residents_min = 3
+residents_max = 6
+foundation_ground = "ground.stone"
+wall_edge = "edge.house_wall"
+residential_door_edge = "edge.house_door"
+commercial_door_edge = "edge.shop_door"
+window_edge = "edge.house_window"
+
+[[furniture]]
+id = "furniture.bed"
+room = "bedroom"
+minimum = 1
+maximum = 1
+
+[[furniture]]
+id = "furniture.kitchen_table"
+room = "kitchen"
+minimum = 1
+maximum = 2
+
+[[furniture]]
+id = "furniture.workbench"
+room = "workshop"
+minimum = 1
+maximum = 2
+
+[[furniture]]
+id = "furniture.shop_counter"
+room = "shop"
+minimum = 1
+maximum = 2

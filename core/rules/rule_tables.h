@@ -1,8 +1,6 @@
 #pragma once
 
-// core/rules/rule_tables.h：biome／movement／civilization 規則表型別。
-
-#include "core/rules/def_types.h"
+// core/rules/rule_tables.h：biome／movement／civilization／Local 生成規則表型別。
 
 #include <array>
 #include <cstdint>
@@ -10,6 +8,8 @@
 #include <optional>
 #include <string>
 #include <vector>
+
+#include "core/rules/def_types.h"
 
 namespace aetheria::rules {
 
@@ -90,6 +90,42 @@ struct WildernessGenerationRules {
     std::uint8_t ruin_portals{};
     std::uint8_t ruin_keep_min_percent{};
     std::uint8_t ruin_keep_max_percent{};
+    bool loaded{};
+};
+
+enum class LocalRoomKind : std::uint8_t {
+    Bedroom,
+    Kitchen,
+    Workshop,
+    Shop,
+};
+
+struct FurnitureDef {
+    std::string id;
+    LocalRoomKind room{LocalRoomKind::Bedroom};
+    std::uint8_t minimum{};
+    std::uint8_t maximum{};
+};
+
+// LocalBuildingRules 是 L3 路線 A 的幾何、邊材質、垂直層與居民統計規則。
+struct LocalBuildingRules {
+    std::uint8_t house_margin{};
+    std::uint8_t house_depth{};
+    std::uint8_t house_frontage_min{};
+    std::uint8_t house_frontage_max{};
+    std::uint8_t room_split_depth{};
+    std::uint8_t room_cut_min_percent{};
+    std::uint8_t room_cut_max_percent{};
+    std::uint8_t room_min_extent{};
+    std::uint8_t upper_floor_percent{};
+    std::uint8_t cellar_percent{};
+    std::uint8_t residents_min{};
+    std::uint8_t residents_max{};
+    GroundId foundation_ground{};
+    EdgeId wall_edge{};
+    EdgeId residential_door_edge{};
+    EdgeId commercial_door_edge{};
+    EdgeId window_edge{};
     bool loaded{};
 };
 

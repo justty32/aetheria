@@ -15,7 +15,7 @@
 namespace aetheria::tests {
 
 class TemporaryDirectory {
-  public:
+   public:
     TemporaryDirectory() {
         static std::atomic_uint64_t sequence{};
         const auto stamp = std::chrono::steady_clock::now().time_since_epoch().count();
@@ -37,7 +37,7 @@ class TemporaryDirectory {
 
     [[nodiscard]] const std::filesystem::path& path() const noexcept { return path_; }
 
-  private:
+   private:
     std::filesystem::path path_;
 };
 
@@ -142,6 +142,46 @@ ruin_keep_min_percent=20
 ruin_keep_max_percent=40
 )toml";
 
+constexpr std::string_view kLocalBuildingRules = R"toml([building]
+house_margin=2
+house_depth=18
+house_frontage_min=10
+house_frontage_max=14
+room_split_depth=2
+room_cut_min_percent=40
+room_cut_max_percent=46
+room_min_extent=5
+upper_floor_percent=55
+cellar_percent=35
+residents_min=3
+residents_max=6
+foundation_ground="ground.grass"
+wall_edge="edge.house_wall"
+residential_door_edge="edge.house_door"
+commercial_door_edge="edge.shop_door"
+window_edge="edge.house_window"
+[[furniture]]
+id="furniture.bed"
+room="bedroom"
+minimum=1
+maximum=1
+[[furniture]]
+id="furniture.table"
+room="kitchen"
+minimum=1
+maximum=2
+[[furniture]]
+id="furniture.workbench"
+room="workshop"
+minimum=1
+maximum=2
+[[furniture]]
+id="furniture.counter"
+room="shop"
+minimum=1
+maximum=2
+)toml";
+
 constexpr std::string_view kSiteBuildRules = R"toml([growth]
 base_growth_basis_points_per_xun=500
 people_supported_per_food=100
@@ -222,6 +262,30 @@ name_key="moat"
 move_cost=1000
 flags=128
 visual="moat"
+[[defs]]
+id="edge.house_wall"
+name_key="house_wall"
+move_cost=1000
+flags=8
+visual="house_wall"
+[[defs]]
+id="edge.house_door"
+name_key="house_door"
+move_cost=1
+flags=56
+visual="house_door"
+[[defs]]
+id="edge.shop_door"
+name_key="shop_door"
+move_cost=1
+flags=56
+visual="shop_door"
+[[defs]]
+id="edge.house_window"
+name_key="house_window"
+move_cost=1000
+flags=264
+visual="house_window"
 )toml");
     write_text(path / "ground.toml", R"toml([[defs]]
 id="ground.grass"
@@ -255,6 +319,7 @@ rough_ground="ground.water"
     write_text(path / "site_city.toml", kSiteFillRules);
     write_text(path / "site_build.toml", kSiteBuildRules);
     write_text(path / "site_wild.toml", kSiteWildRules);
+    write_text(path / "local_buildings.toml", kLocalBuildingRules);
 }
 
 }  // namespace aetheria::tests

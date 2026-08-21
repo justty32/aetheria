@@ -1,10 +1,7 @@
 #pragma once
 
-// core/rules/ruleset.h：呼叫端唯一入口，彙整 def 型別與規則表，定義 Ruleset／RulesetLoader。
-
-#include "core/rules/def_types.h"
-#include "core/rules/rule_tables.h"
-#include "core/rules/site_build_rules.h"
+// core/rules/ruleset.h：呼叫端唯一入口，彙整 def 型別與規則表，定義
+// Ruleset／RulesetLoader。
 
 #include <filesystem>
 #include <map>
@@ -15,6 +12,10 @@
 #include <string_view>
 #include <utility>
 #include <vector>
+
+#include "core/rules/def_types.h"
+#include "core/rules/rule_tables.h"
+#include "core/rules/site_build_rules.h"
 
 namespace aetheria::rules {
 
@@ -37,6 +38,7 @@ class Ruleset {
     [[nodiscard]] const GroundDef* ground(GroundId id) const noexcept;
     [[nodiscard]] const BuildingDef* building(BuildingDefId id) const noexcept;
     [[nodiscard]] const CityBuildingDef* city_building(CityBuildingDefId id) const noexcept;
+    [[nodiscard]] const FurnitureDef* furniture(FurnitureDefId id) const noexcept;
     [[nodiscard]] const TerrainGroundMapping* terrain_ground_mapping(TerrainId id) const noexcept;
 
     [[nodiscard]] std::optional<TerrainId> find_terrain(std::string_view id) const noexcept;
@@ -47,6 +49,7 @@ class Ruleset {
     [[nodiscard]] std::optional<BuildingDefId> find_building(std::string_view id) const noexcept;
     [[nodiscard]] std::optional<CityBuildingDefId> find_city_building(
         std::string_view id) const noexcept;
+    [[nodiscard]] std::optional<FurnitureDefId> find_furniture(std::string_view id) const noexcept;
 
     [[nodiscard]] std::span<const TerrainDef> terrains() const noexcept { return terrains_; }
     [[nodiscard]] std::span<const ReliefDef> reliefs() const noexcept { return reliefs_; }
@@ -57,6 +60,7 @@ class Ruleset {
     [[nodiscard]] std::span<const CityBuildingDef> city_buildings() const noexcept {
         return city_buildings_;
     }
+    [[nodiscard]] std::span<const FurnitureDef> furniture() const noexcept { return furniture_; }
     [[nodiscard]] std::span<const TerrainGroundMapping> terrain_ground_mappings() const noexcept {
         return terrain_ground_mappings_;
     }
@@ -70,14 +74,15 @@ class Ruleset {
     [[nodiscard]] const SiteGenerationRules& site_generation_rules() const noexcept {
         return site_generation_rules_;
     }
-    [[nodiscard]] const SiteFillRules& site_fill_rules() const noexcept {
-        return site_fill_rules_;
-    }
+    [[nodiscard]] const SiteFillRules& site_fill_rules() const noexcept { return site_fill_rules_; }
     [[nodiscard]] const SiteBuildRules& site_build_rules() const noexcept {
         return site_build_rules_;
     }
     [[nodiscard]] const WildernessGenerationRules& wilderness_generation_rules() const noexcept {
         return wilderness_generation_rules_;
+    }
+    [[nodiscard]] const LocalBuildingRules& local_building_rules() const noexcept {
+        return local_building_rules_;
     }
     [[nodiscard]] const CivilizationRules& civilization_rules() const noexcept {
         return civilization_rules_;
@@ -97,6 +102,7 @@ class Ruleset {
     std::vector<GroundDef> grounds_;
     std::vector<BuildingDef> buildings_;
     std::vector<CityBuildingDef> city_buildings_;
+    std::vector<FurnitureDef> furniture_;
     std::vector<TerrainGroundMapping> terrain_ground_mappings_;
     std::vector<TerrainRule> terrain_rules_;
     std::vector<ReliefRule> relief_rules_;
@@ -105,6 +111,7 @@ class Ruleset {
     SiteFillRules site_fill_rules_;
     SiteBuildRules site_build_rules_;
     WildernessGenerationRules wilderness_generation_rules_;
+    LocalBuildingRules local_building_rules_;
     CivilizationRules civilization_rules_;
     std::vector<WorldGraphConnection> world_connections_;
     std::map<std::string, TerrainId, std::less<>> terrain_index_;
@@ -114,6 +121,7 @@ class Ruleset {
     std::map<std::string, GroundId, std::less<>> ground_index_;
     std::map<std::string, BuildingDefId, std::less<>> building_index_;
     std::map<std::string, CityBuildingDefId, std::less<>> city_building_index_;
+    std::map<std::string, FurnitureDefId, std::less<>> furniture_index_;
 };
 
 // RulesetLoader 將一個 data 目錄完整解析成不可變 Ruleset。
@@ -128,14 +136,14 @@ class RulesetLoader {
                               std::set<std::string, std::less<>>& global_ids);
     static void load_reliefs(Ruleset& result, const std::filesystem::path& data_directory,
                              std::set<std::string, std::less<>>& global_ids);
-    static void load_features(Ruleset& result, const std::filesystem::path& data_directory,
-                              std::set<std::string, std::less<>>& global_ids,
-                              std::vector<std::pair<std::size_t, std::string>>&
-                                  feature_terrain_references);
-    static void load_edges(Ruleset& result, const std::filesystem::path& data_directory,
-                           std::set<std::string, std::less<>>& global_ids,
-                           std::vector<std::pair<std::size_t, std::string>>&
-                               feature_terrain_references);
+    static void load_features(
+        Ruleset& result, const std::filesystem::path& data_directory,
+        std::set<std::string, std::less<>>& global_ids,
+        std::vector<std::pair<std::size_t, std::string>>& feature_terrain_references);
+    static void load_edges(
+        Ruleset& result, const std::filesystem::path& data_directory,
+        std::set<std::string, std::less<>>& global_ids,
+        std::vector<std::pair<std::size_t, std::string>>& feature_terrain_references);
     static void load_grounds(Ruleset& result, const std::filesystem::path& data_directory,
                              std::set<std::string, std::less<>>& global_ids);
     static void load_site_projection(Ruleset& result, const std::filesystem::path& data_directory);
@@ -143,20 +151,18 @@ class RulesetLoader {
                                std::set<std::string, std::less<>>& global_ids);
     static void load_site_build(Ruleset& result, const std::filesystem::path& data_directory,
                                 std::set<std::string, std::less<>>& global_ids);
-    static void load_site_wilderness(Ruleset& result,
-                                     const std::filesystem::path& data_directory);
+    static void load_site_wilderness(Ruleset& result, const std::filesystem::path& data_directory);
+    static void load_local_buildings(Ruleset& result, const std::filesystem::path& data_directory,
+                                     std::set<std::string, std::less<>>& global_ids);
     static void load_biome_rule_tables(Ruleset& result,
                                        const std::filesystem::path& data_directory);
     static void load_movement_rules(Ruleset& result, const std::filesystem::path& data_directory);
-    static void load_faction_rules(Ruleset& result,
-                                   const std::filesystem::path& data_directory);
+    static void load_faction_rules(Ruleset& result, const std::filesystem::path& data_directory);
     static void load_civilization_rules(Ruleset& result,
                                         const std::filesystem::path& data_directory);
-    static void load_history_rules(Ruleset& result,
-                                   const std::filesystem::path& data_directory);
+    static void load_history_rules(Ruleset& result, const std::filesystem::path& data_directory);
     static void load_crossing_rules(const Ruleset& result, CivilizationRules& rules);
-    static void load_world_graph(Ruleset& result,
-                                 const std::filesystem::path& data_directory);
+    static void load_world_graph(Ruleset& result, const std::filesystem::path& data_directory);
 };
 
 }  // namespace aetheria::rules
