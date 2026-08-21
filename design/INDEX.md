@@ -96,6 +96,7 @@
 | 文件 | 內容 |
 |---|---|
 | [definitions.md](definitions.md) | **種類一律不寫死 enum**，改資料檔 def + 下標 |
+| [definitions-layout.md](definitions-layout.md) | 規則檔的 TOML 佈局、載入順序、def 之間的引用解析 |
 | [rules-extensibility.md](rules-extensibility.md) | 三級擴展：資料表 / Lua / core；腳本的決定論鐵律 |
 
 ### 內容與呈現
