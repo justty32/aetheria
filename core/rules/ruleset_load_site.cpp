@@ -73,29 +73,40 @@ void RulesetLoader::load_site_projection(Ruleset& result,
     site.loaded = true;
 
     std::vector<std::optional<TerrainGroundMapping>> by_terrain(result.terrains_.size());
-    for (const auto& node : *mappings) {
-        const auto& table = require_table(node, projection_path);
-        const auto terrain_string = require_string(table, "terrain", projection_path);
-        const auto ground_string = require_string(table, "ground", projection_path);
-        const auto rough_ground_string = require_string(table, "rough_ground", projection_path);
-        const auto terrain = result.find_terrain(terrain_string);
-        const auto ground = result.find_ground(ground_string);
-        const auto rough_ground = result.find_ground(rough_ground_string);
-        if (!terrain.has_value()) {
-            throw std::runtime_error{"Site ground 映射引用不存在的 TerrainDef：" + terrain_string};
+    const auto load_mappings = [&](const toml::array& entries,
+                                   const std::filesystem::path& path) {
+        for (const auto& node : entries) {
+            const auto& table = require_table(node, path);
+            const auto terrain_string = require_string(table, "terrain", path);
+            const auto ground_string = require_string(table, "ground", path);
+            const auto rough_ground_string = require_string(table, "rough_ground", path);
+            const auto terrain = result.find_terrain(terrain_string);
+            const auto ground = result.find_ground(ground_string);
+            const auto rough_ground = result.find_ground(rough_ground_string);
+            if (!terrain.has_value()) {
+                throw std::runtime_error{"Site ground 映射引用不存在的 TerrainDef：" +
+                                         terrain_string};
+            }
+            if (!ground.has_value()) {
+                throw std::runtime_error{"Site ground 映射引用不存在的 GroundDef：" +
+                                         ground_string};
+            }
+            if (!rough_ground.has_value()) {
+                throw std::runtime_error{"Site ground 映射引用不存在的 GroundDef：" +
+                                         rough_ground_string};
+            }
+            auto& slot = by_terrain.at(value_of(*terrain));
+            if (slot.has_value()) {
+                throw std::runtime_error{"TerrainDef 有重複 Site ground 映射：" +
+                                         terrain_string};
+            }
+            slot = TerrainGroundMapping{*terrain, *ground, *rough_ground};
         }
-        if (!ground.has_value()) {
-            throw std::runtime_error{"Site ground 映射引用不存在的 GroundDef：" + ground_string};
-        }
-        if (!rough_ground.has_value()) {
-            throw std::runtime_error{"Site ground 映射引用不存在的 GroundDef：" +
-                                     rough_ground_string};
-        }
-        auto& slot = by_terrain.at(value_of(*terrain));
-        if (slot.has_value()) {
-            throw std::runtime_error{"TerrainDef 有重複 Site ground 映射：" + terrain_string};
-        }
-        slot = TerrainGroundMapping{*terrain, *ground, *rough_ground};
+    };
+    load_mappings(*mappings, projection_path);
+    const auto biome_path = data_directory / "biomes.toml";
+    if (std::filesystem::is_regular_file(biome_path)) {
+        load_mappings(read_array(biome_path, "terrain_ground"), biome_path);
     }
 
     result.terrain_ground_mappings_.reserve(by_terrain.size());

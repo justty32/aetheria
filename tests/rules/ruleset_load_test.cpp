@@ -3,7 +3,9 @@
 #include <array>
 #include <concepts>
 #include <cstdint>
+#include <set>
 #include <span>
+#include <string>
 #include <type_traits>
 
 #include "core/rules/ruleset.h"
@@ -36,7 +38,16 @@ static_assert(!HasRuggednessBounds<aetheria::rules::TerrainRule>);
 
 TEST(RulesetLoader, LoadsImmutableDefinitionTypesAndSiteProjectionMapping) {
     const auto& ruleset = test_ruleset();
-    ASSERT_EQ(ruleset.terrains().size(), 5U);
+    ASSERT_FALSE(ruleset.terrains().empty());
+    std::set<std::string> terrain_ids;
+    for (std::size_t index = 0; index < ruleset.terrains().size(); ++index) {
+        const auto& terrain = ruleset.terrains()[index];
+        ASSERT_TRUE(terrain_ids.insert(terrain.id).second) << terrain.id;
+        const auto found = ruleset.find_terrain(terrain.id);
+        ASSERT_TRUE(found.has_value()) << terrain.id;
+        EXPECT_EQ(aetheria::rules::value_of(*found), index) << terrain.id;
+        EXPECT_EQ(ruleset.terrain(*found), &terrain) << terrain.id;
+    }
     ASSERT_EQ(ruleset.reliefs().size(), 3U);
     ASSERT_EQ(ruleset.features().size(), 9U);
     ASSERT_EQ(ruleset.edges().size(), 26U);
@@ -45,9 +56,19 @@ TEST(RulesetLoader, LoadsImmutableDefinitionTypesAndSiteProjectionMapping) {
     ASSERT_EQ(ruleset.city_buildings().size(), 5U);
     ASSERT_EQ(ruleset.furniture().size(), 4U);
     ASSERT_EQ(ruleset.terrain_ground_mappings().size(), ruleset.terrains().size());
-    ASSERT_EQ(ruleset.terrain_rules().size(), 4U);
+    ASSERT_FALSE(ruleset.terrain_rules().empty());
+    std::set<aetheria::rules::TerrainId> scored_terrains;
+    for (const auto& rule : ruleset.terrain_rules()) {
+        ASSERT_TRUE(scored_terrains.insert(rule.terrain).second);
+        ASSERT_NE(ruleset.terrain(rule.terrain), nullptr);
+    }
+    for (std::size_t index = 0; index < ruleset.terrains().size(); ++index) {
+        const auto terrain = static_cast<aetheria::rules::TerrainId>(index);
+        if ((ruleset.terrains()[index].flags & aetheria::rules::kTerrainWaterFlag) == 0) {
+            EXPECT_TRUE(scored_terrains.contains(terrain)) << ruleset.terrains()[index].id;
+        }
+    }
     ASSERT_EQ(ruleset.relief_rules().size(), 3U);
-    EXPECT_TRUE(ruleset.terrain_rules().back().fallback);
     EXPECT_TRUE(ruleset.relief_rules().back().fallback);
     EXPECT_TRUE(ruleset.movement_rules().loaded);
     EXPECT_TRUE(ruleset.site_generation_rules().loaded);

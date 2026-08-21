@@ -13,18 +13,18 @@
 
 namespace aetheria::rules {
 
-// TerrainRule 是資料檔中依序第一命中的群系規則。
-// Ruleset 擁有所有實例，生成器只借用 const span。
-// 所屬 Ruleset 析構後失效；fallback 必須是最後一條。
+// TerrainRule 是群系在溫度／水氣／高度空間中的整數計分中心。
+// scale 為 0 的軸不參與；Ruleset 擁有所有實例，生成器只借用 const span。
+// 所屬 Ruleset 析構後失效；同分由規則下標小者勝出。
 struct TerrainRule {
-    std::int16_t min_temperature_tenths{std::numeric_limits<std::int16_t>::min()};
-    std::int16_t max_temperature_tenths{std::numeric_limits<std::int16_t>::max()};
-    std::uint16_t min_moisture{};
-    std::uint16_t max_moisture{std::numeric_limits<std::uint16_t>::max()};
-    std::uint16_t min_elevation{};
-    std::uint16_t max_elevation{std::numeric_limits<std::uint16_t>::max()};
+    std::int16_t temperature_target_tenths{};
+    std::uint16_t temperature_scale_tenths{};
+    std::uint16_t moisture_target{};
+    std::uint16_t moisture_scale{};
+    std::uint16_t elevation_target{};
+    std::uint16_t elevation_scale{};
+    std::int32_t score_bias{};
     TerrainId terrain;
-    bool fallback{};
 };
 
 // ReliefRule 是資料檔中依序第一命中的起伏規則。

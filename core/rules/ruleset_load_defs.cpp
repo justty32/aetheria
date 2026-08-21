@@ -15,21 +15,28 @@ using namespace detail;
 void RulesetLoader::load_terrains(Ruleset& result, const std::filesystem::path& data_directory,
                                   std::set<std::string, std::less<>>& global_ids) {
     const auto terrain_path = data_directory / "terrain.toml";
-    for (const auto& node : read_defs(terrain_path)) {
-        const auto& table = require_table(node, terrain_path);
-        TerrainDef def;
-        read_common(table, terrain_path, def);
-        const auto* yield = table["yield"].as_table();
-        if (yield == nullptr) {
-            throw std::runtime_error{"TerrainDef 缺少 yield 區段：" + def.id};
+    const auto biome_path = data_directory / "biomes.toml";
+    const auto load_from = [&](const std::filesystem::path& path, std::string_view section) {
+        for (const auto& node : read_array(path, section)) {
+            const auto& table = require_table(node, path);
+            TerrainDef def;
+            read_common(table, path, def);
+            const auto* yield = table["yield"].as_table();
+            if (yield == nullptr) {
+                throw std::runtime_error{"TerrainDef 缺少 yield 區段：" + def.id};
+            }
+            def.yield.food = require_int32(*yield, "food", path);
+            def.yield.production = require_int32(*yield, "production", path);
+            def.yield.wealth = require_int32(*yield, "wealth", path);
+            def.yield.mana = require_int32(*yield, "mana", path);
+            register_global_id(global_ids, def.id, "terrain.");
+            const auto id = append_def<TerrainId>(result.terrains_, std::move(def));
+            result.terrain_index_.emplace(result.terrains_.back().id, id);
         }
-        def.yield.food = require_int32(*yield, "food", terrain_path);
-        def.yield.production = require_int32(*yield, "production", terrain_path);
-        def.yield.wealth = require_int32(*yield, "wealth", terrain_path);
-        def.yield.mana = require_int32(*yield, "mana", terrain_path);
-        register_global_id(global_ids, def.id, "terrain.");
-        const auto id = append_def<TerrainId>(result.terrains_, std::move(def));
-        result.terrain_index_.emplace(result.terrains_.back().id, id);
+    };
+    load_from(terrain_path, "defs");
+    if (std::filesystem::is_regular_file(biome_path)) {
+        load_from(biome_path, "terrain_defs");
     }
 }
 
