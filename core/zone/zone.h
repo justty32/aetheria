@@ -1,5 +1,6 @@
 #pragma once
 
+#include "core/local/local_tiles.h"
 #include "core/site/site_projection.h"
 #include "core/time/tick.h"
 #include "core/world/region_tiles.h"
@@ -41,10 +42,12 @@ struct SitePayload {
     site::SiteLayers layers;
 };
 
-// LocalPayload 是 L3 Zone 的 schema 標記；M1.0.1 尚不定義 tile 欄位。
+// LocalPayload 是 L3 Zone 的單一地面層程序 tiles；本里程碑尚無持久 Local 欄位。
 // 所屬 Zone 擁有它。
 // payload alternative 被替換或 Zone 析構後失效。
-struct LocalPayload {};
+struct LocalPayload {
+    local::LocalTiles tiles;
+};
 
 // SpatialPayload 將三層異質 tile schema 收在單一 Zone 欄位。
 // Zone 擁有目前的 alternative。

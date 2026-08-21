@@ -1,6 +1,9 @@
 # aetheria_tests：GoogleTest 單元測試，外加 core 引擎隔離的 CTest 檢查。
 
 add_executable(aetheria_tests
+    tests/local/local_boundary_test.cpp
+    tests/local/local_generation_test.cpp
+    tests/local/local_materialize_test.cpp
     tests/rules/ruleset_load_test.cpp
     tests/rules/ruleset_error_test.cpp
     tests/rules/ruleset_zone_codec_test.cpp

@@ -1,31 +1,31 @@
 #pragma once
 
+// site_wilderness_boundary_detail.h：把 RegionTiles 適配到共用邊界剖面生成介面。
+
 #include "core/site/site_wilderness.h"
 
-#include <array>
 #include <cstddef>
 #include <cstdint>
-#include <optional>
 
 namespace aetheria::site::wilderness_boundary_detail {
 
-struct CornerSample {
-    std::uint16_t elevation{};
-    rules::GroundId ground{};
-    std::uint8_t water_depth{};
-};
+class RegionBoundarySource {
+public:
+    RegionBoundarySource(const world::RegionTiles& tiles, const rules::Ruleset& ruleset)
+        : tiles_{tiles}, ruleset_{ruleset} {}
 
-[[nodiscard]] std::uint64_t corner_id(std::uint32_t x, std::uint32_t y,
-                                      std::uint32_t width) noexcept;
-[[nodiscard]] std::uint64_t internal_edge_id(std::size_t first, std::size_t second,
-                                             std::uint32_t width) noexcept;
-[[nodiscard]] CornerSample sample_corner(const world::RegionTiles& tiles, std::uint32_t x,
-                                         std::uint32_t y, std::uint64_t seed,
-                                         const rules::Ruleset& ruleset);
-[[nodiscard]] std::optional<world::RegionXY> neighbor_of(const world::RegionTiles& tiles,
-                                                         world::RegionXY coordinate,
-                                                         SiteBoundarySide side);
-[[nodiscard]] std::array<std::uint32_t, 4> edge_corners(world::RegionXY coordinate,
-                                                        SiteBoundarySide side) noexcept;
+    [[nodiscard]] std::uint32_t width() const noexcept { return tiles_.width; }
+    [[nodiscard]] std::uint32_t height() const noexcept { return tiles_.height; }
+    [[nodiscard]] std::size_t tile_count() const noexcept { return tiles_.tile_count(); }
+    [[nodiscard]] std::size_t index(std::uint32_t x, std::uint32_t y) const;
+    [[nodiscard]] std::uint16_t elevation(std::size_t index) const;
+    [[nodiscard]] rules::GroundId ground(std::size_t index) const;
+    [[nodiscard]] std::uint8_t water_depth(std::size_t index) const;
+    [[nodiscard]] rules::EdgeId edge(std::size_t index, spatial::BoundarySide side) const;
+
+private:
+    const world::RegionTiles& tiles_;
+    const rules::Ruleset& ruleset_;
+};
 
 }  // namespace aetheria::site::wilderness_boundary_detail
