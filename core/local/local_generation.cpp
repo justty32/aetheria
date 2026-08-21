@@ -14,8 +14,18 @@ namespace {
 
 constexpr std::size_t kDirections = 4;
 constexpr std::uint64_t kTerrainSalt = UINT64_C(0xF6B9371C4A28D05E);
+constexpr std::uint64_t kGroundTextureSalt = UINT64_C(0x8E25C19A74D603BF);
 constexpr std::uint64_t kScatterSalt = UINT64_C(0x31D8A6C7E50B924F);
 constexpr std::uint64_t kObjectSalt = UINT64_C(0xB04E298DC6137A5F);
+constexpr std::array<std::uint32_t, 2> kPathFlags{rules::kEdgeRoadFlag,
+                                                  rules::kEdgeRiverFlag};
+
+struct PathAnchor {
+    LocalXY tile;
+    spatial::BoundarySide side{};
+    std::uint8_t width{};
+    std::uint32_t flags{};
+};
 
 [[nodiscard]] constexpr std::size_t tile_index(std::uint16_t x, std::uint16_t y) noexcept {
     return static_cast<std::size_t>(y) * kLocalWidth + x;
@@ -48,40 +58,131 @@ void apply_boundary(OpenLocalSkeleton& result, spatial::BoundarySide side,
     }
 }
 
-void paint_crossing(OpenLocalSkeleton& result, spatial::BoundarySide side,
-                    const spatial::BoundaryCrossing& crossing,
-                    const rules::EdgeDef& definition, rules::GroundId water_ground) {
-    const auto half = static_cast<std::int32_t>(crossing.width / 2U);
-    for (std::uint16_t depth = 0; depth <= kLocalWidth / 2U; ++depth) {
-        for (std::int32_t offset = -half; offset <= half; ++offset) {
-            const auto lateral = static_cast<std::int32_t>(crossing.pos) + offset;
-            if (lateral < 0 || lateral >= static_cast<std::int32_t>(kLocalWidth)) {
+void paint_path_brush(OpenLocalSkeleton& result, LocalXY center, std::uint8_t width,
+                      std::uint32_t flags, rules::GroundId water_ground) {
+    const auto half = static_cast<std::int32_t>(width / 2U);
+    for (std::int32_t dy = -half; dy <= half; ++dy) {
+        for (std::int32_t dx = -half; dx <= half; ++dx) {
+            const auto x = static_cast<std::int32_t>(center.x) + dx;
+            const auto y = static_cast<std::int32_t>(center.y) + dy;
+            if (x < 0 || y < 0 || x >= static_cast<std::int32_t>(kLocalWidth) ||
+                y >= static_cast<std::int32_t>(kLocalHeight)) {
                 continue;
             }
-            LocalXY tile;
-            switch (side) {
-            case spatial::BoundarySide::North:
-                tile = {static_cast<std::uint16_t>(lateral), depth};
-                break;
-            case spatial::BoundarySide::East:
-                tile = {static_cast<std::uint16_t>(kLocalWidth - 1U - depth),
-                        static_cast<std::uint16_t>(lateral)};
-                break;
-            case spatial::BoundarySide::South:
-                tile = {static_cast<std::uint16_t>(lateral),
-                        static_cast<std::uint16_t>(kLocalHeight - 1U - depth)};
-                break;
-            case spatial::BoundarySide::West:
-                tile = {depth, static_cast<std::uint16_t>(lateral)};
-                break;
-            }
-            const auto index = tile_index(tile.x, tile.y);
-            if ((definition.flags & rules::kEdgeRiverFlag) != 0) {
+            const auto index = tile_index(static_cast<std::uint16_t>(x),
+                                          static_cast<std::uint16_t>(y));
+            if ((flags & rules::kEdgeRiverFlag) != 0) {
                 result.tiles.ground[index] = water_ground;
             }
-            if ((definition.flags & rules::kEdgeRoadFlag) != 0) {
+            if ((flags & rules::kEdgeRoadFlag) != 0) {
                 result.tiles.overlay[index] = OverlayId::Road;
             }
+        }
+    }
+}
+
+void paint_axis_segment(OpenLocalSkeleton& result, LocalXY first, LocalXY last,
+                        std::uint8_t width, std::uint32_t flags,
+                        rules::GroundId water_ground) {
+    const auto dx = first.x < last.x ? 1 : (first.x > last.x ? -1 : 0);
+    const auto dy = first.y < last.y ? 1 : (first.y > last.y ? -1 : 0);
+    auto x = static_cast<std::int32_t>(first.x);
+    auto y = static_cast<std::int32_t>(first.y);
+    while (true) {
+        paint_path_brush(result,
+                         {static_cast<std::uint16_t>(x), static_cast<std::uint16_t>(y)},
+                         width, flags, water_ground);
+        if (x == last.x && y == last.y) {
+            break;
+        }
+        x += dx;
+        y += dy;
+    }
+}
+
+void route_path(OpenLocalSkeleton& result, const PathAnchor& anchor, LocalXY hub,
+                std::uint32_t path_flag, rules::GroundId water_ground) {
+    const bool vertical_entry = anchor.side == spatial::BoundarySide::North ||
+                                anchor.side == spatial::BoundarySide::South;
+    const LocalXY bend = vertical_entry ? LocalXY{anchor.tile.x, hub.y}
+                                        : LocalXY{hub.x, anchor.tile.y};
+    paint_axis_segment(result, anchor.tile, bend, anchor.width, path_flag, water_ground);
+    paint_axis_segment(result, bend, hub, anchor.width, path_flag, water_ground);
+}
+
+[[nodiscard]] std::vector<PathAnchor> collect_path_anchors(
+    const OpenLocalSkeleton& skeleton, const rules::Ruleset& ruleset) {
+    std::vector<PathAnchor> result;
+    for (std::size_t side_index = 0; side_index < skeleton.boundaries.size(); ++side_index) {
+        const auto side = static_cast<spatial::BoundarySide>(side_index);
+        for (const auto& crossing : skeleton.boundaries[side_index].crossings) {
+            const auto* definition = ruleset.edge(crossing.kind);
+            if (definition != nullptr) {
+                result.push_back(
+                    {boundary_tile(side, crossing.pos), side, crossing.width, definition->flags});
+            }
+        }
+    }
+    return result;
+}
+
+void connect_crossings(OpenLocalSkeleton& result, rules::GroundId water_ground,
+                       const rules::Ruleset& ruleset) {
+    const auto anchors = collect_path_anchors(result, ruleset);
+    for (std::size_t kind_index = 0; kind_index < kPathFlags.size(); ++kind_index) {
+        const auto path_flag = kPathFlags[kind_index];
+        const LocalXY hub{static_cast<std::uint16_t>(31U + kind_index),
+                          static_cast<std::uint16_t>(31U + kind_index)};
+        std::size_t crossing_count{};
+        for (const auto& anchor : anchors) {
+            if ((anchor.flags & path_flag) == 0) {
+                continue;
+            }
+            route_path(result, anchor, hub, path_flag, water_ground);
+            ++crossing_count;
+        }
+        if (crossing_count == 1U) {
+            paint_path_brush(result, hub, 5, path_flag, water_ground);
+            result.path_endpoints.push_back({hub, path_flag});
+        }
+    }
+}
+
+[[nodiscard]] bool path_present(const OpenLocalSkeleton& skeleton, std::size_t index,
+                                std::uint32_t path_flag,
+                                const rules::Ruleset& ruleset) noexcept {
+    if (path_flag == rules::kEdgeRoadFlag) {
+        return skeleton.tiles.overlay[index] == OverlayId::Road;
+    }
+    const auto* ground = ruleset.ground(skeleton.tiles.ground[index]);
+    return ground != nullptr && (ground->flags & rules::kGroundWaterFlag) != 0;
+}
+
+void texture_ground(OpenLocalSkeleton& result, std::uint64_t local_seed,
+                    const rules::Ruleset& ruleset) {
+    const auto mud = ruleset.find_ground("ground.mud");
+    const auto stone = ruleset.find_ground("ground.stone");
+    if (!mud.has_value() || !stone.has_value()) {
+        return;
+    }
+    constexpr std::uint16_t kPatchExtent = 4;
+    for (std::uint16_t y = 0; y < kLocalHeight; ++y) {
+        for (std::uint16_t x = 0; x < kLocalWidth; ++x) {
+            const auto index = tile_index(x, y);
+            const auto* base = ruleset.ground(result.tiles.ground[index]);
+            if (base == nullptr || (base->flags & rules::kGroundWaterFlag) != 0) {
+                continue;
+            }
+            const auto patch = static_cast<std::uint64_t>(y / kPatchExtent) *
+                                   (kLocalWidth / kPatchExtent) +
+                               x / kPatchExtent;
+            const auto patch_noise =
+                worldgen::splitmix64(local_seed ^ kGroundTextureSalt ^ patch);
+            const auto fine_noise = worldgen::splitmix64(patch_noise ^ index);
+            if (patch_noise % 100U >= 58U || fine_noise % 100U >= 46U) {
+                continue;
+            }
+            result.tiles.ground[index] = (fine_noise >> 8U) % 5U == 0 ? *stone : *mud;
         }
     }
 }
@@ -164,7 +265,68 @@ bool LocalTiles::empty() const noexcept {
 }
 
 bool OpenLocalSkeleton::valid_layout() const noexcept {
-    return tiles.valid_layout() && elevation.size() == kLocalTileCount;
+    return tiles.valid_layout() && elevation.size() == kLocalTileCount &&
+           std::ranges::all_of(path_endpoints, [](const LocalPathEndpoint& endpoint) {
+               return endpoint.tile.x < kLocalWidth && endpoint.tile.y < kLocalHeight;
+           });
+}
+
+std::size_t count_unresolved_open_paths(const OpenLocalSkeleton& skeleton,
+                                        const rules::Ruleset& ruleset) {
+    if (!skeleton.valid_layout()) {
+        return 1;
+    }
+    const auto anchors = collect_path_anchors(skeleton, ruleset);
+    std::size_t unresolved{};
+    for (const auto path_flag : kPathFlags) {
+        for (std::size_t anchor_index = 0; anchor_index < anchors.size(); ++anchor_index) {
+            if ((anchors[anchor_index].flags & path_flag) == 0) {
+                continue;
+            }
+            std::array<bool, kLocalTileCount> visited{};
+            std::array<std::size_t, kLocalTileCount> frontier{};
+            std::size_t head{};
+            std::size_t tail{};
+            const auto start = tile_index(anchors[anchor_index].tile.x,
+                                          anchors[anchor_index].tile.y);
+            if (!path_present(skeleton, start, path_flag, ruleset)) {
+                ++unresolved;
+                continue;
+            }
+            frontier[tail++] = start;
+            visited[start] = true;
+            while (head < tail) {
+                const auto current = frontier[head++];
+                const auto x = static_cast<std::uint16_t>(current % kLocalWidth);
+                const auto y = static_cast<std::uint16_t>(current / kLocalWidth);
+                const std::array<LocalXY, 4> neighbors{
+                    LocalXY{static_cast<std::uint16_t>(x > 0 ? x - 1U : x), y},
+                    LocalXY{static_cast<std::uint16_t>(x + 1U < kLocalWidth ? x + 1U : x), y},
+                    LocalXY{x, static_cast<std::uint16_t>(y > 0 ? y - 1U : y)},
+                    LocalXY{x,
+                            static_cast<std::uint16_t>(y + 1U < kLocalHeight ? y + 1U : y)}};
+                for (const auto neighbor : neighbors) {
+                    const auto next = tile_index(neighbor.x, neighbor.y);
+                    if (!visited[next] && path_present(skeleton, next, path_flag, ruleset)) {
+                        visited[next] = true;
+                        frontier[tail++] = next;
+                    }
+                }
+            }
+            const bool reaches_other = std::ranges::any_of(
+                anchors, [&](const PathAnchor& other) {
+                    return &other != &anchors[anchor_index] && (other.flags & path_flag) != 0 &&
+                           visited[tile_index(other.tile.x, other.tile.y)];
+                });
+            const bool reaches_endpoint = std::ranges::any_of(
+                skeleton.path_endpoints, [&](const LocalPathEndpoint& endpoint) {
+                    return (endpoint.edge_flags & path_flag) != 0 &&
+                           visited[tile_index(endpoint.tile.x, endpoint.tile.y)];
+                });
+            unresolved += static_cast<std::size_t>(!reaches_other && !reaches_endpoint);
+        }
+    }
+    return unresolved;
 }
 
 OpenLocalSkeleton build_open_local_skeleton(const LocalSlowVars& slow,
@@ -217,6 +379,7 @@ OpenLocalSkeleton build_open_local_skeleton(const LocalSlowVars& slow,
                 (vertical + horizontal) / 2 + noise * edge_distance / 31, 0, UINT16_MAX));
         }
     }
+    texture_ground(result, local_seed, ruleset);
     for (std::size_t side = 0; side < slow.boundaries.size(); ++side) {
         apply_boundary(result, static_cast<spatial::BoundarySide>(side), slow.boundaries[side]);
         for (const auto& crossing : slow.boundaries[side].crossings) {
@@ -224,18 +387,21 @@ OpenLocalSkeleton build_open_local_skeleton(const LocalSlowVars& slow,
             if (definition == nullptr) {
                 throw std::runtime_error{"Local 邊界 crossing 引用不存在的 EdgeDef"};
             }
-            paint_crossing(result, static_cast<spatial::BoundarySide>(side), crossing,
-                           *definition, *water_ground);
             result.road_path_count +=
                 static_cast<std::uint16_t>((definition->flags & rules::kEdgeRoadFlag) != 0);
             result.river_path_count +=
                 static_cast<std::uint16_t>((definition->flags & rules::kEdgeRiverFlag) != 0);
         }
     }
+    connect_crossings(result, *water_ground, ruleset);
     scatter(result, slow, local_seed, ruleset);
     place_objects(result, slow, local_seed, ruleset);
     if (!result.valid_layout()) {
         throw std::logic_error{"Local 路線 B 產生無效版面"};
+    }
+    if (const auto unresolved = count_unresolved_open_paths(result, ruleset); unresolved != 0) {
+        throw std::logic_error{"Local 路線 B 產生斷頭 crossing：" +
+                               std::to_string(unresolved)};
     }
     return result;
 }
@@ -260,6 +426,11 @@ std::uint64_t hash_open_local_skeleton(const OpenLocalSkeleton& skeleton) noexce
     }
     for (const auto value : skeleton.elevation) {
         hash_integer(hash, value);
+    }
+    for (const auto& endpoint : skeleton.path_endpoints) {
+        hash_integer(hash, endpoint.tile.x);
+        hash_integer(hash, endpoint.tile.y);
+        hash_integer(hash, endpoint.edge_flags);
     }
     return hash;
 }
