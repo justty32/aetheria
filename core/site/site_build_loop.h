@@ -7,6 +7,7 @@
 #include "core/world/region_movement.h"
 
 #include <cstdint>
+#include <span>
 #include <string>
 #include <string_view>
 #include <vector>
@@ -125,6 +126,37 @@ struct SiteAdvanceReport {
     std::uint64_t persistent_object_advances{};
     std::uint32_t aging_transitions{};
     bool aging_cap_hit{};
+
+    constexpr bool operator==(const SiteAdvanceReport&) const noexcept = default;
+};
+
+// SiteAdvanceTarget 是一次批次推進中借用的 L_FULL Site 與其 Region 落點。
+// 呼叫端擁有 target 值與 Site；pipeline 只在呼叫期間借用。
+// Site 被卸載／銷毀後 site 指標失效，且同一 Site 不得重複列入一批。
+struct SiteAdvanceTarget {
+    zone::Zone* site{};
+    std::int8_t region_z{};
+    world::RegionXY coordinate;
+};
+
+// SiteAdvanceResult 是一個 Site 的正規化身分與逐 Site 執行報告。
+// SiteBatchAdvanceReport 擁有結果值，呼叫端取得批次報告後再擁有其複本。
+// 結果值本身不借用 Site，且按 site_key 遞增排列。
+struct SiteAdvanceResult {
+    zone::ZoneKey site_key{};
+    SiteAdvanceReport report;
+};
+
+// SiteBatchAdvanceReport 是一次批次推進的逐 Site 結果與聚合路徑計數。
+// 呼叫端擁有回傳值；其中 vector 重配會使既有元素參考失效。
+// sites 固定依 ZoneKey 排序；其餘欄位是整批路徑的實際執行計數。
+struct SiteBatchAdvanceReport {
+    std::vector<SiteAdvanceResult> sites;
+    std::uint64_t site_hours_advanced{};
+    std::uint64_t site_xun_boundaries{};
+    std::uint32_t region_xun_advances{};
+    std::uint64_t reduction_writes{};
+    std::uint64_t xun_reduction_writes{};
 };
 
 void enter_full_site(zone::Zone& site, world::RegionTiles& tiles,
@@ -136,7 +168,8 @@ void start_construction(zone::Zone& site, std::string_view definition_id, SiteXY
 [[nodiscard]] bool valid_city_build_state(const CityBuildState& state,
                                           const rules::Ruleset& ruleset) noexcept;
 
-// SiteTurnPipeline 每 240 小時透過既有 RegionTurnPipeline 推進一旬；建造完成當下另回填一次歸約。
+// SiteTurnPipeline 依 ZoneKey 正規化一批 L_FULL Site；共同旬界先收齊全部歸約，
+// 再透過既有 RegionTurnPipeline 結算一次。單 Site 入口只是一元素批次 wrapper。
 class SiteTurnPipeline {
 public:
     SiteTurnPipeline(const rules::Ruleset& ruleset, zone::ZoneStore& store)
@@ -146,6 +179,9 @@ public:
                                                    std::int8_t region_z,
                                                    world::RegionXY coordinate,
                                                    std::uint32_t hours) const;
+    [[nodiscard]] SiteBatchAdvanceReport advance_hours(zone::Zone& region,
+                                                       std::span<const SiteAdvanceTarget> sites,
+                                                       std::uint32_t hours) const;
 
 private:
     const rules::Ruleset& ruleset_;
