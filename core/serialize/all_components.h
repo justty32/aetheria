@@ -3,6 +3,7 @@
 #include "core/zone/zone.h"
 #include "core/world/region_movement.h"
 #include "core/site/site_projection.h"
+#include "core/site/site_build_loop.h"
 
 #include <entt/core/type_traits.hpp>
 
@@ -13,7 +14,7 @@ namespace aetheria::serialize {
 // 新型別只能加在尾端；調整順序會改變既有存檔位元流。
 using AllComponents =
     entt::type_list<zone::ZoneMeta, world::StableId, world::RegionPosition, world::MovementPoints,
-                    world::RegionMoveCommand, world::TurnClock>;
+                    world::RegionMoveCommand, world::TurnClock, site::CityBuildState>;
 
 // SavedSiteLayers 是 Site 存檔可見的資料層白名單。
 // 程序層與易失層刻意不在清單中。

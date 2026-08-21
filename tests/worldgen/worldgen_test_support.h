@@ -206,6 +206,9 @@ ruin_portals = 4
 ruin_keep_min_percent = 20
 ruin_keep_max_percent = 40
 )");
+    std::filesystem::copy_file(std::filesystem::path{AETHERIA_SOURCE_DIR} / "data" /
+                                   "site_build.toml",
+                               directory.path() / "site_build.toml");
     return rules::RulesetLoader::load(directory.path());
 }
 

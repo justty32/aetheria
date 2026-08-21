@@ -51,7 +51,7 @@
 | `ruleset_load_civilization.cpp`、`ruleset_load_factions.cpp` | 現代城市／道路參數；勢力數與影響力參數 |
 | `ruleset_load_history.cpp`、`ruleset_load_history_{values,references}.cpp` | 上古歷史載入編排；數值／結構限制；道路與廢墟引用（共用宣告在 `ruleset_load_history_detail.h`）|
 | `ruleset_load_crossings.cpp`、`ruleset_load_world_graph.cpp` | 渡河複合 edge 查表與完整性驗證；手工世界通道宣告與 canonical 排序 |
-| `ruleset_load_site.cpp`、`ruleset_load_site_city.cpp` | Ground／Terrain→Ground、城區 F1～F5 規則與 def 載入 |
+| `ruleset_load_site*.cpp`、`site_build_rules.h` | Site 地面、F1～F5 與城建循環規則／def 載入 |
 
 各 `load_*` 入口是 `RulesetLoader` 的 private static 成員；history detail 只接收入口傳入的參考。
 

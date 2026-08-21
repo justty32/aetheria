@@ -52,6 +52,10 @@ enum class GroundId : std::uint16_t {};
 // 程序層只保存值的複本且不進存檔。
 enum class BuildingDefId : std::uint16_t {};
 
+// CityBuildingDefId 是城建循環持久建築 def 的執行期強型別下標。
+// 持久狀態保存字串 id；載入後每次由 Ruleset 重查，避免下標跨版本漂移。
+enum class CityBuildingDefId : std::uint16_t {};
+
 // WorldConnectionId 是 world_graph.toml 中手工配發的穩定通道識別。
 // WorldGraphConnection 與 RegionPortal 保存其值的複本。
 // 同一份世界圖中不得重複，存檔跨版本時不做下標重映射。
@@ -73,6 +77,9 @@ enum class WorldConnectionId : std::uint32_t {};
     return static_cast<std::uint16_t>(id);
 }
 [[nodiscard]] constexpr std::uint16_t value_of(BuildingDefId id) noexcept {
+    return static_cast<std::uint16_t>(id);
+}
+[[nodiscard]] constexpr std::uint16_t value_of(CityBuildingDefId id) noexcept {
     return static_cast<std::uint16_t>(id);
 }
 [[nodiscard]] constexpr std::uint32_t value_of(WorldConnectionId id) noexcept {

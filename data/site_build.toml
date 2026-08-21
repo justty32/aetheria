@@ -1,0 +1,72 @@
+[growth]
+base_growth_basis_points_per_xun = 500
+people_supported_per_food = 100
+base_satisfaction = 60
+
+[[buildings]]
+id = "city.house"
+width = 2
+height = 2
+construction_hours = 24
+housing_capacity = 500
+food_per_hour = 0
+production_per_hour = 0
+satisfaction = 0
+
+[[buildings]]
+id = "city.farm"
+width = 3
+height = 3
+construction_hours = 48
+housing_capacity = 0
+food_per_hour = 3
+production_per_hour = 0
+satisfaction = 0
+
+[[buildings]]
+id = "city.mine"
+width = 3
+height = 3
+construction_hours = 72
+housing_capacity = 0
+food_per_hour = 0
+production_per_hour = 0
+satisfaction = 0
+
+[[buildings]]
+id = "city.workshop"
+width = 3
+height = 2
+construction_hours = 72
+housing_capacity = 0
+food_per_hour = 0
+production_per_hour = 2
+satisfaction = 0
+
+[[buildings]]
+id = "city.square"
+width = 2
+height = 2
+construction_hours = 48
+housing_capacity = 0
+food_per_hour = 0
+production_per_hour = 0
+satisfaction = 0
+
+[[adjacency]]
+source = "city.workshop"
+neighbor = "city.mine"
+production_per_hour = 4
+satisfaction = 0
+
+[[adjacency]]
+source = "city.house"
+neighbor = "city.workshop"
+production_per_hour = 0
+satisfaction = -20
+
+[[adjacency]]
+source = "city.house"
+neighbor = "city.square"
+production_per_hour = 0
+satisfaction = 25

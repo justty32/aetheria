@@ -32,7 +32,7 @@ using aetheria::zone::kRootZone;
 using aetheria::zone::value_of;
 using aetheria::zone::ZoneMeta;
 
-static_assert(AllComponents::size == 6);
+static_assert(AllComponents::size == 7);
 static_assert(std::same_as<entt::type_list_element_t<0, AllComponents>, ZoneMeta>);
 
 [[nodiscard]] std::string read_file(const std::filesystem::path& path) {

@@ -1,5 +1,6 @@
 #include "core/site/site_reduction.h"
 
+#include "core/site/site_build_loop.h"
 #include "core/zone/zone_key.h"
 
 #include <limits>
@@ -47,9 +48,12 @@ template <typename Row> [[nodiscard]] typename Row::Value measure(const SiteLaye
         const auto contribution = [&]() {
             if constexpr (std::is_same_v<Row, world::PopulationReduction>) {
                 return population_contribution(building);
-            } else {
-                static_assert(std::is_same_v<Row, world::DevelopmentLevelReduction>);
+            } else if constexpr (std::is_same_v<Row, world::DevelopmentLevelReduction>) {
                 return development_contribution(building);
+            } else {
+                static_assert(std::is_same_v<Row, world::FoodStockReduction> ||
+                              std::is_same_v<Row, world::ProductionStockReduction>);
+                return typename Row::Value{};
             }
         }();
         if (contribution > std::numeric_limits<typename Row::Value>::max() - result) {
@@ -88,6 +92,29 @@ world::RegionTileDelta ReductionTable::reduce(const SiteLayers& layers) {
     return result;
 }
 
+world::RegionTileDelta ReductionTable::reduce(const zone::Zone& site) {
+    const auto* payload = std::get_if<zone::SitePayload>(&site.payload);
+    if (payload == nullptr) {
+        throw std::invalid_argument{"ReductionTable::reduce(zone) 只接受 SitePayload"};
+    }
+    auto result = reduce(payload->layers);
+    const auto states = site.reg.view<const CityBuildState>();
+    if (states.empty()) {
+        return result;
+    }
+    if (states.size() != 1U) {
+        throw std::logic_error{"Site 歸約遇到多個 CityBuildState"};
+    }
+    const auto& economy = states.get<const CityBuildState>(*states.begin()).economy;
+    std::get<world::ReductionValue<world::PopulationReduction>>(result.values_).value =
+        economy.population;
+    std::get<world::ReductionValue<world::FoodStockReduction>>(result.values_).value =
+        economy.food_stock;
+    std::get<world::ReductionValue<world::ProductionStockReduction>>(result.values_).value =
+        economy.production_stock;
+    return result;
+}
+
 void ReductionTable::apply(world::RegionTiles& tiles, world::RegionXY coordinate,
                            const world::RegionTileDelta& delta) {
     if (!tiles.valid_layout()) {
@@ -116,7 +143,7 @@ void reduce_live_site_xun(world::RegionTiles& tiles, world::RegionXY coordinate,
     if (payload == nullptr) {
         throw std::invalid_argument{"Site Zone 缺少 SitePayload"};
     }
-    ReductionTable::apply(tiles, coordinate, ReductionTable::reduce(payload->layers));
+    ReductionTable::apply(tiles, coordinate, ReductionTable::reduce(live_site));
 }
 
 }  // namespace aetheria::site

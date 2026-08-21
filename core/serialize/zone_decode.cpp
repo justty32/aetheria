@@ -166,6 +166,14 @@ std::unique_ptr<zone::Zone> decode_zone(std::string_view bytes, const rules::Rul
         RegistryInputArchive registry_archive{registry_cereal};
         load_registry_snapshot(value->reg, registry_archive, AllComponents{});
     }
+    const auto city_states = value->reg.view<const site::CityBuildState>();
+    if (city_states.size() > 1U ||
+        (!city_states.empty() && zone::level_of(value->key) != zone::ZoneLevel::Site) ||
+        (!city_states.empty() &&
+         !site::valid_city_build_state(
+             city_states.get<const site::CityBuildState>(*city_states.begin()), ruleset))) {
+        throw std::runtime_error{"zone 含無效 CityBuildState"};
+    }
     if (stream.peek() != std::char_traits<char>::eof()) {
         throw std::runtime_error{"zone 檔含未解析的尾端資料"};
     }

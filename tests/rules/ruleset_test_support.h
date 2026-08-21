@@ -142,6 +142,35 @@ ruin_keep_min_percent=20
 ruin_keep_max_percent=40
 )toml";
 
+constexpr std::string_view kSiteBuildRules = R"toml([growth]
+base_growth_basis_points_per_xun=500
+people_supported_per_food=100
+base_satisfaction=60
+[[buildings]]
+id="city.house"
+width=2
+height=2
+construction_hours=24
+housing_capacity=500
+food_per_hour=0
+production_per_hour=0
+satisfaction=0
+[[buildings]]
+id="city.farm"
+width=2
+height=2
+construction_hours=24
+housing_capacity=0
+food_per_hour=2
+production_per_hour=0
+satisfaction=0
+[[adjacency]]
+source="city.house"
+neighbor="city.farm"
+production_per_hour=0
+satisfaction=1
+)toml";
+
 inline void write_valid_ruleset(const std::filesystem::path& path, std::string_view terrain,
                                 std::string_view feature_reference = {}) {
     write_text(path / "terrain.toml", terrain);
@@ -224,6 +253,7 @@ rough_ground="ground.water"
     }
     write_text(path / "site_projection.toml", projection);
     write_text(path / "site_city.toml", kSiteFillRules);
+    write_text(path / "site_build.toml", kSiteBuildRules);
     write_text(path / "site_wild.toml", kSiteWildRules);
 }
 

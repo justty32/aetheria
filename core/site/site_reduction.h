@@ -14,6 +14,7 @@ namespace aetheria::site {
 class ReductionTable {
 public:
     [[nodiscard]] static world::RegionTileDelta reduce(const SiteLayers& layers);
+    [[nodiscard]] static world::RegionTileDelta reduce(const zone::Zone& site);
     static void apply(world::RegionTiles& tiles, world::RegionXY coordinate,
                       const world::RegionTileDelta& delta);
 };

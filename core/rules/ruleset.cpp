@@ -17,6 +17,9 @@ const GroundDef* Ruleset::ground(GroundId id) const noexcept { return lookup(gro
 const BuildingDef* Ruleset::building(BuildingDefId id) const noexcept {
     return lookup(buildings(), id);
 }
+const CityBuildingDef* Ruleset::city_building(CityBuildingDefId id) const noexcept {
+    return lookup(city_buildings(), id);
+}
 const TerrainGroundMapping* Ruleset::terrain_ground_mapping(TerrainId id) const noexcept {
     return lookup(terrain_ground_mappings(), id);
 }
@@ -39,6 +42,9 @@ std::optional<GroundId> Ruleset::find_ground(std::string_view id) const noexcept
 std::optional<BuildingDefId> Ruleset::find_building(std::string_view id) const noexcept {
     return find_id(building_index_, id);
 }
+std::optional<CityBuildingDefId> Ruleset::find_city_building(std::string_view id) const noexcept {
+    return find_id(city_building_index_, id);
+}
 
 Ruleset RulesetLoader::load(const std::filesystem::path& data_directory) {
     Ruleset result;
@@ -52,6 +58,7 @@ Ruleset RulesetLoader::load(const std::filesystem::path& data_directory) {
     load_grounds(result, data_directory, global_ids);
     load_site_projection(result, data_directory);
     load_site_city(result, data_directory, global_ids);
+    load_site_build(result, data_directory, global_ids);
     load_site_wilderness(result, data_directory);
     load_biome_rule_tables(result, data_directory);
     load_movement_rules(result, data_directory);

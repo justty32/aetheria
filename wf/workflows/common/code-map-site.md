@@ -25,10 +25,14 @@
 | `site_materialize.*` | 依聚落有無分流城區／荒野，首次展開、冷重算展開、收回與持久建築座標疊加 |
 | `site_reduction.*` | 固定 row 的 Site→Region 歸約 |
 | `site_event_escalation.*` | 建築事件先落持久來源；達 Region 級才立即同步歸約快變數 |
+| `site_build_loop.*` | `L_FULL` 逐小時／旬界編排、工地命令、持久 `CityBuildState` 與 Region 回填 |
+| `site_build_economy.cpp` | 建造進度、每小時糧食／生產、相鄰效果與人口成長 |
+| `site_build_loop_detail.h` | 城建命令與每小時經濟結算的內部介面 |
 
 `data/site_projection.toml` 保存 Terrain→Ground 映射與城區骨架規則；`data/site_city.toml`
 保存 F1/F2 配額與建築、F3 城防引用、F4 勢力風格及 F5 缺口比例。載入型別分別是
 `rules::SiteGenerationRules` 與 `rules::SiteFillRules`，已啟用分區缺配額或建築 def 時載入失敗。
+`data/site_build.toml` 另存城建建造時數、產出、容量、相鄰效果與人口成長參數。
 
 ### 荒野 W1～W6
 
@@ -49,3 +53,4 @@
 對應測試在 `tests/site/`：`site_skeleton_test.cpp` 驗 S1～S4；`site_fill_test.cpp` 驗快慢隔離、
 有牆必有門／雙重牆、owner 地標、損毀距離偏好、packing 與 S+F 效能；既有 `site_materialize_test.cpp` 的持久
 建築座標測試會在真遮罩上重跑，`site_roundtrip_test.cpp` 驗三次冷往返與非空程序層重算。
+`site_build_{loop,persistence}_test.cpp` 驗人口演化、兩種擺法、絕對歸約不重複與 pending 冷載。

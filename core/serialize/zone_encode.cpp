@@ -50,6 +50,14 @@ std::string encode_zone(const zone::Zone& value, const rules::Ruleset& ruleset) 
     if (!zone::payload_matches_level(value.key, value.payload)) {
         throw std::runtime_error{"SpatialPayload alternative 與 ZoneKey level 不符"};
     }
+    const auto city_states = value.reg.view<const site::CityBuildState>();
+    if (city_states.size() > 1U ||
+        (!city_states.empty() && zone::level_of(value.key) != zone::ZoneLevel::Site) ||
+        (!city_states.empty() &&
+         !site::valid_city_build_state(
+             city_states.get<const site::CityBuildState>(*city_states.begin()), ruleset))) {
+        throw std::runtime_error{"zone 含無效 CityBuildState"};
+    }
     if (const auto* region = std::get_if<zone::RegionPayload>(&value.payload)) {
         for (const auto& [z, tiles] : region->layers) {
             static_cast<void>(z);

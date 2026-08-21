@@ -28,7 +28,7 @@ using aetheria::world::RegionTiles;
 template <typename Value>
 concept HasPublicPopulationField = requires(Value value) { value.population; };
 
-static_assert(std::tuple_size_v<aetheria::world::RegionReductionRows> == 2);
+static_assert(std::tuple_size_v<aetheria::world::RegionReductionRows> == 4);
 static_assert(!HasPublicPopulationField<RegionTiles>);
 static_assert(!std::is_default_constructible_v<aetheria::world::RegionTileDelta>);
 
@@ -71,11 +71,11 @@ TEST(SiteReduction, HasLiveSiteNegativeControlProvesRegionFormulaDidNotExecute) 
     const auto executed = RegionSimulation::advance_xun(tiles);
     EXPECT_EQ(executed.formula_execution_count, 1U);
     EXPECT_EQ(executed.live_site_skip_count, 0U);
-    EXPECT_EQ(tiles.reduction_value<PopulationReduction>(kReductionCoordinate), 100U);
+    EXPECT_EQ(tiles.reduction_value<PopulationReduction>(kReductionCoordinate), 78U);
     std::cout << "has_live_site_negative formula_when_live="
               << skipped.formula_execution_count << " skipped_when_live="
               << skipped.live_site_skip_count << " formula_when_absent="
-              << executed.formula_execution_count << " site_value=75 region_value=100\n";
+              << executed.formula_execution_count << " site_value=75 region_value=78\n";
 }
 
 TEST(SiteReduction, RegionTurnRequiresAndRunsOneLiveSiteReductionPassPerXun) {
@@ -103,7 +103,7 @@ TEST(SiteReduction, RegionTurnRequiresAndRunsOneLiveSiteReductionPassPerXun) {
     EXPECT_EQ(tiles.reduction_value<PopulationReduction>(kReductionCoordinate), 100U);
 }
 
-TEST(SiteReduction, CollapseAlwaysReducesBeforeUnloadAndV11PersistsFastFields) {
+TEST(SiteReduction, CollapseAlwaysReducesBeforeUnloadAndV12PersistsFastFields) {
     auto tiles = reduction_region();
     tiles.defense[0] = 87;
     tiles.damage[0] = 42;

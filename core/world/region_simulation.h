@@ -12,6 +12,8 @@ namespace aetheria::world {
 struct RegionFormulaResult {
     PopulationReduction::Value population{};
     DevelopmentLevelReduction::Value development_level{};
+    FoodStockReduction::Value food_stock{};
+    ProductionStockReduction::Value production_stock{};
 };
 
 struct RegionSimulationReport {
@@ -20,6 +22,10 @@ struct RegionSimulationReport {
 };
 
 [[nodiscard]] RegionFormulaResult region_formula(SettlementTier settlement);
+[[nodiscard]] RegionFormulaResult region_formula(SettlementTier settlement,
+                                                 PopulationReduction::Value population,
+                                                 FoodStockReduction::Value food_stock,
+                                                 ProductionStockReduction::Value production_stock);
 
 class RegionSimulation {
 public:

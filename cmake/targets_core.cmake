@@ -6,6 +6,7 @@ add_library(aetheria_core STATIC
     core/rules/ruleset_load_defs.cpp
     core/rules/ruleset_load_site.cpp
     core/rules/ruleset_load_site_city.cpp
+    core/rules/ruleset_load_site_build.cpp
     core/rules/ruleset_load_site_wilderness.cpp
     core/rules/ruleset_load_biomes.cpp
     core/rules/ruleset_load_civilization.cpp
@@ -17,6 +18,8 @@ add_library(aetheria_core STATIC
     core/rules/ruleset_load_world_graph.cpp
     core/serialize/normalized_state_hash.cpp
     core/site/site_event_escalation.cpp
+    core/site/site_build_loop.cpp
+    core/site/site_build_economy.cpp
     core/site/site_materialize.cpp
     core/site/site_population.cpp
     core/site/site_zoning.cpp

@@ -21,8 +21,18 @@ struct DevelopmentLevelReduction {
     using Value = std::uint16_t;
 };
 
+struct FoodStockReduction {
+    using Value = std::uint64_t;
+};
+
+struct ProductionStockReduction {
+    using Value = std::uint64_t;
+};
+
 // 加一種連續量時把 row 加在尾端；table 與 Region storage 都由這份清單展開。
-using RegionReductionRows = std::tuple<PopulationReduction, DevelopmentLevelReduction>;
+using RegionReductionRows =
+    std::tuple<PopulationReduction, DevelopmentLevelReduction, FoodStockReduction,
+               ProductionStockReduction>;
 
 template <typename Row> struct ReductionField {
     using RowType = Row;
@@ -75,5 +85,7 @@ private:
 
 static_assert(std::is_integral_v<PopulationReduction::Value>);
 static_assert(std::is_integral_v<DevelopmentLevelReduction::Value>);
+static_assert(std::is_integral_v<FoodStockReduction::Value>);
+static_assert(std::is_integral_v<ProductionStockReduction::Value>);
 
 }  // namespace aetheria::world

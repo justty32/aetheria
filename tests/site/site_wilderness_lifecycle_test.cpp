@@ -17,6 +17,7 @@
 namespace {
 
 using aetheria::serialize::AllComponents;
+using aetheria::site::CityBuildState;
 using aetheria::site::SitePosition;
 using aetheria::site::WildernessEncounterPoint;
 using aetheria::site::WildernessPortal;
@@ -75,6 +76,7 @@ TEST(WildernessLifecycle, PersistentLayerIsEmptyAndProceduralEntitiesAreNotSeria
         std::get<aetheria::zone::SitePayload>(materialized.payload).layers;
     const auto before = live_counts(materialized);
     EXPECT_TRUE(layers.persistent.buildings.empty());
+    EXPECT_TRUE(materialized.reg.view<const CityBuildState>().empty());
     EXPECT_TRUE(layers.procedural.valid_layout());
     EXPECT_GT(before.vegetation, 0U);
     EXPECT_GT(before.resources, 0U);
@@ -87,6 +89,7 @@ TEST(WildernessLifecycle, PersistentLayerIsEmptyAndProceduralEntitiesAreNotSeria
     const auto& loaded_layers =
         std::get<aetheria::zone::SitePayload>(loaded->payload).layers;
     EXPECT_TRUE(loaded_layers.persistent.buildings.empty());
+    EXPECT_TRUE(loaded->reg.view<const CityBuildState>().empty());
     EXPECT_TRUE(loaded_layers.procedural.skeleton.ground.empty());
     EXPECT_EQ(live_counts(*loaded), LiveCounts{});
     std::cout << "wild_persistence persistent_buildings=0 serialized_procedural_entities=0"

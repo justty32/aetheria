@@ -42,6 +42,7 @@ TEST(RulesetLoader, LoadsImmutableDefinitionTypesAndSiteProjectionMapping) {
     ASSERT_EQ(ruleset.edges().size(), 22U);
     ASSERT_EQ(ruleset.grounds().size(), 6U);
     ASSERT_EQ(ruleset.buildings().size(), 8U);
+    ASSERT_EQ(ruleset.city_buildings().size(), 5U);
     ASSERT_EQ(ruleset.terrain_ground_mappings().size(), ruleset.terrains().size());
     ASSERT_EQ(ruleset.terrain_rules().size(), 4U);
     ASSERT_EQ(ruleset.relief_rules().size(), 3U);
@@ -50,6 +51,13 @@ TEST(RulesetLoader, LoadsImmutableDefinitionTypesAndSiteProjectionMapping) {
     EXPECT_TRUE(ruleset.movement_rules().loaded);
     EXPECT_TRUE(ruleset.site_generation_rules().loaded);
     EXPECT_TRUE(ruleset.site_fill_rules().loaded);
+    EXPECT_TRUE(ruleset.site_build_rules().loaded);
+    EXPECT_EQ(ruleset.city_building(*ruleset.find_city_building("city.workshop"))
+                  ->production_per_hour,
+              2U);
+    EXPECT_EQ(ruleset.city_building(*ruleset.find_city_building("city.workshop"))
+                  ->adjacency.size(),
+              1U);
     ASSERT_EQ(ruleset.site_fill_rules().quotas.size(), 2U);
     EXPECT_EQ(ruleset.site_fill_rules().quotas[0].units_per_block, 250U);
     EXPECT_EQ(ruleset.site_fill_rules().quotas[1].units_per_block, 2U);
