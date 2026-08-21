@@ -2,15 +2,15 @@
 
 ← [common/README](README.md)｜[conventions](conventions.md)｜[INDEX](../../INDEX.md)
 
-**目錄＝職責邊界，檔名＝該職責內的子題。** 找東西先定目錄再看檔名；改完結構要回來更新本檔（維護鏈見 [refactor](../refactor.md)）。
+**目錄＝職責邊界，檔名＝子題。** 結構改動後更新本檔（見 [refactor](../refactor.md)）。
 
 ## 檔名慣例（先讀這段，省得逐檔猜）
 
 | 型樣 | 意思 |
 |---|---|
 | `xxx.h` + 同名 `xxx.cpp` | 對外介面與其實作 |
-| **門面 header**（`region_generator.h`、`ruleset.h`） | 內容只有 `#include`。被很多地方 include 的舊入口，拆檔後保留原檔名讓呼叫端不必改 |
-| `*_detail.h`、`gen_*.h`、`toml_read.h` | **內部**共用 helper，放 `detail` sub-namespace，只給同目錄的 `.cpp` 用，不是對外介面 |
+| **門面 header**（`region_generator.h`、`ruleset.h`） | 只有 `#include`；拆檔後保留舊入口 |
+| `*_detail.h`、`gen_*.h`、`toml_read.h` | 同目錄 `.cpp` 的 `detail` helper，非公開介面 |
 | `stage_*.cpp` | worldgen 階段 1～7 的地形／氣候實作；人文三階段依職責命名 |
 | `*_test_support.h` | 該測試目錄專用的 fixture／helper（header-only）|
 
@@ -21,9 +21,9 @@
 | 路徑 | 職責 |
 |---|---|
 | `CMakeLists.txt`、`vcpkg.json` | 專案組態與依賴固定；**來源清單不在這裡**，在 `cmake/targets_*.cmake` |
-| `cmake/` | 建置分檔：`targets_core/tests/sim/bridge.cmake`（四 target 的來源與測試登記）、`godot_toolchain.cmake`（Godot 偵測／API dump／submodule revision）、`check_*.cmake`（CTest 用的隔離與跨行程腳本）|
+| `cmake/` | `targets_*.cmake` 來源／測試；`godot_toolchain.cmake` 工具鏈；`check_*.cmake` CTest 檢查 |
 | `core/` | 純 C++ 玩法核心，**不得依賴 godot-cpp** |
-| `core/site/` | L1→L2 慢／快隔離、骨架／填充、展開／冷載／收回，以及固定 row 的 L2→L1 歸約表 |
+| `core/site/` | L1→L2 慢／快隔離、骨架／填充、展開／冷載／收回、固定 row 歸約，以及最小事件升級界面 |
 | `bridge/` | `AetheriaCore` Node 與 GDExtension 註冊；唯一可 include godot-cpp 的自有目錄 |
 | `godot/` | 純顯示／呼叫驗證場景與 `.gdextension` 描述檔 |
 | `tests/` | GoogleTest 單元測試 |
@@ -57,22 +57,29 @@
 
 ### `core/serialize` — zone 位元流
 
-`zone_codec.h` 入口 / `zone_encode.cpp`（`encode_zone`、`persistent_state_hash`）/ `zone_decode.cpp`（`decode_zone`）/ `zone_region_portals.h`（稀疏 portal 解碼）/ `zone_codec_detail.h`（magic、`validate_zone_meta`）/ `registry_codec.h`、`all_components.h`（EnTT snapshot 順序，**新 component 只准加在尾端**）/ `normalized_state_hash.*`（跨歷史正規化 hash）。
+`zone_codec.h` 入口；`zone_{encode,decode}.cpp` codec；`zone_region_portals.h` portal 解碼；
+`zone_codec_detail.h` 共用檢查；`registry_codec.h`、`all_components.h` 是 EnTT snapshot
+（**新 component 只准加在尾端**）；`normalized_state_hash.*` 做跨歷史正規化 hash。
 
 ### `core/zone` — 生命週期與存檔
 
-`zone_key.h`、`zone.h`、`lod_level.h`；`zone_store.*` 記憶體 store 與共用契約；`file_zone_store.*` 磁碟 store 的類別方法；`save_manifest_io.*` 檔案 I/O、zstd、manifest 編解碼與生成參數比對；`zone_manager.*` 載入／卸載／tick 借用。
+`zone_key.h`、`zone.h`、`lod_level.h`；`zone_store.*` 共用契約與記憶體版；
+`file_zone_store.*` 磁碟版；`save_manifest_io.*` I/O／zstd／manifest；`zone_manager.*` 管生命週期。
 
 ### `core/world` — L1 Region 執行期
 
 | 檔 | 職責 |
 |---|---|
+| `significance.h` | 實體與事件共用的重要性等級 |
 | `region_tiles.*`、`reduction_schema.h` | SoA 格資料、私有歸約欄位／row schema、稀疏 portal 與雙邊一致 edge 寫入 |
 | `region_movement.h` | 移動／尋路／旬回合的共同入口 |
 | `region_movement_detail.h` | `in_bounds`／`passable`／`manhattan` |
 | `region_step_cost.cpp` | 整數 MP 單步成本與季節下限 |
 | `region_path.cpp` | A*（admissible heuristic）|
 | `region_turn.cpp`、`region_simulation.*` | `RegionTurnPipeline` 下令／旬推進；第 5 階段近似公式與 live Site 跳過計數 |
+
+`core/site/site_event_escalation.*` 不保存／不聚合事件；它把建築狀態事件先落到 Site
+持久來源，達 `Region` 等級才立即同步既有歸約快變數，較低等級等待旬末歸約。
 
 ### `core/worldgen` — Region 十二階段生成
 
