@@ -2,7 +2,10 @@
 
 add_executable(aetheria_sim
     sim/main.cpp
+    sim/debug_canvas.cpp
     sim/gen_commands.cpp
+    sim/local_viewer.cpp
+    sim/site_viewer.cpp
     sim/stage_dump.cpp
     sim/pgm_writer.cpp
     sim/world_hash.cpp
@@ -25,6 +28,13 @@ add_test(
         -DSIM=$<TARGET_FILE:aetheria_sim>
         -DTEST_DIR=${CMAKE_BINARY_DIR}/sim-worldgen-test
         -P "${PROJECT_SOURCE_DIR}/cmake/check_sim_worldgen.cmake"
+)
+add_test(
+    NAME SimViewers.GeneratePng
+    COMMAND "${CMAKE_COMMAND}"
+        -DSIM=$<TARGET_FILE:aetheria_sim>
+        -DTEST_DIR=${CMAKE_BINARY_DIR}/sim-viewer-test
+        -P "${PROJECT_SOURCE_DIR}/cmake/check_sim_viewers.cmake"
 )
 add_test(
     NAME SimWorldHash.Command
