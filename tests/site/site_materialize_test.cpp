@@ -78,8 +78,9 @@ TEST(SitePopulate, FastSettlementChangesZoningWithoutChangingSkeleton) {
 }
 
 TEST(SiteMaterialize, DerivesZoneKeyAndCreatesOnePersistentBuildingAtCoarseLod) {
-    auto site = aetheria::site::materialize_site_zone(sample_region(), kCoordinate, kWorldSeed,
-                                                      kRegionId, test_ruleset());
+    auto region = sample_region();
+    auto site = aetheria::site::materialize_site_zone(region, kCoordinate, kWorldSeed, kRegionId,
+                                                      test_ruleset());
     const auto expected_region = aetheria::zone::child_key(aetheria::zone::kRootZone, kRegionId, 0);
     const auto expected_site = aetheria::zone::child_key(expected_region, 4, 7);
     EXPECT_EQ(site.key, expected_site);
@@ -95,7 +96,8 @@ TEST(SiteMaterialize, DerivesZoneKeyAndCreatesOnePersistentBuildingAtCoarseLod) 
 }
 
 TEST(SiteMaterialize, PersistentBuildingRoundTripsButProceduralLayerDoesNotSave) {
-    auto source = aetheria::site::materialize_site_zone(sample_region(), kCoordinate, kWorldSeed,
+    auto region = sample_region();
+    auto source = aetheria::site::materialize_site_zone(region, kCoordinate, kWorldSeed,
                                                         kRegionId, test_ruleset());
     auto& source_layers = std::get<aetheria::zone::SitePayload>(source.payload).layers;
     source_layers.persistent.buildings.front().state = BuildingState::Derelict;

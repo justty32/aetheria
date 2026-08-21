@@ -46,6 +46,12 @@ template <typename Value>
     return values.size() * sizeof(Value);
 }
 
+[[nodiscard]] std::size_t reduction_bytes(const RegionReductionStorage& storage) noexcept {
+    return std::apply(
+        [](const auto&... field) { return (bytes(field.values) + ... + std::size_t{}); },
+        storage.fields);
+}
+
 }  // namespace
 
 RegionTiles::RegionTiles(std::uint32_t grid_width, std::uint32_t grid_height)
@@ -64,6 +70,8 @@ RegionTiles::RegionTiles(std::uint32_t grid_width, std::uint32_t grid_height)
     owner.resize(count);
     settlement.resize(count);
     site.resize(count);
+    std::apply([count](auto&... field) { (field.values.resize(count), ...); },
+               reduction_fields_.fields);
 }
 
 std::size_t RegionTiles::tile_count() const noexcept {
@@ -87,10 +95,13 @@ bool RegionTiles::valid_layout() const noexcept {
         return false;
     }
     const auto count = static_cast<std::size_t>(count64);
+    const bool reduction_layout_valid = std::apply(
+        [count](const auto&... field) { return ((field.values.size() == count) && ...); },
+        reduction_fields_.fields);
     if (!(base.size() == count && relief.size() == count &&
            feature.size() == count && temperature.size() == count && moisture.size() == count &&
            elevation.size() == count && edges.size() == count * 4U && owner.size() == count &&
-           settlement.size() == count && site.size() == count)) {
+           settlement.size() == count && site.size() == count && reduction_layout_valid)) {
         return false;
     }
     for (std::size_t index = 0; index < portals.size(); ++index) {
@@ -129,7 +140,7 @@ std::size_t RegionTiles::edge_storage_bytes() const noexcept { return bytes(edge
 std::size_t RegionTiles::dynamic_storage_bytes() const noexcept {
     return bytes(base) + bytes(relief) + bytes(feature) + bytes(temperature) + bytes(moisture) +
            bytes(elevation) + bytes(edges) + bytes(owner) + bytes(settlement) + bytes(site) +
-           bytes(portals);
+           bytes(portals) + reduction_bytes(reduction_fields_);
 }
 
 }  // namespace aetheria::world

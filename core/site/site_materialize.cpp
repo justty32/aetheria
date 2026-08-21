@@ -1,6 +1,7 @@
 #include "core/site/site_materialize.h"
 
 #include "core/site/site_projection.h"
+#include "core/site/site_reduction.h"
 #include "core/zone/zone_key.h"
 
 #include <limits>
@@ -43,9 +44,13 @@ namespace {
 
 }  // namespace
 
-zone::Zone materialize_site_zone(const world::RegionTiles& region_tiles, world::RegionXY coordinate,
+zone::Zone materialize_site_zone(world::RegionTiles& region_tiles, world::RegionXY coordinate,
                                  std::uint64_t world_seed, std::uint32_t region_id,
                                  const rules::Ruleset& ruleset) {
+    const auto region_index = region_tiles.index_of(coordinate);
+    if (region_tiles.site.at(region_index).has_live_site) {
+        throw std::logic_error{"Site materialize 拒絕重複的 live Site"};
+    }
     const auto site_key = site_key_for(region_id, coordinate);
     const auto vars = split_site_vars(region_tiles, coordinate);
     const auto x = static_cast<std::uint16_t>(coordinate.x);
@@ -63,16 +68,24 @@ zone::Zone materialize_site_zone(const world::RegionTiles& region_tiles, world::
         SiteLayers{std::move(procedural), std::move(persistent), SiteVolatileLayer{}}};
     zone::Zone result{site_key, std::move(payload)};
     result.lod = zone::LodLevel::Coarse;
+    auto& site_state = region_tiles.site.at(region_index);
+    site_state.lod = zone::LodLevel::Coarse;
+    site_state.has_live_site = true;
+    site_state.ever_realized = true;
     return result;
 }
 
 zone::ZoneHandle rematerialize_site_zone(zone::ZoneManager& manager,
-                                         const world::RegionTiles& region_tiles,
+                                         world::RegionTiles& region_tiles,
                                          world::RegionXY coordinate, std::uint64_t world_seed,
                                          std::uint32_t region_id, const rules::Ruleset& ruleset) {
     const auto site_key = site_key_for(region_id, coordinate);
     if (manager.get(site_key).has_value()) {
         throw std::logic_error{"Site rematerialize 要求起點為 L_ABSENT（未載入）"};
+    }
+    const auto region_index = region_tiles.index_of(coordinate);
+    if (region_tiles.site.at(region_index).has_live_site) {
+        throw std::logic_error{"Site rematerialize 拒絕重複的 live Site"};
     }
 
     const auto vars = split_site_vars(region_tiles, coordinate);
@@ -94,17 +107,27 @@ zone::ZoneHandle rematerialize_site_zone(zone::ZoneManager& manager,
     if (!borrowed) {
         throw std::logic_error{"Site rematerialize 冷載後未留在 ZoneManager"};
     }
+    auto& site_state = region_tiles.site.at(region_index);
+    site_state.lod = zone::LodLevel::Coarse;
+    site_state.has_live_site = true;
+    site_state.ever_realized = true;
     return handle;
 }
 
-void collapse_site_zone(zone::ZoneManager& manager, zone::ZoneHandle handle) {
+void collapse_site_zone(zone::ZoneManager& manager, zone::ZoneHandle handle,
+                        world::RegionTiles& region_tiles, world::RegionXY coordinate) {
     if (zone::level_of(handle.key()) != zone::ZoneLevel::Site) {
         throw std::invalid_argument{"Site collapse 只接受 Site ZoneKey"};
     }
-    const bool borrowed = manager.with(handle, [](const zone::Zone& loaded) {
+    const auto region_index = region_tiles.index_of(coordinate);
+    if (!region_tiles.site.at(region_index).has_live_site) {
+        throw std::logic_error{"Site collapse 要求 Region tile 標記為 live"};
+    }
+    const bool borrowed = manager.with(handle, [&](const zone::Zone& loaded) {
         if (loaded.lod != zone::LodLevel::Coarse) {
             throw std::logic_error{"Site collapse 要求起點為 L_COARSE"};
         }
+        reduce_live_site_xun(region_tiles, coordinate, loaded);
     });
     if (!borrowed) {
         throw std::logic_error{"Site collapse 要求 zone 已載入"};
@@ -112,6 +135,9 @@ void collapse_site_zone(zone::ZoneManager& manager, zone::ZoneHandle handle) {
     if (!manager.unload(handle.key())) {
         throw std::logic_error{"Site collapse 無法寫盤並進入 L_ABSENT"};
     }
+    auto& site_state = region_tiles.site.at(region_index);
+    site_state.lod = zone::LodLevel::Absent;
+    site_state.has_live_site = false;
 }
 
 }  // namespace aetheria::site

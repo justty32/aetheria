@@ -22,7 +22,7 @@ using aetheria::zone::ZoneManager;
 
 TEST(SiteRoundTrip, PersistentMutationBetweenCollapseAndExpandBreaksHashSequence) {
     TemporaryDirectory directory;
-    const auto tiles = round_trip_region();
+    auto tiles = round_trip_region();
     FileZoneStore store{directory.path(), test_ruleset()};
     static_cast<void>(prepare_idle_digest(store, tiles));
     ZoneManager manager{store};
@@ -31,7 +31,7 @@ TEST(SiteRoundTrip, PersistentMutationBetweenCollapseAndExpandBreaksHashSequence
     const auto handle = aetheria::site::rematerialize_site_zone(
         manager, tiles, kRoundTripCoordinate, kRoundTripWorldSeed, kRoundTripRegionId,
         test_ruleset());
-    aetheria::site::collapse_site_zone(manager, handle);
+    aetheria::site::collapse_site_zone(manager, handle, tiles, kRoundTripCoordinate);
     ASSERT_FALSE(manager.get(kRoundTripSiteKey).has_value());
     const auto collapsed_hash = disk_world_hash(directory);
 

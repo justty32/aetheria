@@ -36,7 +36,7 @@ inline constexpr auto kRoundTripSiteKey = zone::child_key(kRoundTripRegionKey, 4
 }
 
 [[nodiscard]] inline site::SiteProceduralLayer prepare_idle_digest(
-    zone::FileZoneStore& store, const world::RegionTiles& tiles) {
+    zone::FileZoneStore& store, world::RegionTiles& tiles) {
     store.save(zone::Zone{zone::kRootZone});
     auto materialized = site::materialize_site_zone(tiles, kRoundTripCoordinate,
                                                     kRoundTripWorldSeed, kRoundTripRegionId,
@@ -45,6 +45,9 @@ inline constexpr auto kRoundTripSiteKey = zone::child_key(kRoundTripRegionKey, 4
     layers.persistent.buildings.front().state = site::BuildingState::Idle;
     auto expected_procedural = layers.procedural;
     store.save(materialized);
+    auto& site_state = tiles.site.at(tiles.index_of(kRoundTripCoordinate));
+    site_state.lod = zone::LodLevel::Absent;
+    site_state.has_live_site = false;
     store.write_manifest(zone::SaveManifest{.world_seed = kRoundTripWorldSeed});
     return expected_procedural;
 }

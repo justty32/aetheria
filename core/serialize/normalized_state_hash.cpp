@@ -5,6 +5,7 @@
 #include <algorithm>
 #include <stdexcept>
 #include <string>
+#include <span>
 #include <tuple>
 #include <type_traits>
 #include <utility>
@@ -53,6 +54,19 @@ void hash_numeric_vector(std::uint64_t& hash, const std::vector<Value>& values) 
     for (const auto value : values) {
         hash_scalar(hash, value);
     }
+}
+
+template <typename Value>
+void hash_numeric_span(std::uint64_t& hash, std::span<const Value> values) noexcept {
+    hash_scalar(hash, static_cast<std::uint64_t>(values.size()));
+    for (const auto value : values) {
+        hash_scalar(hash, value);
+    }
+}
+
+template <typename Row>
+void hash_reduction_row(std::uint64_t& hash, const world::RegionTiles& tiles) noexcept {
+    hash_numeric_span(hash, tiles.reduction_values<Row>());
 }
 
 template <typename Id, typename Lookup>
@@ -121,6 +135,11 @@ std::uint64_t normalized_state_hash(const zone::Zone& zone, const rules::Ruleset
                 hash_scalar(hash, owner);
             }
             hash_numeric_vector(hash, tiles.settlement);
+            std::apply(
+                [&](auto... row) {
+                    (hash_reduction_row<std::remove_cvref_t<decltype(row)>>(hash, tiles), ...);
+                },
+                world::RegionReductionRows{});
             hash_scalar(hash, static_cast<std::uint64_t>(tiles.portals.size()));
             for (const auto& portal : tiles.portals) {
                 hash_scalar(hash, portal.tile.x);

@@ -2,6 +2,7 @@
 
 #include "core/world/region_movement.h"
 #include "core/world/region_movement_detail.h"
+#include "core/world/region_simulation.h"
 
 #include <algorithm>
 #include <stdexcept>
@@ -57,9 +58,18 @@ void RegionTurnPipeline::issue_move(zone::Zone& region, StableId unit, RegionXY 
     region.reg.emplace_or_replace<RegionMoveCommand>(found, target, false);
 }
 
-void RegionTurnPipeline::advance_xun(zone::Zone& region, const TurnStageObserver& observer) const {
+void RegionTurnPipeline::advance_xun(zone::Zone& region, const TurnStageObserver& observer,
+                                     const LiveSiteReductionPass& live_site_reduction) const {
     if (zone::level_of(region.key) != zone::ZoneLevel::Region) {
         throw std::invalid_argument{"RegionTurnPipeline 只接受 Region zone"};
+    }
+    auto& payload = std::get<zone::RegionPayload>(region.payload);
+    const bool has_live_site = std::ranges::any_of(payload.layers, [](const auto& layer) {
+        return std::ranges::any_of(layer.second.site,
+                                   [](const SiteState& site) { return site.has_live_site; });
+    });
+    if (has_live_site && !live_site_reduction) {
+        throw std::logic_error{"Region 有 live Site，但本旬未提供歸約 pass"};
     }
     auto& clock = require_clock(region);
     const auto date = time::to_date(clock.now);
@@ -113,6 +123,13 @@ void RegionTurnPipeline::advance_xun(zone::Zone& region, const TurnStageObserver
     notify(observer, TurnStage::Encounters);
     notify(observer, TurnStage::FactionAi);
     notify(observer, TurnStage::WorldSimulation);
+    if (has_live_site) {
+        live_site_reduction(region);
+    }
+    for (auto& [z, tiles] : payload.layers) {
+        static_cast<void>(z);
+        static_cast<void>(RegionSimulation::advance_xun(tiles));
+    }
     notify(observer, TurnStage::Events);
     notify(observer, TurnStage::TurnEnd);
     const auto next = clock.now + time::kXun;

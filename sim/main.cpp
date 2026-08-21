@@ -104,8 +104,9 @@ int main(int argc, char** argv) {
                         auto& layers = std::get<aetheria::zone::RegionPayload>(zone.payload).layers;
                         layers.emplace(0, make_probe_region());
                     } else if (aetheria::zone::level_of(key) == aetheria::zone::ZoneLevel::Site) {
+                        auto probe_region = make_probe_region();
                         auto materialized = aetheria::site::materialize_site_zone(
-                            make_probe_region(), {4, 7}, UINT64_C(0xA37E12A), 1, ruleset);
+                            probe_region, {4, 7}, UINT64_C(0xA37E12A), 1, ruleset);
                         zone.payload = std::move(materialized.payload);
                         zone.lod = materialized.lod;
                     }

@@ -17,6 +17,7 @@ add_library(aetheria_core STATIC
     core/site/site_materialize.cpp
     core/site/site_population.cpp
     core/site/site_projection.cpp
+    core/site/site_reduction.cpp
     core/time/tick.cpp
     core/serialize/zone_encode.cpp
     core/serialize/zone_decode.cpp
@@ -25,6 +26,7 @@ add_library(aetheria_core STATIC
     core/zone/zone_manager.cpp
     core/zone/zone_store.cpp
     core/world/region_tiles.cpp
+    core/world/region_simulation.cpp
     core/world/region_step_cost.cpp
     core/world/region_path.cpp
     core/world/region_turn.cpp

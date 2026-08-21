@@ -3,8 +3,22 @@
 #include "core/worldgen/gen_hash.h"
 
 #include <cstdint>
+#include <tuple>
+#include <type_traits>
 
 namespace aetheria::worldgen {
+namespace {
+
+template <typename Row>
+void hash_reduction_row(std::uint64_t& hash, const world::RegionTiles& tiles) noexcept {
+    const auto values = tiles.reduction_values<Row>();
+    detail::hash_scalar(hash, static_cast<std::uint64_t>(values.size()));
+    for (const auto value : values) {
+        detail::hash_scalar(hash, value);
+    }
+}
+
+}  // namespace
 
 std::uint64_t hash_skeleton(const RegionSkeleton& skeleton) noexcept {
     auto hash = UINT64_C(14695981039346656037);
@@ -51,6 +65,11 @@ std::uint64_t hash_tiles(const world::RegionTiles& tiles) noexcept {
     detail::hash_vector(hash, tiles.edges);
     detail::hash_vector(hash, tiles.owner);
     detail::hash_vector(hash, tiles.settlement);
+    std::apply(
+        [&](auto... row) {
+            (hash_reduction_row<std::remove_cvref_t<decltype(row)>>(hash, tiles), ...);
+        },
+        world::RegionReductionRows{});
     detail::hash_scalar(hash, static_cast<std::uint64_t>(tiles.portals.size()));
     for (const auto& portal : tiles.portals) {
         detail::hash_scalar(hash, portal.tile.x);
@@ -60,6 +79,7 @@ std::uint64_t hash_tiles(const world::RegionTiles& tiles) noexcept {
     detail::hash_scalar(hash, static_cast<std::uint64_t>(tiles.site.size()));
     for (const auto& site : tiles.site) {
         detail::hash_scalar(hash, site.lod);
+        detail::hash_scalar(hash, static_cast<std::uint8_t>(site.has_live_site));
         detail::hash_scalar(hash, static_cast<std::uint8_t>(site.ever_realized));
     }
     return hash;

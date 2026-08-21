@@ -103,6 +103,7 @@ enum class TurnStage : std::uint8_t {
 };
 
 using TurnStageObserver = std::function<void(TurnStage)>;
+using LiveSiteReductionPass = std::function<void(zone::Zone&)>;
 
 // RegionTurnPipeline 依固定七階段推進單一 Region，並在 stage 7 自動存檔。
 // 呼叫端擁有 pipeline；它只借用 Ruleset 與 ZoneStore。
@@ -113,7 +114,8 @@ public:
         : ruleset_{ruleset}, store_{store} {}
 
     void issue_move(zone::Zone& region, StableId unit, RegionXY target) const;
-    void advance_xun(zone::Zone& region, const TurnStageObserver& observer = {}) const;
+    void advance_xun(zone::Zone& region, const TurnStageObserver& observer = {},
+                     const LiveSiteReductionPass& live_site_reduction = {}) const;
 
 private:
     const rules::Ruleset& ruleset_;

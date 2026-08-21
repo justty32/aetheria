@@ -6,6 +6,7 @@
 
 #include <cereal/archives/portable_binary.hpp>
 #include <cereal/types/string.hpp>
+#include <cereal/types/tuple.hpp>
 #include <cereal/types/vector.hpp>
 
 #include <algorithm>
@@ -96,7 +97,8 @@ std::string encode_zone(const zone::Zone& value, const rules::Ruleset& ruleset) 
                 }
                 archive(z, tiles.width, tiles.height, tiles.base, tiles.relief, tiles.feature,
                         tiles.temperature, tiles.moisture, tiles.elevation, tiles.edges,
-                        tiles.owner, tiles.settlement, ever_realized);
+                        tiles.owner, tiles.settlement, ever_realized,
+                        tiles.reduction_fields_.fields);
                 const auto portal_count = static_cast<std::uint64_t>(tiles.portals.size());
                 archive(portal_count);
                 for (const auto& portal : tiles.portals) {

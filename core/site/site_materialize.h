@@ -11,7 +11,7 @@
 
 namespace aetheria::site {
 
-[[nodiscard]] zone::Zone materialize_site_zone(const world::RegionTiles& region_tiles,
+[[nodiscard]] zone::Zone materialize_site_zone(world::RegionTiles& region_tiles,
                                                world::RegionXY coordinate, std::uint64_t world_seed,
                                                std::uint32_t region_id,
                                                const rules::Ruleset& ruleset);
@@ -19,11 +19,12 @@ namespace aetheria::site {
 // rematerialize_site_zone 只接受 L_ABSENT（未載入）的 Site，從 store 冷載持久層，
 // 再以當下 Region tile 重算程序層。回傳 handle 指向 L_COARSE Site。
 [[nodiscard]] zone::ZoneHandle rematerialize_site_zone(
-    zone::ZoneManager& manager, const world::RegionTiles& region_tiles,
+    zone::ZoneManager& manager, world::RegionTiles& region_tiles,
     world::RegionXY coordinate, std::uint64_t world_seed, std::uint32_t region_id,
     const rules::Ruleset& ruleset);
 
-// collapse_site_zone 把已載入的 L_COARSE Site 寫盤並移出 ZoneManager，成為 L_ABSENT。
-void collapse_site_zone(zone::ZoneManager& manager, zone::ZoneHandle handle);
+// collapse_site_zone 先強制歸約，再把 L_COARSE Site 寫盤並移出 manager。
+void collapse_site_zone(zone::ZoneManager& manager, zone::ZoneHandle handle,
+                        world::RegionTiles& region_tiles, world::RegionXY coordinate);
 
 }  // namespace aetheria::site

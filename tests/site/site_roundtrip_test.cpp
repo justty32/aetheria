@@ -29,7 +29,7 @@ using aetheria::zone::ZoneManager;
 
 TEST(SiteRoundTrip, ThreeColdRoundTripsKeepEveryHashAndRecomputeProceduralLayer) {
     TemporaryDirectory directory;
-    const auto tiles = round_trip_region();
+    auto tiles = round_trip_region();
     FileZoneStore store{directory.path(), test_ruleset()};
     const auto expected_procedural = prepare_idle_digest(store, tiles);
     ZoneManager manager{store};
@@ -78,7 +78,7 @@ TEST(SiteRoundTrip, ThreeColdRoundTripsKeepEveryHashAndRecomputeProceduralLayer)
         }
 
         const auto collapse_start = std::chrono::steady_clock::now();
-        aetheria::site::collapse_site_zone(manager, handle);
+        aetheria::site::collapse_site_zone(manager, handle, tiles, kRoundTripCoordinate);
         collapse_milliseconds.push_back(
             std::chrono::duration<double, std::milli>{std::chrono::steady_clock::now() -
                                                        collapse_start}

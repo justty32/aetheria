@@ -19,7 +19,7 @@
 
 ### 實作者（gpt-sol）
 
-- **M2.4 歸約通道實作中** → [任務書](inbox/m2_4-reduction-table.md)。
+- **待任務書**。
 
 ### 規劃者（Opus 5）
 

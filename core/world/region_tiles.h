@@ -2,15 +2,37 @@
 
 #include "core/base/check.h"
 #include "core/rules/ruleset.h"
+#include "core/world/reduction_schema.h"
 #include "core/zone/lod_level.h"
 
 #include <compare>
 #include <cstddef>
 #include <cstdint>
+#include <memory>
+#include <span>
+#include <string>
+#include <string_view>
 #include <type_traits>
 #include <vector>
 
+namespace aetheria::zone {
+struct Zone;
+}
+
+namespace aetheria::serialize {
+[[nodiscard]] std::string encode_zone(const zone::Zone& zone,
+                                      const rules::Ruleset& ruleset);
+[[nodiscard]] std::unique_ptr<zone::Zone> decode_zone(std::string_view bytes,
+                                                      const rules::Ruleset& ruleset);
+}
+
+namespace aetheria::site {
+class ReductionTable;
+}
+
 namespace aetheria::world {
+
+class RegionSimulation;
 
 // FactionId 是勢力資料表的強型別下標，0 代表無主。
 // 世界狀態配發其值，RegionTiles 只保存複本。
@@ -52,6 +74,7 @@ struct RegionPortal {
 // 所屬 RegionTiles 析構或重配後失效；lod 不進存檔。
 struct SiteState {
     zone::LodLevel lod{zone::LodLevel::Absent};
+    bool has_live_site{};
     bool ever_realized{};
 
     constexpr bool operator==(const SiteState&) const noexcept = default;
@@ -72,6 +95,17 @@ struct RegionTiles {
     [[nodiscard]] std::size_t edge_storage_bytes() const noexcept;
     [[nodiscard]] std::size_t dynamic_storage_bytes() const noexcept;
 
+    template <typename Row>
+    [[nodiscard]] std::span<const typename Row::Value> reduction_values() const noexcept {
+        static_assert(kIsRegionReductionRow<Row>);
+        return std::get<ReductionField<Row>>(reduction_fields_.fields).values;
+    }
+
+    template <typename Row>
+    [[nodiscard]] typename Row::Value reduction_value(RegionXY coordinate) const {
+        return reduction_values<Row>()[index_of(coordinate)];
+    }
+
     std::uint32_t width{};
     std::uint32_t height{};
     std::vector<rules::TerrainId> base;
@@ -85,6 +119,15 @@ struct RegionTiles {
     std::vector<SettlementTier> settlement;
     std::vector<SiteState> site;
     std::vector<RegionPortal> portals;
+
+private:
+    friend class site::ReductionTable;
+    friend class RegionSimulation;
+    friend std::string serialize::encode_zone(const zone::Zone&, const rules::Ruleset&);
+    friend std::unique_ptr<zone::Zone> serialize::decode_zone(std::string_view,
+                                                              const rules::Ruleset&);
+
+    RegionReductionStorage reduction_fields_;
 };
 
 namespace detail {
@@ -122,7 +165,7 @@ inline constexpr std::size_t kDeclaredRegionTilesStorageSize =
     sizeof(decltype(RegionTiles::moisture)) + sizeof(decltype(RegionTiles::elevation)) +
     sizeof(decltype(RegionTiles::edges)) + sizeof(decltype(RegionTiles::owner)) +
     sizeof(decltype(RegionTiles::settlement)) + sizeof(decltype(RegionTiles::site)) +
-    sizeof(decltype(RegionTiles::portals));
+    sizeof(decltype(RegionTiles::portals)) + sizeof(RegionReductionStorage);
 static_assert(sizeof(RegionTiles) == kDeclaredRegionTilesStorageSize,
               "新增 RegionTiles 世界狀態欄位時必須登記並驗證其為整數或 enum");
 

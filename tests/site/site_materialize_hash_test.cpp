@@ -40,8 +40,9 @@ constexpr RegionXY kCoordinate{4, 7};
 void save_materialization(const std::filesystem::path& directory, BuildingState state) {
     aetheria::zone::FileZoneStore store{directory, test_ruleset()};
     store.save(aetheria::zone::Zone{aetheria::zone::kRootZone});
-    auto site = aetheria::site::materialize_site_zone(sample_region(), kCoordinate, kWorldSeed,
-                                                      kRegionId, test_ruleset());
+    auto region = sample_region();
+    auto site = aetheria::site::materialize_site_zone(region, kCoordinate, kWorldSeed, kRegionId,
+                                                      test_ruleset());
     auto& persistent = std::get<aetheria::zone::SitePayload>(site.payload).layers.persistent;
     ASSERT_EQ(persistent.buildings.size(), 1U);
     persistent.buildings.front().state = state;
@@ -71,9 +72,10 @@ TEST(SiteMaterialize, WorldHashMatchesTwiceAndChangesWithBuildingState) {
 }
 
 TEST(SiteMaterialize, FitsThirtyMillisecondBudget) {
-    const auto tiles = sample_region();
-    static_cast<void>(aetheria::site::materialize_site_zone(tiles, kCoordinate, kWorldSeed,
-                                                            kRegionId, test_ruleset()));
+    auto warmup_tiles = sample_region();
+    static_cast<void>(aetheria::site::materialize_site_zone(
+        warmup_tiles, kCoordinate, kWorldSeed, kRegionId, test_ruleset()));
+    auto tiles = sample_region();
     const auto start = std::chrono::steady_clock::now();
     const auto site = aetheria::site::materialize_site_zone(tiles, kCoordinate, kWorldSeed,
                                                             kRegionId, test_ruleset());
