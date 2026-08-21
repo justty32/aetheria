@@ -40,6 +40,10 @@ enum class EdgeId : std::uint16_t {};
 // Ruleset 不變時值持續有效；程序層不進存檔。
 enum class GroundId : std::uint16_t {};
 
+// BuildingDefId 是 Ruleset 中程序建築 def 的強型別下標。
+// 程序層只保存值的複本且不進存檔。
+enum class BuildingDefId : std::uint16_t {};
+
 // WorldConnectionId 是 world_graph.toml 中手工配發的穩定通道識別。
 // WorldGraphConnection 與 RegionPortal 保存其值的複本。
 // 同一份世界圖中不得重複，存檔跨版本時不做下標重映射。
@@ -58,6 +62,9 @@ enum class WorldConnectionId : std::uint32_t {};
     return static_cast<std::uint16_t>(id);
 }
 [[nodiscard]] constexpr std::uint16_t value_of(GroundId id) noexcept {
+    return static_cast<std::uint16_t>(id);
+}
+[[nodiscard]] constexpr std::uint16_t value_of(BuildingDefId id) noexcept {
     return static_cast<std::uint16_t>(id);
 }
 [[nodiscard]] constexpr std::uint32_t value_of(WorldConnectionId id) noexcept {

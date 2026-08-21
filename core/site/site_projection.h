@@ -39,6 +39,8 @@ struct SiteFastVars {
     world::FactionId owner{};
     world::SettlementTier settlement{world::SettlementTier::None};
     world::SiteState site;
+    world::PopulationReduction::Value population{};
+    world::DevelopmentLevelReduction::Value development_level{};
 
     constexpr bool operator==(const SiteFastVars&) const noexcept = default;
 };
@@ -63,7 +65,8 @@ struct SiteXY {
 
 enum class SiteZoning : std::uint8_t {
     Open,
-    Settlement,
+    Residential,
+    Commercial,
 };
 
 enum class BuildingType : std::uint8_t {
@@ -104,6 +107,17 @@ struct SiteGate {
     constexpr bool operator==(const SiteGate&) const noexcept = default;
 };
 
+// ProceduralBuilding 是 F2 底稿中的矩形建築，不進存檔；持久層疊加時優先於它。
+struct ProceduralBuilding {
+    rules::BuildingDefId def{};
+    SiteXY origin;
+    std::uint8_t width{};
+    std::uint8_t height{};
+    SiteBoundarySide frontage{SiteBoundarySide::North};
+
+    constexpr bool operator==(const ProceduralBuilding&) const noexcept = default;
+};
+
 // SiteBlock 是次級街道遞迴二分後的矩形街廓，不包含切分街道本身。
 struct SiteBlock {
     SiteXY origin;
@@ -141,6 +155,8 @@ struct SiteSkeleton {
 struct SiteProceduralLayer {
     SiteSkeleton skeleton;
     std::vector<SiteZoning> zoning;
+    std::vector<SiteZoning> block_zoning;
+    std::vector<ProceduralBuilding> buildings;
 
     [[nodiscard]] bool valid_layout() const noexcept;
 };
@@ -196,8 +212,10 @@ struct SiteLayers {
 
 [[nodiscard]] SiteSkeleton build_site_skeleton(const SiteSlowVars& slow, std::uint64_t site_seed,
                                                const rules::Ruleset& ruleset);
-[[nodiscard]] SiteProceduralLayer populate(SiteSkeleton skeleton, const SiteFastVars& fast);
+[[nodiscard]] SiteProceduralLayer populate(SiteSkeleton skeleton, const SiteFastVars& fast,
+                                           const rules::Ruleset& ruleset);
 [[nodiscard]] bool valid_persistent_layer(const SitePersistentLayer& layer) noexcept;
 [[nodiscard]] std::uint64_t hash_site_skeleton(const SiteSkeleton& skeleton) noexcept;
+[[nodiscard]] std::uint64_t hash_site_fill(const SiteProceduralLayer& procedural) noexcept;
 
 }  // namespace aetheria::site

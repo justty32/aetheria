@@ -34,6 +34,7 @@ class Ruleset {
     [[nodiscard]] const FeatureDef* feature(FeatureId id) const noexcept;
     [[nodiscard]] const EdgeDef* edge(EdgeId id) const noexcept;
     [[nodiscard]] const GroundDef* ground(GroundId id) const noexcept;
+    [[nodiscard]] const BuildingDef* building(BuildingDefId id) const noexcept;
     [[nodiscard]] const TerrainGroundMapping* terrain_ground_mapping(TerrainId id) const noexcept;
 
     [[nodiscard]] std::optional<TerrainId> find_terrain(std::string_view id) const noexcept;
@@ -41,12 +42,14 @@ class Ruleset {
     [[nodiscard]] std::optional<FeatureId> find_feature(std::string_view id) const noexcept;
     [[nodiscard]] std::optional<EdgeId> find_edge(std::string_view id) const noexcept;
     [[nodiscard]] std::optional<GroundId> find_ground(std::string_view id) const noexcept;
+    [[nodiscard]] std::optional<BuildingDefId> find_building(std::string_view id) const noexcept;
 
     [[nodiscard]] std::span<const TerrainDef> terrains() const noexcept { return terrains_; }
     [[nodiscard]] std::span<const ReliefDef> reliefs() const noexcept { return reliefs_; }
     [[nodiscard]] std::span<const FeatureDef> features() const noexcept { return features_; }
     [[nodiscard]] std::span<const EdgeDef> edges() const noexcept { return edges_; }
     [[nodiscard]] std::span<const GroundDef> grounds() const noexcept { return grounds_; }
+    [[nodiscard]] std::span<const BuildingDef> buildings() const noexcept { return buildings_; }
     [[nodiscard]] std::span<const TerrainGroundMapping> terrain_ground_mappings() const noexcept {
         return terrain_ground_mappings_;
     }
@@ -59,6 +62,9 @@ class Ruleset {
     [[nodiscard]] const MovementRules& movement_rules() const noexcept { return movement_rules_; }
     [[nodiscard]] const SiteGenerationRules& site_generation_rules() const noexcept {
         return site_generation_rules_;
+    }
+    [[nodiscard]] const SiteFillRules& site_fill_rules() const noexcept {
+        return site_fill_rules_;
     }
     [[nodiscard]] const CivilizationRules& civilization_rules() const noexcept {
         return civilization_rules_;
@@ -76,11 +82,13 @@ class Ruleset {
     std::vector<FeatureDef> features_;
     std::vector<EdgeDef> edges_;
     std::vector<GroundDef> grounds_;
+    std::vector<BuildingDef> buildings_;
     std::vector<TerrainGroundMapping> terrain_ground_mappings_;
     std::vector<TerrainRule> terrain_rules_;
     std::vector<ReliefRule> relief_rules_;
     MovementRules movement_rules_;
     SiteGenerationRules site_generation_rules_;
+    SiteFillRules site_fill_rules_;
     CivilizationRules civilization_rules_;
     std::vector<WorldGraphConnection> world_connections_;
     std::map<std::string, TerrainId, std::less<>> terrain_index_;
@@ -88,6 +96,7 @@ class Ruleset {
     std::map<std::string, FeatureId, std::less<>> feature_index_;
     std::map<std::string, EdgeId, std::less<>> edge_index_;
     std::map<std::string, GroundId, std::less<>> ground_index_;
+    std::map<std::string, BuildingDefId, std::less<>> building_index_;
 };
 
 // RulesetLoader 將一個 data 目錄完整解析成不可變 Ruleset。
@@ -113,6 +122,8 @@ class RulesetLoader {
     static void load_grounds(Ruleset& result, const std::filesystem::path& data_directory,
                              std::set<std::string, std::less<>>& global_ids);
     static void load_site_projection(Ruleset& result, const std::filesystem::path& data_directory);
+    static void load_site_city(Ruleset& result, const std::filesystem::path& data_directory,
+                               std::set<std::string, std::less<>>& global_ids);
     static void load_biome_rule_tables(Ruleset& result,
                                        const std::filesystem::path& data_directory);
     static void load_movement_rules(Ruleset& result, const std::filesystem::path& data_directory);

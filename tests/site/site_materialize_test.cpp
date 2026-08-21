@@ -31,9 +31,10 @@ using aetheria::world::RegionTiles;
 using aetheria::world::RegionXY;
 
 static_assert(std::is_invocable_r_v<SiteProceduralLayer, decltype(&aetheria::site::populate),
-                                    SiteSkeleton, const SiteFastVars&>);
+                                    SiteSkeleton, const SiteFastVars&, const Ruleset&>);
 static_assert(
-    !std::is_invocable_v<decltype(&aetheria::site::populate), SiteSkeleton, const SiteSlowVars&>);
+    !std::is_invocable_v<decltype(&aetheria::site::populate), SiteSkeleton, const SiteSlowVars&,
+                         const Ruleset&>);
 static_assert(SavedSiteLayers::size == 1);
 static_assert(entt::type_list_contains_v<SavedSiteLayers, SitePersistentLayer>);
 static_assert(!entt::type_list_contains_v<SavedSiteLayers, SiteProceduralLayer>);
@@ -57,9 +58,11 @@ constexpr RegionXY kCoordinate{4, 7};
     return tiles;
 }
 
-[[nodiscard]] std::size_t settled_tiles(const SiteProceduralLayer& layer) {
+[[nodiscard]] std::size_t zoned_tiles(const SiteProceduralLayer& layer) {
     return static_cast<std::size_t>(
-        std::ranges::count(layer.zoning, aetheria::site::SiteZoning::Settlement));
+        std::ranges::count_if(layer.zoning, [](const auto zone) {
+            return zone != aetheria::site::SiteZoning::Open;
+        }));
 }
 
 TEST(SitePopulate, FastSettlementChangesZoningWithoutChangingSkeleton) {
@@ -69,12 +72,16 @@ TEST(SitePopulate, FastSettlementChangesZoningWithoutChangingSkeleton) {
     const auto skeleton = aetheria::site::build_site_skeleton(vars.slow, seed, test_ruleset());
 
     vars.fast.settlement = aetheria::world::SettlementTier::Village;
-    const auto village = aetheria::site::populate(skeleton, vars.fast);
+    vars.fast.population = 250;
+    vars.fast.development_level = 1;
+    const auto village = aetheria::site::populate(skeleton, vars.fast, test_ruleset());
     vars.fast.settlement = aetheria::world::SettlementTier::City;
-    const auto city = aetheria::site::populate(skeleton, vars.fast);
+    vars.fast.population = 8000;
+    vars.fast.development_level = 20;
+    const auto city = aetheria::site::populate(skeleton, vars.fast, test_ruleset());
 
     EXPECT_EQ(village.skeleton, city.skeleton);
-    EXPECT_LT(settled_tiles(village), settled_tiles(city));
+    EXPECT_LT(zoned_tiles(village), zoned_tiles(city));
 }
 
 TEST(SiteMaterialize, DerivesZoneKeyAndCreatesOnePersistentBuildingAtCoarseLod) {
@@ -131,7 +138,8 @@ TEST(SiteMaterialize, BuildingCoordinateRemainsBuildableAfterFastVariableChanges
     const auto vars = aetheria::site::split_site_vars(tiles, kCoordinate);
     const auto seed = aetheria::site::derive_site_seed(kWorldSeed, kRegionId, 4, 7);
     const auto projected = aetheria::site::populate(
-        aetheria::site::build_site_skeleton(vars.slow, seed, test_ruleset()), vars.fast);
+        aetheria::site::build_site_skeleton(vars.slow, seed, test_ruleset()), vars.fast,
+        test_ruleset());
     const auto projected_hash = aetheria::site::hash_site_skeleton(projected.skeleton);
 
     std::cout << "site_coordinate_stability x=" << building_tile.x << " y=" << building_tile.y

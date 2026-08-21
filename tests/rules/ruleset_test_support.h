@@ -76,6 +76,32 @@ max_buildable_slope=8
 water_inland_reach=18
 )toml";
 
+constexpr std::string_view kSiteFillRules = R"toml([fill]
+base_density_percent=20
+development_density_per_level=4
+max_density_percent=88
+[[quotas]]
+zone="residential"
+driver="population"
+units_per_block=250
+max_percent=70
+[[quotas]]
+zone="commercial"
+driver="development_level"
+units_per_block=2
+max_percent=25
+[[building_defs]]
+id="building.cottage"
+zone="residential"
+frontage=2
+depth=2
+[[building_defs]]
+id="building.shop"
+zone="commercial"
+frontage=2
+depth=2
+)toml";
+
 inline void write_valid_ruleset(const std::filesystem::path& path, std::string_view terrain,
                                 std::string_view feature_reference = {}) {
     write_text(path / "terrain.toml", terrain);
@@ -133,6 +159,7 @@ rough_ground="ground.water"
 )toml";
     }
     write_text(path / "site_projection.toml", projection);
+    write_text(path / "site_city.toml", kSiteFillRules);
 }
 
 }  // namespace aetheria::tests

@@ -43,7 +43,7 @@
 |---|---|
 | `ruleset.h` | 入口：include 下面兩個型別 header + `Ruleset`／`RulesetLoader` 兩個 class |
 | `def_types.h` | id／flag、地形 def 與 `TerrainGroundMapping` |
-| `rule_tables.h` | 獨立 `TerrainRule`／`ReliefRule`、`MovementRules`、`CrossingRule`、世界通道與 `CivilizationRules` |
+| `rule_tables.h` | 地形／移動／文明規則，以及 Site 骨架、分區配額與建築 def 型別 |
 | `toml_read.h` | 內部共用 TOML 讀取／驗證 helper |
 | `ruleset.cpp` | `Ruleset` 存取器 + `RulesetLoader::load` 的編排 |
 | `ruleset_load_defs.cpp` | terrain／relief／feature／edge 四份 def |
@@ -51,7 +51,7 @@
 | `ruleset_load_civilization.cpp`、`ruleset_load_factions.cpp` | 現代城市／道路參數；勢力數與影響力參數 |
 | `ruleset_load_history.cpp`、`ruleset_load_history_{values,references}.cpp` | 上古歷史載入編排；數值／結構限制；道路與廢墟引用（共用宣告在 `ruleset_load_history_detail.h`）|
 | `ruleset_load_crossings.cpp`、`ruleset_load_world_graph.cpp` | 渡河複合 edge 查表與完整性驗證；手工世界通道宣告與 canonical 排序 |
-| `ruleset_load_site.cpp` | Ground def 與 Terrain→Ground 表載入 |
+| `ruleset_load_site.cpp`、`ruleset_load_site_city.cpp` | Ground／Terrain→Ground、城區配額與建築 def 載入 |
 
 各 `load_*` 入口是 `RulesetLoader` 的 private static 成員；history detail 只接收入口傳入的參考。
 

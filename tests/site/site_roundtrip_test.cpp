@@ -73,6 +73,8 @@ TEST(SiteRoundTrip, ThreeColdRoundTripsKeepEveryHashAndRecomputeProceduralLayer)
                     std::get<aetheria::zone::SitePayload>(materialized.payload).layers.procedural;
                 procedural.skeleton.ground.clear();
                 procedural.zoning.clear();
+                procedural.block_zoning.clear();
+                procedural.buildings.clear();
                 ASSERT_FALSE(procedural.valid_layout());
             }));
         }
@@ -92,6 +94,8 @@ TEST(SiteRoundTrip, ThreeColdRoundTripsKeepEveryHashAndRecomputeProceduralLayer)
             std::get<aetheria::zone::SitePayload>(disk_only->payload).layers;
         EXPECT_TRUE(disk_layers.procedural.skeleton.ground.empty());
         EXPECT_TRUE(disk_layers.procedural.zoning.empty());
+        EXPECT_TRUE(disk_layers.procedural.block_zoning.empty());
+        EXPECT_TRUE(disk_layers.procedural.buildings.empty());
         ASSERT_EQ(disk_layers.persistent.buildings.size(), 1U);
         EXPECT_EQ(disk_layers.persistent.buildings.front().state, BuildingState::Idle);
     }
@@ -109,7 +113,7 @@ TEST(SiteRoundTrip, ThreeColdRoundTripsKeepEveryHashAndRecomputeProceduralLayer)
               << "site_roundtrip_building_state="
               << static_cast<unsigned>(BuildingState::Idle) << " (Idle)\n"
               << "site_roundtrip_cold_assertions=3 procedural_disk_empty=1 "
-                 "procedural_recomputed_after_cache_corruption=1\n"
+                 "procedural_fill_nonempty=1 procedural_recomputed_after_cache_corruption=1\n"
               << "site_rematerialize_Debug_max_ms=" << max_expand << '\n'
               << "site_collapse_Debug_max_ms=" << max_collapse << '\n';
     EXPECT_LT(max_expand, 30.0);

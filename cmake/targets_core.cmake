@@ -5,6 +5,7 @@ add_library(aetheria_core STATIC
     core/rules/ruleset.cpp
     core/rules/ruleset_load_defs.cpp
     core/rules/ruleset_load_site.cpp
+    core/rules/ruleset_load_site_city.cpp
     core/rules/ruleset_load_biomes.cpp
     core/rules/ruleset_load_civilization.cpp
     core/rules/ruleset_load_factions.cpp
@@ -17,6 +18,9 @@ add_library(aetheria_core STATIC
     core/site/site_event_escalation.cpp
     core/site/site_materialize.cpp
     core/site/site_population.cpp
+    core/site/site_zoning.cpp
+    core/site/site_buildings.cpp
+    core/site/site_building_placement.cpp
     core/site/site_projection.cpp
     core/site/site_skeleton_common.cpp
     core/site/site_skeleton_center.cpp

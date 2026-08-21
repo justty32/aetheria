@@ -41,6 +41,7 @@ TEST(RulesetLoader, LoadsImmutableDefinitionTypesAndSiteProjectionMapping) {
     ASSERT_EQ(ruleset.features().size(), 9U);
     ASSERT_EQ(ruleset.edges().size(), 18U);
     ASSERT_EQ(ruleset.grounds().size(), 6U);
+    ASSERT_EQ(ruleset.buildings().size(), 4U);
     ASSERT_EQ(ruleset.terrain_ground_mappings().size(), ruleset.terrains().size());
     ASSERT_EQ(ruleset.terrain_rules().size(), 4U);
     ASSERT_EQ(ruleset.relief_rules().size(), 3U);
@@ -48,6 +49,11 @@ TEST(RulesetLoader, LoadsImmutableDefinitionTypesAndSiteProjectionMapping) {
     EXPECT_TRUE(ruleset.relief_rules().back().fallback);
     EXPECT_TRUE(ruleset.movement_rules().loaded);
     EXPECT_TRUE(ruleset.site_generation_rules().loaded);
+    EXPECT_TRUE(ruleset.site_fill_rules().loaded);
+    ASSERT_EQ(ruleset.site_fill_rules().quotas.size(), 2U);
+    EXPECT_EQ(ruleset.site_fill_rules().quotas[0].units_per_block, 250U);
+    EXPECT_EQ(ruleset.site_fill_rules().quotas[1].units_per_block, 2U);
+    EXPECT_EQ(ruleset.building(*ruleset.find_building("building.cottage"))->frontage, 2U);
     EXPECT_EQ(ruleset.site_generation_rules().block_split_depth, 5U);
     EXPECT_EQ(ruleset.site_generation_rules().block_cut_min_percent, 36U);
     EXPECT_EQ(ruleset.site_generation_rules().block_cut_max_percent, 44U);

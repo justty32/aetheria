@@ -3,6 +3,7 @@
 // Site 往返測試共用的 Region fixture、非預設持久層存檔與磁碟世界雜湊 helper。
 
 #include "core/site/site_materialize.h"
+#include "core/site/site_reduction.h"
 #include "core/zone/file_zone_store.h"
 #include "sim/world_hash.h"
 #include "tests/support/ruleset_fixture.h"
@@ -32,6 +33,11 @@ inline constexpr auto kRoundTripSiteKey = zone::child_key(kRoundTripRegionKey, 4
     const auto index = tiles.index_of(kRoundTripCoordinate);
     tiles.owner[index] = static_cast<world::FactionId>(2);
     tiles.settlement[index] = world::SettlementTier::Town;
+    site::SiteLayers reduced;
+    reduced.persistent.buildings.push_back(
+        {{1, 1}, site::BuildingType::SettlementHall, site::BuildingState::Idle});
+    site::ReductionTable::apply(tiles, kRoundTripCoordinate,
+                                site::ReductionTable::reduce(reduced));
     return tiles;
 }
 
@@ -42,6 +48,11 @@ inline constexpr auto kRoundTripSiteKey = zone::child_key(kRoundTripRegionKey, 4
                                                     kRoundTripWorldSeed, kRoundTripRegionId,
                                                     test_ruleset());
     auto& layers = std::get<zone::SitePayload>(materialized.payload).layers;
+    EXPECT_FALSE(layers.procedural.buildings.empty());
+    EXPECT_TRUE(std::ranges::any_of(layers.procedural.block_zoning,
+                                    [](site::SiteZoning zone) {
+                                        return zone != site::SiteZoning::Open;
+                                    }));
     layers.persistent.buildings.front().state = site::BuildingState::Idle;
     auto expected_procedural = layers.procedural;
     store.save(materialized);

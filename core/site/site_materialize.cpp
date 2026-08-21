@@ -27,7 +27,7 @@ namespace {
 
 [[nodiscard]] SiteXY initial_building_tile(const SiteProceduralLayer& procedural) {
     for (std::size_t index = 0; index < kSiteTileCount; ++index) {
-        if (procedural.zoning[index] == SiteZoning::Settlement &&
+        if (procedural.zoning[index] != SiteZoning::Open &&
             procedural.skeleton.buildable[index] != 0) {
             return {static_cast<std::uint16_t>(index % kSiteWidth),
                     static_cast<std::uint16_t>(index / kSiteWidth)};
@@ -56,7 +56,8 @@ zone::Zone materialize_site_zone(world::RegionTiles& region_tiles, world::Region
     const auto x = static_cast<std::uint16_t>(coordinate.x);
     const auto y = static_cast<std::uint16_t>(coordinate.y);
     const auto site_seed = derive_site_seed(world_seed, region_id, x, y);
-    auto procedural = populate(build_site_skeleton(vars.slow, site_seed, ruleset), vars.fast);
+    auto procedural =
+        populate(build_site_skeleton(vars.slow, site_seed, ruleset), vars.fast, ruleset);
 
     SitePersistentLayer persistent;
     if (vars.fast.settlement != world::SettlementTier::None) {
@@ -92,7 +93,7 @@ zone::ZoneHandle rematerialize_site_zone(zone::ZoneManager& manager,
     const auto seed = derive_site_seed(world_seed, region_id,
                                        static_cast<std::uint16_t>(coordinate.x),
                                        static_cast<std::uint16_t>(coordinate.y));
-    auto procedural = populate(build_site_skeleton(vars.slow, seed, ruleset), vars.fast);
+    auto procedural = populate(build_site_skeleton(vars.slow, seed, ruleset), vars.fast, ruleset);
     if (!manager.load(site_key)) {
         throw std::runtime_error{"Site rematerialize 找不到磁碟持久層"};
     }

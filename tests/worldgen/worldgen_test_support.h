@@ -110,6 +110,36 @@ terrain = "terrain.grassland"
 ground = "ground.grass"
 rough_ground = "ground.grass"
 )");
+    write_text(directory.path() / "site_city.toml", R"(
+[fill]
+base_density_percent = 20
+development_density_per_level = 4
+max_density_percent = 88
+
+[[quotas]]
+zone = "residential"
+driver = "population"
+units_per_block = 250
+max_percent = 70
+
+[[quotas]]
+zone = "commercial"
+driver = "development_level"
+units_per_block = 2
+max_percent = 25
+
+[[building_defs]]
+id = "building.cottage"
+zone = "residential"
+frontage = 2
+depth = 2
+
+[[building_defs]]
+id = "building.shop"
+zone = "commercial"
+frontage = 2
+depth = 2
+)");
     return rules::RulesetLoader::load(directory.path());
 }
 

@@ -1,5 +1,6 @@
 #include "core/serialize/all_components.h"
 #include "core/site/site_projection.h"
+#include "core/site/site_reduction.h"
 #include "core/worldgen/region_seed.h"
 #include "tests/support/ruleset_fixture.h"
 
@@ -33,6 +34,8 @@ concept HasSettlement = requires(Value value) { value.settlement; };
 template <typename Value>
 concept HasSite = requires(Value value) { value.site; };
 template <typename Value>
+concept HasFillVars = requires(Value value) { value.population; value.development_level; };
+template <typename Value>
 concept HasBase = requires(Value value) { value.base; };
 template <typename Value>
 concept HasRelief = requires(Value value) { value.relief; };
@@ -41,7 +44,9 @@ concept HasElevation = requires(Value value) { value.elevation; };
 
 static_assert(HasBase<SiteSlowVars> && HasRelief<SiteSlowVars> && HasElevation<SiteSlowVars>);
 static_assert(!HasOwner<SiteSlowVars> && !HasSettlement<SiteSlowVars> && !HasSite<SiteSlowVars>);
-static_assert(HasOwner<SiteFastVars> && HasSettlement<SiteFastVars> && HasSite<SiteFastVars>);
+static_assert(!HasFillVars<SiteSlowVars>);
+static_assert(HasOwner<SiteFastVars> && HasSettlement<SiteFastVars> && HasSite<SiteFastVars> &&
+              HasFillVars<SiteFastVars>);
 static_assert(!HasBase<SiteFastVars> && !HasRelief<SiteFastVars> && !HasElevation<SiteFastVars>);
 static_assert(std::is_invocable_r_v<SiteSkeleton, decltype(&aetheria::site::build_site_skeleton),
                                     const SiteSlowVars&, std::uint64_t, const Ruleset&>);
@@ -82,12 +87,23 @@ TEST(SiteProjection, FastVariablesCannotAffectSkeleton) {
     const auto changed_settlement = skeleton_hash(tiles, seed);
     tiles.site[0].ever_realized = true;
     const auto changed_site = skeleton_hash(tiles, seed);
+    aetheria::site::SiteLayers measured;
+    measured.persistent.buildings.resize(10, {{1, 1}, aetheria::site::BuildingType::SettlementHall,
+                                              aetheria::site::BuildingState::Active});
+    aetheria::site::ReductionTable::apply(
+        tiles, RegionXY{0, 0}, aetheria::site::ReductionTable::reduce(measured));
+    const auto changed_population_development = skeleton_hash(tiles, seed);
+    const auto projected_fast = aetheria::site::split_site_vars(tiles, RegionXY{0, 0}).fast;
 
     EXPECT_EQ(changed_owner, baseline);
     EXPECT_EQ(changed_settlement, baseline);
     EXPECT_EQ(changed_site, baseline);
+    EXPECT_EQ(changed_population_development, baseline);
+    EXPECT_EQ(projected_fast.population, 1000U);
+    EXPECT_EQ(projected_fast.development_level, 10U);
     std::cout << "site_fast_control baseline=" << baseline << " owner=" << changed_owner
-              << " settlement=" << changed_settlement << " site=" << changed_site << '\n';
+              << " settlement=" << changed_settlement << " site=" << changed_site
+              << " population_development=" << changed_population_development << '\n';
 }
 
 TEST(SiteProjection, EachRequiredSlowVariableChangesSkeleton) {

@@ -94,7 +94,9 @@ SiteProjectionVars split_site_vars(const world::RegionTiles& tiles, world::Regio
                      tiles.elevation.at(index),
                      {tiles.edges.at(edge_offset + kNorth), tiles.edges.at(edge_offset + kEast),
                       tiles.edges.at(edge_offset + kSouth), tiles.edges.at(edge_offset + kWest)}},
-        SiteFastVars{tiles.owner.at(index), tiles.settlement.at(index), tiles.site.at(index)},
+        SiteFastVars{tiles.owner.at(index), tiles.settlement.at(index), tiles.site.at(index),
+                     tiles.reduction_value<world::PopulationReduction>(coordinate),
+                     tiles.reduction_value<world::DevelopmentLevelReduction>(coordinate)},
     };
 }
 

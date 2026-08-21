@@ -70,6 +70,40 @@ struct SiteGenerationRules {
     bool loaded{};
 };
 
+// SiteFillZone 目前只列出能由既有快變數驅動的 F1 分區。
+enum class SiteFillZone : std::uint8_t {
+    Residential,
+    Commercial,
+};
+
+enum class SiteQuotaDriver : std::uint8_t {
+    Population,
+    DevelopmentLevel,
+};
+
+struct SiteZoneQuota {
+    SiteFillZone zone{SiteFillZone::Residential};
+    SiteQuotaDriver driver{SiteQuotaDriver::Population};
+    std::uint32_t units_per_block{};
+    std::uint8_t max_percent{};
+};
+
+struct BuildingDef {
+    std::string id;
+    SiteFillZone zone{SiteFillZone::Residential};
+    std::uint8_t frontage{};
+    std::uint8_t depth{};
+};
+
+// SiteFillRules 是 F1 配額與 F2 建築密度的資料驅動規則。
+struct SiteFillRules {
+    std::vector<SiteZoneQuota> quotas;
+    std::uint8_t base_density_percent{};
+    std::uint8_t development_density_per_level{};
+    std::uint8_t max_density_percent{};
+    bool loaded{};
+};
+
 // SettlementScoringWeights 是同一套選址因子的整數權重。
 // 現代與上古文明各自持有一份，worldgen 評分函式只借用 const 參考。
 struct SettlementScoringWeights {
