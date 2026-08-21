@@ -122,12 +122,15 @@ TEST(FactionGenerationStage, RealRegionIsCanonicalDistributedAndMeasured) {
     ASSERT_GT(land, 0U);
     EXPECT_GT(unowned, 0U);
     EXPECT_LT(unowned, tiles.tile_count());
-    EXPECT_GT(unowned_land, 0U);
-    EXPECT_LT(unowned_land * 2U, land);
+    EXPECT_GT(unowned_land * 100U, land);
+    EXPECT_LT(unowned_land * 100U, land * 50U);
     EXPECT_EQ(global_unowned_land, 0U);
     ASSERT_GT(global_boundary_tiles, 0U);
-    EXPECT_EQ(faction_boundary_tiles, global_boundary_tiles);
-    EXPECT_EQ(faction_boundary_cost, global_boundary_cost);
+    EXPECT_GT(faction_boundary_tiles, 0U);
+    ASSERT_LE(faction_boundary_tiles, global_boundary_tiles);
+    EXPECT_GT(global_boundary_tiles - faction_boundary_tiles, 0U);
+    EXPECT_GE(faction_boundary_tiles * 100U, global_boundary_tiles * 25U);
+    EXPECT_LE(faction_boundary_cost, global_boundary_cost);
     EXPECT_GT(faction_boundary_cost * static_cast<std::int64_t>(land) * 100,
               map_cost * static_cast<std::int64_t>(faction_boundary_tiles) * 105);
 
