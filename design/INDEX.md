@@ -14,6 +14,7 @@
 | [tech-stack.md](tech-stack.md) | `core`/`bridge`/`godot` 三層、跨語言契約、測試、決定論 |
 | [cpp-conventions.md](cpp-conventions.md) | C++23、型別與介面約定、vcpkg、建置目標 |
 | [time-model.md](time-model.md) | **時刻 vs 時距**、合法運算表、合法域與 `AETH_CHECK`、曆法精度界線 |
+| [time-clock-authority.md](time-clock-authority.md) | **誰有資格說「現在幾點」**；時距／時戳／時鐘讀數的三分 |
 | [build.md](build.md) | M0 實際工具鏈、建置／驗證指令、版本固定與踩坑 |
 | [medps-relation.md](medps-relation.md) | 與 medps 的關係、取向裁定、繼承核對清單、兩處刻意不同 |
 | [medps-inheritance.md](medps-inheritance.md) | 逐條比對細節：已拍板繼承的決策表、刻意不同的比對表 |
