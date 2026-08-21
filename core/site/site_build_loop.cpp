@@ -139,36 +139,105 @@ SiteAdvanceReport SiteTurnPipeline::advance_hours(zone::Zone& site, zone::Zone& 
                                                   std::int8_t region_z,
                                                   world::RegionXY coordinate,
                                                   std::uint32_t hours) const {
-    if (site.lod != zone::LodLevel::Full) {
-        throw std::logic_error{"SiteTurnPipeline 只推進 L_FULL Site"};
+    const SiteAdvanceTarget target{&site, region_z, coordinate};
+    auto batch = advance_hours(region, std::span<const SiteAdvanceTarget>{&target, 1U}, hours);
+    if (batch.sites.size() != 1U) {
+        throw std::logic_error{"單 Site wrapper 未取得一筆批次結果"};
     }
-    auto& tiles = require_region_layer(region, region_z);
-    SiteAdvanceReport report;
+    return std::move(batch.sites.front().report);
+}
+
+SiteBatchAdvanceReport SiteTurnPipeline::advance_hours(zone::Zone& region,
+                                                       std::span<const SiteAdvanceTarget> sites,
+                                                       std::uint32_t hours) const {
+    std::vector<SiteAdvanceTarget> ordered{sites.begin(), sites.end()};
+    if (std::ranges::any_of(ordered, [](const auto& target) { return target.site == nullptr; })) {
+        throw std::invalid_argument{"SiteTurnPipeline 批次含空 Site"};
+    }
+    std::ranges::sort(ordered, {},
+                      [](const auto& target) { return zone::value_of(target.site->key); });
+
+    SiteBatchAdvanceReport batch;
+    batch.sites.reserve(ordered.size());
+    std::uint16_t common_xun_hour{};
+    bool has_common_xun_hour{};
+    zone::ZoneKey previous_key{};
+    bool has_previous_key{};
+    for (const auto& target : ordered) {
+        auto& site = *target.site;
+        if (has_previous_key && site.key == previous_key) {
+            throw std::invalid_argument{"SiteTurnPipeline 批次含重複 Site"};
+        }
+        previous_key = site.key;
+        has_previous_key = true;
+        if (site.lod != zone::LodLevel::Full) {
+            throw std::logic_error{"SiteTurnPipeline 只推進 L_FULL Site"};
+        }
+        if (target.coordinate.x < 0 || target.coordinate.y < 0 ||
+            zone::level_of(site.key) != zone::ZoneLevel::Site ||
+            zone::parent_of(site.key) != region.key ||
+            zone::site_x_of(site.key) != static_cast<std::uint32_t>(target.coordinate.x) ||
+            zone::site_y_of(site.key) != static_cast<std::uint32_t>(target.coordinate.y)) {
+            throw std::invalid_argument{"SiteTurnPipeline 的 Site 位址與 Region 落點不一致"};
+        }
+        auto& tiles = require_region_layer(region, target.region_z);
+        if (!tiles.site.at(tiles.index_of(target.coordinate)).has_live_site) {
+            throw std::logic_error{"SiteTurnPipeline 只推進 Region 已標記 live 的 Site"};
+        }
+        const auto xun_hour = city_build_state(site).economy.hours_into_xun;
+        if (has_common_xun_hour && xun_hour != common_xun_hour) {
+            throw std::logic_error{"SiteTurnPipeline 批次 Site 不在同一旬內小時"};
+        }
+        common_xun_hour = xun_hour;
+        has_common_xun_hour = true;
+        batch.sites.push_back({site.key, {}});
+    }
+
     for (std::uint32_t hour = 0; hour < hours; ++hour) {
-        auto& layers = std::get<zone::SitePayload>(site.payload).layers;
-        const auto aging =
-            advance_persistent_objects(layers.persistent, split_site_vars(tiles, coordinate).fast,
-                                       time::kHour);
-        report.persistent_object_advances += aging.persistent_objects_advanced;
-        report.aging_transitions += aging.aging_transitions;
-        report.aging_cap_hit = report.aging_cap_hit || aging.aging_cap_hit;
-        auto& state = city_build_state(site);
-        const auto completed = build_detail::simulate_hour(state, ruleset_, report);
-        ++report.hours_advanced;
-        report.constructions_completed += completed;
-        if (completed != 0) {
-            reduce_live_site_xun(tiles, coordinate, site);
-            ++report.completion_reductions;
+        for (std::size_t index = 0; index < ordered.size(); ++index) {
+            const auto& target = ordered[index];
+            auto& site = *target.site;
+            auto& tiles = require_region_layer(region, target.region_z);
+            auto& layers = std::get<zone::SitePayload>(site.payload).layers;
+            const auto aging = advance_persistent_objects(
+                layers.persistent, split_site_vars(tiles, target.coordinate).fast, time::kHour);
+            auto& report = batch.sites[index].report;
+            report.persistent_object_advances += aging.persistent_objects_advanced;
+            report.aging_transitions += aging.aging_transitions;
+            report.aging_cap_hit = report.aging_cap_hit || aging.aging_cap_hit;
+            auto& state = city_build_state(site);
+            const auto completed = build_detail::simulate_hour(state, ruleset_, report);
+            ++report.hours_advanced;
+            ++batch.site_hours_advanced;
+            report.constructions_completed += completed;
+            if (completed != 0) {
+                reduce_live_site_xun(tiles, target.coordinate, site);
+                ++report.completion_reductions;
+                ++batch.reduction_writes;
+            }
         }
-        if (state.economy.hours_into_xun == 0) {
-            region_turn_.advance_xun(region, {}, [&](zone::Zone& reducing_region) {
-                auto& reducing_tiles = require_region_layer(reducing_region, region_z);
-                reduce_live_site_xun(reducing_tiles, coordinate, site);
+
+        const bool reached_xun =
+            !ordered.empty() && std::ranges::all_of(ordered, [](const auto& target) {
+                return city_build_state(*target.site).economy.hours_into_xun == 0;
             });
-            ++report.xun_boundaries;
+        if (reached_xun) {
+            region_turn_.advance_xun(region, {}, [&](zone::Zone& reducing_region) {
+                for (const auto& target : ordered) {
+                    auto& reducing_tiles = require_region_layer(reducing_region, target.region_z);
+                    reduce_live_site_xun(reducing_tiles, target.coordinate, *target.site);
+                    ++batch.reduction_writes;
+                    ++batch.xun_reduction_writes;
+                }
+            });
+            ++batch.region_xun_advances;
+            batch.site_xun_boundaries += ordered.size();
+            for (auto& result : batch.sites) {
+                ++result.report.xun_boundaries;
+            }
         }
     }
-    return report;
+    return batch;
 }
 
 }  // namespace aetheria::site

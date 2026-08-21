@@ -13,34 +13,42 @@ namespace aetheria::tests {
 
 inline constexpr std::uint32_t kBuildRegionId = 7;
 inline constexpr world::RegionXY kBuildCoordinate{0, 0};
+inline constexpr world::RegionXY kSecondBuildCoordinate{1, 0};
+inline constexpr world::RegionXY kAbsentBuildCoordinate{2, 0};
 inline constexpr auto kBuildRegionKey =
     zone::child_key(zone::kRootZone, kBuildRegionId, 0);
 inline constexpr auto kBuildSiteKey = zone::child_key(kBuildRegionKey, 0, 0);
+inline constexpr auto kSecondBuildSiteKey = zone::child_key(kBuildRegionKey, 1, 0);
 
 struct BuildFixture {
     zone::Zone region{kBuildRegionKey};
     zone::Zone site{kBuildSiteKey};
 };
 
-[[nodiscard]] inline BuildFixture build_fixture() {
-    const auto& ruleset = test_ruleset();
-    BuildFixture fixture;
-    world::RegionTiles tiles{1, 1};
-    tiles.base[0] = *ruleset.find_terrain("terrain.grassland");
-    tiles.relief[0] = *ruleset.find_relief("relief.plain");
-    tiles.feature[0] = *ruleset.find_feature("feature.none");
-    std::ranges::fill(tiles.edges, *ruleset.find_edge("edge.none"));
-    tiles.settlement[0] = world::SettlementTier::Town;
-    tiles.site[0].has_live_site = true;
-    tiles.site[0].lod = zone::LodLevel::Coarse;
-    auto& region_tiles =
-        std::get<zone::RegionPayload>(fixture.region.payload)
-            .layers.emplace(0, std::move(tiles))
-            .first->second;
-    const auto region_meta = *fixture.region.reg.view<zone::ZoneMeta>().begin();
-    fixture.region.reg.emplace<world::TurnClock>(region_meta);
+struct BatchBuildFixture {
+    zone::Zone region{kBuildRegionKey};
+    zone::Zone first{kBuildSiteKey};
+    zone::Zone second{kSecondBuildSiteKey};
+};
 
-    auto& procedural = std::get<zone::SitePayload>(fixture.site.payload).layers.procedural;
+[[nodiscard]] inline world::RegionTiles build_region_tiles(std::uint32_t width) {
+    const auto& ruleset = test_ruleset();
+    world::RegionTiles tiles{width, 1};
+    std::ranges::fill(tiles.base, *ruleset.find_terrain("terrain.grassland"));
+    std::ranges::fill(tiles.relief, *ruleset.find_relief("relief.plain"));
+    std::ranges::fill(tiles.feature, *ruleset.find_feature("feature.none"));
+    std::ranges::fill(tiles.edges, *ruleset.find_edge("edge.none"));
+    std::ranges::fill(tiles.settlement, world::SettlementTier::Town);
+    return tiles;
+}
+
+inline void initialize_build_site(zone::Zone& site_zone, world::RegionTiles& tiles,
+                                  world::RegionXY coordinate) {
+    const auto& ruleset = test_ruleset();
+    const auto index = tiles.index_of(coordinate);
+    tiles.site[index].has_live_site = true;
+    tiles.site[index].lod = zone::LodLevel::Coarse;
+    auto& procedural = std::get<zone::SitePayload>(site_zone.payload).layers.procedural;
     const auto ground = *ruleset.find_ground("ground.grass");
     const auto edge = *ruleset.find_edge("edge.none");
     procedural.skeleton.ground.assign(site::kSiteTileCount, ground);
@@ -55,9 +63,34 @@ struct BuildFixture {
     if (!procedural.valid_layout()) {
         throw std::runtime_error{"城建測試 fixture 的程序層 layout 無效"};
     }
-    std::get<zone::SitePayload>(fixture.site.payload).layers.persistent.buildings.push_back(
-        {{1, 1}, site::BuildingType::SettlementHall, site::BuildingState::Active});
-    site::enter_full_site(fixture.site, region_tiles, kBuildCoordinate);
+    std::get<zone::SitePayload>(site_zone.payload)
+        .layers.persistent.buildings.push_back(
+            {{1, 1}, site::BuildingType::SettlementHall, site::BuildingState::Active});
+    site::enter_full_site(site_zone, tiles, coordinate);
+}
+
+[[nodiscard]] inline BuildFixture build_fixture() {
+    BuildFixture fixture;
+    auto tiles = build_region_tiles(1);
+    auto& region_tiles = std::get<zone::RegionPayload>(fixture.region.payload)
+                             .layers.emplace(0, std::move(tiles))
+                             .first->second;
+    const auto region_meta = *fixture.region.reg.view<zone::ZoneMeta>().begin();
+    fixture.region.reg.emplace<world::TurnClock>(region_meta);
+    initialize_build_site(fixture.site, region_tiles, kBuildCoordinate);
+    return fixture;
+}
+
+[[nodiscard]] inline BatchBuildFixture build_batch_fixture() {
+    BatchBuildFixture fixture;
+    auto tiles = build_region_tiles(3);
+    auto& region_tiles = std::get<zone::RegionPayload>(fixture.region.payload)
+                             .layers.emplace(0, std::move(tiles))
+                             .first->second;
+    const auto region_meta = *fixture.region.reg.view<zone::ZoneMeta>().begin();
+    fixture.region.reg.emplace<world::TurnClock>(region_meta);
+    initialize_build_site(fixture.first, region_tiles, kBuildCoordinate);
+    initialize_build_site(fixture.second, region_tiles, kSecondBuildCoordinate);
     return fixture;
 }
 

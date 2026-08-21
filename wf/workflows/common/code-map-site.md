@@ -25,7 +25,7 @@
 | `site_materialize.*` | 依聚落有無分流城區／荒野，首次展開、冷重算展開、收回與持久建築座標疊加 |
 | `site_reduction.*` | 固定 row 的 Site→Region 歸約 |
 | `site_event_escalation.*` | 建築事件先落持久來源；達 Region 級才立即同步歸約快變數 |
-| `site_build_loop.*` | `L_FULL` 逐小時／旬界編排、工地命令、持久 `CityBuildState` 與 Region 回填 |
+| `site_build_loop.*` | `L_FULL` 批次逐小時／共同旬界編排、`ZoneKey` 正規化、工地命令、持久 `CityBuildState` 與 Region 回填 |
 | `site_build_economy.cpp` | 建造進度、每小時糧食／生產、相鄰效果與人口成長 |
 | `site_build_loop_detail.h` | 城建命令與每小時經濟結算的內部介面 |
 | `site_lifecycle.*` | `SiteDigest`、持久物件閉式補算／飽和，以及骨架失效時的保留／就近搬移／災變毀壞與敘事事件 |
@@ -60,4 +60,5 @@ N=1/5/20/100 旬驗證 L_FULL／L_ABSENT 的四列歸約誤差、持久物件集
 對應測試在 `tests/site/`：`site_skeleton_test.cpp` 驗 S1～S4；`site_fill_test.cpp` 驗快慢隔離、
 有牆必有門／雙重牆、owner 地標、損毀距離偏好、packing 與 S+F 效能；既有 `site_materialize_test.cpp` 的持久
 建築座標測試會在真遮罩上重跑，`site_roundtrip_test.cpp` 驗三次冷往返與非空程序層重算。
-`site_build_{loop,persistence}_test.cpp` 驗人口演化、兩種擺法、絕對歸約不重複與 pending 冷載。
+`site_build_{loop,persistence}_test.cpp` 驗人口演化、批次旬界只結算 Region 一次、輸入順序無關、
+單 Site 等價、兩種擺法、絕對歸約不重複與 pending 冷載。
