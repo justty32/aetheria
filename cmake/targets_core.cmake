@@ -169,3 +169,9 @@ target_sources(aetheria_faction_ai_objects PRIVATE
 target_sources(aetheria_core PRIVATE
     core/world/faction_ai.cpp
 )
+
+# M7.0 追加區：三條位階來源共用接點與資料載入。
+target_sources(aetheria_core PRIVATE
+    core/rules/power_sources.cpp
+    core/rules/ruleset_load_power_sources.cpp
+)

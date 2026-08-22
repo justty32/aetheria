@@ -23,6 +23,7 @@
 #include "core/rules/site_build_rules.h"
 #include "core/rules/combat.h"
 #include "core/rules/world_observation_rules.h"
+#include "core/rules/power_sources.h"
 
 namespace aetheria::rules {
 
@@ -127,6 +128,21 @@ class Ruleset {
     [[nodiscard]] const WorldObservationRules& world_observation_rules() const noexcept {
         return world_observation_rules_;
     }
+    [[nodiscard]] const SchoolDef* school(SchoolDefId id) const noexcept;
+    [[nodiscard]] const TenetDef* tenet(TenetDefId id) const noexcept;
+    [[nodiscard]] const DeityDef* deity(DeityDefId id) const noexcept;
+    [[nodiscard]] const RaceDef* race(RaceDefId id) const noexcept;
+    [[nodiscard]] std::optional<SchoolDefId> find_school(std::string_view id) const noexcept;
+    [[nodiscard]] std::optional<TenetDefId> find_tenet(std::string_view id) const noexcept;
+    [[nodiscard]] std::optional<DeityDefId> find_deity(std::string_view id) const noexcept;
+    [[nodiscard]] std::optional<RaceDefId> find_race(std::string_view id) const noexcept;
+    [[nodiscard]] std::span<const SchoolDef> schools() const noexcept { return schools_; }
+    [[nodiscard]] std::span<const TenetDef> tenets() const noexcept { return tenets_; }
+    [[nodiscard]] std::span<const DeityDef> deities() const noexcept { return deities_; }
+    [[nodiscard]] std::span<const RaceDef> races() const noexcept { return races_; }
+    [[nodiscard]] const PowerSourceRules& power_source_rules() const noexcept {
+        return power_source_rules_;
+    }
 
     private:
     friend class RulesetLoader;
@@ -172,6 +188,15 @@ class Ruleset {
     std::map<std::string, CasusBelliDefId, std::less<>> casus_belli_index_;
     CombatRules combat_rules_;
     WorldObservationRules world_observation_rules_;
+    std::vector<SchoolDef> schools_;
+    std::vector<TenetDef> tenets_;
+    std::vector<DeityDef> deities_;
+    std::vector<RaceDef> races_;
+    std::map<std::string, SchoolDefId, std::less<>> school_index_;
+    std::map<std::string, TenetDefId, std::less<>> tenet_index_;
+    std::map<std::string, DeityDefId, std::less<>> deity_index_;
+    std::map<std::string, RaceDefId, std::less<>> race_index_;
+    PowerSourceRules power_source_rules_;
 };
 
 // RulesetLoader 將一個 data 目錄完整解析成不可變 Ruleset。
@@ -223,6 +248,9 @@ class RulesetLoader {
     static void load_combat_rules(Ruleset& result, const std::filesystem::path& data_directory);
     static void load_world_observation_rules(Ruleset& result,
                                              const std::filesystem::path& data_directory);
+    static void load_power_source_rules(Ruleset& result,
+                                        const std::filesystem::path& data_directory,
+                                        std::set<std::string, std::less<>>& global_ids);
 };
 
 }  // namespace aetheria::rules

@@ -167,3 +167,16 @@ target_sources(aetheria_tests PRIVATE
     tests/site/site_observation_persistence_test.cpp
     tests/world/faction_ai_test.cpp
 )
+
+# M7.0 追加區：三條來源驗收與神祇不可直寫 Region 的結構護欄。
+target_sources(aetheria_tests PRIVATE
+    tests/rules/power_sources_test.cpp
+)
+add_test(
+    NAME FaithIsolation.DeityRegionCompileFailure
+    COMMAND "${CMAKE_COMMAND}"
+        -DCXX=${CMAKE_CXX_COMPILER}
+        -DPROJECT_ROOT=${PROJECT_SOURCE_DIR}
+        -DTEST_OBJECT=${CMAKE_BINARY_DIR}/deity-region-negative.o
+        -P "${PROJECT_SOURCE_DIR}/cmake/check_deity_region_mediation.cmake"
+)
