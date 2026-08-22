@@ -46,6 +46,7 @@
 | `def_types.h` | id／flag、地形 def 與 `TerrainGroundMapping` |
 | `rule_tables.h` | 地形／移動／文明規則，以及 Site 與 Local 生成、填充和建築 def 型別 |
 | `power.*`、`ruleset_load_power.cpp` | 力量位階、S、個體門檻與破階 def |
+| `combat.*`、`ruleset_load_combat.cpp` | Region 整數戰役公式、可解釋分解、潰散追擊與配額分配 |
 | `attributes.*`、`check.*`、`damage.*` | 四屬性與衍生值、單骰 d100 餘量檢定、資料驅動傷害抗性 |
 | `toml_read.h` | 內部共用 TOML 讀取／驗證 helper |
 | `ruleset.cpp` | `Ruleset` 存取器 + `RulesetLoader::load` 的編排 |

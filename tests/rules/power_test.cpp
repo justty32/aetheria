@@ -79,6 +79,17 @@ TEST(PowerCalibration, AdjacentQualityExtremesTouchExactly) {
     }
 }
 
+TEST(PowerCalibration, QualityRangeNeverCrossesAdjacentTierWeight) {
+    const auto& rules = aetheria::tests::test_ruleset().power_rules();
+    ASSERT_GT(rules.minimum_quality_percent, 0);
+    for (std::size_t index = 0; index + 1 < rules.tier_weights.size(); ++index) {
+        EXPECT_LE(static_cast<std::int64_t>(rules.maximum_quality_percent) *
+                      rules.tier_weights[index],
+                  static_cast<std::int64_t>(rules.minimum_quality_percent) *
+                      rules.tier_weights[index + 1]);
+    }
+}
+
 TEST(PowerTierGate, ProtectsOnlyIndividualsAndBreakthroughRestoresDamage) {
     const auto& ruleset = aetheria::tests::test_ruleset();
     const auto& rules = ruleset.power_rules();

@@ -11,6 +11,7 @@ add_executable(aetheria_tests
     tests/local/local_underground_test.cpp
     tests/rules/ruleset_load_test.cpp
     tests/rules/power_test.cpp
+    tests/rules/combat_test.cpp
     tests/rules/individual_rules_test.cpp
     tests/rules/ruleset_error_test.cpp
     tests/rules/ruleset_zone_codec_test.cpp
@@ -123,4 +124,19 @@ add_test(
         -DPROJECT_ROOT=${PROJECT_SOURCE_DIR}
         -DTEST_OBJECT=${CMAKE_BINARY_DIR}/faction-ai-world-truth-negative.o
         -P "${PROJECT_SOURCE_DIR}/cmake/check_faction_view_isolation.cmake"
+)
+
+add_executable(aetheria_combat_ratio_domain_negative
+    tests/rules/combat_ratio_domain_negative.cpp
+)
+target_compile_definitions(aetheria_combat_ratio_domain_negative PRIVATE
+    AETHERIA_SOURCE_DIR="${PROJECT_SOURCE_DIR}"
+)
+target_link_libraries(aetheria_combat_ratio_domain_negative PRIVATE aetheria_core)
+aetheria_enable_warnings(aetheria_combat_ratio_domain_negative)
+add_test(
+    NAME CombatNegative.RatioDomain
+    COMMAND "${CMAKE_COMMAND}"
+        -DNEGATIVE_TEST=$<TARGET_FILE:aetheria_combat_ratio_domain_negative>
+        -P "${PROJECT_SOURCE_DIR}/cmake/check_combat_ratio_domain_negative.cmake"
 )

@@ -1,0 +1,43 @@
+[fixed_point]
+modifier_scale = 1000
+ratio_binary_limit = 27
+
+[formula]
+exponent_numerator = 13
+exponent_denominator = 10
+base_loss_permyriad_per_xun = 1200
+maximum_duration_xun = 10
+
+[modifiers.terrain]
+minimum = 600
+maximum = 1500
+[modifiers.supply]
+minimum = 300
+maximum = 1100
+[modifiers.morale]
+minimum = 500
+maximum = 1300
+[modifiers.command]
+minimum = 800
+maximum = 1500
+[modifiers.posture]
+minimum = 700
+maximum = 1300
+
+[collapse]
+at_min_morale_permyriad = 2000
+at_max_morale_permyriad = 4000
+pursuit_loss_permyriad = 3500
+
+[attrition]
+supply_at_min_permyriad = 600
+besieging_supply_extra_permyriad = 200
+maximum_disease_permyriad = 1000
+maximum_season_permyriad = 1000
+desertion_from_supply_permyriad = 300
+desertion_from_morale_permyriad = 300
+desertion_from_distance_permyriad = 300
+
+[morale]
+loss_rate_divisor = 100
+routed_penalty = 20
