@@ -186,3 +186,8 @@ target_sources(aetheria_core PRIVATE
     core/rules/ruleset_load_dungeon.cpp
     core/local/dungeon.cpp
 )
+
+# M7.2 追加區塊：Site cohort 戰鬥；保持在檔尾以利並行合併。
+target_sources(aetheria_core PRIVATE
+    core/site/site_combat.cpp
+)
