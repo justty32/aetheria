@@ -12,6 +12,7 @@ add_executable(aetheria_tests
     tests/rules/ruleset_load_test.cpp
     tests/rules/ruleset_error_test.cpp
     tests/rules/ruleset_zone_codec_test.cpp
+    tests/rules/diplomacy_rules_test.cpp
     tests/serialize/registry_codec_test.cpp
     tests/site/site_event_escalation_test.cpp
     tests/site/site_build_loop_test.cpp
@@ -41,6 +42,7 @@ add_executable(aetheria_tests
     tests/world/region_path_test.cpp
     tests/world/region_turn_test.cpp
     tests/world/region_tiles_test.cpp
+    tests/world/diplomacy_test.cpp
     tests/worldgen/city_sites_test.cpp
     tests/worldgen/history_cataclysm_test.cpp
     tests/worldgen/history_feedback_test.cpp
@@ -111,4 +113,12 @@ add_test(
         -DPROJECT_ROOT=${PROJECT_SOURCE_DIR}
         -DTEST_OBJECT=${CMAKE_BINARY_DIR}/worldgen-cross-zone-negative.o
         -P "${PROJECT_SOURCE_DIR}/cmake/check_worldgen_cross_zone_isolation.cmake"
+)
+add_test(
+    NAME FactionAiIsolation.WorldTruthCompileFailure
+    COMMAND "${CMAKE_COMMAND}"
+        -DCXX=${CMAKE_CXX_COMPILER}
+        -DPROJECT_ROOT=${PROJECT_SOURCE_DIR}
+        -DTEST_OBJECT=${CMAKE_BINARY_DIR}/faction-ai-world-truth-negative.o
+        -P "${PROJECT_SOURCE_DIR}/cmake/check_faction_view_isolation.cmake"
 )

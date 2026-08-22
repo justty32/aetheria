@@ -23,6 +23,12 @@ const CityBuildingDef* Ruleset::city_building(CityBuildingDefId id) const noexce
 const FurnitureDef* Ruleset::furniture(FurnitureDefId id) const noexcept {
     return lookup(furniture(), id);
 }
+const TreatyDef* Ruleset::treaty(TreatyDefId id) const noexcept {
+    return lookup(std::span<const TreatyDef>{diplomacy_rules_.treaties}, id);
+}
+const CasusBelliDef* Ruleset::casus_belli(CasusBelliDefId id) const noexcept {
+    return lookup(std::span<const CasusBelliDef>{diplomacy_rules_.casus_belli}, id);
+}
 const TerrainGroundMapping* Ruleset::terrain_ground_mapping(TerrainId id) const noexcept {
     return lookup(terrain_ground_mappings(), id);
 }
@@ -51,6 +57,12 @@ std::optional<CityBuildingDefId> Ruleset::find_city_building(std::string_view id
 std::optional<FurnitureDefId> Ruleset::find_furniture(std::string_view id) const noexcept {
     return find_id(furniture_index_, id);
 }
+std::optional<TreatyDefId> Ruleset::find_treaty(std::string_view id) const noexcept {
+    return find_id(treaty_index_, id);
+}
+std::optional<CasusBelliDefId> Ruleset::find_casus_belli(std::string_view id) const noexcept {
+    return find_id(casus_belli_index_, id);
+}
 
 Ruleset RulesetLoader::load(const std::filesystem::path& data_directory) {
     Ruleset result;
@@ -72,6 +84,7 @@ Ruleset RulesetLoader::load(const std::filesystem::path& data_directory) {
     load_faction_rules(result, data_directory);
     load_civilization_rules(result, data_directory);
     load_history_rules(result, data_directory);
+    load_diplomacy_rules(result, data_directory, global_ids);
     load_world_graph(result, data_directory);
 
     return result;

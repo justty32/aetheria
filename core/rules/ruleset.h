@@ -14,6 +14,7 @@
 #include <vector>
 
 #include "core/rules/def_types.h"
+#include "core/rules/diplomacy_rules.h"
 #include "core/rules/rule_tables.h"
 #include "core/rules/site_build_rules.h"
 
@@ -39,6 +40,8 @@ class Ruleset {
     [[nodiscard]] const BuildingDef* building(BuildingDefId id) const noexcept;
     [[nodiscard]] const CityBuildingDef* city_building(CityBuildingDefId id) const noexcept;
     [[nodiscard]] const FurnitureDef* furniture(FurnitureDefId id) const noexcept;
+    [[nodiscard]] const TreatyDef* treaty(TreatyDefId id) const noexcept;
+    [[nodiscard]] const CasusBelliDef* casus_belli(CasusBelliDefId id) const noexcept;
     [[nodiscard]] const TerrainGroundMapping* terrain_ground_mapping(TerrainId id) const noexcept;
 
     [[nodiscard]] std::optional<TerrainId> find_terrain(std::string_view id) const noexcept;
@@ -50,6 +53,9 @@ class Ruleset {
     [[nodiscard]] std::optional<CityBuildingDefId> find_city_building(
         std::string_view id) const noexcept;
     [[nodiscard]] std::optional<FurnitureDefId> find_furniture(std::string_view id) const noexcept;
+    [[nodiscard]] std::optional<TreatyDefId> find_treaty(std::string_view id) const noexcept;
+    [[nodiscard]] std::optional<CasusBelliDefId> find_casus_belli(
+        std::string_view id) const noexcept;
 
     [[nodiscard]] std::span<const TerrainDef> terrains() const noexcept { return terrains_; }
     [[nodiscard]] std::span<const ReliefDef> reliefs() const noexcept { return reliefs_; }
@@ -87,6 +93,9 @@ class Ruleset {
     [[nodiscard]] const CivilizationRules& civilization_rules() const noexcept {
         return civilization_rules_;
     }
+    [[nodiscard]] const DiplomacyRules& diplomacy_rules() const noexcept {
+        return diplomacy_rules_;
+    }
     [[nodiscard]] std::span<const WorldGraphConnection> world_connections() const noexcept {
         return world_connections_;
     }
@@ -113,6 +122,7 @@ class Ruleset {
     WildernessGenerationRules wilderness_generation_rules_;
     LocalBuildingRules local_building_rules_;
     CivilizationRules civilization_rules_;
+    DiplomacyRules diplomacy_rules_;
     std::vector<WorldGraphConnection> world_connections_;
     std::map<std::string, TerrainId, std::less<>> terrain_index_;
     std::map<std::string, ReliefId, std::less<>> relief_index_;
@@ -122,6 +132,8 @@ class Ruleset {
     std::map<std::string, BuildingDefId, std::less<>> building_index_;
     std::map<std::string, CityBuildingDefId, std::less<>> city_building_index_;
     std::map<std::string, FurnitureDefId, std::less<>> furniture_index_;
+    std::map<std::string, TreatyDefId, std::less<>> treaty_index_;
+    std::map<std::string, CasusBelliDefId, std::less<>> casus_belli_index_;
 };
 
 // RulesetLoader 將一個 data 目錄完整解析成不可變 Ruleset。
@@ -161,6 +173,9 @@ class RulesetLoader {
     static void load_civilization_rules(Ruleset& result,
                                         const std::filesystem::path& data_directory);
     static void load_history_rules(Ruleset& result, const std::filesystem::path& data_directory);
+    static void load_diplomacy_rules(Ruleset& result,
+                                     const std::filesystem::path& data_directory,
+                                     std::set<std::string, std::less<>>& global_ids);
     static void load_crossing_rules(const Ruleset& result, CivilizationRules& rules);
     static void load_world_graph(Ruleset& result, const std::filesystem::path& data_directory);
 };

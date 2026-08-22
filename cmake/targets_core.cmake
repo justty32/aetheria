@@ -1,4 +1,13 @@
-# aetheria_worldgen_objects 只有 repo 根 include path；執行期跨-zone header 對它不可見。
+# aetheria_faction_ai_objects 只看得到知識視圖；世界真值 header 不在 include path。
+add_library(aetheria_faction_ai_objects OBJECT
+    core/ai/faction_view.cpp
+)
+target_include_directories(aetheria_faction_ai_objects PRIVATE
+    "${PROJECT_SOURCE_DIR}/core/ai/include"
+)
+aetheria_enable_warnings(aetheria_faction_ai_objects)
+
+# aetheria_worldgen_objects 只有 repo 根與純資料公式；執行期跨-zone header 對它不可見。
 add_library(aetheria_worldgen_objects OBJECT
     core/worldgen/civ_tiles.cpp
     core/worldgen/city_scoring.cpp
@@ -34,13 +43,17 @@ add_library(aetheria_worldgen_objects OBJECT
     core/worldgen/region_result_hash.cpp
     core/worldgen/region_debug.cpp
 )
-target_include_directories(aetheria_worldgen_objects PRIVATE "${PROJECT_SOURCE_DIR}")
+target_include_directories(aetheria_worldgen_objects PRIVATE
+    "${PROJECT_SOURCE_DIR}"
+    "${PROJECT_SOURCE_DIR}/core/ai/include"
+)
 target_link_libraries(aetheria_worldgen_objects PRIVATE EnTT::EnTT)
 aetheria_enable_warnings(aetheria_worldgen_objects)
 
 # aetheria_core：純 C++ 玩法核心（不得依賴 godot-cpp）。
 
 add_library(aetheria_core STATIC
+    $<TARGET_OBJECTS:aetheria_faction_ai_objects>
     $<TARGET_OBJECTS:aetheria_worldgen_objects>
     core/api/version.cpp
     core/rules/ruleset.cpp
@@ -56,6 +69,7 @@ add_library(aetheria_core STATIC
     core/rules/ruleset_load_history.cpp
     core/rules/ruleset_load_history_values.cpp
     core/rules/ruleset_load_history_references.cpp
+    core/rules/ruleset_load_diplomacy.cpp
     core/rules/ruleset_load_crossings.cpp
     core/rules/ruleset_load_world_graph.cpp
     core/serialize/normalized_state_hash.cpp
@@ -114,10 +128,13 @@ add_library(aetheria_core STATIC
     core/world/region_step_cost.cpp
     core/world/region_path.cpp
     core/world/region_turn.cpp
+    core/world/diplomacy.cpp
+    core/world/diplomacy_view.cpp
 )
 target_include_directories(aetheria_core PUBLIC
     "${PROJECT_SOURCE_DIR}"
     "${PROJECT_SOURCE_DIR}/core/runtime/include"
+    "${PROJECT_SOURCE_DIR}/core/ai/include"
 )
 target_link_libraries(aetheria_core
     PUBLIC EnTT::EnTT
