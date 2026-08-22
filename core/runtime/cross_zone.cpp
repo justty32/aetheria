@@ -157,7 +157,7 @@ bool CrossZoneRuntime::migrate_entity(zone::ZoneKey from, entt::entity entity,
             return false;
         }
         try {
-            if (!manager_.load(to)) {
+            if (!manager_.acquire(to).has_value()) {
                 return false;
             }
         } catch (...) {

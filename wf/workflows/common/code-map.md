@@ -65,7 +65,7 @@
 ### `core/zone` — 生命週期與存檔
 
 `zone_key.h`、`zone.h`、`lod_level.h`；`zone_store.*` 共用契約與記憶體版；
-`file_zone_store.*` 磁碟版；`save_manifest_io.*` I/O／zstd／manifest；`zone_manager.*` 管生命週期。
+`file_zone_store.*` 磁碟版；`save_manifest_io.*` I/O／zstd／manifest；`zone_manager.*` 管生命週期與完整 zone 取得／重展開 callback。
 
 ### `core/world` — L1 Region 執行期
 

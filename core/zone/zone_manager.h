@@ -41,9 +41,19 @@ private:
 // store；長駐查詢只回 ZoneHandle；Zone& 僅在 with／tick callback 的作用域內借用。
 class ZoneManager {
 public:
-    explicit ZoneManager(ZoneStore& store);
+    // ZoneMaterializer 擁有 store 解碼出來的持久快照；沒有快照時參數為空。
+    // callback 必須回傳完整可用的 zone；回空或空程序層都視為失敗。
+    using ZoneMaterializer =
+        std::function<std::unique_ptr<Zone>(ZoneKey, std::unique_ptr<Zone>)>;
+
+    explicit ZoneManager(ZoneStore& store, ZoneMaterializer materializer = {});
 
     [[nodiscard]] std::optional<ZoneHandle> get(ZoneKey key) const noexcept;
+    // acquire 是取得完整可用 zone 的單一入口：有快照就解碼後重展開，
+    // 無快照就直接生成。load 刻意維持只解持久層的獨立語意。
+    [[nodiscard]] std::optional<ZoneHandle> acquire(ZoneKey key);
+    [[nodiscard]] std::optional<ZoneHandle> acquire(ZoneKey key,
+                                                    const ZoneMaterializer& materializer);
     [[nodiscard]] ZoneHandle require(ZoneKey key);
     [[nodiscard]] bool load(ZoneKey key);
     [[nodiscard]] ZoneHandle materialize(ZoneKey key);
@@ -144,6 +154,7 @@ private:
     void flush_commands();
 
     ZoneStore& store_;
+    ZoneMaterializer materializer_;
     std::map<ZoneKey, std::unique_ptr<Zone>> zones_;
     std::vector<ZoneKey> tick_order_;
     std::vector<ZoneCommand> commands_;

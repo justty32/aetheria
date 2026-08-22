@@ -17,6 +17,13 @@ namespace aetheria::site {
                                                std::uint32_t region_id,
                                                const rules::Ruleset& ruleset);
 
+// ZoneManager materializer 用的重展開入口；擁有已解碼持久層，並以當下
+// Region 慢／快變數重建程序層。不執行 store load。
+[[nodiscard]] zone::Zone rematerialize_site_zone(
+    zone::Zone persistent, world::RegionTiles& region_tiles,
+    world::RegionXY coordinate, std::uint64_t world_seed, std::uint32_t region_id,
+    time::Tick now, const rules::Ruleset& ruleset, SiteCatchUpReport* report = nullptr);
+
 // rematerialize_site_zone 只接受 L_ABSENT（未載入）的 Site，從 store 冷載持久層，
 // 再以當下 Region tile 重算程序層。回傳 handle 指向 L_COARSE Site。
 [[nodiscard]] zone::ZoneHandle rematerialize_site_zone(
