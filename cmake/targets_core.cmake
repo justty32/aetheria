@@ -201,3 +201,22 @@ target_sources(aetheria_core PRIVATE
 target_sources(aetheria_core PRIVATE
     core/runtime/playable_session.cpp
 )
+
+# M8.0 追加區：Lua 只跑低頻掛勾，世界寫入經受限 Context 事件化提交。
+target_sources(aetheria_core PRIVATE
+    core/script/script_engine.cpp
+    core/script/script_world.cpp
+)
+target_include_directories(aetheria_core PUBLIC
+    "${PROJECT_SOURCE_DIR}/core/script/include"
+)
+target_include_directories(aetheria_core SYSTEM PRIVATE
+    "${LUA_INCLUDE_DIR}"
+)
+target_link_libraries(aetheria_core PRIVATE
+    sol2::sol2
+    "${LUA_LIBRARIES}"
+)
+target_compile_definitions(aetheria_core PRIVATE
+    SOL_ALL_SAFETIES_ON=1
+)
