@@ -19,7 +19,9 @@
 
 ### 實作者（gpt-sol）
 
-- **待任務書**。
+- 🔄 **M6.0 力量體系**（`m6-0-wt`）→ [任務書](inbox/m6-0-power-tiers.md)
+- 🔄 **M6.1 個體規則**（`m6-1-wt`）→ [任務書](inbox/m6-1-individual-rules.md)
+- 🔄 **M6.2 外交關係模型**（`m6-2-wt`）→ [任務書](inbox/m6-2-diplomacy.md)
 
 ### 規劃者（Opus 5）
 
@@ -30,13 +32,20 @@
 
 **M0～M5 全部完成，272/272。** `outline.md` 的 M6 判準只寫了「戰鬥規則、勢力 AI、劇情」。
 
-**M6 的設計文件早就寫好了**，不必重新設計，照著實作即可：
+**M6 的設計文件早就寫好了**，不必重新設計，照著實作即可。輪次規劃：
 
-| 主題 | 文件 |
-|---|---|
-| 戰鬥 | [combat-formula.md](../design/combat-formula.md)、[combat-scaling.md](../design/combat-scaling.md)、[rules-individual.md](../design/rules-individual.md)、[power-tiers.md](../design/power-tiers.md) |
-| 勢力 AI | [faction-ai.md](../design/faction-ai.md)、[diplomacy.md](../design/diplomacy.md) |
-| 劇情 | [narrative.md](../design/narrative.md)、[significance-fate.md](../design/significance-fate.md) |
+| 輪 | 內容 | 設計文件 | 狀態 |
+|---|---|---|---|
+| M6.0 | 力量體系、等效戰力 `S`、階差門檻 | [power-tiers](../design/power-tiers.md) | 🔄 |
+| M6.1 | 四屬性、d100、傷害抗性、`suggest_tier` | [rules-individual](../design/rules-individual.md) | 🔄 |
+| M6.2 | 外交四分量、戰爭事件、厭戰、`FactionView` | [diplomacy](../design/diplomacy.md) | 🔄 |
+| M6.3 | **Region 戰鬥公式**（吃 M6.0 的 `S`）＋具名參與者命運 | [combat-formula](../design/combat-formula.md)、[significance-fate](../design/significance-fate.md) | 待 |
+| M6.4 | 勢力 AI：目標庫、效用評分、AI LOD 三級 | [faction-ai](../design/faction-ai.md) | 待 |
+| M6.5 | 敘事：三種任務、事件模板、**Godot 顯示 UI**（M2 拖到現在） | [narrative](../design/narrative.md) | 待 |
+| M6.6 | **三層校準**：E[Region]≈E[Site]≈E[Local]，相對誤差 <5% | [event-scaling](../design/event-scaling.md) | 待 |
+
+⚠ **校準順序不可顛倒**：先把 Region 公式調到「打起來像那麼回事」，
+再讓 Site 與 Local 去追它。反過來做會失控——低層自由度太高，拿它當基準等於沒有基準。
 
 ⚠ **M6 開場前要先處理的三件**（都是前面里程碑刻意留下的）：
 
