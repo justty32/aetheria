@@ -49,11 +49,11 @@ TEST(RegionGeneration, IdentityRedistributionKeepsReferenceWorldHashesBitIdentic
     };
     constexpr std::array references{
         ReferenceHash{UINT64_C(515151), UINT64_C(5754128893694281728),
-                      UINT64_C(16344487931467028048)},
+                      UINT64_C(8963508752675768512)},
         ReferenceHash{UINT64_C(12345), UINT64_C(17267498220237237745),
-                      UINT64_C(1588818590191442555)},
+                      UINT64_C(14515705340403023595)},
         ReferenceHash{UINT64_C(424242), UINT64_C(793007085422239155),
-                      UINT64_C(15652735773701661944)},
+                      UINT64_C(3836747774080975080)},
     };
 
     for (const auto& reference : references) {

@@ -30,10 +30,14 @@ struct ProductionStockReduction {
     using Value = std::uint64_t;
 };
 
+struct OrderReduction {
+    using Value = std::uint16_t;
+};
+
 // 加一種連續量時把 row 加在尾端；table 與 Region storage 都由這份清單展開。
 using RegionReductionRows =
     std::tuple<PopulationReduction, DevelopmentLevelReduction, FoodStockReduction,
-               ProductionStockReduction>;
+               ProductionStockReduction, OrderReduction>;
 
 template <typename Row> using ReductionField = spatial::reduction::Field<Row>;
 template <typename Row> using ReductionValue = spatial::reduction::SnapshotValue<Row>;
@@ -52,5 +56,6 @@ static_assert(std::is_integral_v<PopulationReduction::Value>);
 static_assert(std::is_integral_v<DevelopmentLevelReduction::Value>);
 static_assert(std::is_integral_v<FoodStockReduction::Value>);
 static_assert(std::is_integral_v<ProductionStockReduction::Value>);
+static_assert(std::is_integral_v<OrderReduction::Value>);
 
 }  // namespace aetheria::world

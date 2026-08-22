@@ -21,6 +21,7 @@ using aetheria::tests::kReductionWorldSeed;
 using aetheria::tests::reduction_region;
 using aetheria::tests::test_ruleset;
 using aetheria::world::DevelopmentLevelReduction;
+using aetheria::world::OrderReduction;
 using aetheria::world::PopulationReduction;
 using aetheria::world::RegionSimulation;
 using aetheria::world::RegionTiles;
@@ -28,7 +29,7 @@ using aetheria::world::RegionTiles;
 template <typename Value>
 concept HasPublicPopulationField = requires(Value value) { value.population; };
 
-static_assert(std::tuple_size_v<aetheria::world::RegionReductionRows> == 4);
+static_assert(std::tuple_size_v<aetheria::world::RegionReductionRows> == 5);
 static_assert(!HasPublicPopulationField<RegionTiles>);
 static_assert(!std::is_default_constructible_v<aetheria::world::RegionTileDelta>);
 
@@ -51,6 +52,38 @@ TEST(SiteReduction, FixedRowsAreTheOnlySiteSideWriter) {
               before_unlisted_change);
     EXPECT_EQ(tiles.reduction_value<PopulationReduction>(kReductionCoordinate), 75U);
     EXPECT_EQ(tiles.reduction_value<DevelopmentLevelReduction>(kReductionCoordinate), 1U);
+}
+
+TEST(SiteReduction, MissingOrderObservationIsDistinctFromObservedZero) {
+    auto tiles = reduction_region();
+    aetheria::site::SiteLayers missing;
+    const auto missing_delta = aetheria::site::ReductionTable::reduce(missing);
+    EXPECT_FALSE(missing_delta.value<OrderReduction>().has_value());
+
+    aetheria::site::SiteLayers anarchy;
+    anarchy.persistent.order = aetheria::site::SiteOrderState{
+        .garrison_coverage = 10,
+        .patrol_coverage = 5,
+        .bandit_pressure = 12,
+        .refugee_pressure = 3,
+    };
+    const auto zero_delta = aetheria::site::ReductionTable::reduce(anarchy);
+    ASSERT_TRUE(zero_delta.value<OrderReduction>().has_value());
+    EXPECT_EQ(*zero_delta.value<OrderReduction>(), 0U);
+
+    aetheria::site::SiteLayers retained_source;
+    retained_source.persistent.order = aetheria::site::SiteOrderState{
+        .garrison_coverage = 73,
+    };
+    aetheria::site::ReductionTable::apply(tiles, kReductionCoordinate,
+                                          aetheria::site::ReductionTable::reduce(retained_source));
+    aetheria::site::ReductionTable::apply(tiles, kReductionCoordinate, missing_delta);
+    EXPECT_EQ(tiles.reduction_value<OrderReduction>(kReductionCoordinate), 73U);
+    aetheria::site::ReductionTable::apply(tiles, kReductionCoordinate, zero_delta);
+    EXPECT_EQ(tiles.reduction_value<OrderReduction>(kReductionCoordinate), 0U);
+
+    std::cout << "order_optional missing_has_value=0 observed_zero_has_value=1 "
+                 "retained_after_missing=73 overwritten_after_zero=0\n";
 }
 
 TEST(SiteReduction, HasLiveSiteNegativeControlProvesRegionFormulaDidNotExecute) {
@@ -138,6 +171,7 @@ TEST(SiteReduction, CollapseAlwaysReducesBeforeUnloadAndCurrentFormatPersistsFas
         std::get<aetheria::zone::RegionPayload>(loaded->payload).layers.at(0);
     EXPECT_EQ(loaded_tiles.reduction_value<PopulationReduction>(kReductionCoordinate), 25U);
     EXPECT_EQ(loaded_tiles.reduction_value<DevelopmentLevelReduction>(kReductionCoordinate), 0U);
+    EXPECT_EQ(loaded_tiles.reduction_value<OrderReduction>(kReductionCoordinate), 20U);
     EXPECT_EQ(loaded_tiles.defense[0], 87U);
     EXPECT_EQ(loaded_tiles.damage[0], 42U);
     EXPECT_FALSE(loaded_tiles.site[0].has_live_site);

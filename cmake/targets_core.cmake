@@ -150,3 +150,7 @@ target_link_libraries(aetheria_core
     PRIVATE cereal::cereal tomlplusplus::tomlplusplus zstd::libzstd_static
 )
 aetheria_enable_warnings(aetheria_core)
+
+target_sources(aetheria_core PRIVATE
+    core/rules/ruleset_load_world_observations.cpp
+)
