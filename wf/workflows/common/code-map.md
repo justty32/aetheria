@@ -62,6 +62,7 @@
 ### `core/serialize` — zone 位元流
 
 `zone_codec.h` 入口；`zone_{encode,decode}.cpp` codec；`zone_region_portals.h` portal 解碼；
+`zone_diplomacy_codec.*` 是 root zone 外交持久區塊與 def 字串 id 重映射；
 `zone_codec_detail.h` 共用檢查；`registry_codec.h`、`all_components.h` 是 EnTT snapshot
 （**新 component 只准加在尾端**）；`normalized_state_hash.*` 做跨歷史正規化 hash。
 

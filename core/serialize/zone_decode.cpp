@@ -3,6 +3,7 @@
 #include "core/serialize/all_components.h"
 #include "core/serialize/registry_codec.h"
 #include "core/serialize/zone_codec_detail.h"
+#include "core/serialize/zone_diplomacy_codec.h"
 #include "core/serialize/zone_region_portals.h"
 #include "core/site/site_lifecycle.h"
 
@@ -59,17 +60,17 @@ std::unique_ptr<zone::Zone> decode_zone(std::string_view bytes, const rules::Rul
     std::istringstream stream{std::string{bytes}, std::ios::binary};
     std::uint64_t key{};
     std::int64_t saved_tick{};
+    std::uint32_t version{};
     std::unique_ptr<zone::Zone> value;
     {
         cereal::PortableBinaryInputArchive archive{stream};
         std::uint32_t magic{};
-        std::uint32_t version{};
         std::uint8_t persistence_flags{};
         archive(magic, version, key, saved_tick, persistence_flags);
         if (magic != detail::kZoneMagic) {
             throw std::runtime_error{"zone magic 不符"};
         }
-        if (version != kSaveFormatVersion) {
+        if (version != 14 && version != kSaveFormatVersion) {
             throw std::runtime_error{"zone format_version 不符：檔內=" + std::to_string(version) +
                                      " 預期=" + std::to_string(kSaveFormatVersion)};
         }
@@ -166,6 +167,15 @@ std::unique_ptr<zone::Zone> decode_zone(std::string_view bytes, const rules::Rul
         cereal::PortableBinaryInputArchive registry_cereal{stream};
         RegistryInputArchive registry_archive{registry_cereal};
         load_registry_snapshot(value->reg, registry_archive, AllComponents{});
+    }
+    if (version >= 15) {
+        cereal::PortableBinaryInputArchive diplomacy_archive{stream};
+        value->diplomacy = detail::load_diplomacy(diplomacy_archive, ruleset);
+        if (value->diplomacy.has_value() && value->key != zone::kRootZone) {
+            throw std::runtime_error{"外交狀態只能存在 root zone"};
+        }
+    } else {
+        value->diplomacy.reset();
     }
     const auto city_states = value->reg.view<const site::CityBuildState>();
     if (city_states.size() > 1U ||

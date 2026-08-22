@@ -124,6 +124,7 @@ add_library(aetheria_core STATIC
     core/time/tick.cpp
     core/serialize/zone_encode.cpp
     core/serialize/zone_decode.cpp
+    core/serialize/zone_diplomacy_codec.cpp
     core/runtime/cross_zone.cpp
     core/zone/file_zone_store.cpp
     core/zone/save_manifest_io.cpp

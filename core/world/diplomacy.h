@@ -34,6 +34,8 @@ struct ActiveTreaty {
     std::array<FactionId, 2> parties{};
     time::Tick started{};
     std::optional<time::Tick> expires_at;
+
+    constexpr bool operator==(const ActiveTreaty&) const noexcept = default;
 };
 
 struct CasusBelliClaim {
@@ -42,6 +44,8 @@ struct CasusBelliClaim {
     rules::CasusBelliDefId def{};
     time::Tick granted_at{};
     time::Tick expires_at{};
+
+    constexpr bool operator==(const CasusBelliClaim&) const noexcept = default;
 };
 
 // WarEvent 是 Region 級持續事件；戰果以 participants[0] 的視角記錄。
@@ -54,6 +58,20 @@ struct WarEvent {
     bool active{true};
 
     constexpr bool operator==(const WarEvent&) const noexcept = default;
+};
+
+// DiplomacyPersistentState 是外交存檔白名單；AI 觀測快取不屬此持久層。
+// WorldDiplomacyState 匯出值複本，codec 載入後交回 restore 驗證並重建規則借用。
+struct DiplomacyPersistentState {
+    std::uint16_t faction_count{};
+    std::uint64_t world_seed{};
+    std::vector<DiplomaticRelation> relations;
+    std::vector<ActiveTreaty> treaties;
+    std::vector<CasusBelliClaim> casus_belli;
+    std::vector<WarEvent> wars;
+
+    constexpr bool
+    operator==(const DiplomacyPersistentState&) const noexcept = default;
 };
 
 class WorldDiplomacyState {
@@ -103,6 +121,10 @@ class WorldDiplomacyState {
     [[nodiscard]] std::span<const WarEvent> wars() const noexcept {
         return wars_;
     }
+
+    [[nodiscard]] DiplomacyPersistentState persistent_state() const;
+    [[nodiscard]] static WorldDiplomacyState
+    restore(DiplomacyPersistentState state, const rules::Ruleset& ruleset);
 
     void set_faction_truth(FactionId faction, std::int32_t military_power,
                            std::int32_t economic_power);

@@ -3,6 +3,7 @@
 #include <cstdint>
 #include <entt/entity/registry.hpp>
 #include <map>
+#include <optional>
 #include <stdexcept>
 #include <utility>
 #include <variant>
@@ -11,6 +12,7 @@
 #include "core/local/local_reduction_schema.h"
 #include "core/site/site_projection.h"
 #include "core/time/tick.h"
+#include "core/world/diplomacy.h"
 #include "core/world/region_tiles.h"
 #include "core/zone/lod_level.h"
 #include "core/zone/zone_key.h"
@@ -116,6 +118,8 @@ struct Zone {
     // ZoneManager 載入／接管時重建，跨 zone 搬移在同一個 commit 點同步。
     std::map<std::uint64_t, entt::entity> uid_index;
     SpatialPayload payload;
+    // 只有 root zone 可持有外交真值；nullopt 明確表示世界尚無外交狀態。
+    std::optional<world::WorldDiplomacyState> diplomacy;
     LodLevel lod{LodLevel::Full};
     bool pinned{};
     // 搬入實體視為一次 observer touch；串流協調器可用此單調值提高保留優先度。

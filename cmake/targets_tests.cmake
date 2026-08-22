@@ -77,6 +77,7 @@ add_executable(aetheria_tests
     tests/zone/zone_manager_test.cpp
     tests/zone/zone_manager_tick_test.cpp
     tests/zone/cross_zone_test.cpp
+    tests/zone/diplomacy_save_test.cpp
 )
 target_compile_definitions(aetheria_tests PRIVATE
     AETHERIA_SOURCE_DIR="${PROJECT_SOURCE_DIR}"
