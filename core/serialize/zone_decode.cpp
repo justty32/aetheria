@@ -56,7 +56,8 @@ void remap_ids(std::vector<Id>& values, const std::vector<Id>& remap, std::strin
 
 }  // namespace
 
-std::unique_ptr<zone::Zone> decode_zone(std::string_view bytes, const rules::Ruleset& ruleset) {
+std::unique_ptr<zone::Zone> decode_zone(std::string_view bytes, const rules::Ruleset& ruleset,
+                                       ZoneDecodeMode mode) {
     std::istringstream stream{std::string{bytes}, std::ios::binary};
     std::uint64_t key{};
     std::int64_t saved_tick{};
@@ -70,8 +71,9 @@ std::unique_ptr<zone::Zone> decode_zone(std::string_view bytes, const rules::Rul
         if (magic != detail::kZoneMagic) {
             throw std::runtime_error{"zone magic 不符"};
         }
-        if (version != 14 && version != 15 && version != 16 &&
-            version != kSaveFormatVersion) {
+        const bool is_legacy_fixture =
+            mode == ZoneDecodeMode::LegacyFixture && (version == 14 || version == 15);
+        if (version != kSaveFormatVersion && !is_legacy_fixture) {
             throw std::runtime_error{"zone format_version 不符：檔內=" + std::to_string(version) +
                                      " 預期=" + std::to_string(kSaveFormatVersion)};
         }
@@ -172,7 +174,7 @@ std::unique_ptr<zone::Zone> decode_zone(std::string_view bytes, const rules::Rul
     {
         cereal::PortableBinaryInputArchive registry_cereal{stream};
         RegistryInputArchive registry_archive{registry_cereal};
-        if (version >= 16) {
+        if (version == kSaveFormatVersion) {
             load_registry_snapshot(value->reg, registry_archive, AllComponents{});
         } else {
             load_registry_snapshot(value->reg, registry_archive, AllComponentsV15{});
@@ -180,7 +182,7 @@ std::unique_ptr<zone::Zone> decode_zone(std::string_view bytes, const rules::Rul
     }
     if (version >= 15) {
         cereal::PortableBinaryInputArchive diplomacy_archive{stream};
-        value->diplomacy = detail::load_diplomacy(diplomacy_archive, ruleset);
+        value->diplomacy = detail::load_diplomacy(diplomacy_archive, ruleset, version);
         if (value->diplomacy.has_value() && value->key != zone::kRootZone) {
             throw std::runtime_error{"外交狀態只能存在 root zone"};
         }

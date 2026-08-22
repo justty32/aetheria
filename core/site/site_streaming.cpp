@@ -2,6 +2,7 @@
 
 #include "core/site/site_streaming.h"
 
+#include "core/observer/field.h"
 #include "core/world/region_movement.h"
 #include "core/zone/zone_key.h"
 
@@ -58,10 +59,12 @@ void SiteStreamingCoordinator::player_crossed_tile(world::RegionXY coordinate) {
                 continue;
             }
             const auto distance = std::max(std::abs(dx), std::abs(dy));
+            const auto score = observer::field_score(kStreamingCoarseRadius, distance);
             desired_.emplace(zone::child_key(region_.key, static_cast<std::uint32_t>(x),
                                              static_cast<std::uint32_t>(y)),
-                             distance <= kStreamingFullRadius ? zone::LodLevel::Full
-                                                              : zone::LodLevel::Coarse);
+                             score >= kStreamingCoarseRadius - kStreamingFullRadius
+                                 ? zone::LodLevel::Full
+                                 : zone::LodLevel::Coarse);
         }
     }
     ++field_recompute_count_;

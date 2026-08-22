@@ -20,10 +20,12 @@ struct Zone;
 }
 
 namespace aetheria::serialize {
+enum class ZoneDecodeMode : std::uint8_t;
 [[nodiscard]] std::string encode_zone(const zone::Zone& zone,
                                       const rules::Ruleset& ruleset);
 [[nodiscard]] std::unique_ptr<zone::Zone> decode_zone(std::string_view bytes,
-                                                      const rules::Ruleset& ruleset);
+                                                      const rules::Ruleset& ruleset,
+                                                      ZoneDecodeMode mode);
 }
 
 namespace aetheria::site {
@@ -132,7 +134,8 @@ private:
     friend class FateResolver;
     friend std::string serialize::encode_zone(const zone::Zone&, const rules::Ruleset&);
     friend std::unique_ptr<zone::Zone> serialize::decode_zone(std::string_view,
-                                                              const rules::Ruleset&);
+                                                              const rules::Ruleset&,
+                                                              serialize::ZoneDecodeMode);
 
     RegionReductionStorage reduction_fields_;
 };

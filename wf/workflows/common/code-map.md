@@ -2,9 +2,9 @@
 
 ← [common/README](README.md)｜[conventions](conventions.md)｜[INDEX](../../INDEX.md)
 
-**目錄＝職責，檔名＝子題。** 改結構後更新（[refactor](../refactor.md)）。
+**目錄＝職責，檔名＝子題。** 改結構後更新 [refactor](../refactor.md)。
 
-## 檔名慣例（先讀這段，省得逐檔猜）
+## 檔名慣例
 
 | 型樣 | 意思 |
 |---|---|
@@ -14,7 +14,7 @@
 | `stage_*.cpp` | worldgen 階段 1～7 的地形／氣候實作；人文三階段依職責命名 |
 | `*_test_support.h` | 該測試目錄專用的 fixture／helper（header-only）|
 
-只被單一 `.cpp` 用到的 helper 一律留在該檔匿名 namespace，不進 `detail`。
+單一 `.cpp` 的 helper 留匿名 namespace，不進 `detail`。
 
 ## 頂層
 
@@ -24,7 +24,7 @@
 | `cmake/` | `targets_*.cmake` 來源／測試；`godot_toolchain.cmake` 工具鏈；`check_*.cmake` CTest 檢查 |
 | `core/` | 純 C++ 玩法核心，**不得依賴 godot-cpp** |
 | `core/runtime/` | 跨 zone 執行期 API；生成 target 不可見 |
-| `core/site/`、`core/local/`、`core/spatial/` | L1→L2 Site、L2→L3 Local，以及兩層共用的邊界、切分與歸約機制 |
+| `core/site/`、`core/local/`、`core/spatial/` | L1→L2 Site、L2→L3 Local 與共用邊界／切分／歸約 |
 | `bridge/` | `AetheriaCore` Node 與 GDExtension 註冊；唯一可 include godot-cpp 的自有目錄 |
 | `godot/` | 純顯示／呼叫驗證場景、事件面板、i18n 與 `.gdextension` 描述檔 |
 | `tests/` | GoogleTest 單元測試 |
@@ -36,7 +36,7 @@
 
 ### `core/base`、`core/api`、`core/time`
 
-`base/check.h` 所有建置組態都生效的不變式檢查；`api/version.*` core 對外 API（目前只有版本）；`time/tick.*` Tick／Duration 與 360 天曆換算。
+`base/check.h` 不變式檢查；`api/version.*` core 版本 API；`time/tick.*` Tick／Duration 與 360 天曆換算。
 
 ### `core/rules` — 不可變 Ruleset
 
@@ -52,26 +52,27 @@
 | `ruleset.cpp` | `Ruleset` 存取器 + `RulesetLoader::load` 的編排 |
 | `ruleset_load_defs.cpp` | terrain／relief／feature／edge 四份 def |
 | `ruleset_load_biomes.cpp` | biome 第一命中規則表、movement 季節分母 |
-| `ruleset_load_civilization.cpp`、`ruleset_load_factions.cpp` | 現代城市／道路參數；勢力數與影響力參數 |
+| `ruleset_load_civilization.cpp`、`ruleset_load_factions.cpp` | 現代城市／道路參數；勢力數、影響力、AI LOD 與七項性格 `FactionDef` |
 | `ruleset_load_history.cpp`、`ruleset_load_history_{values,references}.cpp` | 上古歷史載入編排；數值／結構限制；道路與廢墟引用（共用宣告在 `ruleset_load_history_detail.h`）|
 | `ruleset_load_crossings.cpp`、`ruleset_load_world_graph.cpp` | 渡河複合 edge 查表與完整性驗證；手工世界通道宣告與 canonical 排序 |
 | `ruleset_load_site*.cpp`、`site_build_rules.h` | Site 地面、F1～F5 與城建循環規則／def 載入 |
 | `world_observation_rules.h`、`ruleset_load_world_observations.cpp` | 治安／任務門檻 |
 | `ruleset_load_individual.cpp` | `attributes.toml`／`damage.toml` 載入與 fail-fast 驗證 |
 
-`load_*` 是 `RulesetLoader` 的 private static 成員；history detail 只接收入口參考。
+`load_*` 是 `RulesetLoader` private static 成員；history detail 只接收入口參考。
 
 ### `core/serialize` — zone 位元流
 
-`zone_codec.h` 入口；`zone_{encode,decode}.cpp` codec；`zone_region_portals.h` portal 解碼；
-`zone_diplomacy_codec.*` 是 root zone 外交持久區塊與 def 字串 id 重映射；
-`zone_codec_detail.h` 共用檢查；`registry_codec.h`、`all_components.h` 是 EnTT snapshot
-（**新 component 只准加在尾端**）；`normalized_state_hash.*` 做跨歷史正規化 hash。
+`zone_codec.h` 入口：預設只解現行版，v14/v15 需 fixture mode；
+`zone_{encode,decode}.cpp` codec；`zone_region_portals.h` portal；`zone_diplomacy_codec.*`
+處理 root 外交／情報／AI 與 def id 重映射；`zone_codec_detail.h` 共用檢查；
+`registry_codec.h`、`all_components.h` 是 EnTT snapshot（**新 component 只加尾端**）；
+`normalized_state_hash.*` 是跨歷史正規化 hash。
 
 ### `core/zone` — 生命週期與存檔
 
 `zone_key.h`、`zone.h`、`lod_level.h`；`zone_store.*` 共用契約與記憶體版；
-`file_zone_store.*` 磁碟版；`save_manifest_io.*` I/O／zstd／manifest；`zone_manager.*` 管生命週期與完整 zone 取得／重展開 callback。
+`file_zone_store.*` 磁碟版；`save_manifest_io.*` I/O／zstd／manifest；`zone_manager.*` 管生命週期與取得／重展開 callback。
 
 ### `core/world` — L1 Region 執行期
 
