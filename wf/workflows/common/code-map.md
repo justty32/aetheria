@@ -20,13 +20,13 @@
 
 | 路徑 | 職責 |
 |---|---|
-| `CMakeLists.txt`、`vcpkg.json` | 專案組態與依賴固定；**來源清單不在這裡**，在 `cmake/targets_*.cmake` |
-| `cmake/` | `targets_*.cmake` 來源／測試；`godot_toolchain.cmake` 工具鏈；`check_*.cmake` CTest 檢查 |
+| `CMakeLists.txt`、`vcpkg.json` | 專案組態與依賴；來源清單在 `cmake/targets_*.cmake` |
+| `cmake/` | target 清單、Godot 工具鏈與 CTest 檢查 |
 | `core/` | 純 C++ 玩法核心，**不得依賴 godot-cpp** |
 | `core/runtime/` | 跨 zone 執行期 API；生成 target 不可見 |
-| `core/site/`、`core/local/`、`core/spatial/` | L1→L2 Site、L2→L3 Local 與共用邊界／切分／歸約 |
-| `bridge/` | `AetheriaCore` Node 與 GDExtension 註冊；唯一可 include godot-cpp 的自有目錄 |
-| `godot/` | 純顯示／呼叫驗證場景、事件面板、i18n 與 `.gdextension` 描述檔 |
+| `core/site/`、`core/local/`、`core/spatial/` | L1→L2、L2→L3 與共用邊界／切分／歸約 |
+| `bridge/` | `AetheriaCore` 與 GDExtension；唯一可依賴 godot-cpp 的自有目錄 |
+| `godot/` | 顯示、驗證場景、事件面板、i18n 與 `.gdextension` |
 | `tests/` | GoogleTest 單元測試 |
 | `sim/` | 不需 Godot 的 headless CLI 探針 |
 | `data/` | TOML def 與資料驅動規則 |
@@ -46,6 +46,7 @@
 | `def_types.h` | id／flag、地形 def 與 `TerrainGroundMapping` |
 | `rule_tables.h` | 地形／移動／文明規則，以及 Site 與 Local 生成、填充和建築 def 型別 |
 | `power.*`、`ruleset_load_power.cpp` | 力量位階、S、個體門檻與破階 def |
+| `power_sources.*`、`ruleset_load_power_sources.cpp` | 三種來源接點、三層魔法、root 信仰、種族上限與 def |
 | `combat.*`、`ruleset_load_combat.cpp` | Region 整數戰役公式、可解釋分解、潰散追擊與配額分配 |
 | `attributes.*`、`check.*`、`damage.*` | 四屬性與衍生值、單骰 d100 餘量檢定、資料驅動傷害抗性 |
 | `toml_read.h` | 內部共用 TOML 讀取／驗證 helper |
@@ -53,7 +54,7 @@
 | `ruleset_load_defs.cpp` | terrain／relief／feature／edge 四份 def |
 | `ruleset_load_biomes.cpp` | biome 第一命中規則表、movement 季節分母 |
 | `ruleset_load_civilization.cpp`、`ruleset_load_factions.cpp` | 現代城市／道路參數；勢力數、影響力、AI LOD 與七項性格 `FactionDef` |
-| `ruleset_load_history.cpp`、`ruleset_load_history_{values,references}.cpp` | 上古歷史載入編排；數值／結構限制；道路與廢墟引用（共用宣告在 `ruleset_load_history_detail.h`）|
+| `ruleset_load_history.cpp`、`ruleset_load_history_{values,references}.cpp` | 上古歷史編排、限制與引用；共用宣告在 detail header |
 | `ruleset_load_crossings.cpp`、`ruleset_load_world_graph.cpp` | 渡河複合 edge 查表與完整性驗證；手工世界通道宣告與 canonical 排序 |
 | `ruleset_load_site*.cpp`、`site_build_rules.h` | Site 地面、F1～F5 與城建循環規則／def 載入 |
 | `world_observation_rules.h`、`ruleset_load_world_observations.cpp` | 治安／任務門檻 |
@@ -103,7 +104,7 @@
 | `site/` | Site 投影隔離、展開、持久建築、存檔／世界雜湊、效能 |
 | `sim/` | 世界級正規化雜湊的跨歷史、磁碟列舉、負向控制與錯誤路徑測試 |
 | `time/`、`serialize/` | 曆法邊界與往返；EnTT registry 壓測 |
-| `rules/` | `ruleset_*`（載入、錯誤、codec）／`individual_rules`（個體規則驗收）|
+| `rules/` | `ruleset_*`（載入、錯誤、codec）／`individual_rules`（個體規則驗收）／`power_sources`（魔法、信仰、血統與不可替代性）|
 | `world/` | `region_tiles`／`region_step_cost`／`region_path`／`region_turn` |
 | `zone/` | `zone_key`／`zone_lifecycle`／`zone_store_contract`（兩種 store 共用契約）／`file_zone_store`／`file_zone_store_manifest`／`zone_codec`／`zone_manager`／`zone_manager_tick`／`cross_zone` |
 | `worldgen/` | 地形函式／氣候函式、決定論／參數隔離、輸出／效能／重測；`history_*`（含身分、災變、回饋、隔離）、城市／首都／道路、`influence_spread`／`governance_release`／勢力量測、`portal_*`、晚期隔離；`*_test_support.h` 只供本目錄 fixture/helper |

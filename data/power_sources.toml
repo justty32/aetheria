@@ -1,0 +1,59 @@
+tenets = []
+deities = []
+races = []
+
+[strategic_magic]
+minimum_resource_cost = 120
+minimum_ritual_xun = 3
+minimum_casters = 3
+minimum_cooldown_xun = 4
+reference_resource_income_per_xun = 20
+
+# M7.0 只建立資料骨架；具體法術、神祇、教義與種族留給內容決策。
+[[schools]]
+id = "school.elemental"
+name_key = "school.elemental.name"
+source_tier_bonus = 0
+source_abilities = []
+source_attribute_modifier = [0, 0, 0, 0]
+source_removal_condition = "condition.magic_medium_lost"
+
+[[schools]]
+id = "school.summoning"
+name_key = "school.summoning.name"
+source_tier_bonus = 0
+source_abilities = []
+source_attribute_modifier = [0, 0, 0, 0]
+source_removal_condition = "condition.magic_medium_lost"
+
+[[schools]]
+id = "school.illusion"
+name_key = "school.illusion.name"
+source_tier_bonus = 0
+source_abilities = []
+source_attribute_modifier = [0, 0, 0, 0]
+source_removal_condition = "condition.mental_trauma"
+
+[[schools]]
+id = "school.necromancy"
+name_key = "school.necromancy.name"
+source_tier_bonus = 0
+source_abilities = []
+source_attribute_modifier = [0, 0, 0, 0]
+source_removal_condition = "condition.magic_medium_lost"
+
+[[schools]]
+id = "school.transmutation"
+name_key = "school.transmutation.name"
+source_tier_bonus = 0
+source_abilities = []
+source_attribute_modifier = [0, 0, 0, 0]
+source_removal_condition = "condition.magic_medium_lost"
+
+[[schools]]
+id = "school.divination"
+name_key = "school.divination.name"
+source_tier_bonus = 0
+source_abilities = []
+source_attribute_modifier = [0, 0, 0, 0]
+source_removal_condition = "condition.mental_trauma"

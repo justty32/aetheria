@@ -35,10 +35,12 @@ declare -A seen_report
 
 # 開機時把既有的收件匣檔與分支回報都標記為已看過，避免重啟時重播歷史。
 # ⚠ 分支那半原本漏了這步，於是每次重啟都把舊回報再喊一遍。
-for f in "$INBOX"/*; do
-  [ -e "$f" ] || continue
-  seen_inbox["$(basename "$f")"]=1
-done
+while read -r wt; do
+  for f in "$wt"/.codex-inbox/*; do
+    [ -e "$f" ] || continue
+    seen_inbox["$(basename "$f")"]=1
+  done
+done < <(git worktree list --porcelain 2>/dev/null | awk '/^worktree /{print $2}')
 for br in $(git for-each-ref --format='%(refname:short)' 'refs/heads/m[6-9]-*-wt' 2>/dev/null); do
   for rpt in $(git ls-tree -r --name-only "$br" -- wf/inbox 2>/dev/null | grep -- '-complete\.md$'); do
     seen_report["$br:$rpt"]=1
@@ -49,7 +51,15 @@ echo "codex-watch 啟動：session=${SESSION:0:8}… 目前我的 codex $(my_cod
 
 while true; do
   # ── 1) 收件匣 ────────────────────────────────────────────────
-  for f in "$INBOX"/*; do
+  # ⚠ 每個 worktree 各有自己的 repo 根，codex 用相對路徑寫就會落在它那邊。
+  #   與其要求它寫絕對路徑（多一個會寫錯的地方），不如這裡把每個 worktree 的也掃進來。
+  inbox_dirs=("$INBOX")
+  while read -r wt; do
+    [ -d "$wt/.codex-inbox" ] && inbox_dirs+=("$wt/.codex-inbox")
+  done < <(git worktree list --porcelain 2>/dev/null | awk '/^worktree /{print $2}')
+
+  for d in "${inbox_dirs[@]}"; do
+   for f in "$d"/*; do
     [ -e "$f" ] || continue
     b="$(basename "$f")"
     [ -n "${seen_inbox[$b]:-}" ] && continue
@@ -63,6 +73,7 @@ while true; do
       *.reply)    : ;;   # 我自己寫的，不回報
       *)          echo "[收件匣] $b — $first" ;;
     esac
+   done
   done
 
   # ── 2) 分支上新出現的回報檔 ──────────────────────────────────

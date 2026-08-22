@@ -106,8 +106,28 @@ Ruleset RulesetLoader::load(const std::filesystem::path& data_directory) {
     load_power_rules(result, data_directory, global_ids);
     load_combat_rules(result, data_directory);
     load_world_observation_rules(result, data_directory);
+    load_power_source_rules(result, data_directory, global_ids);
 
     return result;
+}
+
+const SchoolDef* Ruleset::school(SchoolDefId id) const noexcept {
+    return lookup(schools(), id);
+}
+const TenetDef* Ruleset::tenet(TenetDefId id) const noexcept { return lookup(tenets(), id); }
+const DeityDef* Ruleset::deity(DeityDefId id) const noexcept { return lookup(deities(), id); }
+const RaceDef* Ruleset::race(RaceDefId id) const noexcept { return lookup(races(), id); }
+std::optional<SchoolDefId> Ruleset::find_school(std::string_view id) const noexcept {
+    return find_id(school_index_, id);
+}
+std::optional<TenetDefId> Ruleset::find_tenet(std::string_view id) const noexcept {
+    return find_id(tenet_index_, id);
+}
+std::optional<DeityDefId> Ruleset::find_deity(std::string_view id) const noexcept {
+    return find_id(deity_index_, id);
+}
+std::optional<RaceDefId> Ruleset::find_race(std::string_view id) const noexcept {
+    return find_id(race_index_, id);
 }
 
 }  // namespace aetheria::rules
