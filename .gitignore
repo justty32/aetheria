@@ -26,3 +26,6 @@ export_presets.cfg
 # 注意：以下**刻意不 ignore**，由實作 agent 決定後再調整
 #   third_party/godot-cpp/  — 依 design/cpp-conventions.md，用 submodule 或固定版本原始碼樹
 #   art/                    — 美術素材是否進版控依體積決定，見 design/art-pipeline.md
+
+# codex 與規劃者的即時通道（不進版控，見 wf/CODEX-PROTOCOL.md）
+.codex-inbox/
