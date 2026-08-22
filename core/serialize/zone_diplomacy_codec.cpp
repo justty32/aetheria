@@ -1,4 +1,4 @@
-// 外交持久狀態的 v15 位元流：關係、條約、理由與戰爭事件。
+// 外交持久狀態的 v16 位元流：v15 欄位後追加真值、情報快取與 AI 目標。
 
 #include "core/serialize/zone_diplomacy_codec.h"
 
@@ -101,10 +101,44 @@ void save_diplomacy(cereal::PortableBinaryOutputArchive& archive,
         archive(first, second, has_cause, cause_id, started, war.war_score, war.weariness[0],
                 war.weariness[1], war.active);
     }
+
+    const bool truths_present = state.faction_truths.has_value();
+    archive(truths_present);
+    if (truths_present) {
+        archive(static_cast<std::uint64_t>(state.faction_truths->size()));
+        for (const auto& truth : *state.faction_truths) {
+            archive(truth.military_power, truth.economic_power, truth.present);
+        }
+    }
+    const bool knowledge_present = state.knowledge.has_value();
+    archive(knowledge_present);
+    if (knowledge_present) {
+        archive(static_cast<std::uint64_t>(state.knowledge->size()));
+        for (const auto& record : *state.knowledge) {
+            const auto observed_at = tick_value(record.observed_at);
+            archive(record.military_power, record.economic_power,
+                    record.uncertainty_permyriad, observed_at, record.distance,
+                    record.observed);
+        }
+    }
+    const bool minds_present = state.faction_minds.has_value();
+    archive(minds_present);
+    if (minds_present) {
+        archive(static_cast<std::uint64_t>(state.faction_minds->size()));
+        for (const auto& mind : *state.faction_minds) {
+            const auto goal = static_cast<std::uint8_t>(mind.goal);
+            const bool has_forced_goal = mind.forced_goal.has_value();
+            const auto forced_goal = static_cast<std::uint8_t>(
+                has_forced_goal ? *mind.forced_goal : ai::FactionGoal::Prosper);
+            archive(goal, mind.goal_score, mind.goal_switches, mind.initialized,
+                    has_forced_goal, forced_goal);
+        }
+    }
 }
 
 std::optional<world::WorldDiplomacyState>
-load_diplomacy(cereal::PortableBinaryInputArchive& archive, const rules::Ruleset& ruleset) {
+load_diplomacy(cereal::PortableBinaryInputArchive& archive, const rules::Ruleset& ruleset,
+               std::uint32_t version) {
     bool present{};
     archive(present);
     if (!present) {
@@ -192,6 +226,60 @@ load_diplomacy(cereal::PortableBinaryInputArchive& archive, const rules::Ruleset
             throw std::runtime_error{"外交存檔的無理由戰爭帶有理由 id"};
         }
         state.wars.push_back(war);
+    }
+    if (version >= 16) {
+        bool truths_present{};
+        archive(truths_present);
+        if (truths_present) {
+            const auto count = load_count(archive, "勢力真值");
+            if (count != extent) {
+                throw std::runtime_error{"外交存檔的勢力真值尺寸不符"};
+            }
+            state.faction_truths.emplace(static_cast<std::size_t>(count));
+            for (auto& truth : *state.faction_truths) {
+                archive(truth.military_power, truth.economic_power, truth.present);
+            }
+        }
+        bool knowledge_present{};
+        archive(knowledge_present);
+        if (knowledge_present) {
+            const auto count = load_count(archive, "情報快取");
+            if (count != extent * extent) {
+                throw std::runtime_error{"外交存檔的情報矩陣尺寸不符"};
+            }
+            state.knowledge.emplace(static_cast<std::size_t>(count));
+            for (auto& record : *state.knowledge) {
+                std::int64_t observed_at{};
+                archive(record.military_power, record.economic_power,
+                        record.uncertainty_permyriad, observed_at, record.distance,
+                        record.observed);
+                record.observed_at = time::Tick{observed_at};
+            }
+        }
+        bool minds_present{};
+        archive(minds_present);
+        if (minds_present) {
+            const auto count = load_count(archive, "AI 目標");
+            if (count != extent) {
+                throw std::runtime_error{"外交存檔的 AI 目標狀態尺寸不符"};
+            }
+            state.faction_minds.emplace(static_cast<std::size_t>(count));
+            for (auto& mind : *state.faction_minds) {
+                std::uint8_t goal{};
+                bool has_forced_goal{};
+                std::uint8_t forced_goal{};
+                archive(goal, mind.goal_score, mind.goal_switches, mind.initialized,
+                        has_forced_goal, forced_goal);
+                if (goal > static_cast<std::uint8_t>(ai::FactionGoal::HolyWar) ||
+                    forced_goal > static_cast<std::uint8_t>(ai::FactionGoal::HolyWar)) {
+                    throw std::runtime_error{"外交存檔含無效 AI 目標"};
+                }
+                mind.goal = static_cast<ai::FactionGoal>(goal);
+                if (has_forced_goal) {
+                    mind.forced_goal = static_cast<ai::FactionGoal>(forced_goal);
+                }
+            }
+        }
     }
     return world::WorldDiplomacyState::restore(std::move(state), ruleset);
 }

@@ -70,7 +70,7 @@ std::unique_ptr<zone::Zone> decode_zone(std::string_view bytes, const rules::Rul
         if (magic != detail::kZoneMagic) {
             throw std::runtime_error{"zone magic 不符"};
         }
-        if (version != 14 && version != kSaveFormatVersion) {
+        if (version != 14 && version != 15 && version != kSaveFormatVersion) {
             throw std::runtime_error{"zone format_version 不符：檔內=" + std::to_string(version) +
                                      " 預期=" + std::to_string(kSaveFormatVersion)};
         }
@@ -170,7 +170,7 @@ std::unique_ptr<zone::Zone> decode_zone(std::string_view bytes, const rules::Rul
     }
     if (version >= 15) {
         cereal::PortableBinaryInputArchive diplomacy_archive{stream};
-        value->diplomacy = detail::load_diplomacy(diplomacy_archive, ruleset);
+        value->diplomacy = detail::load_diplomacy(diplomacy_archive, ruleset, version);
         if (value->diplomacy.has_value() && value->key != zone::kRootZone) {
             throw std::runtime_error{"外交狀態只能存在 root zone"};
         }

@@ -47,8 +47,9 @@ WorldDiplomacyState::WorldDiplomacyState(std::uint16_t faction_count,
     }
     const auto extent = static_cast<std::size_t>(faction_count_) + 1U;
     relations_.resize(extent * extent);
-    truths_.resize(extent);
-    knowledge_.resize(extent * extent);
+    truths_.emplace(extent);
+    knowledge_.emplace(extent * extent);
+    faction_minds_.emplace(extent);
 }
 
 std::size_t WorldDiplomacyState::faction_index(FactionId faction) const {
@@ -177,7 +178,8 @@ bool WorldDiplomacyState::has_casus_belli(FactionId owner, FactionId target,
 WarEvent&
 WorldDiplomacyState::declare_war(FactionId attacker, FactionId defender,
                                  std::optional<rules::CasusBelliDefId> cause,
-                                 time::Tick now) {
+                                 time::Tick now,
+                                 bool defensive_alliance_obligation) {
     static_cast<void>(faction_index(attacker));
     static_cast<void>(faction_index(defender));
     if (attacker == defender ||
@@ -185,7 +187,7 @@ WorldDiplomacyState::declare_war(FactionId attacker, FactionId defender,
          !has_casus_belli(attacker, defender, *cause, now))) {
         throw std::invalid_argument{"宣戰方、目標或宣戰理由無效／已過期"};
     }
-    if (!cause.has_value()) {
+    if (!cause.has_value() && !defensive_alliance_obligation) {
         for (std::size_t third = 1; third <= faction_count_; ++third) {
             const auto faction = static_cast<FactionId>(third);
             if (faction != attacker && faction != defender) {
@@ -264,6 +266,9 @@ DiplomacyPersistentState WorldDiplomacyState::persistent_state() const {
         .treaties = treaties_,
         .casus_belli = casus_belli_,
         .wars = wars_,
+        .faction_truths = truths_,
+        .knowledge = knowledge_,
+        .faction_minds = faction_minds_,
     };
 }
 
@@ -315,10 +320,37 @@ WorldDiplomacyState::restore(DiplomacyPersistentState state,
             throw std::runtime_error{"外交存檔含無效戰爭事件"};
         }
     }
+    if (state.faction_truths.has_value() && state.faction_truths->size() != extent) {
+        throw std::runtime_error{"外交存檔的勢力真值尺寸不符"};
+    }
+    if (state.knowledge.has_value() && state.knowledge->size() != extent * extent) {
+        throw std::runtime_error{"外交存檔的情報矩陣尺寸不符"};
+    }
+    if (state.faction_minds.has_value() && state.faction_minds->size() != extent) {
+        throw std::runtime_error{"外交存檔的 AI 目標狀態尺寸不符"};
+    }
+    if (state.faction_truths.has_value()) {
+        for (const auto& truth : *state.faction_truths) {
+            if (truth.military_power < 0 || truth.economic_power < 0) {
+                throw std::runtime_error{"外交存檔含負的勢力國力真值"};
+            }
+        }
+    }
+    if (state.knowledge.has_value()) {
+        for (const auto& record : *state.knowledge) {
+            if (record.military_power < 0 || record.economic_power < 0 ||
+                record.uncertainty_permyriad > 10000 || record.distance < 0) {
+                throw std::runtime_error{"外交存檔含無效情報快取"};
+            }
+        }
+    }
     result.relations_ = std::move(state.relations);
     result.treaties_ = std::move(state.treaties);
     result.casus_belli_ = std::move(state.casus_belli);
     result.wars_ = std::move(state.wars);
+    result.truths_ = std::move(state.faction_truths);
+    result.knowledge_ = std::move(state.knowledge);
+    result.faction_minds_ = std::move(state.faction_minds);
     return result;
 }
 

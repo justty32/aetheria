@@ -68,13 +68,14 @@ void RegionTurnPipeline::issue_move(zone::Zone& region, StableId unit, RegionXY 
 }
 
 void RegionTurnPipeline::advance_xun(zone::Zone& region, const TurnStageObserver& observer,
-                                     const LiveSiteReductionPass& live_site_reduction) const {
+                                     const LiveSiteReductionPass& live_site_reduction,
+                                     const FactionAiPass& faction_ai) const {
     auto& clock = turn_clock(region);
     const auto next = clock.now + time::kXun;
     if (!time::is_representable(next)) {
         throw std::overflow_error{"旬回合推進超出 Tick 可表達範圍"};
     }
-    run_xun_stages(region, clock.now, observer, live_site_reduction);
+    run_xun_stages(region, clock.now, observer, live_site_reduction, faction_ai);
     clock.now = next;
     region.last_saved_tick = clock.now;
     store_.save(region);
@@ -82,21 +83,24 @@ void RegionTurnPipeline::advance_xun(zone::Zone& region, const TurnStageObserver
 
 void RegionTurnPipeline::settle_elapsed_xun(
     zone::Zone& region, const TurnStageObserver& observer,
-    const LiveSiteReductionPass& live_site_reduction) const {
+    const LiveSiteReductionPass& live_site_reduction,
+    const FactionAiPass& faction_ai) const {
     auto& clock = turn_clock(region);
     const auto raw_now = static_cast<std::int64_t>(clock.now);
     const auto raw_xun = static_cast<std::int64_t>(time::kXun);
     if (raw_now % raw_xun != 0) {
         throw std::logic_error{"下層旬結算要求全局時鐘位於旬界"};
     }
-    run_xun_stages(region, clock.now - time::kXun, observer, live_site_reduction);
+    run_xun_stages(region, clock.now - time::kXun, observer, live_site_reduction,
+                   faction_ai);
     region.last_saved_tick = clock.now;
     store_.save(region);
 }
 
 void RegionTurnPipeline::run_xun_stages(
     zone::Zone& region, time::Tick simulation_start, const TurnStageObserver& observer,
-    const LiveSiteReductionPass& live_site_reduction) const {
+    const LiveSiteReductionPass& live_site_reduction,
+    const FactionAiPass& faction_ai) const {
     if (zone::level_of(region.key) != zone::ZoneLevel::Region) {
         throw std::invalid_argument{"RegionTurnPipeline 只接受 Region zone"};
     }
@@ -158,6 +162,9 @@ void RegionTurnPipeline::run_xun_stages(
 
     notify(observer, TurnStage::Encounters);
     notify(observer, TurnStage::FactionAi);
+    if (faction_ai) {
+        faction_ai(simulation_start);
+    }
     notify(observer, TurnStage::WorldSimulation);
     if (has_live_site) {
         live_site_reduction(region);

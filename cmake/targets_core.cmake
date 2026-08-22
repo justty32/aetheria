@@ -152,3 +152,11 @@ target_link_libraries(aetheria_core
     PRIVATE cereal::cereal tomlplusplus::tomlplusplus zstd::libzstd_static
 )
 aetheria_enable_warnings(aetheria_core)
+
+# M6.5 並行追加區：只在檔尾擴充既有 target，避免切入來源宣告群。
+target_sources(aetheria_faction_ai_objects PRIVATE
+    core/ai/faction_ai.cpp
+)
+target_sources(aetheria_core PRIVATE
+    core/world/faction_ai.cpp
+)

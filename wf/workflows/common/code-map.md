@@ -52,7 +52,7 @@
 | `ruleset.cpp` | `Ruleset` 存取器 + `RulesetLoader::load` 的編排 |
 | `ruleset_load_defs.cpp` | terrain／relief／feature／edge 四份 def |
 | `ruleset_load_biomes.cpp` | biome 第一命中規則表、movement 季節分母 |
-| `ruleset_load_civilization.cpp`、`ruleset_load_factions.cpp` | 現代城市／道路參數；勢力數與影響力參數 |
+| `ruleset_load_civilization.cpp`、`ruleset_load_factions.cpp` | 現代城市／道路參數；勢力數、影響力、AI LOD 與七項性格 `FactionDef` |
 | `ruleset_load_history.cpp`、`ruleset_load_history_{values,references}.cpp` | 上古歷史載入編排；數值／結構限制；道路與廢墟引用（共用宣告在 `ruleset_load_history_detail.h`）|
 | `ruleset_load_crossings.cpp`、`ruleset_load_world_graph.cpp` | 渡河複合 edge 查表與完整性驗證；手工世界通道宣告與 canonical 排序 |
 | `ruleset_load_site*.cpp`、`site_build_rules.h` | Site 地面、F1～F5 與城建循環規則／def 載入 |
@@ -63,7 +63,7 @@
 ### `core/serialize` — zone 位元流
 
 `zone_codec.h` 入口；`zone_{encode,decode}.cpp` codec；`zone_region_portals.h` portal 解碼；
-`zone_diplomacy_codec.*` 是 root zone 外交持久區塊與 def 字串 id 重映射；
+`zone_diplomacy_codec.*` 是 root zone 外交／情報／AI 目標持久區塊與 def 字串 id 重映射；
 `zone_codec_detail.h` 共用檢查；`registry_codec.h`、`all_components.h` 是 EnTT snapshot
 （**新 component 只准加在尾端**）；`normalized_state_hash.*` 做跨歷史正規化 hash。
 
