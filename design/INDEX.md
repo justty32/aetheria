@@ -11,6 +11,7 @@
 | [outline.md](outline.md) | 定位、三層總表、尺度、時間與可變 stride、曆法、里程碑 |
 | [principles.md](principles.md) | 八條貫穿全案的原則 + 設計新機制的檢查表 |
 | [glossary.md](glossary.md) | 術語仲裁 |
+| [tech-reuse.md](tech-reuse.md) | 現成 Godot 元件；**libtcod 評估過不採用**的理由 |
 | [tech-stack.md](tech-stack.md) | `core`/`bridge`/`godot` 三層、跨語言契約、測試、決定論 |
 | [cpp-conventions.md](cpp-conventions.md) | C++23、型別與介面約定、vcpkg、建置目標 |
 | [time-model.md](time-model.md) | **時刻 vs 時距**、合法運算表、合法域與 `AETH_CHECK`、曆法精度界線 |
