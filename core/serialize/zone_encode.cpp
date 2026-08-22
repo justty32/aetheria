@@ -102,6 +102,10 @@ std::string encode_zone(const zone::Zone& value, const rules::Ruleset& ruleset) 
         if (!site::valid_persistent_layer(site_payload->layers.persistent)) {
             throw std::runtime_error{"zone SitePersistentLayer 含無效建築資料"};
         }
+    } else if (const auto* local_payload = std::get_if<zone::LocalPayload>(&value.payload)) {
+        if (!local::valid_dungeon_persistent_state(local_payload->dungeon)) {
+            throw std::runtime_error{"zone LocalPayload 含無效地城持久層"};
+        }
     }
     std::ostringstream stream{std::ios::binary};
     {
@@ -139,6 +143,9 @@ std::string encode_zone(const zone::Zone& value, const rules::Ruleset& ruleset) 
             }
         } else if (const auto* site_payload = std::get_if<zone::SitePayload>(&value.payload)) {
             archive_saved_site_layers(archive, site_payload->layers, SavedSiteLayers{});
+        } else if (const auto* local_payload = std::get_if<zone::LocalPayload>(&value.payload)) {
+            archive(local_payload->dungeon.triggered_trap_uids,
+                    local_payload->dungeon.claimed_treasure_uids);
         }
     }
     {

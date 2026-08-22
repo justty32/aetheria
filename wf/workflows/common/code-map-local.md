@@ -38,6 +38,8 @@ Local 是 L2→L3 的純 C++ 生成與展開層；Godot 不持有其中狀態。
 | `core/local/local_underground_geometry.cpp` | 礦脈掘進、房間直折走廊，以及路線 A 拆除式遺跡 |
 | `core/local/local_underground_validation.cpp` | 跨負 z 層 flood fill、不變式與決定性 hash |
 | `core/local/local_underground_detail.h` | 路線 C 實作檔共用格操作與單層結果 |
+| `core/local/dungeon.*` | 地城深度曲線、三種參數化房間／內容、機關互動、Boss 與光源壓力 |
+| `core/local/dungeon_state.h` | Local zone 的已觸發機關與已領寶藏持久狀態 |
 
 ## 共用演算法與資料
 
@@ -48,6 +50,8 @@ Local 是 L2→L3 的純 C++ 生成與展開層；Godot 不持有其中狀態。
 - `core/rules/ruleset_load_site_city.cpp`、`data/site_city.toml`：特殊 structure def 的地下種類與
   1～16 層深度；特殊 def 不進一般城市配額。
 - `data/edges.toml`：路線 A 沿用 `EdgeDef`，門／窗仍是邊屬性。
+- `core/rules/dungeon_rules.h`、`data/dungeon.toml`：三種地城參數、深度／光照／cleared
+  曲線與四類 `TrapDef`；`ruleset_load_dungeon.cpp` 在載入期驗證。
 
 ## 測試
 
@@ -64,3 +68,6 @@ Local 是 L2→L3 的純 C++ 生成與展開層；Godot 不持有其中狀態。
 
 `tests/local/local_underground_test.cpp` 覆蓋三種 structure 深度、全格／房間可達性、單走廊
 封死負向控制、60～80% 遺跡拆除、垂直雙向一致、正規化 hash 與 10 ms 預算。
+
+`tests/local/dungeon_test.cpp` 覆蓋 100 座線索相關性、三種共用深度曲線、引敵觸發機關、
+Boss 破階循環、v20 Local 持久層、cleared 十次產出、光源耗盡分布、歷史來源與 min-of-5。

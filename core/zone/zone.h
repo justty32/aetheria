@@ -10,6 +10,7 @@
 
 #include "core/local/local_tiles.h"
 #include "core/local/local_reduction_schema.h"
+#include "core/local/dungeon_state.h"
 #include "core/site/site_projection.h"
 #include "core/time/tick.h"
 #include "core/world/diplomacy.h"
@@ -44,7 +45,7 @@ struct SitePayload {
     site::SiteLayers layers;
 };
 
-// LocalPayload 是 L3 Zone 的 z→程序 tiles；本里程碑尚無持久 Local 欄位。
+// LocalPayload 是 L3 Zone 的 z→程序 tiles 與極小地城持久層。
 // 所屬 Zone 擁有它。
 // payload alternative 被替換或 Zone 析構後失效。
 struct LocalPayload {
@@ -54,6 +55,7 @@ struct LocalPayload {
 
     std::map<std::int8_t, local::LocalTiles> layers;
     local::LocalReductionState reduction;
+    local::DungeonPersistentState dungeon;
 };
 
 // SpatialPayload 將三層異質 tile schema 收在單一 Zone 欄位。

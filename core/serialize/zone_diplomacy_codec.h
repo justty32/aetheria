@@ -1,6 +1,6 @@
 #pragma once
 
-// zone v18 的外交持久區塊；v15 fixture 沒有真值、情報快取與 AI 目標。
+// zone 現行版的外交持久區塊；v15 fixture 沒有真值、情報快取與 AI 目標。
 
 #include "core/rules/ruleset.h"
 #include "core/world/diplomacy.h"

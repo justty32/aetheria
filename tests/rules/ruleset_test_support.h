@@ -327,6 +327,8 @@ rough_ground="ground.water"
                                path / "world_observations.toml");
     std::filesystem::copy_file(AETHERIA_SOURCE_DIR "/data/power_sources.toml",
                                path / "power_sources.toml");
+    std::filesystem::copy_file(AETHERIA_SOURCE_DIR "/data/dungeon.toml",
+                               path / "dungeon.toml");
 }
 
 }  // namespace aetheria::tests
