@@ -57,6 +57,20 @@ Local → 找到地城入口 → 下負 z 層
 3. **Godot 端不准持有玩法狀態**：每一層都要能 free 後從 core 重建。
    M8.1 做過一次，**這輪對每一層各做一次**。
 
+## ⚠ 順手修掉一個「測試綠燈但東西是壞的」
+
+M8-INT-6 實測到：按下「free 後重建」時 Godot 警告
+`Object ... was freed or unreferenced while a signal is being emitted from it`。
+
+根因是 `_view.free()` **從那個按鈕自己的 signal handler 裡呼叫**，
+等於在物件正在發 signal 的當下把它砍掉。這次只是警告 + 進程存活，**但那是運氣**——
+同一個形狀在別的節點樹深度或別的 Godot 版本就是 use-after-free。
+
+⚠ **它不會有任何測試變紅**：重建後逐像素相同（實測 ImageMagick AE=0），功能面完全正確。
+
+**改成 `queue_free()` 或 `call_deferred("free")`**，讓釋放發生在 signal 發完之後。
+驗收：重建仍然逐像素相同，**且 Godot 輸出裡沒有那行警告**。附兩者的證據。
+
 ## 玩家駐留層
 
 [`player-residence.md`](../../design/player-residence.md) 的核心：
