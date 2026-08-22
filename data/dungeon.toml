@@ -1,0 +1,91 @@
+[curve]
+difficulty_base = 18
+difficulty_depth_step = 11
+clue_noise = 5
+enemy_base = 3
+enemy_depth_step = 2
+treasure_base = 20
+treasure_depth_step = 18
+light_base_cost = 5
+light_depth_step = 2
+lit_vision = 12
+unlit_vision = 2
+unlit_hit_modifier = -35
+unlit_detection_modifier = -40
+cleared_density_numerator = 1
+cleared_density_denominator = 5
+
+[[archetypes]]
+id = "natural"
+room_count = 7
+natural_percent = 100
+symmetry_percent = 0
+erosion_percent = 35
+trap_weight = 2
+guardian_weight = 5
+
+[[archetypes]]
+id = "artificial"
+room_count = 8
+natural_percent = 0
+symmetry_percent = 100
+erosion_percent = 0
+trap_weight = 6
+guardian_weight = 8
+
+[[archetypes]]
+id = "hybrid"
+room_count = 8
+natural_percent = 55
+symmetry_percent = 45
+erosion_percent = 45
+trap_weight = 5
+guardian_weight = 7
+
+[[traps]]
+id = "trap.pit"
+name_key = "trap.pit.name"
+kind = "damage"
+detection_attribute = "skill"
+disarm_method = "attribute"
+disarm_attribute = "skill"
+detection_difficulty = 30
+disarm_difficulty = 35
+base_damage = 24
+damage_per_depth = 6
+
+[[traps]]
+id = "trap.sealed_door"
+name_key = "trap.sealed_door.name"
+kind = "obstacle"
+detection_attribute = "mind"
+disarm_method = "attribute"
+disarm_attribute = "mind"
+detection_difficulty = 34
+disarm_difficulty = 38
+base_damage = 0
+damage_per_depth = 0
+
+[[traps]]
+id = "trap.awaken_guardian"
+name_key = "trap.awaken_guardian.name"
+kind = "summon"
+detection_attribute = "spirit"
+disarm_method = "cannot_disarm"
+disarm_attribute = "spirit"
+detection_difficulty = 42
+disarm_difficulty = 0
+base_damage = 0
+damage_per_depth = 0
+
+[[traps]]
+id = "trap.lingering_curse"
+name_key = "trap.lingering_curse.name"
+kind = "curse"
+detection_attribute = "spirit"
+disarm_method = "faith_or_magic"
+disarm_attribute = "spirit"
+detection_difficulty = 46
+disarm_difficulty = 48
+base_damage = 8
+damage_per_depth = 3

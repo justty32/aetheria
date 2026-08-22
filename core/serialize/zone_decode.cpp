@@ -161,9 +161,16 @@ std::unique_ptr<zone::Zone> decode_zone(std::string_view bytes, const rules::Rul
             payload = std::move(site_payload);
             break;
         }
-        case 3:
-            payload = zone::LocalPayload{};
+        case 3: {
+            zone::LocalPayload local_payload;
+            archive(local_payload.dungeon.triggered_trap_uids,
+                    local_payload.dungeon.claimed_treasure_uids);
+            if (!local::valid_dungeon_persistent_state(local_payload.dungeon)) {
+                throw std::runtime_error{"zone LocalPayload 含無效地城持久層"};
+            }
+            payload = std::move(local_payload);
             break;
+        }
         default:
             throw std::runtime_error{"zone SpatialPayload alternative tag 不支援"};
         }

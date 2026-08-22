@@ -201,3 +201,8 @@ add_test(
         -DTEST_OBJECT=${CMAKE_BINARY_DIR}/deity-region-negative.o
         -P "${PROJECT_SOURCE_DIR}/cmake/check_deity_region_mediation.cmake"
 )
+
+# M7.1 並行追加區：地城驗收測試只在檔尾擴充。
+target_sources(aetheria_tests PRIVATE
+    tests/local/dungeon_test.cpp
+)

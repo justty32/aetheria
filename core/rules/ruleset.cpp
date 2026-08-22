@@ -107,6 +107,7 @@ Ruleset RulesetLoader::load(const std::filesystem::path& data_directory) {
     load_combat_rules(result, data_directory);
     load_world_observation_rules(result, data_directory);
     load_power_source_rules(result, data_directory, global_ids);
+    load_dungeon_rules(result, data_directory, global_ids);
 
     return result;
 }
@@ -128,6 +129,12 @@ std::optional<DeityDefId> Ruleset::find_deity(std::string_view id) const noexcep
 }
 std::optional<RaceDefId> Ruleset::find_race(std::string_view id) const noexcept {
     return find_id(race_index_, id);
+}
+
+const TrapDef* Ruleset::trap(TrapDefId id) const noexcept { return lookup(traps(), id); }
+
+std::optional<TrapDefId> Ruleset::find_trap(std::string_view id) const noexcept {
+    return find_id(trap_index_, id);
 }
 
 }  // namespace aetheria::rules

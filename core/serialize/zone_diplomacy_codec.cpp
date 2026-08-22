@@ -1,4 +1,4 @@
-// 外交持久狀態的 v18 位元流：v15 欄位後追加真值、情報快取與 AI 目標。
+// 外交持久狀態的現行位元流：v15 欄位後追加真值、情報快取與 AI 目標。
 
 #include "core/serialize/zone_diplomacy_codec.h"
 

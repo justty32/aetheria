@@ -180,3 +180,9 @@ target_sources(aetheria_core PRIVATE
     core/rules/power_sources.cpp
     core/rules/ruleset_load_power_sources.cpp
 )
+
+# M7.1 並行追加區：地城規則與共用生成器只在檔尾擴充。
+target_sources(aetheria_core PRIVATE
+    core/rules/ruleset_load_dungeon.cpp
+    core/local/dungeon.cpp
+)
