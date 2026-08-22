@@ -48,7 +48,7 @@ moisture_saturated_ratio=0.418      terrain_histogram swamp=1823（saturated=154
 
 **不要**為了這個把風掃描退回獨立濕度 noise（M5.18 的結論）。
 
-**排序建議**在 [m5-9-redblobgames-study-complete.md](inbox/m5-9-redblobgames-study-complete.md)
-與 [m5-18-terrain-references-complete.md](inbox/m5-18-terrain-references-complete.md)；
+**排序建議**在 [m5-9-redblobgames-study-complete.md](inbox/done/m5-9-redblobgames-study-complete.md)
+與 [m5-18-terrain-references-complete.md](inbox/done/m5-18-terrain-references-complete.md)；
 ⚠ 其中一條裁定：**coast distance 在 L1 相容，但各 Site／Local 自行 flood-fill 會覆寫邊界、
 與降維裁決鏈衝突**——下放必須由 parent 全域先算再經 `BoundaryProfile` 傳。

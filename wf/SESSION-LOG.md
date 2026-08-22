@@ -26,6 +26,28 @@
 > **完成的不留這裡。** M0～M2.3 的結論都在 git log 與 `design/` 裡；
 > 下面只留**還沒完成、或會在未來咬人**的東西。
 
+## 📌 下一步：M6 內容（戰鬥規則、勢力 AI、劇情）
+
+**M0～M5 全部完成，272/272。** `outline.md` 的 M6 判準只寫了「戰鬥規則、勢力 AI、劇情」。
+
+**M6 的設計文件早就寫好了**，不必重新設計，照著實作即可：
+
+| 主題 | 文件 |
+|---|---|
+| 戰鬥 | [combat-formula.md](../design/combat-formula.md)、[combat-scaling.md](../design/combat-scaling.md)、[rules-individual.md](../design/rules-individual.md)、[power-tiers.md](../design/power-tiers.md) |
+| 勢力 AI | [faction-ai.md](../design/faction-ai.md)、[diplomacy.md](../design/diplomacy.md) |
+| 劇情 | [narrative.md](../design/narrative.md)、[significance-fate.md](../design/significance-fate.md) |
+
+⚠ **M6 開場前要先處理的三件**（都是前面里程碑刻意留下的）：
+
+1. **命運無偏測試需要具名 NPC** —— M4 記的，現在 M6 才有真的具名對象可測
+2. **敘事事件已在 core 產生並可持久化，但 Godot 端沒有顯示 UI** —— 從 M2 拖到現在
+3. ⚠ **M4 的 −1.29% 偏差要重量**。兩套人口公式當時都還是最小實作；
+   有真實內容後它可能變大或**變號**，而**變號就是可刷的漏洞**
+   （判準見 [interface-verification.md](../design/interface-verification.md) 的三條）
+
+⚠ **M6 同時是「像不像真的」那條的判準來源**（見下節）——先有內容，才知道什麼叫像。
+
 ## ✅ M5 下層完成（272/272）——但有一條貫穿全程的未解問題
 
 判準「Local 串流與探索」達成：生成（三條路線 + 垂直層）、串流（3×3／5×5、緩衝圈）、
