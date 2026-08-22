@@ -229,3 +229,8 @@ add_test(
         -DNEGATIVE_TEST=$<TARGET_FILE:aetheria_local_combat_negative>
         -P "${PROJECT_SOURCE_DIR}/cmake/check_local_combat_negative.cmake"
 )
+
+# M8.2 追加區：三層 UI 編排、父層回寫、往返與非戰鬥期望值。
+target_sources(aetheria_tests PRIVATE
+    tests/runtime/playable_session_test.cpp
+)

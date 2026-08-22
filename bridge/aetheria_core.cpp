@@ -209,6 +209,56 @@ pack_battle_report(const runtime::PlayableBattleReport &report) {
   return result;
 }
 
+[[nodiscard]] godot::Dictionary
+pack_grid(const std::optional<runtime::PlayableGridView> &view) {
+  godot::Dictionary result;
+  if (!view.has_value()) {
+    return result;
+  }
+  result["width"] = static_cast<std::int64_t>(view->width);
+  result["height"] = static_cast<std::int64_t>(view->height);
+  result["z"] = static_cast<std::int64_t>(view->z);
+  result["cells"] = pack_bytes(view->cells);
+  result["player_x"] = view->player_x;
+  result["player_y"] = view->player_y;
+  return result;
+}
+
+[[nodiscard]] godot::Dictionary
+pack_coverage(const runtime::PlayableCoverageSummary &summary) {
+  godot::Dictionary result;
+  result["residence"] = static_cast<std::int64_t>(summary.residence);
+  result["development"] = summary.development;
+  result["order"] = summary.order;
+  result["production"] = static_cast<std::int64_t>(summary.production);
+  result["city_buildings"] = summary.city_buildings;
+  result["quest_count"] = summary.quest_count;
+  result["bandit_quest_available"] = summary.bandit_quest_available;
+  result["bandit_quest_accepted"] = summary.bandit_quest_accepted;
+  result["dungeon_quest_available"] = summary.dungeon_quest_available;
+  result["dungeon_cleared"] = summary.dungeon_cleared;
+  result["dungeon_density_before"] = summary.dungeon_density_before;
+  result["dungeon_density_after"] = summary.dungeon_density_after;
+  result["treaty_count"] = summary.treaty_count;
+  result["last_order_before"] = summary.last_order_before;
+  result["last_order_after"] = summary.last_order_after;
+  result["last_development_before"] = summary.last_development_before;
+  result["last_development_after"] = summary.last_development_after;
+  godot::PackedStringArray hashes;
+  hashes.resize(static_cast<std::int64_t>(summary.roundtrip_hashes.size()));
+  for (std::size_t index = 0; index < summary.roundtrip_hashes.size(); ++index) {
+    hashes.set(static_cast<std::int64_t>(index),
+               godot::String::num_uint64(summary.roundtrip_hashes[index]));
+  }
+  result["roundtrip_hashes"] = hashes;
+  result["calibration_n"] = summary.calibration_n;
+  result["manual_total"] = static_cast<std::int64_t>(summary.manual_total);
+  result["managed_total"] = static_cast<std::int64_t>(summary.managed_total);
+  result["signed_relative_error_percent"] =
+      summary.signed_relative_error_percent;
+  return result;
+}
+
 } // namespace
 
 void AetheriaCore::_bind_methods() {
@@ -235,6 +285,9 @@ void AetheriaCore::_bind_methods() {
   godot::ClassDB::bind_method(
       godot::D_METHOD("resolve_encounter", "choice"),
       &AetheriaCore::resolve_encounter);
+  godot::ClassDB::bind_method(
+      godot::D_METHOD("coverage_command", "command"),
+      &AetheriaCore::coverage_command);
 }
 
 godot::String AetheriaCore::get_core_version() const {
@@ -411,6 +464,11 @@ godot::Dictionary AetheriaCore::get_playable_snapshot() const {
     } else {
       result["battle_report"] = godot::Dictionary{};
     }
+    result["coverage"] = pack_coverage(playable_->coverage_summary());
+    result["site_view"] = pack_grid(playable_->site_view());
+    result["local_view"] = pack_grid(playable_->local_view());
+    result["coverage_tile_x"] = playable_->coverage_tile().x;
+    result["coverage_tile_y"] = playable_->coverage_tile().y;
     const auto elapsed = std::chrono::duration<double, std::milli>(
         std::chrono::steady_clock::now() - started);
     result["batch_bytes"] =
@@ -494,6 +552,61 @@ AetheriaCore::resolve_encounter(const godot::String &choice) {
     return result;
   } catch (const std::exception &exception) {
     return error_result(godot::String{exception.what()});
+  }
+}
+
+godot::Dictionary
+AetheriaCore::coverage_command(const godot::String &command) {
+  if (!playable_) {
+    return error_result("尚未開始新遊戲");
+  }
+  try {
+    if (command == "enter_site_manual") {
+      playable_->enter_site();
+    } else if (command == "enter_site_auto") {
+      playable_->manage_city();
+    } else if (command == "leave_site") {
+      playable_->leave_site();
+    } else if (command == "build_city") {
+      playable_->build_city();
+    } else if (command == "accept_bandit") {
+      playable_->accept_bandit_quest();
+    } else if (command == "enter_local_manual") {
+      playable_->enter_local();
+    } else if (command == "enter_local_auto") {
+      playable_->manage_local();
+    } else if (command == "leave_local") {
+      playable_->leave_local();
+    } else if (command == "open_door") {
+      playable_->open_door_and_move();
+    } else if (command == "suppress_bandits") {
+      playable_->suppress_bandits();
+    } else if (command == "enter_dungeon_manual") {
+      playable_->enter_dungeon();
+    } else if (command == "enter_dungeon_auto") {
+      playable_->manage_dungeon();
+    } else if (command == "leave_dungeon") {
+      playable_->leave_dungeon();
+    } else if (command == "descend_dungeon") {
+      playable_->descend_dungeon();
+    } else if (command == "clear_dungeon") {
+      playable_->clear_dungeon();
+    } else if (command == "sign_treaty") {
+      playable_->sign_peace_treaty();
+    } else if (command == "measure_roundtrips") {
+      playable_->measure_site_roundtrips();
+    } else if (command == "measure_calibration") {
+      playable_->measure_city_management(100);
+    } else {
+      return error_result("未知三層操作命令");
+    }
+    godot::Dictionary result;
+    result["ok"] = true;
+    result["revision"] = static_cast<std::int64_t>(playable_->revision());
+    result["coverage"] = pack_coverage(playable_->coverage_summary());
+    return result;
+  } catch (const std::exception &exception) {
+    return error_result(godot::String::utf8(exception.what()));
   }
 }
 

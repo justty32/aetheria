@@ -45,6 +45,9 @@ public:
   [[nodiscard]] godot::Dictionary advance_xun();
   [[nodiscard]] godot::Dictionary
   resolve_encounter(const godot::String &choice);
+  // M8.2 三層操作命令；字串只在 bridge 做 dispatch，所有合法性與狀態變更在 core。
+  [[nodiscard]] godot::Dictionary
+  coverage_command(const godot::String &command);
 
 private:
   narrative::EventFeed event_feed_{narrative::make_fate_presentation_fixture()};
