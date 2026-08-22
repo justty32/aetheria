@@ -33,6 +33,7 @@ struct FactionEstimate {
     std::int32_t economic_power{};
     std::uint16_t uncertainty_permyriad{};
     std::int64_t observed_at{};
+    std::int32_t route_cost{};
     KnownRelation relation;
 
     constexpr bool operator==(const FactionEstimate&) const noexcept = default;

@@ -166,7 +166,7 @@ std::unique_ptr<zone::Zone> decode_zone(std::string_view bytes, const rules::Rul
     {
         cereal::PortableBinaryInputArchive registry_cereal{stream};
         RegistryInputArchive registry_archive{registry_cereal};
-        if (version >= 16) {
+        if (version >= 17) {
             load_registry_snapshot(value->reg, registry_archive, AllComponents{});
         } else {
             load_registry_snapshot(value->reg, registry_archive, AllComponentsV15{});
@@ -174,7 +174,7 @@ std::unique_ptr<zone::Zone> decode_zone(std::string_view bytes, const rules::Rul
     }
     if (version >= 15) {
         cereal::PortableBinaryInputArchive diplomacy_archive{stream};
-        value->diplomacy = detail::load_diplomacy(diplomacy_archive, ruleset);
+        value->diplomacy = detail::load_diplomacy(diplomacy_archive, ruleset, version);
         if (value->diplomacy.has_value() && value->key != zone::kRootZone) {
             throw std::runtime_error{"外交狀態只能存在 root zone"};
         }

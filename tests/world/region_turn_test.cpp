@@ -40,8 +40,11 @@ TEST(RegionTurn, PersistentCommandMovesForFiveXunAndCallsAllStagesInOrder) {
     pipeline.issue_move(*zone, StableId{10}, RegionXY{11, 0});
     pipeline.issue_move(*zone, StableId{20}, RegionXY{0, 0});
     std::vector<TurnStage> stages;
+    std::vector<aetheria::time::Tick> faction_ai_ticks;
     for (std::size_t xun = 0; xun < 5; ++xun) {
-        pipeline.advance_xun(*zone, [&](TurnStage stage) { stages.push_back(stage); });
+        pipeline.advance_xun(
+            *zone, [&](TurnStage stage) { stages.push_back(stage); }, {},
+            [&](aetheria::time::Tick tick) { faction_ai_ticks.push_back(tick); });
         const auto units = zone->reg.view<const StableId, const RegionPosition>();
         for (const auto entity : units) {
             const auto id = units.get<const StableId>(entity).uid;
@@ -59,8 +62,14 @@ TEST(RegionTurn, PersistentCommandMovesForFiveXunAndCallsAllStagesInOrder) {
         EXPECT_TRUE(zone->reg.all_of<RegionMoveCommand>(entity));
     }
     ASSERT_EQ(stages.size(), 35U);
+    ASSERT_EQ(faction_ai_ticks.size(), 5U);
     for (std::size_t index = 0; index < stages.size(); ++index) {
         EXPECT_EQ(stages[index], static_cast<TurnStage>(index % 7U + 1U));
+    }
+    for (std::size_t index = 0; index < faction_ai_ticks.size(); ++index) {
+        EXPECT_EQ(faction_ai_ticks[index],
+                  aetheria::time::Tick{static_cast<std::int64_t>(index) *
+                                       static_cast<std::int64_t>(aetheria::time::kXun)});
     }
     EXPECT_EQ(zone->reg.get<TurnClock>(placeholder(*zone)).now,
               aetheria::time::Tick{5 * static_cast<std::int64_t>(aetheria::time::kXun)});

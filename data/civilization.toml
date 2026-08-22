@@ -29,6 +29,45 @@ road_usage_thresholds = [1, 2, 4]
 road_edges = ["edge.trail", "edge.road", "edge.highway"]
 swamp_terrain = "terrain.swamp"
 
+[faction_ai]
+goal_switch_threshold = 80
+full_ai_field_threshold = 1
+marked_observer_strength = 3
+war_observer_strength = 4
+
+[[faction_defs]]
+faction = 1
+id = "faction.iron_crown"
+expansion = 90
+aggression = 90
+fidelity = 25
+commerce = 20
+piety = 40
+caution = 15
+resentment = 85
+
+[[faction_defs]]
+faction = 2
+id = "faction.silver_league"
+expansion = 25
+aggression = 15
+fidelity = 80
+commerce = 95
+piety = 25
+caution = 70
+resentment = 15
+
+[[faction_defs]]
+faction = 3
+id = "faction.sun_synod"
+expansion = 45
+aggression = 55
+fidelity = 60
+commerce = 40
+piety = 95
+caution = 50
+resentment = 60
+
 [[crossings]]
 river = "edge.stream"
 road = "edge.trail"

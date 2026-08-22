@@ -161,3 +161,8 @@ add_test(
         -DNEGATIVE_TEST=$<TARGET_FILE:aetheria_named_fate_order_negative>
         -P "${PROJECT_SOURCE_DIR}/cmake/check_named_fate_order_negative.cmake"
 )
+
+# M6.5 並行追加區：測試來源只在檔尾擴充。
+target_sources(aetheria_tests PRIVATE
+    tests/world/faction_ai_test.cpp
+)

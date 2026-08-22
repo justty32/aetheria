@@ -11,6 +11,7 @@
 #include <cstdint>
 #include <filesystem>
 #include <fstream>
+#include <iostream>
 #include <stdexcept>
 #include <string>
 #include <string_view>
@@ -97,14 +98,20 @@ TEST(FileZoneStore, RejectsZoneFormatVersionMismatch) {
 
     auto raw = zstd_decompress(read_file(store.path_for(key)));
     ASSERT_GE(raw.size(), 9U);
-    static_assert(kSaveFormatVersion == 16);
-    const std::uint32_t bad_version = 13;
+    static_assert(kSaveFormatVersion == 17);
+    const std::uint32_t bad_version = 16;
     for (std::size_t index = 0; index < sizeof(bad_version); ++index) {
         raw[5 + index] = static_cast<char>((bad_version >> (index * 8U)) & UINT32_C(0xFF));
     }
     write_file(store.path_for(key), zstd_compress(raw));
 
-    EXPECT_THROW(static_cast<void>(store.load(key)), std::runtime_error);
+    try {
+        static_cast<void>(store.load(key));
+        FAIL() << "v16 zone should be rejected by v17 decoder";
+    } catch (const std::runtime_error& error) {
+        std::cout << "zone_v16_reject_error=" << error.what() << '\n';
+        EXPECT_NE(std::string{error.what()}.find("檔內=16 預期=17"), std::string::npos);
+    }
 }
 
 TEST(ZoneCodec, RejectsPayloadAlternativeMismatchDuringDecode) {
