@@ -1,6 +1,47 @@
+# aetheria_worldgen_objects 只有 repo 根 include path；執行期跨-zone header 對它不可見。
+add_library(aetheria_worldgen_objects OBJECT
+    core/worldgen/civ_tiles.cpp
+    core/worldgen/city_scoring.cpp
+    core/worldgen/settlement_scoring.cpp
+    core/worldgen/city_selection.cpp
+    core/worldgen/city_sites.cpp
+    core/worldgen/feature_placement.cpp
+    core/worldgen/history_roads.cpp
+    core/worldgen/history_layer.cpp
+    core/worldgen/influence_spread.cpp
+    core/worldgen/influence_claim.cpp
+    core/worldgen/governance_release.cpp
+    core/worldgen/capital_selection.cpp
+    core/worldgen/portal_generation.cpp
+    core/worldgen/portal_candidates.cpp
+    core/worldgen/portal_boundary_candidates.cpp
+    core/worldgen/faction_generation.cpp
+    core/worldgen/road_path.cpp
+    core/worldgen/road_loops.cpp
+    core/worldgen/road_network.cpp
+    core/worldgen/region_seed.cpp
+    core/worldgen/field_redistribution.cpp
+    core/worldgen/stage_plates.cpp
+    core/worldgen/stage_height.cpp
+    core/worldgen/stage_erosion.cpp
+    core/worldgen/stage_climate.cpp
+    core/worldgen/stage_rivers.cpp
+    core/worldgen/stage_biomes.cpp
+    core/worldgen/stage_features.cpp
+    core/worldgen/region_build.cpp
+    core/worldgen/region_populate.cpp
+    core/worldgen/region_stage_hash.cpp
+    core/worldgen/region_result_hash.cpp
+    core/worldgen/region_debug.cpp
+)
+target_include_directories(aetheria_worldgen_objects PRIVATE "${PROJECT_SOURCE_DIR}")
+target_link_libraries(aetheria_worldgen_objects PRIVATE EnTT::EnTT)
+aetheria_enable_warnings(aetheria_worldgen_objects)
+
 # aetheria_core：純 C++ 玩法核心（不得依賴 godot-cpp）。
 
 add_library(aetheria_core STATIC
+    $<TARGET_OBJECTS:aetheria_worldgen_objects>
     core/api/version.cpp
     core/rules/ruleset.cpp
     core/rules/ruleset_load_defs.cpp
@@ -56,6 +97,7 @@ add_library(aetheria_core STATIC
     core/time/tick.cpp
     core/serialize/zone_encode.cpp
     core/serialize/zone_decode.cpp
+    core/runtime/cross_zone.cpp
     core/zone/file_zone_store.cpp
     core/zone/save_manifest_io.cpp
     core/zone/zone_manager.cpp
@@ -65,41 +107,11 @@ add_library(aetheria_core STATIC
     core/world/region_step_cost.cpp
     core/world/region_path.cpp
     core/world/region_turn.cpp
-    core/worldgen/civ_tiles.cpp
-    core/worldgen/city_scoring.cpp
-    core/worldgen/settlement_scoring.cpp
-    core/worldgen/city_selection.cpp
-    core/worldgen/city_sites.cpp
-    core/worldgen/feature_placement.cpp
-    core/worldgen/history_roads.cpp
-    core/worldgen/history_layer.cpp
-    core/worldgen/influence_spread.cpp
-    core/worldgen/influence_claim.cpp
-    core/worldgen/governance_release.cpp
-    core/worldgen/capital_selection.cpp
-    core/worldgen/portal_generation.cpp
-    core/worldgen/portal_candidates.cpp
-    core/worldgen/portal_boundary_candidates.cpp
-    core/worldgen/faction_generation.cpp
-    core/worldgen/road_path.cpp
-    core/worldgen/road_loops.cpp
-    core/worldgen/road_network.cpp
-    core/worldgen/region_seed.cpp
-    core/worldgen/field_redistribution.cpp
-    core/worldgen/stage_plates.cpp
-    core/worldgen/stage_height.cpp
-    core/worldgen/stage_erosion.cpp
-    core/worldgen/stage_climate.cpp
-    core/worldgen/stage_rivers.cpp
-    core/worldgen/stage_biomes.cpp
-    core/worldgen/stage_features.cpp
-    core/worldgen/region_build.cpp
-    core/worldgen/region_populate.cpp
-    core/worldgen/region_stage_hash.cpp
-    core/worldgen/region_result_hash.cpp
-    core/worldgen/region_debug.cpp
 )
-target_include_directories(aetheria_core PUBLIC "${PROJECT_SOURCE_DIR}")
+target_include_directories(aetheria_core PUBLIC
+    "${PROJECT_SOURCE_DIR}"
+    "${PROJECT_SOURCE_DIR}/core/runtime/include"
+)
 target_link_libraries(aetheria_core
     PUBLIC EnTT::EnTT
     PRIVATE cereal::cereal tomlplusplus::tomlplusplus zstd::libzstd_static

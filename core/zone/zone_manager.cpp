@@ -1,8 +1,23 @@
 #include "core/zone/zone_manager.h"
 
+#include "core/world/region_movement.h"
+
 #include <string>
 
 namespace aetheria::zone {
+namespace {
+
+void rebuild_uid_index(Zone& zone) {
+    zone.uid_index.clear();
+    for (const auto entity : zone.reg.view<const world::StableId>()) {
+        const auto uid = zone.reg.get<const world::StableId>(entity).uid;
+        if (!zone.uid_index.emplace(uid, entity).second) {
+            throw std::runtime_error{"zone 含重複 StableId：" + std::to_string(uid)};
+        }
+    }
+}
+
+}  // namespace
 
 ZoneManager::ZoneManager(ZoneStore& store) : store_{store} {
     auto root = store_.load(kRootZone);
@@ -135,6 +150,7 @@ std::vector<ZoneKey> ZoneManager::loaded_keys() const {
 
 void ZoneManager::add_loaded(std::unique_ptr<Zone> zone) {
     AETH_CHECK(zone != nullptr);
+    rebuild_uid_index(*zone);
     const auto key = zone->key;
     const auto [position, inserted] = zones_.emplace(key, std::move(zone));
     static_cast<void>(position);
