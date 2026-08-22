@@ -64,5 +64,6 @@ aetheria/
 | 檔案 | 用途 |
 |------|------|
 | [SESSION-LOG](SESSION-LOG.md) | 進度 hub（repo 根）→ 各工作流 session-log（open-only）|
+| [OPS-NOTES](OPS-NOTES.md) | 操作心得：派 codex 的參數、限流歸屬、與 Skyrim agent 的 CPU 協定 |
 | [WAIT_USER](WAIT_USER.md) | 待**使用者**親自做/驗證的入口（open-only）|
 | `inbox/`（放信處）+ [workflows/inbox/](workflows/inbox/README.md)（使用方式）| agent 之間的**信件**（像 email，狀態靠位置：inbox 頂層＝未處理、`done/`＝已處理）|
