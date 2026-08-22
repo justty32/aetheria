@@ -12,6 +12,7 @@
 | `region_step_cost.cpp`、`region_path.cpp` | 整數 MP 單步成本與 A* |
 | `region_turn.cpp`、`region_simulation.*` | 旬推進、第 5 階段近似公式與 live Site 跳過計數 |
 | `named_fate.*` | Cohort 權威損失、具名五結果、配額扣抵、離線補算與持久事件 ledger |
+| `combat_scaling.*` | Region 基準的三層零均值抽樣、升降格、significance 貢獻上界與單一主場計數 |
 | `diplomacy.{h,cpp}` | 有向關係矩陣、條約／理由期限、持續戰爭事件與玩家和談入口 |
 | `diplomacy_view.cpp` | 世界真值的決定性估計與 FactionView 快照產生 |
 | `faction_ai.*` | observer 場強 AI LOD、M6.3 戰鬥預測轉接、玩家同型命令與同盟參戰 |

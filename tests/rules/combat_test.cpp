@@ -56,8 +56,18 @@ TEST(CombatFixedPoint, ExponentIsActuallyParameterized) {
     EXPECT_EQ(linear, 2'000'000);
     EXPECT_NEAR(compromise, 2'462'288, 40);
     EXPECT_EQ(square, 4'000'000);
+    auto input = matchup(120'000, 100'000, rules);
+    input.exponent = {1, 1};
+    const auto linear_loss = resolve_region_combat(input, rules).loss_b;
+    input.exponent = {13, 10};
+    const auto compromise_loss = resolve_region_combat(input, rules).loss_b;
+    input.exponent = {2, 1};
+    const auto square_loss = resolve_region_combat(input, rules).loss_b;
+    EXPECT_LT(linear_loss, compromise_loss);
+    EXPECT_LT(compromise_loss, square_loss);
     std::cout << "M6.3 p-samples: p1=" << linear << " p1.3=" << compromise
-              << " p2=" << square << '\n';
+              << " p2=" << square << " marginal_losses=" << linear_loss << '/'
+              << compromise_loss << '/' << square_loss << '\n';
 }
 
 TEST(CombatFixedPoint, RejectsRatioOutsideMeasuredDomain) {

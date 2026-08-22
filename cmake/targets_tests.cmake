@@ -167,3 +167,24 @@ target_sources(aetheria_tests PRIVATE
     tests/site/site_observation_persistence_test.cpp
     tests/world/faction_ai_test.cpp
 )
+
+# M6.7 追加區塊：三層校準與兩項必紅故障注入。
+target_sources(aetheria_tests PRIVATE
+    tests/world/combat_scaling_test.cpp
+)
+add_executable(aetheria_combat_scaling_negative
+    tests/world/combat_scaling_negative.cpp
+)
+target_compile_definitions(aetheria_combat_scaling_negative PRIVATE
+    AETHERIA_SOURCE_DIR="${PROJECT_SOURCE_DIR}"
+)
+target_link_libraries(aetheria_combat_scaling_negative
+    PRIVATE aetheria_core GTest::gtest_main
+)
+aetheria_enable_warnings(aetheria_combat_scaling_negative)
+add_test(
+    NAME CombatScalingNegative.RequiredFailures
+    COMMAND "${CMAKE_COMMAND}"
+        -DNEGATIVE_TEST=$<TARGET_FILE:aetheria_combat_scaling_negative>
+        -P "${PROJECT_SOURCE_DIR}/cmake/check_combat_scaling_negative.cmake"
+)

@@ -169,3 +169,8 @@ target_sources(aetheria_faction_ai_objects PRIVATE
 target_sources(aetheria_core PRIVATE
     core/world/faction_ai.cpp
 )
+
+# M6.7 追加區塊：三層戰鬥校準不改 Ruleset 或存檔格式。
+target_sources(aetheria_core PRIVATE
+    core/world/combat_scaling.cpp
+)
