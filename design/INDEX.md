@@ -42,6 +42,7 @@
 | [interface-lifecycle.md](interface-lifecycle.md) | **生命週期**：LOD 狀態機、Digest、重載補算、骨架失效 |
 | [interface-verification.md](interface-verification.md) | **界面驗證**：M4 判準、無偏三判準、誠實清單 |
 | [verification-detection-power.md](verification-detection-power.md) | **一個「通過」何時才算通過**：四個假通過陷阱、**無效注入不算通過** |
+| [lowmap-exploration.md](lowmap-exploration.md) | L3 探索：**FOV 查邊不查格**、逐回合預算、移動與門 |
 | [lowmap-streaming.md](lowmap-streaming.md) | 串流；**看可以跨、改必須經中介**；實體搬移 |
 
 ### 三條 LOD 軸
