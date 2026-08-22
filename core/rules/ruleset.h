@@ -73,6 +73,7 @@ class Ruleset {
     [[nodiscard]] std::span<const FurnitureDef> furniture() const noexcept { return furniture_; }
     [[nodiscard]] std::span<const PowerBreakthroughDef> breakthroughs() const noexcept {
         return breakthroughs_;
+    }
     [[nodiscard]] std::span<const DamageTypeDef> damage_types() const noexcept {
         return damage_types_;
     }

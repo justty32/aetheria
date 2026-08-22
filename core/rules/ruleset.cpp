@@ -25,6 +25,8 @@ const FurnitureDef* Ruleset::furniture(FurnitureDefId id) const noexcept {
 }
 const PowerBreakthroughDef* Ruleset::breakthrough(PowerBreakthroughDefId id) const noexcept {
     return lookup(breakthroughs(), id);
+}
+
 const DamageTypeDef* Ruleset::damage_type(DamageTypeId id) const noexcept {
     return lookup(damage_types(), id);
 }
@@ -58,6 +60,8 @@ std::optional<FurnitureDefId> Ruleset::find_furniture(std::string_view id) const
 }
 std::optional<PowerBreakthroughDefId> Ruleset::find_breakthrough(std::string_view id) const noexcept {
     return find_id(breakthrough_index_, id);
+}
+
 std::optional<DamageTypeId> Ruleset::find_damage_type(std::string_view id) const noexcept {
     return find_id(damage_type_index_, id);
 }
