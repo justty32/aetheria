@@ -1,6 +1,8 @@
 # aetheria_tests：GoogleTest 單元測試，外加 core 引擎隔離的 CTest 檢查。
 
 add_executable(aetheria_tests
+    tests/narrative/emergent_quest_test.cpp
+    tests/narrative/narrative_event_test.cpp
     tests/local/local_boundary_test.cpp
     tests/local/local_building_test.cpp
     tests/local/local_generation_test.cpp

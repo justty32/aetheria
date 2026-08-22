@@ -111,6 +111,22 @@ pack_portals(std::span<const world::RegionPortal> portals,
   return result;
 }
 
+[[nodiscard]] godot::Dictionary
+pack_localized_text(const narrative::LocalizedText &text) {
+  godot::Dictionary parameters;
+  for (const auto &argument : text.arguments) {
+    godot::Dictionary packed_argument;
+    packed_argument["value"] = godot::String{argument.value.c_str()};
+    packed_argument["i18n"] =
+        argument.kind == narrative::ArgumentKind::I18nKey;
+    parameters[godot::String{argument.name.c_str()}] = packed_argument;
+  }
+  godot::Dictionary result;
+  result["key"] = godot::String{text.key.c_str()};
+  result["params"] = parameters;
+  return result;
+}
+
 } // namespace
 
 void AetheriaCore::_bind_methods() {
@@ -121,6 +137,8 @@ void AetheriaCore::_bind_methods() {
   godot::ClassDB::bind_method(
       godot::D_METHOD("generate_region", "seed", "region_id"),
       &AetheriaCore::generate_region);
+  godot::ClassDB::bind_method(godot::D_METHOD("poll_events"),
+                              &AetheriaCore::poll_events);
 }
 
 godot::String AetheriaCore::get_core_version() const {
@@ -183,6 +201,22 @@ godot::Dictionary AetheriaCore::generate_region(std::int64_t seed,
     godot::UtilityFunctions::push_error(message);
     return error_result(message);
   }
+}
+
+godot::Array AetheriaCore::poll_events() const {
+  godot::Array result;
+  for (const auto &event : event_feed_.poll()) {
+    godot::Array lines;
+    for (const auto &line : event.lines) {
+      lines.push_back(pack_localized_text(line));
+    }
+    godot::Dictionary packed_event;
+    packed_event["id"] = static_cast<std::int64_t>(event.id);
+    packed_event["heading"] = pack_localized_text(event.heading);
+    packed_event["lines"] = lines;
+    result.push_back(packed_event);
+  }
+  return result;
 }
 
 } // namespace aetheria::bridge

@@ -56,6 +56,8 @@ add_library(aetheria_core STATIC
     $<TARGET_OBJECTS:aetheria_faction_ai_objects>
     $<TARGET_OBJECTS:aetheria_worldgen_objects>
     core/api/version.cpp
+    core/narrative/emergent_quest.cpp
+    core/narrative/narrative_event.cpp
     core/rules/power.cpp
     core/rules/attributes.cpp
     core/rules/check.cpp

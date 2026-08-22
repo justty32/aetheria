@@ -2,16 +2,31 @@ extends Node
 
 
 const Renderer = preload("res://region_debug_renderer.gd")
-const LAYER_NAMES := ["基底", "起伏", "高度", "溫度", "濕度", "地物", "邊", "聚落", "勢力", "出境點"]
+const EventPanelScene = preload("res://event_panel.tscn")
+const LAYER_NAME_KEYS := [
+	"ui.layer.base",
+	"ui.layer.relief",
+	"ui.layer.elevation",
+	"ui.layer.temperature",
+	"ui.layer.moisture",
+	"ui.layer.feature",
+	"ui.layer.edge",
+	"ui.layer.settlement",
+	"ui.layer.faction",
+	"ui.layer.portal",
+]
 
 var _core: AetheriaCore
 var _seed_edit: LineEdit
 var _region_edit: LineEdit
 var _map: TextureRect
 var _status: Label
+var _event_host: VBoxContainer
+var _event_panel: PanelContainer
 var _layer_buttons: Array[CheckButton] = []
 var _layers: Array[bool] = [true, true, false, false, false, true, true, true, true, true]
 var _export_path := ""
+var _event_dump_requested := false
 
 
 func _ready() -> void:
@@ -30,35 +45,42 @@ func _build_ui() -> void:
 
 	var inputs := HBoxContainer.new()
 	root.add_child(inputs)
-	inputs.add_child(_label("Seed"))
+	inputs.add_child(_label(tr("ui.seed")))
 	_seed_edit = LineEdit.new()
 	_seed_edit.text = "515151"
 	_seed_edit.custom_minimum_size.x = 180
 	inputs.add_child(_seed_edit)
-	inputs.add_child(_label("Region ID"))
+	inputs.add_child(_label(tr("ui.region_id")))
 	_region_edit = LineEdit.new()
 	_region_edit.text = "51"
 	_region_edit.custom_minimum_size.x = 100
 	inputs.add_child(_region_edit)
 	var generate_button := Button.new()
-	generate_button.text = "重新生成（R）"
+	generate_button.text = tr("ui.regenerate")
 	generate_button.pressed.connect(_generate)
 	inputs.add_child(generate_button)
-	inputs.add_child(_label("1～9、0 切換圖層；勾選框即目前輸出內容"))
+	var rebuild_button := Button.new()
+	rebuild_button.text = tr("ui.rebuild_events")
+	rebuild_button.pressed.connect(_rebuild_event_panel)
+	inputs.add_child(rebuild_button)
+	inputs.add_child(_label(tr("ui.layer_help")))
 
 	var toggles := HBoxContainer.new()
 	root.add_child(toggles)
-	for index in LAYER_NAMES.size():
+	for index in LAYER_NAME_KEYS.size():
 		var toggle := CheckButton.new()
-		toggle.text = "%d %s" % [index + 1, LAYER_NAMES[index]]
+		toggle.text = "%d %s" % [index + 1, tr(LAYER_NAME_KEYS[index])]
 		toggle.button_pressed = _layers[index]
 		toggle.toggled.connect(func(enabled: bool) -> void: _set_layer(index, enabled))
 		toggles.add_child(toggle)
 		_layer_buttons.append(toggle)
-	root.add_child(_label("出境點：青框=海路、黃三角=山口、紫 X=地下、白十字=傳送；勢力：紅／藍／黃，黑線=國界"))
+	root.add_child(_label(tr("ui.portal_legend")))
 
 	_status = Label.new()
 	root.add_child(_status)
+	_event_host = VBoxContainer.new()
+	root.add_child(_event_host)
+	_rebuild_event_panel()
 	_map = TextureRect.new()
 	_map.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	_map.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
@@ -83,6 +105,8 @@ func _read_command_line() -> void:
 			_export_path = argument.trim_prefix("--export-png=")
 		elif argument.begins_with("--layers="):
 			_apply_layer_argument(argument.trim_prefix("--layers="))
+		elif argument == "--event-dump":
+			_event_dump_requested = true
 
 
 func _apply_layer_argument(value: String) -> void:
@@ -117,9 +141,20 @@ func _set_layer(index: int, enabled: bool) -> void:
 	_generate()
 
 
+func _rebuild_event_panel() -> bool:
+	var before := ""
+	if is_instance_valid(_event_panel):
+		before = _event_panel.dump_text()
+		_event_panel.free()
+	_event_panel = EventPanelScene.instantiate()
+	_event_host.add_child(_event_panel)
+	_event_panel.render(_core)
+	return before.is_empty() or before == _event_panel.dump_text()
+
+
 func _generate() -> void:
 	if not _seed_edit.text.is_valid_int() or not _region_edit.text.is_valid_int():
-		_finish_with_error("seed 與 region_id 必須是整數")
+		_finish_with_error(tr("ui.error.integer"))
 		return
 	var seed := _seed_edit.text.to_int()
 	var region_id := _region_edit.text.to_int()
@@ -130,15 +165,32 @@ func _generate() -> void:
 	var image := Renderer.render(snapshot, _layers)
 	_map.texture = ImageTexture.create_from_image(image)
 	var portal_count: int = snapshot["portals"]["x"].size()
-	_status.text = "seed=%d  region=%d  %dx%d 格  portal=%d  圖層=%s" % [seed, region_id, snapshot["width"], snapshot["height"], portal_count, _enabled_layers()]
+	_status.text = tr("ui.region_status").format({
+		"seed": seed,
+		"region": region_id,
+		"width": snapshot["width"],
+		"height": snapshot["height"],
+		"portals": portal_count,
+		"layers": _enabled_layers(),
+	})
 	if not _export_path.is_empty():
 		var absolute_path := ProjectSettings.globalize_path(_export_path)
 		DirAccess.make_dir_recursive_absolute(absolute_path.get_base_dir())
 		var error := image.save_png(absolute_path)
 		if error != OK:
-			_finish_with_error("PNG 匯出失敗（error %d）：%s" % [error, absolute_path])
+			_finish_with_error(tr("ui.error.png_export").format({
+				"error": error,
+				"path": absolute_path,
+			}))
 			return
 		print("Region PNG exported: ", absolute_path)
+	if _event_dump_requested:
+		var rebuild_matches := _rebuild_event_panel()
+		print("NARRATIVE_LOCALE=", TranslationServer.get_locale())
+		print("NARRATIVE_EVENT_DUMP_BEGIN")
+		print(_event_panel.dump_text())
+		print("NARRATIVE_EVENT_DUMP_END")
+		print("NARRATIVE_REBUILD_MATCH=", int(rebuild_matches))
 	if DisplayServer.get_name() == "headless":
 		get_tree().quit()
 

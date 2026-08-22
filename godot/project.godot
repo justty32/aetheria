@@ -11,6 +11,11 @@ config/features=PackedStringArray("4.7")
 window/size/viewport_width=1280
 window/size/viewport_height=900
 
+[internationalization]
+
+locale/fallback="en"
+locale/translations=PackedStringArray("res://i18n/en.po", "res://i18n/zh_TW.po", "res://i18n/ja.po")
+
 [rendering]
 
 renderer/rendering_method="gl_compatibility"
