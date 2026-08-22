@@ -69,6 +69,7 @@ add_library(aetheria_core STATIC
     core/local/local_navigation.cpp
     core/local/local_materialize.cpp
     core/local/local_projection.cpp
+    core/local/local_reduction.cpp
     core/site/site_event_escalation.cpp
     core/site/site_build_loop.cpp
     core/site/site_build_economy.cpp

@@ -113,7 +113,7 @@ void enter_full_site(zone::Zone& site, world::RegionTiles& tiles,
         initial.economy.population =
             region_population != 0
                 ? region_population
-                : ReductionTable::reduce(layers).value<world::PopulationReduction>();
+                : *ReductionTable::reduce(layers).value<world::PopulationReduction>();
         site.reg.emplace<CityBuildState>(*metas.begin(), std::move(initial));
     } else if (states.size() != 1U) {
         throw std::logic_error{"Site 含多個 CityBuildState"};

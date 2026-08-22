@@ -24,7 +24,7 @@
 | `cmake/` | `targets_*.cmake` 來源／測試；`godot_toolchain.cmake` 工具鏈；`check_*.cmake` CTest 檢查 |
 | `core/` | 純 C++ 玩法核心，**不得依賴 godot-cpp** |
 | `core/runtime/` | 跨 zone 執行期 API；生成 target 不可見 |
-| `core/site/`、`core/local/`、`core/spatial/` | L1→L2 Site、L2→L3 Local 路線 A/B，以及兩層共用的規範邊界剖面與遞迴矩形切分 |
+| `core/site/`、`core/local/`、`core/spatial/` | L1→L2 Site、L2→L3 Local，以及兩層共用的邊界、切分與歸約機制 |
 | `bridge/` | `AetheriaCore` Node 與 GDExtension 註冊；唯一可 include godot-cpp 的自有目錄 |
 | `godot/` | 純顯示／呼叫驗證場景與 `.gdextension` 描述檔 |
 | `tests/` | GoogleTest 單元測試 |
