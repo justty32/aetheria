@@ -33,10 +33,16 @@ my_codex_count() {
 declare -A seen_inbox
 declare -A seen_report
 
-# 開機時把既有的收件匣檔標記為已看過，避免重啟時重播歷史
+# 開機時把既有的收件匣檔與分支回報都標記為已看過，避免重啟時重播歷史。
+# ⚠ 分支那半原本漏了這步，於是每次重啟都把舊回報再喊一遍。
 for f in "$INBOX"/*; do
   [ -e "$f" ] || continue
   seen_inbox["$(basename "$f")"]=1
+done
+for br in $(git for-each-ref --format='%(refname:short)' 'refs/heads/m6-*-wt' 2>/dev/null); do
+  for rpt in $(git ls-tree -r --name-only "$br" -- wf/inbox 2>/dev/null | grep -- '-complete\.md$'); do
+    seen_report["$br:$rpt"]=1
+  done
 done
 
 echo "codex-watch 啟動：session=${SESSION:0:8}… 目前我的 codex $(my_codex_count) 個"
