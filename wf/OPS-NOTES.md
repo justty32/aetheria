@@ -37,3 +37,24 @@
   `design/INDEX.md`（README = 入口導引，INDEX = 完整清單）。原始碼最大的是
   `tests/rules/ruleset_error_test.cpp` 7,921。**要動貼邊的檔就先拆**。
 
+
+## ⚠ 合併衝突：純加法可以機械解，被切開的括號不行
+
+三路並行都往 `core/rules/ruleset.{h,cpp}` 的同一處追加時，衝突區會**把函式主體切開**——
+`{` 在衝突塊內、`}` 在塊外。這時用「兩邊都取」的通則批次解會**漏掉閉括號**：
+
+```
+...breakthroughs() const noexcept {
+    return breakthroughs_;
+...damage_types() const noexcept {     ← 少一個 }
+    return damage_types_;
+}
+```
+
+⚠ **編譯器的報錯離病灶很遠**：實際看到的是
+`aetheria::rules::aetheria::world::RegionTiles has no member named 'edges'`
+（命名空間套疊），完全指不到 `ruleset.h`。
+
+- **宣告區**（`.h` 的成員與方法宣告）：兩邊直接串接，安全。
+- **定義區**（`.cpp` 的函式本體）：兩邊之間要補 `}`，不能只串接。
+- 預防：派工 prompt 明令**追加一律加在檔案最尾端的對應區塊**，不要插進中間既有的宣告群。

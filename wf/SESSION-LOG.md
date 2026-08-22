@@ -19,8 +19,9 @@
 
 ### 實作者（gpt-sol）
 
-- 🔄 **M6.1 個體規則**（`m6-1-wt`）→ [任務書](inbox/m6-1-individual-rules.md)
-- 🔄 **M6.2 外交關係模型**（`m6-2-wt`）→ [任務書](inbox/m6-2-diplomacy.md)
+- 🔄 **M6.3 Region 戰鬥公式**（`m6-3-wt`）→ [任務書](inbox/m6-3-combat-formula.md)
+- 🔄 **M6.6 湧現任務與敘事呈現**（`m6-6-wt`）→ [任務書](inbox/m6-6-narrative.md)
+- 🔄 **M6.2b 外交存檔往返**（`m6-2b-wt`）→ [任務書](inbox/m6-2b-diplomacy-save.md)
 
 ### 規劃者（Opus 5）
 
@@ -36,12 +37,13 @@
 | 輪 | 內容 | 設計文件 | 狀態 |
 |---|---|---|---|
 | M6.0 | 力量體系、等效戰力 `S`、階差門檻 | [power-tiers](../design/power-tiers.md) | ✅ |
-| M6.1 | 四屬性、d100、傷害抗性、`suggest_tier` | [rules-individual](../design/rules-individual.md) | 🔄 |
-| M6.2 | 外交四分量、戰爭事件、厭戰、`FactionView` | [diplomacy](../design/diplomacy.md) | 🔄 |
-| M6.3 | **Region 戰鬥公式** | [combat-formula](../design/combat-formula.md) | [任務書已備](inbox/m6-3-combat-formula.md) |
+| M6.1 | 四屬性、d100、傷害抗性、`suggest_tier` | [rules-individual](../design/rules-individual.md) | ✅ |
+| M6.2 | 外交四分量、戰爭事件、厭戰、`FactionView` | [diplomacy](../design/diplomacy.md) | ✅ |
+| M6.2b | 外交狀態接進存檔（M6.2 自己指出的缺口） | [zone-save-format](../design/zone-save-format.md) | 🔄 |
+| M6.3 | **Region 戰鬥公式** | [combat-formula](../design/combat-formula.md) | 🔄 |
 | M6.4 | 具名命運、配額守恆、**還 M4 的無偏測試債** | [significance-fate](../design/significance-fate.md) | [任務書已備](inbox/m6-4-named-fate.md) |
 | M6.5 | 勢力 AI：目標庫、效用評分、AI LOD 三級無偏 | [faction-ai](../design/faction-ai.md) | [任務書已備](inbox/m6-5-faction-ai.md) |
-| M6.6 | 敘事：三種任務、事件模板、**Godot 顯示 UI**（M2 拖到現在） | [narrative](../design/narrative.md) | 待 |
+| M6.6 | 湧現任務 + **Godot 顯示 UI**（M2 拖到現在） | [narrative](../design/narrative.md) | 🔄 |
 | M6.7 | **三層校準**：E[Region]≈E[Site]≈E[Local]，誤差 <5% | [event-scaling](../design/event-scaling.md) | 待 |
 
 ⚠ **校準順序不可顛倒**：先把 Region 公式調到「打起來像那麼回事」，
@@ -49,8 +51,10 @@
 
 ⚠ **M6 開場前要先處理的三件**（都是前面里程碑刻意留下的）：
 
-1. **命運無偏測試需要具名 NPC** —— M4 記的，現在 M6 才有真的具名對象可測
-2. **敘事事件已在 core 產生並可持久化，但 Godot 端沒有顯示 UI** —— 從 M2 拖到現在
+1. **命運無偏測試需要具名 NPC** —— M6.4 處理。⚠ 順帶：M6.1 的
+   `suggest_tier` ±1 測試**目前是空的**（實際 tier 預設就等於建議值，等於在測 `x==x`），
+   要等 M6.4 有覆寫過的具名角色才有意義，**已列進 M6.4 驗收**
+2. **敘事事件的 Godot 顯示 UI** —— M6.6 處理中
 3. ⚠ **M4 的 −1.29% 偏差要重量**。兩套人口公式當時都還是最小實作；
    有真實內容後它可能變大或**變號**，而**變號就是可刷的漏洞**
    （判準見 [interface-verification.md](../design/interface-verification.md) 的三條）
