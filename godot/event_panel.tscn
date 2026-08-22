@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://event_panel.gd" id="1_event_panel"]
+
+[node name="EventPanel" type="PanelContainer"]
+script = ExtResource("1_event_panel")

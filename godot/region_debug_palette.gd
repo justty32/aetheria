@@ -57,7 +57,7 @@ const OWNER := {
 	6: Color8(245, 125, 35),
 }
 
-# WorldConnectionType 的底層值：海路、山口、地下通道、傳送門。
+# WorldConnectionType raw values: sea lane, pass, underground, teleport.
 const PORTAL := {
 	0: Color8(40, 235, 255),
 	1: Color8(255, 245, 80),

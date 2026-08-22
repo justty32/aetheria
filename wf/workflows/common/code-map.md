@@ -26,7 +26,7 @@
 | `core/runtime/` | 跨 zone 執行期 API；生成 target 不可見 |
 | `core/site/`、`core/local/`、`core/spatial/` | L1→L2 Site、L2→L3 Local，以及兩層共用的邊界、切分與歸約機制 |
 | `bridge/` | `AetheriaCore` Node 與 GDExtension 註冊；唯一可 include godot-cpp 的自有目錄 |
-| `godot/` | 純顯示／呼叫驗證場景與 `.gdextension` 描述檔 |
+| `godot/` | 純顯示／呼叫驗證場景、事件面板、i18n 與 `.gdextension` 描述檔 |
 | `tests/` | GoogleTest 單元測試 |
 | `sim/` | 不需 Godot 的 headless CLI 探針 |
 | `data/` | TOML def 與資料驅動規則 |
@@ -78,6 +78,10 @@
 
 [core/local 詳圖](code-map-local.md)：路線 A/B、垂直層、資料規則與 Site/Local 共用切分。
 
+### `core/narrative`
+
+`emergent_quest.*` 五種狀態需求與運糧歸約；`narrative_event.*` 結構化 i18n 事件、具名參數與唯讀 feed。
+
 ### `core/worldgen` — Region 十二階段生成
 
 門面 `region_generator.h` → `region_config.h`（變數、常數、參數 hash）、各階段 header、`region_skeleton.h`／`region_diagnostics.h`；`field_redistribution.*` 是高度／濕度 identity 接縫。
@@ -91,6 +95,7 @@
 | 目錄 | 內容 |
 |---|---|
 | `support/` | 跨目錄共用的 ruleset fixture 與固定暖機、min-of-N 效能量測 helper |
+| `narrative/` | 五種湧現任務、運糧歸約、命運模板與事件 feed |
 | `site/` | Site 投影隔離、展開、持久建築、存檔／世界雜湊、效能 |
 | `sim/` | 世界級正規化雜湊的跨歷史、磁碟列舉、負向控制與錯誤路徑測試 |
 | `time/`、`serialize/` | 曆法邊界與往返；EnTT registry 壓測 |

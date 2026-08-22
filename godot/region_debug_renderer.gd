@@ -173,21 +173,21 @@ static func _draw_portals(image: Image, snapshot: Dictionary) -> void:
 		var y := portal_y[index] * 8
 		var type := portal_type[index]
 		var color: Color = Palette.PORTAL.get(type, Color8(255, 0, 255))
-		if type == 0: # 海路：方框
+		if type == 0: # Sea lane: square.
 			image.fill_rect(Rect2i(x + 1, y + 1, 6, 2), color)
 			image.fill_rect(Rect2i(x + 1, y + 5, 6, 2), color)
 			image.fill_rect(Rect2i(x + 1, y + 1, 2, 6), color)
 			image.fill_rect(Rect2i(x + 5, y + 1, 2, 6), color)
-		elif type == 1: # 山口：三角形
+		elif type == 1: # Pass: triangle.
 			image.fill_rect(Rect2i(x + 3, y + 1, 2, 2), color)
 			image.fill_rect(Rect2i(x + 2, y + 3, 4, 2), color)
 			image.fill_rect(Rect2i(x + 1, y + 5, 6, 2), color)
-		elif type == 2: # 地下通道：X
+		elif type == 2: # Underground: X.
 			image.fill_rect(Rect2i(x + 1, y + 1, 2, 2), color)
 			image.fill_rect(Rect2i(x + 5, y + 1, 2, 2), color)
 			image.fill_rect(Rect2i(x + 3, y + 3, 2, 2), color)
 			image.fill_rect(Rect2i(x + 1, y + 5, 2, 2), color)
 			image.fill_rect(Rect2i(x + 5, y + 5, 2, 2), color)
-		else: # 傳送門：十字
+		else: # Teleport: cross.
 			image.fill_rect(Rect2i(x + 3, y + 1, 2, 6), color)
 			image.fill_rect(Rect2i(x + 1, y + 3, 6, 2), color)

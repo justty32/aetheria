@@ -1,8 +1,11 @@
 #pragma once
 
+#include "core/narrative/narrative_event.h"
+
 #include <cstdint>
 
 #include <godot_cpp/classes/node.hpp>
+#include <godot_cpp/variant/array.hpp>
 #include <godot_cpp/variant/dictionary.hpp>
 #include <godot_cpp/variant/string.hpp>
 
@@ -27,6 +30,11 @@ public:
   // Godot 整數可表達的非負範圍時回含 error 的 Dictionary。
   [[nodiscard]] godot::Dictionary generate_region(std::int64_t seed,
                                                   std::int64_t region_id) const;
+  // 回傳 core 事件快照；非消耗式，讓顯示場景 free 後能只靠 core 重建。
+  [[nodiscard]] godot::Array poll_events() const;
+
+private:
+  narrative::EventFeed event_feed_{narrative::make_fate_presentation_fixture()};
 };
 
 } // namespace aetheria::bridge
