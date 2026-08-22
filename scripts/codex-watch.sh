@@ -39,7 +39,7 @@ for f in "$INBOX"/*; do
   [ -e "$f" ] || continue
   seen_inbox["$(basename "$f")"]=1
 done
-for br in $(git for-each-ref --format='%(refname:short)' 'refs/heads/m6-*-wt' 2>/dev/null); do
+for br in $(git for-each-ref --format='%(refname:short)' 'refs/heads/m[6-9]-*-wt' 2>/dev/null); do
   for rpt in $(git ls-tree -r --name-only "$br" -- wf/inbox 2>/dev/null | grep -- '-complete\.md$'); do
     seen_report["$br:$rpt"]=1
   done
@@ -66,7 +66,7 @@ while true; do
   done
 
   # ── 2) 分支上新出現的回報檔 ──────────────────────────────────
-  for br in $(git for-each-ref --format='%(refname:short)' 'refs/heads/m6-*-wt' 2>/dev/null); do
+  for br in $(git for-each-ref --format='%(refname:short)' 'refs/heads/m[6-9]-*-wt' 2>/dev/null); do
     for rpt in $(git ls-tree -r --name-only "$br" -- wf/inbox 2>/dev/null | grep -- '-complete\.md$'); do
       key="$br:$rpt"
       [ -n "${seen_report[$key]:-}" ] && continue
