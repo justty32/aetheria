@@ -70,7 +70,8 @@ std::unique_ptr<zone::Zone> decode_zone(std::string_view bytes, const rules::Rul
         if (magic != detail::kZoneMagic) {
             throw std::runtime_error{"zone magic 不符"};
         }
-        if (version != 14 && version != 15 && version != kSaveFormatVersion) {
+        if (version != 14 && version != 15 && version != 16 &&
+            version != kSaveFormatVersion) {
             throw std::runtime_error{"zone format_version 不符：檔內=" + std::to_string(version) +
                                      " 預期=" + std::to_string(kSaveFormatVersion)};
         }
@@ -92,6 +93,11 @@ std::unique_ptr<zone::Zone> decode_zone(std::string_view bytes, const rules::Rul
             edge_ids, [&](std::string_view id) { return ruleset.find_edge(id); }, "edge");
         std::uint8_t payload_index{};
         archive(payload_index);
+        if (payload_index == 2 && version != kSaveFormatVersion) {
+            throw std::runtime_error{"zone Site payload format_version 不符：檔內=" +
+                                     std::to_string(version) + " 預期=" +
+                                     std::to_string(kSaveFormatVersion)};
+        }
         zone::SpatialPayload payload;
         switch (payload_index) {
         case 0:

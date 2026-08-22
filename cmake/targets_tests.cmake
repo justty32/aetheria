@@ -161,3 +161,8 @@ add_test(
         -DNEGATIVE_TEST=$<TARGET_FILE:aetheria_named_fate_order_negative>
         -P "${PROJECT_SOURCE_DIR}/cmake/check_named_fate_order_negative.cmake"
 )
+
+# M6.6c 追加區塊：保持在檔尾，避免多路工作切開既有 target 宣告。
+target_sources(aetheria_tests PRIVATE
+    tests/site/site_observation_persistence_test.cpp
+)
