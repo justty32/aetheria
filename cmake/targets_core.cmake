@@ -191,3 +191,8 @@ target_sources(aetheria_core PRIVATE
 target_sources(aetheria_core PRIVATE
     core/site/site_combat.cpp
 )
+
+# M7.3 追加區：Local 逐單位戰鬥以既有 Site 面、M5 導航與 M6.1 d100 為接點。
+target_sources(aetheria_core PRIVATE
+    core/local/local_combat.cpp
+)
