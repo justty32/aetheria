@@ -19,9 +19,7 @@
 
 ### 實作者（gpt-sol）
 
-- 🔄 **M6.3 Region 戰鬥公式**（`m6-3-wt`）→ [任務書](inbox/m6-3-combat-formula.md)
-- 🔄 **M6.6 湧現任務與敘事呈現**（`m6-6-wt`）→ [任務書](inbox/m6-6-narrative.md)
-- 🔄 **M6.2b 外交存檔往返**（`m6-2b-wt`）→ [任務書](inbox/m6-2b-diplomacy-save.md)
+- 🔄 **M6-INT-2 併入 M6.5 + 版本號收斂 v18**（`m6-int2-wt`）→ [任務書](inbox/m6-int-2-merge-ai-v18.md)
 
 ### 規劃者（Opus 5）
 
@@ -30,7 +28,7 @@
 
 ## 📌 下一步：M6 內容（戰鬥規則、勢力 AI、劇情）
 
-**M0～M5 全部完成，272/272。** `outline.md` 的 M6 判準只寫了「戰鬥規則、勢力 AI、劇情」。
+**M0～M5 完成；M6 進行中，目前 336/336。**
 
 **M6 的設計文件早就寫好了**，不必重新設計，照著實作即可。輪次規劃：
 
@@ -39,23 +37,24 @@
 | M6.0 | 力量體系、等效戰力 `S`、階差門檻 | [power-tiers](../design/power-tiers.md) | ✅ |
 | M6.1 | 四屬性、d100、傷害抗性、`suggest_tier` | [rules-individual](../design/rules-individual.md) | ✅ |
 | M6.2 | 外交四分量、戰爭事件、厭戰、`FactionView` | [diplomacy](../design/diplomacy.md) | ✅ |
-| M6.2b | 外交狀態接進存檔（M6.2 自己指出的缺口） | [zone-save-format](../design/zone-save-format.md) | 🔄 |
-| M6.3 | **Region 戰鬥公式** | [combat-formula](../design/combat-formula.md) | 🔄 |
-| M6.4 | 具名命運、配額守恆、**還 M4 的無偏測試債** | [significance-fate](../design/significance-fate.md) | [任務書已備](inbox/m6-4-named-fate.md) |
-| M6.5 | 勢力 AI：目標庫、效用評分、AI LOD 三級無偏 | [faction-ai](../design/faction-ai.md) | [任務書已備](inbox/m6-5-faction-ai.md) |
-| M6.6 | 湧現任務 + **Godot 顯示 UI**（M2 拖到現在） | [narrative](../design/narrative.md) | 🔄 |
-| M6.7 | **三層校準**：E[Region]≈E[Site]≈E[Local]，誤差 <5% | [event-scaling](../design/event-scaling.md) | 待 |
+| M6.2b | 外交狀態接進存檔（M6.2 自己指出的缺口） | [zone-save-format](../design/zone-save-format.md) | ✅ |
+| M6.3 | **Region 戰鬥公式**（劍聖區間 N=125／M=522） | [combat-formula](../design/combat-formula.md) | ✅ |
+| M6.4 | 具名命運、配額守恆、**已還 M4 的無偏測試債**（113/113） | [significance-fate](../design/significance-fate.md) | ✅ |
+| M6.5 | 勢力 AI：目標庫、效用評分、AI LOD 三級無偏 | [faction-ai](../design/faction-ai.md) | 🔄 INT-2 整合中 |
+| M6.6 | 湧現任務 + **Godot 顯示 UI**（還了 M2 的債） | [narrative](../design/narrative.md) | ✅ |
+| M6.6b | 治安歸約第五列、四個觀測值接真值 | [interface-world-mid](../design/interface-world-mid.md) | ✅ |
+| M6.6c | 觀測欄位進 v17 與正規化雜湊 | [zone-save-history](../design/zone-save-history.md) | ✅ |
+| M6.7 | **三層校準**：E[Region]≈E[Site]≈E[Local]，誤差 <5% | [event-scaling](../design/event-scaling.md) | [任務書已備](inbox/m6-7-three-layer-calibration.md) |
 
 ⚠ **校準順序不可顛倒**：先把 Region 公式調到「打起來像那麼回事」，
 再讓 Site 與 Local 去追它。反過來做會失控——低層自由度太高，拿它當基準等於沒有基準。
 
 ⚠ **M6 開場前要先處理的三件**（都是前面里程碑刻意留下的）：
 
-1. **命運無偏測試需要具名 NPC** —— M6.4 處理。⚠ 順帶：M6.1 的
-   `suggest_tier` ±1 測試**目前是空的**（實際 tier 預設就等於建議值，等於在測 `x==x`），
-   要等 M6.4 有覆寫過的具名角色才有意義，**已列進 M6.4 驗收**
-2. **敘事事件的 Godot 顯示 UI** —— M6.6 處理中
-3. ⚠ **M4 的 −1.29% 偏差要重量**。兩套人口公式當時都還是最小實作；
+1. ✅ **命運無偏測試** —— M6.4 做了：在場 2000 次 vs 重載補算 2000 次，死亡 **113/113**。
+   `suggest_tier` 的空測試也補實（真具名角色 Ambient → 覆寫 Local，實差 +1）
+2. ✅ **敘事事件的 Godot 顯示 UI** —— M6.6 做了
+3. ⚠ **M4 的 −1.29% 偏差要重量**（M6.7）。兩套人口公式當時都還是最小實作；
    有真實內容後它可能變大或**變號**，而**變號就是可刷的漏洞**
    （判準見 [interface-verification.md](../design/interface-verification.md) 的三條）
 
@@ -81,6 +80,12 @@
   **空的層必然通過**。M2.3 三條都踩過邊。寫進 [interface-verification.md](../design/interface-verification.md)。
 - ⚠ **混淆點**：「戰鬥位階」與「聚合提升重要性」共用 significance 等級表但升級規則不同。
   見 `power-tiers.md` 末段。
+- ⚠ **`p`（優勢指數）沒有測試守著**：把它從 1.3 改成 1.0，劍聖區間測試照樣全綠——
+  區間是崩潰閾值產生的，不是 `R^p` 產生的。**M6.7 要先補一條對 `p` 敏感的測試。**
+- ⚠ **三個寫死的 Region tile hash 基準**（`8963508752675768512` 等）是會隨 schema
+  必然改變的 golden snapshot，不是領域不變量。**該改成關係斷言**，別再每次 schema 成長就更新。
+- ⚠ **並行派工要把「誰有權動存檔版本號」劃給單一路**——沒劃，一晚撞了兩次
+  （兩個 v16、兩個 v17），每次都要另開一輪整合。
 
 **操作心得** → **獨立一檔** [OPS-NOTES.md](OPS-NOTES.md)
 （派 codex 的參數、限流歸屬怎麼判、與 Skyrim agent 的 CPU 協定、8 KB 上限）。
