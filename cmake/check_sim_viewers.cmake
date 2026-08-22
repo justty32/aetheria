@@ -26,6 +26,11 @@ endif()
 
 run_viewer(local_wilderness gen local --site-seed 0x5A17 --zoning open --z 0
            --output "${TEST_DIR}/local-wilderness")
+run_viewer(local_dungeon gen local --site-seed 0x5A17 --zoning dungeon --z -1
+           --output "${TEST_DIR}/local-dungeon")
+if(NOT local_dungeon_OUTPUT MATCHES "route=C.*depth=3.*rooms=27.*corridors=24")
+    message(FATAL_ERROR "Local 地下固定見證漂移：${local_dungeon_OUTPUT}")
+endif()
 run_viewer(site_city gen site --site-seed 0x5A17 --kind city
            --output "${TEST_DIR}/site-city")
 run_viewer(site_wilderness gen site --site-seed 0x5A17 --kind wilderness
@@ -48,6 +53,10 @@ set(required_pngs
     "${TEST_DIR}/local-wilderness/local-open-z0-edges.png"
     "${TEST_DIR}/local-wilderness/local-open-z0-rooms.png"
     "${TEST_DIR}/local-wilderness/local-open-z0-occupants.png"
+    "${TEST_DIR}/local-dungeon/local-dungeon-zm1-ground.png"
+    "${TEST_DIR}/local-dungeon/local-dungeon-zm1-edges.png"
+    "${TEST_DIR}/local-dungeon/local-dungeon-zm1-rooms.png"
+    "${TEST_DIR}/local-dungeon/local-dungeon-zm1-occupants.png"
     "${TEST_DIR}/site-city/site-city-ground.png"
     "${TEST_DIR}/site-city/site-city-blocks.png"
     "${TEST_DIR}/site-city/site-city-roads.png"

@@ -15,6 +15,7 @@ using aetheria::tests::kLocalCenter;
 using aetheria::tests::kLocalSiteSeed;
 using aetheria::tests::open_site_layer;
 using aetheria::tests::test_ruleset;
+using aetheria::tests::underground_site_layer;
 
 [[nodiscard]] aetheria::zone::ZoneKey sample_site_key() {
     const auto region = aetheria::zone::child_key(aetheria::zone::kRootZone, 7, 0);
@@ -71,6 +72,19 @@ TEST(LocalMaterialize, BuildingStructureDispatchesRouteAWithVerticalLayers) {
     EXPECT_TRUE(layers.contains(-1));
     EXPECT_TRUE(layers.contains(0));
     EXPECT_TRUE(layers.contains(1));
+}
+
+TEST(LocalMaterialize, UndergroundStructureDispatchesRouteCAtConfiguredDepth) {
+    const auto parent = underground_site_layer("building.dungeon_entrance");
+    const auto feature = *test_ruleset().find_feature("feature.ancient_foundation");
+    const auto local = aetheria::local::materialize_local_zone(
+        sample_site_key(), parent, kLocalCenter, kLocalSiteSeed, feature, test_ruleset());
+    const auto& layers = std::get<aetheria::zone::LocalPayload>(local.payload).layers;
+    EXPECT_EQ(layers.size(), 4U);
+    EXPECT_TRUE(layers.contains(-3));
+    EXPECT_TRUE(layers.contains(-2));
+    EXPECT_TRUE(layers.contains(-1));
+    EXPECT_TRUE(layers.contains(0));
 }
 
 }  // namespace

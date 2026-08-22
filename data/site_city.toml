@@ -78,6 +78,34 @@ frontage = 3
 depth = 3
 landmark = true
 
+# 特殊 structure 不進一般城市配額；種類與深度是 L2→L3 的慢輸入。
+[[building_defs]]
+id = "building.mine_entrance"
+zone = "residential"
+frontage = 2
+depth = 2
+landmark = true
+underground = "mine"
+underground_depth = 2
+
+[[building_defs]]
+id = "building.dungeon_entrance"
+zone = "residential"
+frontage = 2
+depth = 2
+landmark = true
+underground = "dungeon"
+underground_depth = 3
+
+[[building_defs]]
+id = "building.ruin_entrance"
+zone = "residential"
+frontage = 2
+depth = 2
+landmark = true
+underground = "ruin"
+underground_depth = 1
+
 [[faction_styles]]
 faction = 0
 landmarks = ["building.market_square"]
