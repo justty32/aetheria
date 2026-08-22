@@ -64,6 +64,9 @@ add_library(aetheria_core STATIC
     core/local/local_building_generation.cpp
     core/local/local_building_geometry.cpp
     core/local/local_building_content.cpp
+    core/local/local_fov.cpp
+    core/local/local_movement.cpp
+    core/local/local_navigation.cpp
     core/local/local_materialize.cpp
     core/local/local_projection.cpp
     core/site/site_event_escalation.cpp

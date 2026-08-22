@@ -13,6 +13,14 @@ Local 是 L2→L3 的純 C++ 生成與展開層；Godot 不持有其中狀態。
 | `core/local/local_materialize.*` | 依 structure 分派路線 A/B，落到 `LocalPayload::layers` |
 | `core/zone/zone.h` 的 `LocalPayload` | 同一 Local zone 的 `z → LocalTiles` 程序層集合 |
 
+## 執行期探索
+
+| 檔案 | 職責 |
+|---|---|
+| `core/local/local_navigation.*` | 跨 Local zone 格位址、規範化邊位址與可注入門狀態 |
+| `core/local/local_fov.*` | 整數 DDA 逐格 FOV；只以 `peek_edge` 判斷牆／門遮蔽 |
+| `core/local/local_movement.*` | 四鄰接探索步判定；區分開門、上鎖、牆與未知邊界 |
+
 ## 生成路線
 
 | 檔案 | 職責 |
@@ -37,3 +45,6 @@ Local 是 L2→L3 的純 C++ 生成與展開層；Godot 不持有其中狀態。
 `tests/local/local_building_test.cpp` 覆蓋尺度、房間門不變式與封死反例、家具／居民實體數、
 垂直層、正規化決定性 hash、10 ms 預算；Site/Local 共用切分的雙層見證分別在
 `tests/site/site_skeleton_test.cpp` 與該檔。
+
+`tests/local/local_fov_test.cpp` 覆蓋邊遮蔽負向控制、光照、門、跨 zone 退化、對稱性、
+決定性與暖機後 min-of-5；`tests/local/local_movement_test.cpp` 覆蓋四鄰接、門鎖與未載入鄰區。

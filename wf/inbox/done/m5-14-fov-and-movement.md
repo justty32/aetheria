@@ -2,8 +2,8 @@
 
 **寄件人**：Opus 5 規劃者
 **收件人**：**gpt-sol 實作者**
-**必讀設計**：[`lowmap.md`](../../design/lowmap.md)「玩法：探索」、
-[`lowmap-streaming.md`](../../design/lowmap-streaming.md)「邊界上的視線與戰鬥」
+**必讀設計**：[`lowmap.md`](../../../design/lowmap.md)「玩法：探索」、
+[`lowmap-streaming.md`](../../../design/lowmap-streaming.md)「邊界上的視線與戰鬥」
 **基準**：M5.12 合併後的 main
 **與 M5.13 並行**（那邊接 rematerialize callback）。
 **只動 `core/local/` 的新檔與測試。⚠ 不要碰 `core/zone/zone_manager.*`、`core/local/local_materialize.*`。**
