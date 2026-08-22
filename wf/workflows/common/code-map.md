@@ -84,9 +84,7 @@
 
 [core/local 詳圖](code-map-local.md)：路線 A/B、垂直層、資料規則與 Site/Local 共用切分。
 
-### `core/narrative`
-
-`emergent_quest.*` 從 Region／Site 真值偵測需求與運糧／清剿歸約；`narrative_event.*` 結構化 i18n 事件、具名參數與唯讀 feed。
+[core/narrative 與 core/script 詳圖](code-map-narrative-script.md)：湧現任務、事件 feed、Lua 沙箱、受限 Context 與相關測試。
 
 ### `core/worldgen` — Region 十二階段生成
 
@@ -101,7 +99,6 @@
 | 目錄 | 內容 |
 |---|---|
 | `support/` | 跨目錄共用的 ruleset fixture 與固定暖機、min-of-N 效能量測 helper |
-| `narrative/` | 五種湧現任務、運糧／清剿歸約、命運模板與事件 feed |
 | `site/` | Site 投影隔離、展開、持久建築、存檔／世界雜湊、效能 |
 | `sim/` | 世界級正規化雜湊的跨歷史、磁碟列舉、負向控制與錯誤路徑測試 |
 | `time/`、`serialize/` | 曆法邊界與往返；EnTT registry 壓測 |

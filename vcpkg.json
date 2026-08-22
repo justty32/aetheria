@@ -7,7 +7,15 @@
     "cli11",
     "entt",
     "gtest",
+    "lua",
+    "sol2",
     "tomlplusplus",
     "zstd"
+  ],
+  "overrides": [
+    {
+      "name": "lua",
+      "version": "5.4.8"
+    }
   ]
 }

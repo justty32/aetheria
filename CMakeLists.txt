@@ -14,6 +14,8 @@ find_package(cereal CONFIG REQUIRED)
 find_package(CLI11 CONFIG REQUIRED)
 find_package(EnTT CONFIG REQUIRED)
 find_package(GTest CONFIG REQUIRED)
+find_package(Lua 5.4 EXACT REQUIRED)
+find_package(sol2 CONFIG REQUIRED)
 find_package(tomlplusplus CONFIG REQUIRED)
 find_package(zstd CONFIG REQUIRED)
 

@@ -229,3 +229,16 @@ add_test(
         -DNEGATIVE_TEST=$<TARGET_FILE:aetheria_local_combat_negative>
         -P "${PROJECT_SOURCE_DIR}/cmake/check_local_combat_negative.cmake"
 )
+
+# M8.0：六條腳本決定論鐵律、熱重載、效能與 Context 雙向隔離證據。
+target_sources(aetheria_tests PRIVATE
+    tests/script/lua_sandbox_test.cpp
+)
+add_test(
+    NAME ScriptContextIsolation.WorldTruthCompileFailure
+    COMMAND "${CMAKE_COMMAND}"
+        -DCXX=${CMAKE_CXX_COMPILER}
+        -DPROJECT_ROOT=${PROJECT_SOURCE_DIR}
+        -DTEST_OBJECT=${CMAKE_BINARY_DIR}/script-context-world-truth-negative.o
+        -P "${PROJECT_SOURCE_DIR}/cmake/check_script_context_isolation.cmake"
+)

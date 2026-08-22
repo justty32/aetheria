@@ -109,6 +109,7 @@ enum class TurnStage : std::uint8_t {
 using TurnStageObserver = std::function<void(TurnStage)>;
 using LiveSiteReductionPass = std::function<void(zone::Zone&)>;
 using FactionAiPass = std::function<void(time::Tick)>;
+using ScriptTurnPass = std::function<void(time::Tick)>;
 
 // RegionTurnPipeline 依固定七階段推進單一 Region，並在 stage 7 自動存檔。
 // 呼叫端擁有 pipeline；它只借用 Ruleset 與 ZoneStore。
@@ -121,17 +122,20 @@ public:
     void issue_move(zone::Zone& region, StableId unit, RegionXY target) const;
     void advance_xun(zone::Zone& region, const TurnStageObserver& observer = {},
                      const LiveSiteReductionPass& live_site_reduction = {},
-                     const FactionAiPass& faction_ai = {}) const;
+                     const FactionAiPass& faction_ai = {},
+                     const ScriptTurnPass& scripts = {}) const;
     // 下層逐小時流水線已把全局時鐘推到旬界後，只結算剛結束的一旬，不再推時鐘。
     void settle_elapsed_xun(zone::Zone& region, const TurnStageObserver& observer = {},
                             const LiveSiteReductionPass& live_site_reduction = {},
-                            const FactionAiPass& faction_ai = {}) const;
+                            const FactionAiPass& faction_ai = {},
+                            const ScriptTurnPass& scripts = {}) const;
 
 private:
     void run_xun_stages(zone::Zone& region, time::Tick simulation_start,
                         const TurnStageObserver& observer,
                         const LiveSiteReductionPass& live_site_reduction,
-                        const FactionAiPass& faction_ai) const;
+                        const FactionAiPass& faction_ai,
+                        const ScriptTurnPass& scripts) const;
 
     const rules::Ruleset& ruleset_;
     zone::ZoneStore& store_;
