@@ -70,7 +70,7 @@ std::unique_ptr<zone::Zone> decode_zone(std::string_view bytes, const rules::Rul
         if (magic != detail::kZoneMagic) {
             throw std::runtime_error{"zone magic 不符"};
         }
-        if (version != 14 && version != kSaveFormatVersion) {
+        if (version != 14 && version != 15 && version != kSaveFormatVersion) {
             throw std::runtime_error{"zone format_version 不符：檔內=" + std::to_string(version) +
                                      " 預期=" + std::to_string(kSaveFormatVersion)};
         }
@@ -166,7 +166,11 @@ std::unique_ptr<zone::Zone> decode_zone(std::string_view bytes, const rules::Rul
     {
         cereal::PortableBinaryInputArchive registry_cereal{stream};
         RegistryInputArchive registry_archive{registry_cereal};
-        load_registry_snapshot(value->reg, registry_archive, AllComponents{});
+        if (version >= 16) {
+            load_registry_snapshot(value->reg, registry_archive, AllComponents{});
+        } else {
+            load_registry_snapshot(value->reg, registry_archive, AllComponentsV15{});
+        }
     }
     if (version >= 15) {
         cereal::PortableBinaryInputArchive diplomacy_archive{stream};
@@ -193,6 +197,16 @@ std::unique_ptr<zone::Zone> decode_zone(std::string_view bytes, const rules::Rul
          !site::valid_site_digest(digests.get<const site::SiteDigest>(*digests.begin()),
                                   ruleset))) {
         throw std::runtime_error{"zone 含無效 SiteDigest"};
+    }
+    const auto fate_ledgers = value->reg.view<const world::NamedFateLedger>();
+    const auto level = zone::level_of(value->key);
+    if (fate_ledgers.size() > 1U ||
+        (!fate_ledgers.empty() && level != zone::ZoneLevel::Region &&
+         level != zone::ZoneLevel::Site) ||
+        (!fate_ledgers.empty() &&
+         !world::valid_named_fate_ledger(
+             fate_ledgers.get<const world::NamedFateLedger>(*fate_ledgers.begin())))) {
+        throw std::runtime_error{"zone 含無效 NamedFateLedger"};
     }
     if (stream.peek() != std::char_traits<char>::eof()) {
         throw std::runtime_error{"zone 檔含未解析的尾端資料"};

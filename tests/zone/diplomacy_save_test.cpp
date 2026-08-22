@@ -2,6 +2,7 @@
 #include "core/serialize/normalized_state_hash.h"
 #include "core/serialize/registry_codec.h"
 #include "core/serialize/zone_codec_detail.h"
+#include "core/serialize/zone_diplomacy_codec.h"
 #include "core/world/diplomacy.h"
 #include "core/zone/file_zone_store.h"
 #include "core/zone/save_manifest_io.h"
@@ -28,6 +29,7 @@ namespace {
 
 using aetheria::rules::Ruleset;
 using aetheria::serialize::AllComponents;
+using aetheria::serialize::AllComponentsV15;
 using aetheria::serialize::normalized_state_hash;
 using aetheria::serialize::RegistryOutputArchive;
 using aetheria::serialize::save_registry_snapshot;
@@ -84,7 +86,24 @@ template <typename Def>
         cereal::PortableBinaryOutputArchive archive{
             stream, cereal::PortableBinaryOutputArchive::Options::LittleEndian()};
         RegistryOutputArchive registry_archive{archive};
-        save_registry_snapshot(root.reg, registry_archive, AllComponents{});
+        save_registry_snapshot(root.reg, registry_archive, AllComponentsV15{});
+    }
+    return std::move(stream).str();
+}
+
+[[nodiscard]] std::string encode_v15_root_zone(const Ruleset& ruleset) {
+    const Zone root{kRootZone};
+    auto bytes = encode_v14_root_zone(ruleset);
+    constexpr std::uint32_t version = 15;
+    for (std::size_t index = 0; index < sizeof(version); ++index) {
+        bytes[5 + index] = static_cast<char>((version >> (index * 8U)) & UINT32_C(0xFF));
+    }
+    std::ostringstream stream{std::ios::binary};
+    stream.write(bytes.data(), static_cast<std::streamsize>(bytes.size()));
+    {
+        cereal::PortableBinaryOutputArchive archive{
+            stream, cereal::PortableBinaryOutputArchive::Options::LittleEndian()};
+        aetheria::serialize::detail::save_diplomacy(archive, root.diplomacy, ruleset);
     }
     return std::move(stream).str();
 }
@@ -201,6 +220,15 @@ TEST(DiplomacySave, V14RootLoadsWithDiplomacyAbsentRatherThanNeutral) {
     EXPECT_NE(absent_hash, neutral_hash);
     std::cout << "diplomacy_v14 presence=0 absent_hash=" << absent_hash
               << " neutral_presence=1 neutral_hash=" << neutral_hash << '\n';
+}
+
+TEST(DiplomacySave, V15RootLoadsWithLegacyComponentsAndDiplomacyBlock) {
+    const auto loaded = aetheria::serialize::decode_zone(encode_v15_root_zone(test_ruleset()),
+                                                         test_ruleset());
+    ASSERT_NE(loaded, nullptr);
+    EXPECT_EQ(loaded->key, kRootZone);
+    EXPECT_FALSE(loaded->diplomacy.has_value());
+    EXPECT_TRUE(loaded->reg.view<const aetheria::world::NamedFateLedger>().empty());
 }
 
 } // namespace

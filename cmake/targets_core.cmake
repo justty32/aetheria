@@ -150,3 +150,8 @@ target_link_libraries(aetheria_core
     PRIVATE cereal::cereal tomlplusplus::tomlplusplus zstd::libzstd_static
 )
 aetheria_enable_warnings(aetheria_core)
+
+# M6.4 追加區塊：保持在檔尾，避免多路工作切開既有 source 宣告。
+target_sources(aetheria_core PRIVATE
+    core/world/named_fate.cpp
+)

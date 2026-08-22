@@ -33,6 +33,7 @@ class ReductionTable;
 namespace aetheria::world {
 
 class RegionSimulation;
+class FateResolver;
 
 // FactionId 是勢力資料表的強型別下標，0 代表無主。
 // 世界狀態配發其值，RegionTiles 只保存複本。
@@ -128,6 +129,7 @@ struct RegionTiles {
 private:
     friend class site::ReductionTable;
     friend class RegionSimulation;
+    friend class FateResolver;
     friend std::string serialize::encode_zone(const zone::Zone&, const rules::Ruleset&);
     friend std::unique_ptr<zone::Zone> serialize::decode_zone(std::string_view,
                                                               const rules::Ruleset&);

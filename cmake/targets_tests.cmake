@@ -127,3 +127,21 @@ add_test(
         -DTEST_OBJECT=${CMAKE_BINARY_DIR}/faction-ai-world-truth-negative.o
         -P "${PROJECT_SOURCE_DIR}/cmake/check_faction_view_isolation.cmake"
 )
+
+# M6.4 追加區塊：保持在檔尾，避免多路工作切開既有 target 宣告。
+target_sources(aetheria_tests PRIVATE
+    tests/world/named_fate_test.cpp
+)
+add_executable(aetheria_named_fate_order_negative
+    tests/world/named_fate_order_negative.cpp
+)
+target_link_libraries(aetheria_named_fate_order_negative
+    PRIVATE aetheria_core GTest::gtest_main
+)
+aetheria_enable_warnings(aetheria_named_fate_order_negative)
+add_test(
+    NAME NamedFateNegative.UnorderedIteration
+    COMMAND "${CMAKE_COMMAND}"
+        -DNEGATIVE_TEST=$<TARGET_FILE:aetheria_named_fate_order_negative>
+        -P "${PROJECT_SOURCE_DIR}/cmake/check_named_fate_order_negative.cmake"
+)
