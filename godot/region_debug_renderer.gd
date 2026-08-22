@@ -4,7 +4,7 @@ extends RefCounted
 const Palette = preload("res://region_debug_palette.gd")
 
 
-static func render(snapshot: Dictionary, layers: Array[bool]) -> Image:
+static func render(snapshot: Dictionary, layers: Array[bool], selected_unit_id: int = 0) -> Image:
 	var width: int = snapshot["width"]
 	var height: int = snapshot["height"]
 	var image := Image.create(width * Palette.TILE_SIZE, height * Palette.TILE_SIZE, false, Image.FORMAT_RGBA8)
@@ -54,7 +54,33 @@ static func render(snapshot: Dictionary, layers: Array[bool]) -> Image:
 		_draw_settlements(image, snapshot)
 	if layers[9]:
 		_draw_portals(image, snapshot)
+	if snapshot.has("units"):
+		_draw_guided_target(image, snapshot)
+		_draw_units(image, snapshot, selected_unit_id)
 	return image
+
+
+static func _draw_guided_target(image: Image, snapshot: Dictionary) -> void:
+	var x: int = snapshot["guided_target_x"] * Palette.TILE_SIZE
+	var y: int = snapshot["guided_target_y"] * Palette.TILE_SIZE
+	var color := Color8(255, 230, 60)
+	image.fill_rect(Rect2i(x, y, 8, 1), color)
+	image.fill_rect(Rect2i(x, y + 7, 8, 1), color)
+	image.fill_rect(Rect2i(x, y, 1, 8), color)
+	image.fill_rect(Rect2i(x + 7, y, 1, 8), color)
+
+
+static func _draw_units(image: Image, snapshot: Dictionary, selected_unit_id: int) -> void:
+	for unit in snapshot["units"]:
+		var x: int = unit["x"] * Palette.TILE_SIZE
+		var y: int = unit["y"] * Palette.TILE_SIZE
+		var color := Color8(70, 220, 255) if unit["player"] else Color8(255, 72, 72)
+		image.fill_rect(Rect2i(x + 2, y + 2, 4, 4), color)
+		if unit["id"] == selected_unit_id:
+			image.fill_rect(Rect2i(x, y, 8, 1), Color.WHITE)
+			image.fill_rect(Rect2i(x, y + 7, 8, 1), Color.WHITE)
+			image.fill_rect(Rect2i(x, y, 1, 8), Color.WHITE)
+			image.fill_rect(Rect2i(x + 7, y, 1, 8), Color.WHITE)
 
 
 static func _draw_owner_borders(image: Image, snapshot: Dictionary) -> void:

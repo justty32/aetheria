@@ -23,10 +23,10 @@
 | `CMakeLists.txt`、`vcpkg.json` | 專案組態與依賴；來源清單在 `cmake/targets_*.cmake` |
 | `cmake/` | target 清單、Godot 工具鏈與 CTest 檢查 |
 | `core/` | 純 C++ 玩法核心，**不得依賴 godot-cpp** |
-| `core/runtime/` | 跨 zone 執行期 API；生成 target 不可見 |
+| `core/runtime/` | 跨 zone API；`playable_session.*` 編排 M8；生成 target 不可見 |
 | `core/site/`、`core/local/`、`core/spatial/` | L1→L2、L2→L3 與共用邊界／切分／歸約 |
-| `bridge/` | `AetheriaCore` 與 GDExtension；唯一可依賴 godot-cpp 的自有目錄 |
-| `godot/` | 顯示、驗證場景、事件面板、i18n 與 `.gdextension` |
+| `bridge/` | `AetheriaCore` GDExtension；驗證、批次狀態；唯一依賴 godot-cpp |
+| `godot/` | `main.gd` UI；只顯示並轉發輸入 |
 | `tests/` | GoogleTest 單元測試 |
 | `sim/` | 不需 Godot 的 headless CLI 探針 |
 | `data/` | TOML def 與資料驅動規則 |
