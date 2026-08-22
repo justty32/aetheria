@@ -28,7 +28,8 @@
 | [zone-contracts.md](zone-contracts.md) | 執行期契約：tick 內禁止結構變更、作用域借用、命令緩衝 |
 | [zone-addressing.md](zone-addressing.md) | **定址定案**：`ZoneKey` 位元佈局、座標推導、Detached |
 | [zone-save.md](zone-save.md) | 存檔目錄佈局、路徑由 key 推導、manifest、開檔協定、fail-fast |
-| [zone-save-format.md](zone-save-format.md) | 存檔位元流：cereal + EnTT snapshot、`AllComponents`、版本沿革 |
+| [zone-save-format.md](zone-save-format.md) | 存檔位元流：cereal + EnTT snapshot、`AllComponents` |
+| [zone-save-history.md](zone-save-history.md) | 存檔版本沿革；**缺席 ≠ 中性**；不做遷移的理由 |
 
 ### 三層地圖
 
