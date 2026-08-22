@@ -11,10 +11,12 @@
 
 > **「其實直接去套 libtcod 也可以。去看 `~/repo/game_dev` 和 `~/repo/pas`。」**
 
-本機就有：
+⚠ **使用者補充：`~/repo/pas/analysis/` 與 `~/repo/game_dev/analysis/` 才是該看的**——
+那裡是消化過的分析，比啃原始碼快。底下與本題相關的至少有
+`brogue-ce`、`dcss`、`cdda`、`luanti`、`generator`。**先掃分析目錄，
+原始碼只在分析講不清楚時才回頭翻。**
 
-- `~/repo/game_dev/python-tcod` —— libtcod 的 Python 綁定，含 C 端來源
-- `~/repo/pas/projects/` —— `cdda`、`freeciv`、`elin-decompiled` 等可對照的實作
+libtcod 本身在 `~/repo/game_dev/python-tcod`（Python 綁定，含 C 端來源）。
 
 ## ⚠ 必須先回答的那一題
 
@@ -51,11 +53,12 @@ libtcod 的 RNG 或浮點路徑若做不到，那一項就直接淘汰——**�
 ⚠ **`aetheria_core` 的依賴邊界**：現在只有 EnTT／cereal／toml++／zstd。
 多一個依賴要講清楚換到什麼。
 
-## 另外兩個 repo
+## 另外：別人怎麼表達牆
 
-`~/repo/pas/projects` 的 `cdda`、`freeciv`、`elin-decompiled`——
-挑**與我們同類問題**的地方看（尤其是**有沒有人用邊屬性表達牆**，那是我們最特殊的一點），
-回報附**檔案路徑與行號**，不要憑印象。
+從 `~/repo/pas/analysis/` 的 `brogue-ce`、`dcss`、`cdda` 找——
+**有沒有人用邊屬性表達牆？** 那是我們最特殊的一點。
+⚠ **如果大家都用格，值得知道原因**：是因為邊比較難寫，還是因為格在玩法上其實夠用？
+老實回答，不要為了配合我們現有的作法而美化。
 
 ## 回報
 
