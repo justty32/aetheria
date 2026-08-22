@@ -99,6 +99,16 @@ TEST(RulesetLoader, RejectsUnresolvedDefinitionReference) {
     EXPECT_THROW(static_cast<void>(RulesetLoader::load(directory.path())), std::runtime_error);
 }
 
+TEST(RulesetLoader, RejectsCombatRatioDomainBeyondFixedPointCapacity) {
+    TemporaryDirectory directory;
+    copy_default_ruleset(directory.path());
+    auto combat = read_text(directory.path() / "combat.toml");
+    replace_once(combat, "ratio_binary_limit = 27", "ratio_binary_limit = 31");
+    write_text(directory.path() / "combat.toml", combat);
+
+    EXPECT_THROW(static_cast<void>(RulesetLoader::load(directory.path())), std::runtime_error);
+}
+
 TEST(RulesetLoader, AllowsDisabledHistoryWithZeroCountAndBonus) {
     TemporaryDirectory directory;
     copy_default_ruleset(directory.path());

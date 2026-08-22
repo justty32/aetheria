@@ -62,6 +62,7 @@ add_library(aetheria_core STATIC
     core/rules/attributes.cpp
     core/rules/check.cpp
     core/rules/damage.cpp
+    core/rules/combat.cpp
     core/rules/ruleset.cpp
     core/rules/ruleset_load_defs.cpp
     core/rules/ruleset_load_site.cpp
@@ -80,6 +81,7 @@ add_library(aetheria_core STATIC
     core/rules/ruleset_load_crossings.cpp
     core/rules/ruleset_load_world_graph.cpp
     core/rules/ruleset_load_power.cpp
+    core/rules/ruleset_load_combat.cpp
     core/serialize/normalized_state_hash.cpp
     core/spatial/recursive_partition.cpp
     core/local/local_generation.cpp
