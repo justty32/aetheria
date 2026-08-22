@@ -157,44 +157,67 @@ TEST(LocalFov, VisibilityIsPairwiseSymmetricAndDeterministic) {
   }};
 
   std::array<aetheria::local::FovResult, points.size()> fields;
+  std::size_t determinism_mismatches{};
   for (std::size_t index = 0; index < points.size(); ++index) {
     fields[index] = aetheria::local::calculate_fov(runtime, test_ruleset(),
                                                    points[index], {12, 12});
-    EXPECT_EQ(fields[index],
-              aetheria::local::calculate_fov(runtime, test_ruleset(),
-                                             points[index], {12, 12}));
+    const auto repeated = aetheria::local::calculate_fov(
+        runtime, test_ruleset(), points[index], {12, 12});
+    if (fields[index] != repeated) {
+      ++determinism_mismatches;
+    }
+    EXPECT_EQ(fields[index], repeated);
   }
+  std::size_t ordered_pairs{};
+  std::size_t symmetry_mismatches{};
   for (std::size_t first = 0; first < points.size(); ++first) {
     for (std::size_t second = 0; second < points.size(); ++second) {
-      EXPECT_EQ(visible(fields[first], points[second]),
-                visible(fields[second], points[first]));
+      const auto forward = visible(fields[first], points[second]);
+      const auto reverse = visible(fields[second], points[first]);
+      ++ordered_pairs;
+      if (forward != reverse) {
+        ++symmetry_mismatches;
+      }
+      EXPECT_EQ(forward, reverse);
     }
   }
+  std::cout << "fov_determinism_mismatches=" << determinism_mismatches
+            << " symmetry_ordered_pairs=" << ordered_pairs
+            << " symmetry_mismatches=" << symmetry_mismatches << '\n';
 }
 
-TEST(LocalFov, WarmMinOfFiveTraversesNonEmptyField) {
+TEST(LocalFov, RadiusCurveUsesWarmMinOfFiveAndTraversesNonEmptyFields) {
   auto zone = navigation_zone(kNavigationCenter);
   InMemoryZoneStore store{test_ruleset()};
   ZoneManager manager{store};
   static_cast<void>(manager.adopt(std::move(zone)));
   CrossZoneRuntime runtime{manager};
-  std::size_t visible_count{};
-  const auto measure = [&] {
-    const auto start = std::chrono::steady_clock::now();
-    const auto result = aetheria::local::calculate_fov(
-        runtime, test_ruleset(), {kNavigationCenter, {32, 32}}, {24, 24});
-    const auto end = std::chrono::steady_clock::now();
-    visible_count = result.visible.size();
-    return std::chrono::duration<double, std::milli>(end - start).count();
-  };
-  const auto minimum =
-      aetheria::tests::minimum_milliseconds_after_warmup(measure);
+  constexpr std::array<std::uint16_t, 5> radii{8, 12, 16, 24, 32};
+  constexpr std::array<std::size_t, 5> expected_visible{197, 441, 797, 1'793,
+                                                        3'207};
+  for (std::size_t index = 0; index < radii.size(); ++index) {
+    const auto radius = radii[index];
+    std::size_t visible_count{};
+    const auto measure = [&] {
+      const auto start = std::chrono::steady_clock::now();
+      const auto result = aetheria::local::calculate_fov(
+          runtime, test_ruleset(), {kNavigationCenter, {32, 32}},
+          {radius, radius});
+      const auto end = std::chrono::steady_clock::now();
+      visible_count = result.visible.size();
+      return std::chrono::duration<double, std::milli>(end - start).count();
+    };
+    const auto minimum =
+        aetheria::tests::minimum_milliseconds_after_warmup(measure);
 
-  EXPECT_EQ(visible_count, 1'793U);
-  EXPECT_GT(visible_count, 0U);
-  EXPECT_LT(minimum, 50.0);
-  std::cout << "local_fov_min_of_5_ms=" << minimum
-            << " visible_tiles=" << visible_count << '\n';
+    EXPECT_GT(visible_count, 0U);
+    EXPECT_EQ(visible_count, expected_visible[index]);
+    if (radius == 16) {
+      EXPECT_LT(minimum, 2.0);
+    }
+    std::cout << "local_fov_radius=" << radius << " min_of_5_ms=" << minimum
+              << " visible_tiles=" << visible_count << '\n';
+  }
 }
 
 } // namespace
