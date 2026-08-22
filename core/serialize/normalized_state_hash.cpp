@@ -233,6 +233,39 @@ void hash_named_fate_ledger(std::uint64_t& hash, const zone::Zone& zone) {
     }
 }
 
+void hash_site_observations(std::uint64_t& hash,
+                            const site::SitePersistentLayer& persistent) {
+    hash_scalar(hash, static_cast<std::uint8_t>(persistent.order.has_value()));
+    if (persistent.order.has_value()) {
+        hash_scalar(hash, persistent.order->garrison_coverage);
+        hash_scalar(hash, persistent.order->patrol_coverage);
+        hash_scalar(hash, persistent.order->bandit_pressure);
+        hash_scalar(hash, persistent.order->refugee_pressure);
+    }
+    hash_string(hash, persistent.place_name_key);
+
+    auto named_npcs = persistent.named_npcs;
+    std::ranges::sort(named_npcs, {}, &site::PersistentNamedNpc::uid);
+    hash_scalar(hash, static_cast<std::uint64_t>(named_npcs.size()));
+    for (const auto& npc : named_npcs) {
+        hash_scalar(hash, npc.uid);
+        hash_string(hash, npc.person_name_key);
+        hash_string(hash, npc.last_seen_place_name_key);
+        hash_scalar(hash, static_cast<std::uint8_t>(npc.known_to_player));
+        hash_scalar(hash, static_cast<std::uint8_t>(npc.missing));
+    }
+
+    auto dungeons = persistent.dungeons;
+    std::ranges::sort(dungeons, {}, &site::PersistentDungeon::uid);
+    hash_scalar(hash, static_cast<std::uint64_t>(dungeons.size()));
+    for (const auto& dungeon : dungeons) {
+        hash_scalar(hash, dungeon.uid);
+        hash_string(hash, dungeon.place_name_key);
+        hash_scalar(hash, static_cast<std::uint8_t>(dungeon.cleared));
+        hash_scalar(hash, dungeon.depth);
+    }
+}
+
 [[nodiscard]] std::string_view treaty_id(const rules::Ruleset& ruleset,
                                          rules::TreatyDefId id) {
     const auto* definition = ruleset.treaty(id);
@@ -441,6 +474,7 @@ std::uint64_t normalized_state_hash(const zone::Zone& zone, const rules::Ruleset
             hash_scalar(hash, building.state);
             hash_scalar(hash, building.aging_seconds);
         }
+        hash_site_observations(hash, site_payload->layers.persistent);
     } else {
         hash_scalar(hash, static_cast<std::uint64_t>(zone.payload.index()));
     }
