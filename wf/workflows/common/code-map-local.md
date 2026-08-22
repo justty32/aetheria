@@ -22,6 +22,8 @@ Local 是 L2→L3 的純 C++ 生成與展開層；Godot 不持有其中狀態。
 | `core/local/local_navigation.*` | 跨 Local zone 格位址、規範化邊位址與可注入門狀態 |
 | `core/local/local_fov.*` | 整數 DDA 逐格 FOV；只以 `peek_edge` 判斷牆／門遮蔽 |
 | `core/local/local_movement.*` | 四鄰接探索步判定；區分開門、上鎖、牆與未知邊界 |
+| `core/local/local_path.h` | 邊感知整數 A*；未載入目標才退化到 Site 粗路徑 |
+| `core/local/local_combat.*` | 6 秒逐單位戰鬥；強制接收 Site 入口／撤退邊，復用 FOV、A*、移動、d100 與 significance δ，歸約三層士氣／撤退／潰散 |
 
 ## 生成路線
 
@@ -61,6 +63,10 @@ Local 是 L2→L3 的純 C++ 生成與展開層；Godot 不持有其中狀態。
 
 `tests/local/local_fov_test.cpp` 覆蓋邊遮蔽負向控制、光照、門、跨 zone 退化、對稱性、
 決定性與暖機後 min-of-5；`tests/local/local_movement_test.cpp` 覆蓋四鄰接、門鎖與未載入鄰區。
+
+`tests/local/local_combat_test.cpp` 覆蓋 Site 邊界權威、6 秒／5 格、M5 三接點、d100 決定性、
+significance δ、撤退／追擊／潰散、三層士氣、N=1000 Site 校準與 2 ms 預算；
+`LocalCombatNegative.RequiredFailures` 驗證 Local 自選入口及繞過 M5 FOV 都會真的紅。
 
 `tests/local/local_reduction_test.cpp` 以非空四列、空 Local 無寫入、`200→175→150`
 絕對快照與語意順序無關雜湊驗證 Local→Site；共用 apply 的故障注入會與既有 Site→Region

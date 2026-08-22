@@ -206,3 +206,21 @@ add_test(
 target_sources(aetheria_tests PRIVATE
     tests/local/dungeon_test.cpp
 )
+
+# M7.3 追加區：Local 戰鬥驗收與邊界權威／M5 故障注入。
+target_sources(aetheria_tests PRIVATE
+    tests/local/local_combat_test.cpp
+)
+add_executable(aetheria_local_combat_negative
+    tests/local/local_combat_negative.cpp
+)
+target_link_libraries(aetheria_local_combat_negative
+    PRIVATE aetheria_core GTest::gtest_main
+)
+aetheria_enable_warnings(aetheria_local_combat_negative)
+add_test(
+    NAME LocalCombatNegative.RequiredFailures
+    COMMAND "${CMAKE_COMMAND}"
+        -DNEGATIVE_TEST=$<TARGET_FILE:aetheria_local_combat_negative>
+        -P "${PROJECT_SOURCE_DIR}/cmake/check_local_combat_negative.cmake"
+)
