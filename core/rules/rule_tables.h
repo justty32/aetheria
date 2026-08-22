@@ -147,12 +147,22 @@ struct SiteZoneQuota {
     std::uint8_t max_percent{};
 };
 
+// UndergroundKind 由 Site 的 structure def 決定 Local 路線 C 種類；None 仍走路線 A。
+enum class UndergroundKind : std::uint8_t {
+    None,
+    Mine,
+    Dungeon,
+    Ruin,
+};
+
 struct BuildingDef {
     std::string id;
     SiteFillZone zone{SiteFillZone::Residential};
     std::uint8_t frontage{};
     std::uint8_t depth{};
     bool landmark{};
+    UndergroundKind underground{UndergroundKind::None};
+    std::uint8_t underground_depth{};
 };
 
 struct FactionLandmarkStyle {

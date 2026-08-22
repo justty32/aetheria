@@ -8,6 +8,7 @@ add_executable(aetheria_tests
     tests/local/local_materialize_test.cpp
     tests/local/local_movement_test.cpp
     tests/local/local_reduction_test.cpp
+    tests/local/local_underground_test.cpp
     tests/rules/ruleset_load_test.cpp
     tests/rules/ruleset_error_test.cpp
     tests/rules/ruleset_zone_codec_test.cpp

@@ -4,6 +4,7 @@
 #include <cstddef>
 #include <cstdint>
 #include <stdexcept>
+#include <string_view>
 
 #include "core/local/local_tiles.h"
 #include "tests/support/ruleset_fixture.h"
@@ -51,6 +52,21 @@ inline constexpr site::SiteXY kLocalCenter{32, 32};
     result.buildings.push_back({*test_ruleset().find_building(zoning == site::SiteZoning::Commercial
                                                                   ? "building.shop"
                                                                   : "building.row_house"),
+                                {31, 31},
+                                3,
+                                3,
+                                site::SiteBoundarySide::North,
+                                site::ProceduralBuildingDamage::Intact});
+    return result;
+}
+
+[[nodiscard]] inline site::SiteProceduralLayer underground_site_layer(std::string_view structure) {
+    auto result = open_site_layer();
+    const auto definition = test_ruleset().find_building(structure);
+    if (!definition.has_value()) {
+        throw std::invalid_argument{"測試地下 structure 不存在"};
+    }
+    result.buildings.push_back({*definition,
                                 {31, 31},
                                 3,
                                 3,

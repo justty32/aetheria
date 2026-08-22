@@ -52,7 +52,7 @@ TEST(RulesetLoader, LoadsImmutableDefinitionTypesAndSiteProjectionMapping) {
     ASSERT_EQ(ruleset.features().size(), 9U);
     ASSERT_EQ(ruleset.edges().size(), 26U);
     ASSERT_EQ(ruleset.grounds().size(), 6U);
-    ASSERT_EQ(ruleset.buildings().size(), 8U);
+    ASSERT_EQ(ruleset.buildings().size(), 11U);
     ASSERT_EQ(ruleset.city_buildings().size(), 5U);
     ASSERT_EQ(ruleset.furniture().size(), 4U);
     ASSERT_EQ(ruleset.terrain_ground_mappings().size(), ruleset.terrains().size());
@@ -85,6 +85,10 @@ TEST(RulesetLoader, LoadsImmutableDefinitionTypesAndSiteProjectionMapping) {
     EXPECT_EQ(ruleset.site_fill_rules().quotas[1].units_per_block, 2U);
     EXPECT_EQ(ruleset.building(*ruleset.find_building("building.cottage"))->frontage, 2U);
     EXPECT_TRUE(ruleset.building(*ruleset.find_building("building.palace"))->landmark);
+    const auto* dungeon = ruleset.building(*ruleset.find_building("building.dungeon_entrance"));
+    ASSERT_NE(dungeon, nullptr);
+    EXPECT_EQ(dungeon->underground, aetheria::rules::UndergroundKind::Dungeon);
+    EXPECT_EQ(dungeon->underground_depth, 3U);
     EXPECT_EQ(ruleset.furniture(*ruleset.find_furniture("furniture.bed"))->minimum, 1U);
     EXPECT_NE(ruleset.edge(ruleset.local_building_rules().window_edge)->flags &
                   aetheria::rules::kEdgeWindowFlag,

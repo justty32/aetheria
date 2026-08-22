@@ -73,8 +73,8 @@ int main(int argc, char** argv) {
     gen_local->add_option("--site-seed", viewer_site_seed,
                           "Site seed（十進位或 0x 十六進位）");
     gen_local->add_option("--zoning", viewer_zoning,
-                          "residential、commercial 或 open（路線 B）");
-    gen_local->add_option("--z", viewer_z, "-1、0、1 或 all");
+                          "residential、commercial、open、mine、dungeon 或 ruin");
+    gen_local->add_option("--z", viewer_z, "現有 z 層號或 all");
     gen_local->add_option("--output", viewer_output, "PNG 輸出目錄");
     auto* gen_site = gen->add_subcommand("site", "生成 Site 診斷 PNG");
     gen_site->add_option("--site-seed", viewer_site_seed,

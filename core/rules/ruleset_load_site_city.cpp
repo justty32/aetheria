@@ -42,6 +42,24 @@ namespace {
     return static_cast<std::size_t>(zone);
 }
 
+[[nodiscard]] UndergroundKind read_underground(std::string_view value,
+                                               const std::filesystem::path& path) {
+    if (value.empty()) {
+        return UndergroundKind::None;
+    }
+    if (value == "mine") {
+        return UndergroundKind::Mine;
+    }
+    if (value == "dungeon") {
+        return UndergroundKind::Dungeon;
+    }
+    if (value == "ruin") {
+        return UndergroundKind::Ruin;
+    }
+    throw std::runtime_error{"site_city.toml 含未支援地下結構：" + std::string{value} + "（" +
+                             path.string() + "）"};
+}
+
 }  // namespace
 
 using namespace detail;
@@ -111,13 +129,21 @@ void RulesetLoader::load_site_city(Ruleset& result, const std::filesystem::path&
         register_global_id(global_ids, def.id, "building.");
         def.zone = read_zone(require_string(table, "zone", path), path);
         def.landmark = table["landmark"].value_or(false);
+        def.underground = read_underground(table["underground"].value_or(std::string{}), path);
+        const auto underground_depth = table["underground_depth"].value_or<std::int64_t>(0);
         const auto frontage = require_integer(table, "frontage", path);
         const auto depth = require_integer(table, "depth", path);
         if (frontage <= 0 || frontage > 8 || depth <= 0 || depth > 8) {
             throw std::runtime_error{"site_city.toml 建築尺寸無效：" + def.id};
         }
+        if ((def.underground == UndergroundKind::None && underground_depth != 0) ||
+            (def.underground != UndergroundKind::None &&
+             (underground_depth <= 0 || underground_depth > 16))) {
+            throw std::runtime_error{"site_city.toml 地下結構深度無效：" + def.id};
+        }
         def.frontage = static_cast<std::uint8_t>(frontage);
         def.depth = static_cast<std::uint8_t>(depth);
+        def.underground_depth = static_cast<std::uint8_t>(underground_depth);
         const auto id = append_def<BuildingDefId>(result.buildings_, std::move(def));
         result.building_index_.emplace(result.buildings_.back().id, id);
         if (!result.buildings_.back().landmark) {

@@ -5,6 +5,7 @@
 #include <utility>
 
 #include "core/local/local_buildings.h"
+#include "core/local/local_underground.h"
 #include "core/zone/zone_key.h"
 
 namespace aetheria::local {
@@ -29,6 +30,10 @@ namespace {
     const auto slow = project_local_slow_vars(parent, coordinate, site_seed, feature, ruleset);
     const auto seed = derive_local_seed(site_seed, coordinate.x, coordinate.y);
     if (slow.structure.has_value()) {
+        const auto* structure = ruleset.building(*slow.structure);
+        if (structure != nullptr && structure->underground != rules::UndergroundKind::None) {
+            return build_underground_local_skeleton(slow, seed, ruleset).layers;
+        }
         return build_building_local_skeleton(slow, seed, ruleset).layers;
     }
     auto open = build_open_local_skeleton(slow, seed, ruleset);

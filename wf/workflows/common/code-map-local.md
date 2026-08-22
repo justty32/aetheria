@@ -10,7 +10,7 @@ Local 是 L2→L3 的純 C++ 生成與展開層；Godot 不持有其中狀態。
 |---|---|
 | `core/local/local_tiles.h` | 單一 z 層 SoA、Local 慢／快變數、路線 B 輸出 |
 | `core/local/local_projection.cpp` | Site tile → Local 慢變數、local seed、共用 BoundaryProfile |
-| `core/local/local_materialize.*` | 依 structure 分派路線 A/B，落到 `LocalPayload::layers` |
+| `core/local/local_materialize.*` | 依 structure 分派路線 A/B/C，落到 `LocalPayload::layers` |
 | `core/zone/zone.h` 的 `LocalPayload` | 同一 Local zone 的 `z → LocalTiles` 程序層集合 |
 | `core/local/local_reduction_schema.h` | 建築段、控制點、採集點、通道四類 Local 歸約觀測 |
 | `core/local/local_reduction.*` | 四列量測、Local key/LOD 驗證，以及套用到父 Site tile 的唯一 writer |
@@ -33,6 +33,11 @@ Local 是 L2→L3 的純 C++ 生成與展開層；Godot 不持有其中狀態。
 | `core/local/local_building_geometry.cpp` | A2～A4、A7：排屋、房間切分、門窗與垂直連結 |
 | `core/local/local_building_content.cpp` | A5～A6：資料驅動家具、居民統計／進屋具象化、不變式與 hash |
 | `core/local/local_building_detail.h` | 路線 A 實作檔共用的格索引、對稱邊寫入與階段入口 |
+| `core/local/local_underground.h` | 路線 C 公開型別、生成、可達性／垂直一致性與正規化 hash |
+| `core/local/local_underground_generation.cpp` | 地表路線 B、structure 深度與負 z 層的編排 |
+| `core/local/local_underground_geometry.cpp` | 礦脈掘進、房間直折走廊，以及路線 A 拆除式遺跡 |
+| `core/local/local_underground_validation.cpp` | 跨負 z 層 flood fill、不變式與決定性 hash |
+| `core/local/local_underground_detail.h` | 路線 C 實作檔共用格操作與單層結果 |
 
 ## 共用演算法與資料
 
@@ -40,6 +45,8 @@ Local 是 L2→L3 的純 C++ 生成與展開層；Godot 不持有其中狀態。
   同一份有界遞迴實作，兩層只換 config。
 - `core/rules/ruleset_load_local_buildings.cpp`、`data/local_buildings.toml`：房屋尺度、房間下限、
   牆／門／窗、垂直層機率、居民統計與各房型家具表。
+- `core/rules/ruleset_load_site_city.cpp`、`data/site_city.toml`：特殊 structure def 的地下種類與
+  1～16 層深度；特殊 def 不進一般城市配額。
 - `data/edges.toml`：路線 A 沿用 `EdgeDef`，門／窗仍是邊屬性。
 
 ## 測試
@@ -54,3 +61,6 @@ Local 是 L2→L3 的純 C++ 生成與展開層；Godot 不持有其中狀態。
 `tests/local/local_reduction_test.cpp` 以非空四列、空 Local 無寫入、`200→175→150`
 絕對快照與語意順序無關雜湊驗證 Local→Site；共用 apply 的故障注入會與既有 Site→Region
 測試同時紅。
+
+`tests/local/local_underground_test.cpp` 覆蓋三種 structure 深度、全格／房間可達性、單走廊
+封死負向控制、60～80% 遺跡拆除、垂直雙向一致、正規化 hash 與 10 ms 預算。

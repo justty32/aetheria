@@ -2,12 +2,14 @@
 
 #include "core/local/local_buildings.h"
 #include "core/local/local_tiles.h"
+#include "core/local/local_underground.h"
 #include "sim/debug_canvas.h"
 
 #include <algorithm>
 #include <array>
 #include <cstddef>
 #include <iostream>
+#include <limits>
 #include <map>
 #include <optional>
 #include <stdexcept>
@@ -144,6 +146,19 @@ void paint_rooms(DebugCanvas& canvas, const local::BuildingLocalSkeleton& skelet
     }
 }
 
+void paint_rooms(DebugCanvas& canvas, const local::UndergroundLocalSkeleton& skeleton,
+                 std::int8_t z) {
+    for (std::size_t index = 0; index < skeleton.rooms.size(); ++index) {
+        const auto& room = skeleton.rooms[index];
+        if (room.z != z) {
+            continue;
+        }
+        canvas.fill_rect(room.footprint.x * kTilePixels, room.footprint.y * kTilePixels,
+                         room.footprint.width * kTilePixels, room.footprint.height * kTilePixels,
+                         room_color(index));
+    }
+}
+
 void paint_occupants(DebugCanvas& canvas, const local::LocalTiles& tiles,
                      const local::BuildingLocalSkeleton* building, std::int8_t z) {
     std::vector<std::uint8_t> furniture(local::kLocalTileCount);
@@ -244,7 +259,30 @@ void paint_occupants(DebugCanvas& canvas, const local::LocalTiles& tiles,
     if (value == "open") {
         return site::SiteZoning::Open;
     }
-    throw std::invalid_argument{"gen local 的 zoning 必須是 residential、commercial 或 open"};
+    throw std::invalid_argument{
+        "gen local 的 zoning 必須是 residential、commercial、open、mine、dungeon "
+        "或 ruin"};
+}
+
+[[nodiscard]] bool is_underground(std::string_view value) noexcept {
+    return value == "mine" || value == "dungeon" || value == "ruin";
+}
+
+[[nodiscard]] site::SiteProceduralLayer make_underground_parent(std::string_view kind,
+                                                                const rules::Ruleset& ruleset) {
+    auto parent = make_parent(site::SiteZoning::Open, ruleset);
+    const auto id = "building." + std::string{kind} + "_entrance";
+    const auto structure = ruleset.find_building(id);
+    if (!structure.has_value()) {
+        throw std::runtime_error{"gen local 找不到地下 structure def：" + id};
+    }
+    parent.buildings.push_back({*structure,
+                                {31, 31},
+                                3,
+                                3,
+                                site::SiteBoundarySide::North,
+                                site::ProceduralBuildingDamage::Intact});
+    return parent;
 }
 
 [[nodiscard]] std::vector<std::int8_t>
@@ -260,17 +298,24 @@ selected_layers(std::string_view requested,
     }
     std::size_t parsed{};
     const auto value = std::stoi(std::string{requested}, &parsed);
-    if (parsed != requested.size() || value < -1 || value > 1 ||
+    if (parsed != requested.size() || value < std::numeric_limits<std::int8_t>::min() ||
+        value > std::numeric_limits<std::int8_t>::max() ||
         !layers.contains(static_cast<std::int8_t>(value))) {
-        throw std::invalid_argument{"gen local 的 z 必須是現有的 -1、0、1 或 all"};
+        throw std::invalid_argument{"gen local 的 z 必須是現有層號或 all"};
     }
     return {static_cast<std::int8_t>(value)};
 }
 
-[[nodiscard]] std::string z_name(std::int8_t z) { return z < 0 ? "m1" : (z > 0 ? "p1" : "0"); }
+[[nodiscard]] std::string z_name(std::int8_t z) {
+    if (z < 0) {
+        return "m" + std::to_string(-static_cast<std::int16_t>(z));
+    }
+    return z > 0 ? "p" + std::to_string(z) : "0";
+}
 
 void write_local_layers(const std::map<std::int8_t, local::LocalTiles>& layers,
-                        const local::BuildingLocalSkeleton* building, std::string_view zoning,
+                        const local::BuildingLocalSkeleton* building,
+                        const local::UndergroundLocalSkeleton* underground, std::string_view zoning,
                         std::string_view z, const rules::Ruleset& ruleset,
                         const std::filesystem::path& directory) {
     for (const auto selected : selected_layers(z, layers)) {
@@ -289,6 +334,8 @@ void write_local_layers(const std::map<std::int8_t, local::LocalTiles>& layers,
         DebugCanvas rooms{kImageExtent, kImageExtent, {24, 24, 28}};
         if (building != nullptr) {
             paint_rooms(rooms, *building, selected);
+        } else if (underground != nullptr) {
+            paint_rooms(rooms, *underground, selected);
         } else {
             paint_ground(rooms, tiles, ruleset);
         }
@@ -307,6 +354,23 @@ void write_local_layers(const std::map<std::int8_t, local::LocalTiles>& layers,
 
 int run_gen_local(const rules::Ruleset& ruleset, std::uint64_t site_seed, std::string_view zoning,
                   std::string_view z, const std::filesystem::path& output_directory) {
+    if (is_underground(zoning)) {
+        const auto parent = make_underground_parent(zoning, ruleset);
+        const auto feature = *ruleset.find_feature("feature.ancient_foundation");
+        const auto slow =
+            local::project_local_slow_vars(parent, kParentTile, site_seed, feature, ruleset);
+        const auto generated = local::build_underground_local_skeleton(slow, site_seed, ruleset);
+        write_local_layers(generated.layers, nullptr, &generated, zoning, z, ruleset,
+                           output_directory);
+        std::cout << "local route=C site_seed=" << site_seed << " zoning=" << zoning
+                  << " depth=" << static_cast<unsigned>(generated.depth)
+                  << " excavated=" << generated.excavated_count
+                  << " rooms=" << generated.rooms.size()
+                  << " corridors=" << generated.corridors.size()
+                  << " vertical_links=" << generated.vertical_links.size()
+                  << " output=" << output_directory.string() << '\n';
+        return 0;
+    }
     const auto parsed_zoning = parse_zoning(zoning);
     auto parent = make_parent(parsed_zoning, ruleset);
     const auto feature = *ruleset.find_feature(
@@ -316,7 +380,7 @@ int run_gen_local(const rules::Ruleset& ruleset, std::uint64_t site_seed, std::s
     if (parsed_zoning == site::SiteZoning::Open) {
         const auto generated = local::build_open_local_skeleton(slow, site_seed, ruleset);
         const std::map<std::int8_t, local::LocalTiles> layers{{0, generated.tiles}};
-        write_local_layers(layers, nullptr, zoning, z, ruleset, output_directory);
+        write_local_layers(layers, nullptr, nullptr, zoning, z, ruleset, output_directory);
         std::cout << "local route=B site_seed=" << site_seed << " zoning=" << zoning
                   << " layers=1 scatter=" << generated.scatter_count
                   << " objects=" << generated.object_count
@@ -333,7 +397,7 @@ int run_gen_local(const rules::Ruleset& ruleset, std::uint64_t site_seed, std::s
     for (std::uint16_t house = 0; house < rendered.houses.size(); ++house) {
         local::materialize_ambient_residents(rendered, house, site_seed);
     }
-    write_local_layers(rendered.layers, &rendered, zoning, z, ruleset, output_directory);
+    write_local_layers(rendered.layers, &rendered, nullptr, zoning, z, ruleset, output_directory);
     std::cout << "local route=A site_seed=" << site_seed << " zoning=" << zoning
               << " houses=" << house_count << " rooms=" << room_count << " doors=" << door_count
               << " windows=" << generated.window_count << " furniture=" << furniture_count
