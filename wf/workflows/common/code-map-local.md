@@ -12,6 +12,8 @@ Local 是 L2→L3 的純 C++ 生成與展開層；Godot 不持有其中狀態。
 | `core/local/local_projection.cpp` | Site tile → Local 慢變數、local seed、共用 BoundaryProfile |
 | `core/local/local_materialize.*` | 依 structure 分派路線 A/B，落到 `LocalPayload::layers` |
 | `core/zone/zone.h` 的 `LocalPayload` | 同一 Local zone 的 `z → LocalTiles` 程序層集合 |
+| `core/local/local_reduction_schema.h` | 建築段、控制點、採集點、通道四類 Local 歸約觀測 |
+| `core/local/local_reduction.*` | 四列量測、Local key/LOD 驗證，以及套用到父 Site tile 的唯一 writer |
 
 ## 生成路線
 
@@ -37,3 +39,7 @@ Local 是 L2→L3 的純 C++ 生成與展開層；Godot 不持有其中狀態。
 `tests/local/local_building_test.cpp` 覆蓋尺度、房間門不變式與封死反例、家具／居民實體數、
 垂直層、正規化決定性 hash、10 ms 預算；Site/Local 共用切分的雙層見證分別在
 `tests/site/site_skeleton_test.cpp` 與該檔。
+
+`tests/local/local_reduction_test.cpp` 以非空四列、空 Local 無寫入、`200→175→150`
+絕對快照與語意順序無關雜湊驗證 Local→Site；共用 apply 的故障注入會與既有 Site→Region
+測試同時紅。

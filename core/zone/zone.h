@@ -8,6 +8,7 @@
 #include <variant>
 
 #include "core/local/local_tiles.h"
+#include "core/local/local_reduction_schema.h"
 #include "core/site/site_projection.h"
 #include "core/time/tick.h"
 #include "core/world/region_tiles.h"
@@ -45,7 +46,12 @@ struct SitePayload {
 // 所屬 Zone 擁有它。
 // payload alternative 被替換或 Zone 析構後失效。
 struct LocalPayload {
+    LocalPayload() = default;
+    explicit LocalPayload(std::map<std::int8_t, local::LocalTiles> local_layers)
+        : layers{std::move(local_layers)} {}
+
     std::map<std::int8_t, local::LocalTiles> layers;
+    local::LocalReductionState reduction;
 };
 
 // SpatialPayload 將三層異質 tile schema 收在單一 Zone 欄位。

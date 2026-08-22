@@ -121,15 +121,7 @@ void ReductionTable::apply(world::RegionTiles& tiles, world::RegionXY coordinate
         throw std::runtime_error{"不能把歸約量套用到版面無效的 RegionTiles"};
     }
     const auto index = tiles.index_of(coordinate);
-    std::apply(
-        [&](const auto&... value) {
-            ((std::get<world::ReductionField<
-                  typename std::remove_cvref_t<decltype(value)>::RowType>>(
-                  tiles.reduction_fields_.fields)
-                  .values.at(index) = value.value),
-             ...);
-        },
-        delta.values_);
+    static_cast<void>(delta.apply_to(tiles.reduction_fields_.fields, index));
 }
 
 void reduce_live_site_xun(world::RegionTiles& tiles, world::RegionXY coordinate,

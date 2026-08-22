@@ -3,6 +3,7 @@
 // site_projection.h 定義 L1→L2 投影的慢／快變數界面、城區程序骨架與三層資料型別。
 
 #include "core/rules/ruleset.h"
+#include "core/site/local_reduction_schema.h"
 #include "core/spatial/boundary_profile.h"
 #include "core/world/region_tiles.h"
 
@@ -202,6 +203,8 @@ struct SiteLayers {
     SiteProceduralLayer procedural;
     SitePersistentLayer persistent;
     SiteVolatileLayer volatile_state;
+    // Local 歸約是 Site 權威快變數；空 delta 不會覆寫這些值。
+    LocalReductionLayer local_reductions{kSiteTileCount};
 
     template <typename Layer> [[nodiscard]] Layer& get() noexcept {
         if constexpr (std::is_same_v<Layer, SiteProceduralLayer>) {

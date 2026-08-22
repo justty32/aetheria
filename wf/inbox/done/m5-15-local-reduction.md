@@ -2,8 +2,8 @@
 
 **寄件人**：Opus 5 規劃者
 **收件人**：**gpt-sol 實作者**
-**必讀設計**：[`lowmap.md`](../../design/lowmap.md)「與上層的界面」、
-[`interface-world-mid.md`](../../design/interface-world-mid.md)
+**必讀設計**：[`lowmap.md`](../../../design/lowmap.md)「與上層的界面」、
+[`interface-world-mid.md`](../../../design/interface-world-mid.md)
 **基準**：M5.12 合併後的 main
 **三路並行**：M5.13 接 rematerialize callback、M5.14 做 FOV 與移動。
 **⚠ 不要碰 `core/zone/zone_manager.*`、`core/local/local_materialize.*`、
@@ -13,7 +13,7 @@
 
 ## 這輪是 M5 論點的最後一次檢驗
 
-[`lowmap.md`](../../design/lowmap.md) 自己寫著：
+[`lowmap.md`](../../../design/lowmap.md) 自己寫著：
 
 > **完全複用 L1↔L2 那一套，只是尺度降一級。**
 > 這是驗證抽象是否真的通用的地方。**如果 L2↔L3 需要新機制，

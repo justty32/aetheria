@@ -1,11 +1,12 @@
 #pragma once
 
-// reduction_schema.h 定義 L2→L1 歸約量表的 row 型別與封閉 delta。
+// reduction_schema.h 定義 L2→L1 的固定 row 清單；機制與 L3→L2 共用。
 
 #include <cstdint>
 #include <tuple>
 #include <type_traits>
-#include <vector>
+
+#include "core/spatial/reduction.h"
 
 namespace aetheria::site {
 class ReductionTable;
@@ -34,54 +35,18 @@ using RegionReductionRows =
     std::tuple<PopulationReduction, DevelopmentLevelReduction, FoodStockReduction,
                ProductionStockReduction>;
 
-template <typename Row> struct ReductionField {
-    using RowType = Row;
-    std::vector<typename Row::Value> values;
-
-    template <typename Archive> void serialize(Archive& archive) { archive(values); }
-};
-
-template <typename Row> struct ReductionValue {
-    using RowType = Row;
-    typename Row::Value value{};
-};
-
-template <typename Row, typename Rows> struct ReductionRowsContain;
-
-template <typename Row, typename... Rows>
-struct ReductionRowsContain<Row, std::tuple<Rows...>>
-    : std::disjunction<std::is_same<Row, Rows>...> {};
+template <typename Row> using ReductionField = spatial::reduction::Field<Row>;
+template <typename Row> using ReductionValue = spatial::reduction::SnapshotValue<Row>;
 
 template <typename Row>
 inline constexpr bool kIsRegionReductionRow =
-    ReductionRowsContain<Row, RegionReductionRows>::value;
+    spatial::reduction::RowsContain<Row, RegionReductionRows>::value;
 
-template <typename Rows> struct ReductionStorageFor;
+using RegionReductionStorage = spatial::reduction::Storage<RegionReductionRows>;
 
-template <typename... Rows> struct ReductionStorageFor<std::tuple<Rows...>> {
-    using Fields = std::tuple<ReductionField<Rows>...>;
-    using Values = std::tuple<ReductionValue<Rows>...>;
-};
-
-struct RegionReductionStorage {
-    typename ReductionStorageFor<RegionReductionRows>::Fields fields;
-};
-
-// RegionTileDelta 只能由固定量表建立；呼叫端只能讀，不能自行拼出可套用的 delta。
-class RegionTileDelta {
-public:
-    template <typename Row> [[nodiscard]] typename Row::Value value() const noexcept {
-        static_assert(kIsRegionReductionRow<Row>);
-        return std::get<ReductionValue<Row>>(values_).value;
-    }
-
-private:
-    friend class site::ReductionTable;
-
-    RegionTileDelta() = default;
-
-    typename ReductionStorageFor<RegionReductionRows>::Values values_;
-};
+// delta 只能由 Site ReductionTable 建立；空列的共用語意是「不寫父層」。
+using RegionTileDelta =
+    spatial::reduction::Snapshot<RegionReductionRows, site::ReductionTable>;
 
 static_assert(std::is_integral_v<PopulationReduction::Value>);
 static_assert(std::is_integral_v<DevelopmentLevelReduction::Value>);
