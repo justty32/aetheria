@@ -50,3 +50,19 @@ endif()
 if(NOT verify_output MATCHES "verified_iterations=3")
     message(FATAL_ERROR "gen verify 輸出缺少完成證據：${verify_output}")
 endif()
+
+execute_process(
+    COMMAND "${SIM}" gen terrain-metrics --seed 12345
+    RESULT_VARIABLE metrics_result
+    OUTPUT_VARIABLE metrics_output
+    ERROR_VARIABLE metrics_error
+)
+if(NOT metrics_result EQUAL 0)
+    message(FATAL_ERROR "gen terrain-metrics 失敗：${metrics_error}")
+endif()
+foreach(metric IN ITEMS fractal_ratio plate_overlap_ratio moisture_saturated_ratio
+                        elevation_histogram moisture_histogram terrain_histogram)
+    if(NOT metrics_output MATCHES "${metric}")
+        message(FATAL_ERROR "gen terrain-metrics 缺少 ${metric}：${metrics_output}")
+    endif()
+endforeach()

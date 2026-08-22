@@ -8,6 +8,7 @@
 #include "sim/gen_commands.h"
 #include "sim/local_viewer.h"
 #include "sim/site_viewer.h"
+#include "sim/terrain_metrics.h"
 #include "sim/world_hash.h"
 
 #include <algorithm>
@@ -40,6 +41,7 @@ int main(int argc, char** argv) {
     std::string data_directory{AETHERIA_DEFAULT_DATA_DIR};
     std::uint64_t generation_seed{};
     std::uint32_t generation_region_id{};
+    std::int16_t generation_latitude{35};
     std::uint16_t erosion_iterations{12};
     std::int16_t biome_moisture_bias{};
     std::string dump_stages;
@@ -62,6 +64,11 @@ int main(int argc, char** argv) {
     gen_region->add_option("--biome-moisture-bias", biome_moisture_bias,
                            "biome 查表前的水氣偏移（階段 6 隔離探針）");
     gen_region->add_option("--dump-stages", dump_stages, "十二階段 PGM 輸出目錄");
+    auto* gen_terrain_metrics =
+        gen->add_subcommand("terrain-metrics", "量測地形直方圖、飽和率與海岸品質");
+    gen_terrain_metrics->add_option("--seed", generation_seed, "世界 seed")->required();
+    gen_terrain_metrics->add_option("--region", generation_region_id, "Region id");
+    gen_terrain_metrics->add_option("--latitude", generation_latitude, "Region 中心緯度");
     auto* gen_local = gen->add_subcommand("local", "生成 Local 診斷 PNG");
     gen_local->add_option("--site-seed", viewer_site_seed,
                           "Site seed（十進位或 0x 十六進位）");
@@ -89,6 +96,10 @@ int main(int argc, char** argv) {
     if (*gen_region) {
         return aetheria::sim::run_gen_region(ruleset, generation_seed, generation_region_id,
                                              erosion_iterations, biome_moisture_bias, dump_stages);
+    }
+    if (*gen_terrain_metrics) {
+        return aetheria::sim::run_terrain_metrics(ruleset, generation_seed, generation_region_id,
+                                                  generation_latitude);
     }
     if (*gen_local) {
         return aetheria::sim::run_gen_local(ruleset, parse_seed(viewer_site_seed), viewer_zoning,

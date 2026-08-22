@@ -35,6 +35,27 @@ struct RegionFastVariables {};
 struct PlateGenerationConfig {
     std::uint8_t min_count{8};
     std::uint8_t max_count{16};
+    std::uint8_t oceanic_percent{48};
+    std::uint8_t drift_radius{4};
+    std::int16_t ocean_base_min{-1500};
+    std::uint16_t ocean_base_span{900};
+    std::int16_t land_base_min{250};
+    std::uint16_t land_base_span{1350};
+    std::int32_t boundary_dot_threshold{8};
+    std::int16_t convergent_effect{1200};
+    std::int16_t oceanic_divergent_effect{320};
+    std::int16_t mixed_divergent_effect{-650};
+    std::uint8_t boundary_spread_distance{8};
+    std::uint8_t boundary_decay_numerator{3};
+    std::uint8_t boundary_decay_denominator{4};
+
+    constexpr bool operator==(const PlateGenerationConfig&) const noexcept = default;
+};
+
+// ElevationRedistributionParams 是侵蝕後、量化前的高度分布重整參數槽。
+// 本輪刻意沒有欄位，因此預設重整必然是 identity；未來新增整數 LUT 時也從這裡進。
+struct ElevationRedistributionParams {
+    constexpr bool operator==(const ElevationRedistributionParams&) const noexcept = default;
 };
 
 // HeightGenerationConfig 是高度場階段的噪聲與陸地比例參數。
@@ -43,6 +64,11 @@ struct PlateGenerationConfig {
 struct HeightGenerationConfig {
     std::uint8_t noise_octaves{6};
     std::uint8_t target_land_percent{30};
+    std::uint32_t coast_warp_wavelength{16};
+    double coast_warp_amplitude{15.0};
+    ElevationRedistributionParams redistribution;
+
+    constexpr bool operator==(const HeightGenerationConfig&) const noexcept = default;
 };
 
 // ErosionGenerationConfig 是固定次數熱力侵蝕的參數。
@@ -64,6 +90,12 @@ struct ClimateGenerationConfig {
     std::uint16_t uplift_rain{24};
 };
 
+// MoistureRedistributionParams 是河流回灌後、biome 與 tile 量化前的濕度分布重整參數槽。
+// 本輪刻意沒有欄位，因此預設重整必然是 identity；未來 rank remap 應使用整數 LUT。
+struct MoistureRedistributionParams {
+    constexpr bool operator==(const MoistureRedistributionParams&) const noexcept = default;
+};
+
 // RiverGenerationConfig 是河網分級與水氣回灌參數。
 // 呼叫端擁有值，河流階段只在呼叫期間借用。
 // 呼叫結束後即可失效。
@@ -72,6 +104,7 @@ struct RiverGenerationConfig {
     std::uint32_t river_threshold{180000};
     std::uint32_t great_river_threshold{420000};
     std::uint16_t moisture_bonus{9000};
+    MoistureRedistributionParams redistribution;
 };
 
 // BiomeGenerationConfig 是資料表查詢前的可調整偏移。

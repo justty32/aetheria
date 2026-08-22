@@ -85,6 +85,7 @@ add_library(aetheria_core STATIC
     core/worldgen/road_loops.cpp
     core/worldgen/road_network.cpp
     core/worldgen/region_seed.cpp
+    core/worldgen/field_redistribution.cpp
     core/worldgen/stage_plates.cpp
     core/worldgen/stage_height.cpp
     core/worldgen/stage_erosion.cpp

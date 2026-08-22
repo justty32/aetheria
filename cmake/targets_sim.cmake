@@ -7,6 +7,7 @@ add_executable(aetheria_sim
     sim/local_viewer.cpp
     sim/site_viewer.cpp
     sim/stage_dump.cpp
+    sim/terrain_metrics.cpp
     sim/pgm_writer.cpp
     sim/world_hash.cpp
 )

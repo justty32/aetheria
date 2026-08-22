@@ -18,18 +18,20 @@ struct BoundaryInteraction {
 };
 
 [[nodiscard]] BoundaryInteraction boundary_interaction(const Plate& lhs,
-                                                       const Plate& rhs) noexcept {
+                                                       const Plate& rhs,
+                                                       const PlateGenerationConfig& config) noexcept {
     const auto separation_x = static_cast<std::int32_t>(rhs.x) - lhs.x;
     const auto separation_y = static_cast<std::int32_t>(rhs.y) - lhs.y;
     const auto relative_x = static_cast<std::int32_t>(rhs.drift_x) - lhs.drift_x;
     const auto relative_y = static_cast<std::int32_t>(rhs.drift_y) - lhs.drift_y;
     const auto dot = relative_x * separation_x + relative_y * separation_y;
-    if (dot < -8) {
-        return {PlateBoundaryType::Convergent, 1200};
+    if (dot < -config.boundary_dot_threshold) {
+        return {PlateBoundaryType::Convergent, config.convergent_effect};
     }
-    if (dot > 8) {
+    if (dot > config.boundary_dot_threshold) {
         return {PlateBoundaryType::Divergent,
-                static_cast<std::int16_t>(lhs.is_oceanic && rhs.is_oceanic ? 320 : -650)};
+                lhs.is_oceanic && rhs.is_oceanic ? config.oceanic_divergent_effect
+                                                 : config.mixed_divergent_effect};
     }
     return {PlateBoundaryType::Transform, 0};
 }
@@ -48,8 +50,13 @@ void write_stronger(PlateBoundaryType& target_type, std::int16_t& target_effect,
 PlateStageOutput generate_plates(const RegionSlowVariables& slow, std::uint64_t stage_seed,
                                  const PlateGenerationConfig& config) {
     const auto count = detail::checked_count(slow.width, slow.height);
-    if (config.min_count < 8 || config.max_count > 16 || config.min_count > config.max_count) {
-        throw std::invalid_argument{"板塊數範圍必須落在 8..16"};
+    if (config.min_count < 8 || config.max_count > 16 || config.min_count > config.max_count ||
+        config.oceanic_percent > 100 || config.drift_radius == 0 || config.drift_radius > 63 ||
+        config.ocean_base_span == 0 || config.land_base_span == 0 ||
+        config.boundary_dot_threshold < 0 || config.boundary_spread_distance == 0 ||
+        config.boundary_decay_numerator == 0 || config.boundary_decay_denominator == 0 ||
+        config.boundary_decay_numerator > config.boundary_decay_denominator) {
+        throw std::invalid_argument{"板塊生成參數超出範圍"};
     }
 
     PlateStageOutput output{slow.width, slow.height, {}, {}, {}, {}};
@@ -58,14 +65,18 @@ PlateStageOutput generate_plates(const RegionSlowVariables& slow, std::uint64_t 
         config.min_count + random.bounded(config.max_count - config.min_count + 1U));
     output.plates.reserve(plate_count);
     for (std::size_t index = 0; index < plate_count; ++index) {
-        const auto oceanic = random.bounded(100) < 48;
-        auto drift_x = static_cast<std::int8_t>(static_cast<int>(random.bounded(9)) - 4);
-        auto drift_y = static_cast<std::int8_t>(static_cast<int>(random.bounded(9)) - 4);
+        const auto oceanic = random.bounded(100) < config.oceanic_percent;
+        const auto drift_span = static_cast<std::uint64_t>(config.drift_radius) * 2U + 1U;
+        auto drift_x = static_cast<std::int8_t>(
+            static_cast<int>(random.bounded(drift_span)) - config.drift_radius);
+        auto drift_y = static_cast<std::int8_t>(
+            static_cast<int>(random.bounded(drift_span)) - config.drift_radius);
         if (drift_x == 0 && drift_y == 0) {
             drift_x = 1;
         }
-        const auto base = oceanic ? -1500 + static_cast<int>(random.bounded(900))
-                                  : 250 + static_cast<int>(random.bounded(1350));
+        const auto base =
+            oceanic ? config.ocean_base_min + static_cast<int>(random.bounded(config.ocean_base_span))
+                    : config.land_base_min + static_cast<int>(random.bounded(config.land_base_span));
         output.plates.push_back({static_cast<std::uint16_t>(random.bounded(slow.width)),
                                  static_cast<std::uint16_t>(random.bounded(slow.height)), oceanic,
                                  drift_x, drift_y, static_cast<std::int16_t>(base)});
@@ -97,7 +108,8 @@ PlateStageOutput generate_plates(const RegionSlowVariables& slow, std::uint64_t 
                 continue;
             }
             const auto effect = boundary_interaction(output.plates[output.plate_index[index]],
-                                                     output.plates[output.plate_index[neighbor]]);
+                                                     output.plates[output.plate_index[neighbor]],
+                                                     config);
             write_stronger(output.boundary_type[index], output.boundary_effect[index], effect);
             write_stronger(output.boundary_type[neighbor], output.boundary_effect[neighbor],
                            effect);
@@ -115,7 +127,7 @@ PlateStageOutput generate_plates(const RegionSlowVariables& slow, std::uint64_t 
     while (!frontier.empty()) {
         const auto current = frontier.front();
         frontier.pop();
-        if (distance[current] >= 8) {
+        if (distance[current] >= config.boundary_spread_distance) {
             continue;
         }
         for (const auto neighbor : detail::neighbors(current, slow.width, slow.height)) {
@@ -123,8 +135,10 @@ PlateStageOutput generate_plates(const RegionSlowVariables& slow, std::uint64_t 
                 continue;
             }
             distance[neighbor] = static_cast<std::uint8_t>(distance[current] + 1U);
-            output.boundary_effect[neighbor] =
-                static_cast<std::int16_t>((output.boundary_effect[current] * 3) / 4);
+            output.boundary_effect[neighbor] = static_cast<std::int16_t>(
+                (static_cast<std::int32_t>(output.boundary_effect[current]) *
+                 config.boundary_decay_numerator) /
+                config.boundary_decay_denominator);
             frontier.push(neighbor);
         }
     }
