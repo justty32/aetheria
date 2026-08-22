@@ -2,8 +2,8 @@
 
 **寄件人**：Opus 5 規劃者
 **收件人**：**gpt-sol 實作者**
-**必讀設計**：[`significance-fate.md`](../../design/significance-fate.md)、
-[`significance.md`](../../design/significance.md)
+**必讀設計**：[`significance-fate.md`](../../../design/significance-fate.md)、
+[`significance.md`](../../../design/significance.md)
 **基準**：M6.3 合併後的 main
 **⚠ 這輪還掉一筆從 M4 欠到現在的債**：命運無偏測試當時沒有具名 NPC 可測，
 只能記在待辦裡。這輪要把具名 NPC 做出來，**然後真的去測那條無偏性**。
@@ -86,7 +86,7 @@
 
 **所以不會出現「常常進城的玩家，他認識的人比較容易活」這種漏洞。**
 
-**判準**（同 [`event-scaling.md`](../../design/event-scaling.md) 的期望值一致）：
+**判準**（同 [`event-scaling.md`](../../../design/event-scaling.md) 的期望值一致）：
 
 ```
 E[某具名角色的死亡率 | 玩家在場] ≈ E[同一角色 | 卸載後重載補算]

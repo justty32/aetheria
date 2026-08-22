@@ -72,6 +72,16 @@ std::string encode_zone(const zone::Zone& value, const rules::Ruleset& ruleset) 
                                   ruleset))) {
         throw std::runtime_error{"zone 含無效 SiteDigest"};
     }
+    const auto fate_ledgers = value.reg.view<const world::NamedFateLedger>();
+    const auto level = zone::level_of(value.key);
+    if (fate_ledgers.size() > 1U ||
+        (!fate_ledgers.empty() && level != zone::ZoneLevel::Region &&
+         level != zone::ZoneLevel::Site) ||
+        (!fate_ledgers.empty() &&
+         !world::valid_named_fate_ledger(
+             fate_ledgers.get<const world::NamedFateLedger>(*fate_ledgers.begin())))) {
+        throw std::runtime_error{"zone 含無效 NamedFateLedger"};
+    }
     if (const auto* region = std::get_if<zone::RegionPayload>(&value.payload)) {
         for (const auto& [z, tiles] : region->layers) {
             static_cast<void>(z);

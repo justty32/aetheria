@@ -32,7 +32,7 @@ using aetheria::zone::kRootZone;
 using aetheria::zone::value_of;
 using aetheria::zone::ZoneMeta;
 
-static_assert(AllComponents::size == 8);
+static_assert(AllComponents::size == 9);
 static_assert(std::same_as<entt::type_list_element_t<0, AllComponents>, ZoneMeta>);
 
 [[nodiscard]] std::string read_file(const std::filesystem::path& path) {
@@ -97,7 +97,7 @@ TEST(FileZoneStore, RejectsZoneFormatVersionMismatch) {
 
     auto raw = zstd_decompress(read_file(store.path_for(key)));
     ASSERT_GE(raw.size(), 9U);
-    static_assert(kSaveFormatVersion == 15);
+    static_assert(kSaveFormatVersion == 16);
     const std::uint32_t bad_version = 13;
     for (std::size_t index = 0; index < sizeof(bad_version); ++index) {
         raw[5 + index] = static_cast<char>((bad_version >> (index * 8U)) & UINT32_C(0xFF));
