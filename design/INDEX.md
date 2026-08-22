@@ -8,7 +8,8 @@
 
 | 文件 | 內容 |
 |---|---|
-| [outline.md](outline.md) | 定位、三層總表、尺度、時間與可變 stride、曆法、里程碑 |
+| [outline.md](outline.md) | 定位、三層總表、尺度、時間與可變 stride、曆法 |
+| [milestones.md](milestones.md) | M0～M9 的完成判準；M7 之後判準形式為何要換 |
 | [principles.md](principles.md) | 八條貫穿全案的原則 + 設計新機制的檢查表 |
 | [glossary.md](glossary.md) | 術語仲裁 |
 | [tech-reuse.md](tech-reuse.md) | 現成 Godot 元件；**libtcod 評估過不採用**的理由 |
