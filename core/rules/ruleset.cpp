@@ -23,6 +23,9 @@ const CityBuildingDef* Ruleset::city_building(CityBuildingDefId id) const noexce
 const FurnitureDef* Ruleset::furniture(FurnitureDefId id) const noexcept {
     return lookup(furniture(), id);
 }
+const PowerBreakthroughDef* Ruleset::breakthrough(PowerBreakthroughDefId id) const noexcept {
+    return lookup(breakthroughs(), id);
+}
 const TerrainGroundMapping* Ruleset::terrain_ground_mapping(TerrainId id) const noexcept {
     return lookup(terrain_ground_mappings(), id);
 }
@@ -51,6 +54,9 @@ std::optional<CityBuildingDefId> Ruleset::find_city_building(std::string_view id
 std::optional<FurnitureDefId> Ruleset::find_furniture(std::string_view id) const noexcept {
     return find_id(furniture_index_, id);
 }
+std::optional<PowerBreakthroughDefId> Ruleset::find_breakthrough(std::string_view id) const noexcept {
+    return find_id(breakthrough_index_, id);
+}
 
 Ruleset RulesetLoader::load(const std::filesystem::path& data_directory) {
     Ruleset result;
@@ -73,6 +79,7 @@ Ruleset RulesetLoader::load(const std::filesystem::path& data_directory) {
     load_civilization_rules(result, data_directory);
     load_history_rules(result, data_directory);
     load_world_graph(result, data_directory);
+    load_power_rules(result, data_directory, global_ids);
 
     return result;
 }

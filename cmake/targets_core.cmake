@@ -43,6 +43,7 @@ aetheria_enable_warnings(aetheria_worldgen_objects)
 add_library(aetheria_core STATIC
     $<TARGET_OBJECTS:aetheria_worldgen_objects>
     core/api/version.cpp
+    core/rules/power.cpp
     core/rules/ruleset.cpp
     core/rules/ruleset_load_defs.cpp
     core/rules/ruleset_load_site.cpp
@@ -58,6 +59,7 @@ add_library(aetheria_core STATIC
     core/rules/ruleset_load_history_references.cpp
     core/rules/ruleset_load_crossings.cpp
     core/rules/ruleset_load_world_graph.cpp
+    core/rules/ruleset_load_power.cpp
     core/serialize/normalized_state_hash.cpp
     core/spatial/recursive_partition.cpp
     core/local/local_generation.cpp
