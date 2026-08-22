@@ -95,3 +95,18 @@ M0.1 已從本地 `main` 執行 `git clone` 到 `/tmp` 的全新目錄，再依�
 5. 每次 configure 直接覆寫正式 `extension_api.json`，即使內容相同也會令 godot-cpp 的 2,137
    個生成檔重新產生。現在先 dump 到 build 內的 probe 目錄核對版本，再用 content-stable copy
    更新正式檔；重跑 configure 後 Ninja 可維持 `no work to do`。
+
+### vcpkg 的 Lua 已經是 5.5，必須 pin（M8.0 實測）
+
+`vcpkg.json` 裡有一條 `overrides` 把 lua 固定在 **5.4.8**，不要拿掉。
+
+registry 預設已升到 `lua@5.5.0`，而 `find_package(Lua 5.4 EXACT)` 會（正確地）拒絕 configure。
+pin 的三個理由，按重要性：
+
+1. **sol2 對 5.4 是實績，對 5.5 不是** —— sol2 的發行版多半早於 Lua 5.5
+2. 選型定的就是 5.4（[rules-extensibility.md](rules-extensibility.md)）
+3. ⚠ **不 pin 的話，vcpkg 預設版一動，同一份 repo 在不同時間會編出不同的腳本語意**
+   —— 那跟決定論的目標直接衝突
+
+要解 pin 之前，先確認 sol2 的**綁定測試**（不是只有 lua 本身）在新版下通過。
+一個編不起來的 pin 比不 pin 更糟。
