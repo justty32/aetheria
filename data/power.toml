@@ -1,0 +1,32 @@
+[tier_weights]
+ambient = 1
+local = 4
+site = 16
+region = 64
+world = 256
+
+[quality]
+minimum_percent = 50
+reference_percent = 100
+maximum_percent = 200
+
+[individual_gate]
+minimum_gap = 3
+damage_numerator = 0
+damage_denominator = 1
+
+[[breakthroughs]]
+id = "breakthrough.artifact"
+name_key = "breakthrough.artifact.name"
+
+[[breakthroughs]]
+id = "breakthrough.great_magic"
+name_key = "breakthrough.great_magic.name"
+
+[[breakthroughs]]
+id = "breakthrough.terrain_trap"
+name_key = "breakthrough.terrain_trap.name"
+
+[[breakthroughs]]
+id = "breakthrough.siege_engine"
+name_key = "breakthrough.siege_engine.name"

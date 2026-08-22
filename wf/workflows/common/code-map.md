@@ -2,7 +2,7 @@
 
 ← [common/README](README.md)｜[conventions](conventions.md)｜[INDEX](../../INDEX.md)
 
-**目錄＝職責邊界，檔名＝子題。** 結構改動後更新本檔（見 [refactor](../refactor.md)）。
+**目錄＝職責，檔名＝子題。** 改結構後更新（[refactor](../refactor.md)）。
 
 ## 檔名慣例（先讀這段，省得逐檔猜）
 
@@ -45,6 +45,7 @@
 | `ruleset.h` | 入口：include 下面兩個型別 header + `Ruleset`／`RulesetLoader` 兩個 class |
 | `def_types.h` | id／flag、地形 def 與 `TerrainGroundMapping` |
 | `rule_tables.h` | 地形／移動／文明規則，以及 Site 與 Local 生成、填充和建築 def 型別 |
+| `power.*`、`ruleset_load_power.cpp` | 力量位階、S、個體門檻與破階 def |
 | `toml_read.h` | 內部共用 TOML 讀取／驗證 helper |
 | `ruleset.cpp` | `Ruleset` 存取器 + `RulesetLoader::load` 的編排 |
 | `ruleset_load_defs.cpp` | terrain／relief／feature／edge 四份 def |
@@ -54,7 +55,7 @@
 | `ruleset_load_crossings.cpp`、`ruleset_load_world_graph.cpp` | 渡河複合 edge 查表與完整性驗證；手工世界通道宣告與 canonical 排序 |
 | `ruleset_load_site*.cpp`、`site_build_rules.h` | Site 地面、F1～F5 與城建循環規則／def 載入 |
 
-各 `load_*` 入口是 `RulesetLoader` 的 private static 成員；history detail 只接收入口傳入的參考。
+`load_*` 是 `RulesetLoader` 的 private static 成員；history detail 只接收入口參考。
 
 ### `core/serialize` — zone 位元流
 
