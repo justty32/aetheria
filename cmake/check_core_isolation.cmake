@@ -9,7 +9,7 @@ set(_core_translation_unit_count 0)
 
 foreach(_compile_command_line IN LISTS _compile_command_lines)
     if(_compile_command_line MATCHES
-       "CMakeFiles/(aetheria_core|aetheria_worldgen_objects)\\.dir/")
+       "CMakeFiles/(aetheria_core|aetheria_worldgen_objects|aetheria_faction_ai_objects)\\.dir/")
         math(EXPR _core_translation_unit_count "${_core_translation_unit_count} + 1")
         if(_compile_command_line MATCHES "godot[-_]cpp")
             message(FATAL_ERROR "core 編譯命令含 godot-cpp：${_compile_command_line}")

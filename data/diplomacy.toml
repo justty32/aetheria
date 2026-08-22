@@ -1,0 +1,112 @@
+[relations]
+value_min = -10000
+value_max = 10000
+reversion_denominator = 10000
+favor_reversion = 1000
+trust_reversion = 100
+fear_reversion = 500
+grievance_reversion = 25
+unjustified_war_trust_penalty = -1500
+
+[war]
+base_weariness_per_xun = 40
+weariness_per_thousand_casualties = 20
+peace_threshold = 1000
+
+[peace]
+war_score_weight = 1
+own_weariness_weight = 1
+opponent_weariness_weight = 1
+third_party_pressure_weight = 1
+weight_divisor = 1
+reparations_threshold = 250
+cede_territory_threshold = 600
+vassalage_threshold = 1200
+
+[[treaties]]
+id = "treaty.truce"
+duration_xun = 18
+condition = "war_ended"
+breach_favor = -800
+breach_trust = -1200
+breach_grievance = 500
+renewable = false
+
+[[treaties]]
+id = "treaty.peace"
+duration_xun = 72
+condition = "not_at_war"
+breach_favor = -1000
+breach_trust = -1800
+breach_grievance = 800
+renewable = true
+
+[[treaties]]
+id = "treaty.military_access"
+duration_xun = 36
+condition = "not_at_war"
+breach_favor = -400
+breach_trust = -900
+breach_grievance = 300
+renewable = true
+
+[[treaties]]
+id = "treaty.trade_agreement"
+duration_xun = 72
+condition = "trade_route_available"
+breach_favor = -500
+breach_trust = -800
+breach_grievance = 250
+renewable = true
+
+[[treaties]]
+id = "treaty.defensive_alliance"
+duration_xun = 108
+condition = "mutual_defense"
+breach_favor = -1200
+breach_trust = -2500
+breach_grievance = 1000
+renewable = true
+
+[[treaties]]
+id = "treaty.vassalage"
+duration_xun = 0
+condition = "overlord_protection"
+breach_favor = -1500
+breach_trust = -3000
+breach_grievance = 1500
+renewable = false
+
+[[treaties]]
+id = "treaty.marriage"
+duration_xun = 0
+condition = "dynastic_union"
+breach_favor = -1000
+breach_trust = -2200
+breach_grievance = 1200
+renewable = false
+
+[[casus_belli]]
+id = "casus_belli.territorial_claim"
+duration_xun = 72
+condition = "claimed_territory_held_by_target"
+
+[[casus_belli]]
+id = "casus_belli.succession"
+duration_xun = 36
+condition = "contested_succession"
+
+[[casus_belli]]
+id = "casus_belli.religion"
+duration_xun = 108
+condition = "hostile_faith"
+
+[[casus_belli]]
+id = "casus_belli.revenge"
+duration_xun = 36
+condition = "recent_grievance"
+
+[[casus_belli]]
+id = "casus_belli.liberate_vassal"
+duration_xun = 54
+condition = "target_has_vassal"

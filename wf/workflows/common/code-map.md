@@ -72,15 +72,7 @@
 
 ### `core/world` — L1 Region 執行期
 
-| 檔 | 職責 |
-|---|---|
-| `significance.h` | 實體與事件共用的重要性等級 |
-| `region_tiles.*`、`reduction_schema.h` | SoA 格資料（含防禦／損毀）、私有歸約 row、portal 與 edge 寫入 |
-| `region_movement.h` | 移動／尋路／旬回合的共同入口 |
-| `region_movement_detail.h` | `in_bounds`／`passable`／`manhattan` |
-| `region_step_cost.cpp` | 整數 MP 單步成本與季節下限 |
-| `region_path.cpp` | A*（admissible heuristic）|
-| `region_turn.cpp`、`region_simulation.*` | `RegionTurnPipeline` 下令／旬推進；第 5 階段近似公式與 live Site 跳過計數 |
+[core/world 與 AI 詳圖](code-map-world.md)：Region 執行期、外交狀態、AI 知識邊界與相關測試。
 
 [core/site 詳圖](code-map-site.md)：城區骨架 S1～S4、投影／填充、生命週期、歸約與事件升級。
 
