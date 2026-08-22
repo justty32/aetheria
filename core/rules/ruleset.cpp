@@ -23,6 +23,9 @@ const CityBuildingDef* Ruleset::city_building(CityBuildingDefId id) const noexce
 const FurnitureDef* Ruleset::furniture(FurnitureDefId id) const noexcept {
     return lookup(furniture(), id);
 }
+const DamageTypeDef* Ruleset::damage_type(DamageTypeId id) const noexcept {
+    return lookup(damage_types(), id);
+}
 const TerrainGroundMapping* Ruleset::terrain_ground_mapping(TerrainId id) const noexcept {
     return lookup(terrain_ground_mappings(), id);
 }
@@ -51,6 +54,9 @@ std::optional<CityBuildingDefId> Ruleset::find_city_building(std::string_view id
 std::optional<FurnitureDefId> Ruleset::find_furniture(std::string_view id) const noexcept {
     return find_id(furniture_index_, id);
 }
+std::optional<DamageTypeId> Ruleset::find_damage_type(std::string_view id) const noexcept {
+    return find_id(damage_type_index_, id);
+}
 
 Ruleset RulesetLoader::load(const std::filesystem::path& data_directory) {
     Ruleset result;
@@ -67,6 +73,7 @@ Ruleset RulesetLoader::load(const std::filesystem::path& data_directory) {
     load_site_build(result, data_directory, global_ids);
     load_site_wilderness(result, data_directory);
     load_local_buildings(result, data_directory, global_ids);
+    load_individual_rules(result, data_directory, global_ids);
     load_biome_rule_tables(result, data_directory);
     load_movement_rules(result, data_directory);
     load_faction_rules(result, data_directory);

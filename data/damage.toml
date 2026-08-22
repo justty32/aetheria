@@ -1,0 +1,47 @@
+[rules]
+max_resistance_percent = 90
+
+[[defs]]
+id = "damage.slash"
+name_key = "damage.slash"
+category = "physical"
+
+[[defs]]
+id = "damage.pierce"
+name_key = "damage.pierce"
+category = "physical"
+
+[[defs]]
+id = "damage.blunt"
+name_key = "damage.blunt"
+category = "physical"
+
+[[defs]]
+id = "damage.fire"
+name_key = "damage.fire"
+category = "elemental"
+
+[[defs]]
+id = "damage.ice"
+name_key = "damage.ice"
+category = "elemental"
+
+[[defs]]
+id = "damage.lightning"
+name_key = "damage.lightning"
+category = "elemental"
+
+[[defs]]
+id = "damage.poison"
+name_key = "damage.poison"
+category = "supernatural"
+
+[[defs]]
+id = "damage.dark"
+name_key = "damage.dark"
+category = "supernatural"
+
+[[defs]]
+id = "damage.holy"
+name_key = "damage.holy"
+category = "supernatural"

@@ -43,6 +43,9 @@ aetheria_enable_warnings(aetheria_worldgen_objects)
 add_library(aetheria_core STATIC
     $<TARGET_OBJECTS:aetheria_worldgen_objects>
     core/api/version.cpp
+    core/rules/attributes.cpp
+    core/rules/check.cpp
+    core/rules/damage.cpp
     core/rules/ruleset.cpp
     core/rules/ruleset_load_defs.cpp
     core/rules/ruleset_load_site.cpp
@@ -50,6 +53,7 @@ add_library(aetheria_core STATIC
     core/rules/ruleset_load_site_build.cpp
     core/rules/ruleset_load_site_wilderness.cpp
     core/rules/ruleset_load_local_buildings.cpp
+    core/rules/ruleset_load_individual.cpp
     core/rules/ruleset_load_biomes.cpp
     core/rules/ruleset_load_civilization.cpp
     core/rules/ruleset_load_factions.cpp

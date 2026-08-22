@@ -13,6 +13,9 @@
 #include <utility>
 #include <vector>
 
+#include "core/rules/attributes.h"
+#include "core/rules/check.h"
+#include "core/rules/damage.h"
 #include "core/rules/def_types.h"
 #include "core/rules/rule_tables.h"
 #include "core/rules/site_build_rules.h"
@@ -39,6 +42,7 @@ class Ruleset {
     [[nodiscard]] const BuildingDef* building(BuildingDefId id) const noexcept;
     [[nodiscard]] const CityBuildingDef* city_building(CityBuildingDefId id) const noexcept;
     [[nodiscard]] const FurnitureDef* furniture(FurnitureDefId id) const noexcept;
+    [[nodiscard]] const DamageTypeDef* damage_type(DamageTypeId id) const noexcept;
     [[nodiscard]] const TerrainGroundMapping* terrain_ground_mapping(TerrainId id) const noexcept;
 
     [[nodiscard]] std::optional<TerrainId> find_terrain(std::string_view id) const noexcept;
@@ -50,6 +54,7 @@ class Ruleset {
     [[nodiscard]] std::optional<CityBuildingDefId> find_city_building(
         std::string_view id) const noexcept;
     [[nodiscard]] std::optional<FurnitureDefId> find_furniture(std::string_view id) const noexcept;
+    [[nodiscard]] std::optional<DamageTypeId> find_damage_type(std::string_view id) const noexcept;
 
     [[nodiscard]] std::span<const TerrainDef> terrains() const noexcept { return terrains_; }
     [[nodiscard]] std::span<const ReliefDef> reliefs() const noexcept { return reliefs_; }
@@ -61,6 +66,9 @@ class Ruleset {
         return city_buildings_;
     }
     [[nodiscard]] std::span<const FurnitureDef> furniture() const noexcept { return furniture_; }
+    [[nodiscard]] std::span<const DamageTypeDef> damage_types() const noexcept {
+        return damage_types_;
+    }
     [[nodiscard]] std::span<const TerrainGroundMapping> terrain_ground_mappings() const noexcept {
         return terrain_ground_mappings_;
     }
@@ -87,6 +95,11 @@ class Ruleset {
     [[nodiscard]] const CivilizationRules& civilization_rules() const noexcept {
         return civilization_rules_;
     }
+    [[nodiscard]] const AttributeRules& attribute_rules() const noexcept {
+        return attribute_rules_;
+    }
+    [[nodiscard]] const CheckRules& check_rules() const noexcept { return check_rules_; }
+    [[nodiscard]] const DamageRules& damage_rules() const noexcept { return damage_rules_; }
     [[nodiscard]] std::span<const WorldGraphConnection> world_connections() const noexcept {
         return world_connections_;
     }
@@ -103,6 +116,7 @@ class Ruleset {
     std::vector<BuildingDef> buildings_;
     std::vector<CityBuildingDef> city_buildings_;
     std::vector<FurnitureDef> furniture_;
+    std::vector<DamageTypeDef> damage_types_;
     std::vector<TerrainGroundMapping> terrain_ground_mappings_;
     std::vector<TerrainRule> terrain_rules_;
     std::vector<ReliefRule> relief_rules_;
@@ -113,6 +127,9 @@ class Ruleset {
     WildernessGenerationRules wilderness_generation_rules_;
     LocalBuildingRules local_building_rules_;
     CivilizationRules civilization_rules_;
+    AttributeRules attribute_rules_;
+    CheckRules check_rules_;
+    DamageRules damage_rules_;
     std::vector<WorldGraphConnection> world_connections_;
     std::map<std::string, TerrainId, std::less<>> terrain_index_;
     std::map<std::string, ReliefId, std::less<>> relief_index_;
@@ -122,6 +139,7 @@ class Ruleset {
     std::map<std::string, BuildingDefId, std::less<>> building_index_;
     std::map<std::string, CityBuildingDefId, std::less<>> city_building_index_;
     std::map<std::string, FurnitureDefId, std::less<>> furniture_index_;
+    std::map<std::string, DamageTypeId, std::less<>> damage_type_index_;
 };
 
 // RulesetLoader 將一個 data 目錄完整解析成不可變 Ruleset。
@@ -154,6 +172,8 @@ class RulesetLoader {
     static void load_site_wilderness(Ruleset& result, const std::filesystem::path& data_directory);
     static void load_local_buildings(Ruleset& result, const std::filesystem::path& data_directory,
                                      std::set<std::string, std::less<>>& global_ids);
+    static void load_individual_rules(Ruleset& result, const std::filesystem::path& data_directory,
+                                      std::set<std::string, std::less<>>& global_ids);
     static void load_biome_rule_tables(Ruleset& result,
                                        const std::filesystem::path& data_directory);
     static void load_movement_rules(Ruleset& result, const std::filesystem::path& data_directory);

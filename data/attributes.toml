@@ -1,0 +1,107 @@
+[bounds]
+minimum = 0
+maximum = 100
+
+[tier]
+thresholds = [35, 45, 55, 65]
+
+[derived.health]
+base = 20
+body = 5
+skill = 0
+mind = 0
+spirit = 1
+tier = 10
+divisor = 1
+
+[derived.mana]
+base = 10
+body = 0
+skill = 0
+mind = 4
+spirit = 2
+tier = 8
+divisor = 1
+
+[derived.accuracy]
+base = 0
+body = 0
+skill = 2
+mind = 0
+spirit = 1
+tier = 2
+divisor = 3
+
+[derived.evasion]
+base = 0
+body = 0
+skill = 2
+mind = 1
+spirit = 0
+tier = 2
+divisor = 3
+
+[derived.defense]
+base = 0
+body = 2
+skill = 1
+mind = 0
+spirit = 0
+tier = 3
+divisor = 3
+
+[derived.resistance]
+base = 0
+body = 1
+skill = 0
+mind = 1
+spirit = 2
+tier = 3
+divisor = 4
+
+[derived.movement]
+base = 4
+body = 0
+skill = 1
+mind = 0
+spirit = 0
+tier = 0
+divisor = 25
+
+[derived.carry_capacity]
+base = 10
+body = 2
+skill = 0
+mind = 0
+spirit = 0
+tier = 2
+divisor = 1
+
+[derived.vision]
+base = 3
+body = 0
+skill = 0
+mind = 0
+spirit = 1
+tier = 1
+divisor = 20
+
+[[margin_bands]]
+id = "failure"
+minimum_margin = -100
+effect_percent = 0
+
+[[margin_bands]]
+id = "success"
+minimum_margin = 1
+effect_percent = 100
+
+[[margin_bands]]
+id = "strong"
+minimum_margin = 20
+effect_percent = 125
+
+[[margin_bands]]
+id = "exceptional"
+minimum_margin = 40
+effect_percent = 150

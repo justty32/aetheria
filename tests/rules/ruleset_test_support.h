@@ -320,6 +320,9 @@ rough_ground="ground.water"
     write_text(path / "site_build.toml", kSiteBuildRules);
     write_text(path / "site_wild.toml", kSiteWildRules);
     write_text(path / "local_buildings.toml", kLocalBuildingRules);
+    std::filesystem::copy_file(AETHERIA_SOURCE_DIR "/data/attributes.toml",
+                               path / "attributes.toml");
+    std::filesystem::copy_file(AETHERIA_SOURCE_DIR "/data/damage.toml", path / "damage.toml");
 }
 
 }  // namespace aetheria::tests
