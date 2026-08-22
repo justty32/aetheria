@@ -206,3 +206,8 @@ add_test(
 target_sources(aetheria_tests PRIVATE
     tests/local/dungeon_test.cpp
 )
+
+# M7.2 追加區塊：Site cohort 戰鬥測試；保持在檔尾以利並行合併。
+target_sources(aetheria_tests PRIVATE
+    tests/site/site_combat_test.cpp
+)

@@ -29,6 +29,7 @@
 | `site_materialize.*` | 依聚落有無分流城區／荒野，首次／冷重算展開、ZoneManager callback 接縫、Frozen 凍結／解凍與持久層收回 |
 | `site_streaming.*` | 經 ZoneManager 單一取得入口升載；玩家跨格重算 3×3 FULL／5×5 COARSE 場，尾端升降級、延遲逐出並批次推進 FULL Site |
 | `site_reduction.*` | 固定 row 的 Site→Region 歸約；治安 optional 保留缺席／觀測到 0 的差異 |
+| `site_combat.*` | 15 分鐘 cohort 機動、陣型／面向、地形／command 與四組條件式兵種相剋；以戰術壓力挪動 Region 傷亡配額 |
 | `local_reduction_schema.h` | Local→Site 固定四列、封閉 delta 與每個 Site tile 的私有快變數 storage |
 | `site_event_escalation.*` | 建築事件先落持久來源；達 Region 級才立即同步歸約快變數 |
 | `site_build_loop.*` | `L_FULL` 批次逐小時／全局時鐘旬界編排、`ZoneKey` 正規化、工地命令、持久 `CityBuildState` 與 Region 回填 |
@@ -72,3 +73,4 @@ N=1/5/20/100 旬驗證 L_FULL／L_ABSENT 的四列歸約誤差、持久物件集
 `site_build_{loop,persistence}_test.cpp` 驗人口演化、批次旬界只結算 Region 一次、輸入順序無關、
 單 Site 等價、兩種擺法、絕對歸約不重複與 pending 冷載。
 `site_observation_persistence_test.cpp` 驗 v16 Site 拒讀、觀測欄位逐項進世界雜湊與 v18 冷往返。
+`site_combat_test.cpp` 驗 3 格 stride、四組相剋成立／不成立、地形／command、決定性、既有戰鬥事件歸約與單場效能。

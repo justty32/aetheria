@@ -58,7 +58,7 @@ struct CalibrationMetrics {
     for (auto& samples : metrics.loss_b_samples) {
         samples.reserve(kCalibrationSamples);
     }
-    // 500 個勢均力敵情境，每個各跑 antithetic seed 2k/2k+1；1000 seed 全不相同。
+    // 500 個勢均力敵情境各跑兩個 seed；Region/Local 成對反向，Site 則真的跑 cohort 戰術。
     for (std::size_t scenario = 0; scenario < kCalibrationSamples / 2; ++scenario) {
         const auto power_a = static_cast<std::int32_t>(75'000 + scenario * 100);
         const auto input = matchup(power_a, 100'000);
@@ -88,6 +88,11 @@ struct CalibrationMetrics {
                                            std::int64_t candidate) {
     return static_cast<double>(candidate - reference) /
            static_cast<double>(reference);
+}
+
+[[nodiscard]] bool all_same_nonzero_direction(std::span<const double> errors) {
+    return std::ranges::all_of(errors, [](double error) { return error > 0.0; }) ||
+           std::ranges::all_of(errors, [](double error) { return error < 0.0; });
 }
 
 [[nodiscard]] double sample_variance(std::span<const double> samples) {
@@ -128,10 +133,17 @@ TEST(CombatScaling, ExpectationParityCoversBalancedRatiosWithoutSuppressingVaria
     const auto region_variance = sample_variance(metrics.loss_b_samples[0]);
     const auto site_variance = sample_variance(metrics.loss_b_samples[1]);
     const auto local_variance = sample_variance(metrics.loss_b_samples[2]);
+    const auto sr_total = signed_relative_error(
+        metrics.sum_a[0] + metrics.sum_b[0],
+        metrics.sum_a[1] + metrics.sum_b[1]);
+    const std::array site_region_signs{sr_a, sr_b, sr_total};
+    EXPECT_FALSE(all_same_nonzero_direction(site_region_signs))
+        << "Site−Region 的 A、B、總損失三組誤差不得全部同向";
     EXPECT_LT(region_variance, site_variance);
     EXPECT_LT(site_variance, local_variance);
     EXPECT_EQ(metrics.ratio_bins, (std::array<std::int32_t, 3>{300, 402, 298}));
-    std::cout << "combat_parity samples=1000 seeds=0..999_antithetic"
+    std::cout << "combat_parity samples=1000 seeds=0..999"
+              << " region_local_antithetic=1 site_tactical=1"
               << " R_permyriad=" << metrics.ratio_min_permyriad << "/9995/"
               << metrics.ratio_max_permyriad << " bins=" << metrics.ratio_bins[0] << '/'
               << metrics.ratio_bins[1] << '/' << metrics.ratio_bins[2]
@@ -141,6 +153,8 @@ TEST(CombatScaling, ExpectationParityCoversBalancedRatiosWithoutSuppressingVaria
               << metrics.sum_b[1] / 1'000.0 << '/' << metrics.sum_b[2] / 1'000.0
               << " signed_errors_A_SR_LS_LR=" << sr_a << '/' << ls_a << '/' << lr_a
               << " signed_errors_B_SR_LS_LR=" << sr_b << '/' << ls_b << '/' << lr_b
+              << " signed_errors_site_region_A_B_total=" << sr_a << '/' << sr_b << '/'
+              << sr_total
               << " variance_R_S_L=" << region_variance << '/' << site_variance << '/'
               << local_variance << '\n';
 }
@@ -221,13 +235,20 @@ TEST(CombatScaling, SiteHomeNeverWritesRegionFaceDamage) {
     const auto& rules = aetheria::tests::test_ruleset().combat_rules();
     const auto result = aetheria::world::resolve_scaled_combat(
         matchup(100'000, 100'000), rules, CombatLayer::Site, 91, 0, {}, {}, &counters);
+    CombatEventState state{.event_id = 91,
+                           .initial_power_a = 100'000,
+                           .initial_power_b = 100'000,
+                           .named = {}};
+    EXPECT_TRUE(aetheria::world::demote_combat_event(state, result, &counters));
     EXPECT_GT(result.loss_a + result.loss_b, 0);
     EXPECT_EQ(counters.site_face_runs, 1U);
     EXPECT_EQ(counters.region_face_runs, 0U);
     EXPECT_EQ(counters.region_face_damage_writes, 0U);
+    EXPECT_EQ(counters.site_reduction_writes, 1U);
     std::cout << "combat_single_home site_runs=" << counters.site_face_runs
               << " region_runs=" << counters.region_face_runs
-              << " region_damage_writes=" << counters.region_face_damage_writes << '\n';
+              << " region_damage_writes=" << counters.region_face_damage_writes
+              << " site_reduction_writes=" << counters.site_reduction_writes << '\n';
 }
 
 TEST(CombatScaling, AllFiveSignificanceDeltasAreRealAndQuotaConserved) {
