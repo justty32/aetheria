@@ -10,7 +10,7 @@
 
 | 檔案 | 職責 |
 |---|---|
-| `site_projection.h` | 慢／快變數隔離、64×64 骨架與三層資料的公開型別／入口 |
+| `site_projection.h` | 慢／快變數隔離、64×64 骨架、持久治安／具名 NPC／地城與三層資料型別 |
 | `site_projection.cpp` | Region tile 拆分、seed、S1～S4 編排與骨架完整雜湊 |
 | `site_skeleton_detail.h` | 骨架分段實作的內部共用介面 |
 | `site_skeleton_common.cpp` | 邊界 crossing 位置與局部坡度 |
@@ -28,7 +28,7 @@
 | `site_damage.cpp` | F5：牆缺口與依城門／缺口距離優先的瓦礫／焚毀狀態 |
 | `site_materialize.*` | 依聚落有無分流城區／荒野，首次／冷重算展開、ZoneManager callback 接縫、Frozen 凍結／解凍與持久層收回 |
 | `site_streaming.*` | 經 ZoneManager 單一取得入口升載；玩家跨格重算 3×3 FULL／5×5 COARSE 場，尾端升降級、延遲逐出並批次推進 FULL Site |
-| `site_reduction.*` | 固定 row 的 Site→Region 歸約 |
+| `site_reduction.*` | 固定 row 的 Site→Region 歸約；治安 optional 保留缺席／觀測到 0 的差異 |
 | `local_reduction_schema.h` | Local→Site 固定四列、封閉 delta 與每個 Site tile 的私有快變數 storage |
 | `site_event_escalation.*` | 建築事件先落持久來源；達 Region 級才立即同步歸約快變數 |
 | `site_build_loop.*` | `L_FULL` 批次逐小時／全局時鐘旬界編排、`ZoneKey` 正規化、工地命令、持久 `CityBuildState` 與 Region 回填 |

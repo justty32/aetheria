@@ -138,11 +138,38 @@ std::uint64_t hash_site_fill(const SiteProceduralLayer& procedural) noexcept {
 }
 
 bool valid_persistent_layer(const SitePersistentLayer& layer) noexcept {
-    return std::ranges::all_of(layer.buildings, [](const PersistentBuilding& building) {
-        return building.tile.x < kSiteWidth && building.tile.y < kSiteHeight &&
-               building.type <= BuildingType::SettlementHall &&
-               building.state <= BuildingState::Ruined;
+    const auto buildings_valid =
+        std::ranges::all_of(layer.buildings, [](const PersistentBuilding& building) {
+            return building.tile.x < kSiteWidth && building.tile.y < kSiteHeight &&
+                   building.type <= BuildingType::SettlementHall &&
+                   building.state <= BuildingState::Ruined;
+        });
+    const auto order_valid =
+        !layer.order.has_value() ||
+        (static_cast<std::uint32_t>(layer.order->garrison_coverage) +
+                 layer.order->patrol_coverage <=
+             UINT16_MAX &&
+         static_cast<std::uint32_t>(layer.order->bandit_pressure) + layer.order->refugee_pressure <=
+             UINT16_MAX);
+    const auto npcs_valid = std::ranges::all_of(layer.named_npcs, [](const auto& npc) {
+        return npc.uid != 0 && !npc.person_name_key.empty() &&
+               !npc.last_seen_place_name_key.empty();
     });
+    const auto dungeons_valid = std::ranges::all_of(layer.dungeons, [](const auto& dungeon) {
+        return dungeon.uid != 0 && !dungeon.place_name_key.empty() && dungeon.depth != 0;
+    });
+    const auto unique_ids = [](const auto& values) {
+        for (std::size_t index = 0; index < values.size(); ++index) {
+            for (std::size_t previous = 0; previous < index; ++previous) {
+                if (values[previous].uid == values[index].uid) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    };
+    return buildings_valid && order_valid && npcs_valid && dungeons_valid &&
+           unique_ids(layer.named_npcs) && unique_ids(layer.dungeons);
 }
 
 }  // namespace aetheria::site

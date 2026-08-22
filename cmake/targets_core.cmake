@@ -157,3 +157,7 @@ aetheria_enable_warnings(aetheria_core)
 target_sources(aetheria_core PRIVATE
     core/world/named_fate.cpp
 )
+
+target_sources(aetheria_core PRIVATE
+    core/rules/ruleset_load_world_observations.cpp
+)

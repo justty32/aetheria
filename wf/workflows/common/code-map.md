@@ -56,6 +56,7 @@
 | `ruleset_load_history.cpp`、`ruleset_load_history_{values,references}.cpp` | 上古歷史載入編排；數值／結構限制；道路與廢墟引用（共用宣告在 `ruleset_load_history_detail.h`）|
 | `ruleset_load_crossings.cpp`、`ruleset_load_world_graph.cpp` | 渡河複合 edge 查表與完整性驗證；手工世界通道宣告與 canonical 排序 |
 | `ruleset_load_site*.cpp`、`site_build_rules.h` | Site 地面、F1～F5 與城建循環規則／def 載入 |
+| `world_observation_rules.h`、`ruleset_load_world_observations.cpp` | 治安／任務門檻 |
 | `ruleset_load_individual.cpp` | `attributes.toml`／`damage.toml` 載入與 fail-fast 驗證 |
 
 `load_*` 是 `RulesetLoader` 的 private static 成員；history detail 只接收入口參考。
@@ -82,7 +83,7 @@
 
 ### `core/narrative`
 
-`emergent_quest.*` 五種狀態需求與運糧歸約；`narrative_event.*` 結構化 i18n 事件、具名參數與唯讀 feed。
+`emergent_quest.*` 從 Region／Site 真值偵測需求與運糧／清剿歸約；`narrative_event.*` 結構化 i18n 事件、具名參數與唯讀 feed。
 
 ### `core/worldgen` — Region 十二階段生成
 
@@ -97,7 +98,7 @@
 | 目錄 | 內容 |
 |---|---|
 | `support/` | 跨目錄共用的 ruleset fixture 與固定暖機、min-of-N 效能量測 helper |
-| `narrative/` | 五種湧現任務、運糧歸約、命運模板與事件 feed |
+| `narrative/` | 五種湧現任務、運糧／清剿歸約、命運模板與事件 feed |
 | `site/` | Site 投影隔離、展開、持久建築、存檔／世界雜湊、效能 |
 | `sim/` | 世界級正規化雜湊的跨歷史、磁碟列舉、負向控制與錯誤路徑測試 |
 | `time/`、`serialize/` | 曆法邊界與往返；EnTT registry 壓測 |

@@ -1,0 +1,11 @@
+[order]
+initial_garrison_coverage = 45
+initial_patrol_coverage = 25
+initial_bandit_pressure = 40
+initial_refugee_pressure = 10
+
+[quests]
+bandit_minimum_order = 40
+bandit_pressure_reduction = 30
+food_delivery_required = 100
+dungeon_minimum_depth = 3

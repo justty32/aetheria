@@ -52,7 +52,8 @@ template <typename Row> [[nodiscard]] typename Row::Value measure(const SiteLaye
                 return development_contribution(building);
             } else {
                 static_assert(std::is_same_v<Row, world::FoodStockReduction> ||
-                              std::is_same_v<Row, world::ProductionStockReduction>);
+                              std::is_same_v<Row, world::ProductionStockReduction> ||
+                              std::is_same_v<Row, world::OrderReduction>);
                 return typename Row::Value{};
             }
         }();
@@ -78,6 +79,19 @@ void validate_site_identity(const zone::Zone& live_site, world::RegionXY coordin
 
 }  // namespace
 
+std::optional<world::OrderReduction::Value>
+measure_site_order(const SitePersistentLayer& persistent) noexcept {
+    if (!persistent.order.has_value()) {
+        return std::nullopt;
+    }
+    const auto coverage = static_cast<std::uint32_t>(persistent.order->garrison_coverage) +
+                          persistent.order->patrol_coverage;
+    const auto pressure = static_cast<std::uint32_t>(persistent.order->bandit_pressure) +
+                          persistent.order->refugee_pressure;
+    return static_cast<world::OrderReduction::Value>(coverage > pressure ? coverage - pressure
+                                                                         : 0U);
+}
+
 world::RegionTileDelta ReductionTable::reduce(const SiteLayers& layers) {
     if (!valid_persistent_layer(layers.persistent)) {
         throw std::runtime_error{"不能歸約無效的 SitePersistentLayer"};
@@ -85,7 +99,14 @@ world::RegionTileDelta ReductionTable::reduce(const SiteLayers& layers) {
     world::RegionTileDelta result;
     std::apply(
         [&](auto&... value) {
-            ((value.value = measure<typename std::remove_cvref_t<decltype(value)>::RowType>(layers)),
+            (([&] {
+                 using Row = typename std::remove_cvref_t<decltype(value)>::RowType;
+                 if constexpr (std::is_same_v<Row, world::OrderReduction>) {
+                     value.value = measure_site_order(layers.persistent);
+                 } else {
+                     value.value = measure<Row>(layers);
+                 }
+             }()),
              ...);
         },
         result.values_);

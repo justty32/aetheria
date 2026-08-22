@@ -22,6 +22,7 @@
 #include "core/rules/rule_tables.h"
 #include "core/rules/site_build_rules.h"
 #include "core/rules/combat.h"
+#include "core/rules/world_observation_rules.h"
 
 namespace aetheria::rules {
 
@@ -123,6 +124,9 @@ class Ruleset {
         return world_connections_;
     }
     [[nodiscard]] const CombatRules& combat_rules() const noexcept { return combat_rules_; }
+    [[nodiscard]] const WorldObservationRules& world_observation_rules() const noexcept {
+        return world_observation_rules_;
+    }
 
     private:
     friend class RulesetLoader;
@@ -167,6 +171,7 @@ class Ruleset {
     std::map<std::string, TreatyDefId, std::less<>> treaty_index_;
     std::map<std::string, CasusBelliDefId, std::less<>> casus_belli_index_;
     CombatRules combat_rules_;
+    WorldObservationRules world_observation_rules_;
 };
 
 // RulesetLoader 將一個 data 目錄完整解析成不可變 Ruleset。
@@ -216,6 +221,8 @@ class RulesetLoader {
     static void load_power_rules(Ruleset& result, const std::filesystem::path& data_directory,
                                  std::set<std::string, std::less<>>& global_ids);
     static void load_combat_rules(Ruleset& result, const std::filesystem::path& data_directory);
+    static void load_world_observation_rules(Ruleset& result,
+                                             const std::filesystem::path& data_directory);
 };
 
 }  // namespace aetheria::rules

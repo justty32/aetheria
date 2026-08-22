@@ -152,7 +152,8 @@ bool valid_site_digest(const SiteDigest& digest, const rules::Ruleset& ruleset) 
     if (!time::is_representable(digest.unload_tick)) {
         return false;
     }
-    SitePersistentLayer persistent{digest.objects};
+    SitePersistentLayer persistent;
+    persistent.buildings = digest.objects;
     CityBuildState state{digest.city_buildings, digest.pending, digest.economy,
                          digest.migration};
     return valid_persistent_layer(persistent) && valid_city_build_state(state, ruleset);

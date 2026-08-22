@@ -11,6 +11,8 @@
 #include <compare>
 #include <cstddef>
 #include <cstdint>
+#include <optional>
+#include <string>
 #include <type_traits>
 #include <vector>
 
@@ -47,6 +49,7 @@ struct SiteFastVars {
     world::ProductionStockReduction::Value production_stock{};
     world::DefenseValue defense{};
     world::DamageValue damage{};
+    world::OrderReduction::Value order{};
 
     constexpr bool operator==(const SiteFastVars&) const noexcept = default;
 };
@@ -98,6 +101,44 @@ struct PersistentBuilding {
     template <typename Archive> void serialize(Archive& archive) {
         archive(tile, type, state, aging_seconds);
     }
+};
+
+// SiteOrderState 保存歸約公式的四個真實因子；order 本身只存在 Region。
+struct SiteOrderState {
+    std::uint16_t garrison_coverage{};
+    std::uint16_t patrol_coverage{};
+    std::uint16_t bandit_pressure{};
+    std::uint16_t refugee_pressure{};
+
+    template <typename Archive> void serialize(Archive& archive) {
+        archive(garrison_coverage, patrol_coverage, bandit_pressure, refugee_pressure);
+    }
+    constexpr bool operator==(const SiteOrderState&) const noexcept = default;
+};
+
+struct PersistentNamedNpc {
+    std::uint64_t uid{};
+    std::string person_name_key;
+    std::string last_seen_place_name_key;
+    bool known_to_player{};
+    bool missing{};
+
+    template <typename Archive> void serialize(Archive& archive) {
+        archive(uid, person_name_key, last_seen_place_name_key, known_to_player, missing);
+    }
+    bool operator==(const PersistentNamedNpc&) const = default;
+};
+
+struct PersistentDungeon {
+    std::uint64_t uid{};
+    std::string place_name_key;
+    bool cleared{};
+    std::uint16_t depth{};
+
+    template <typename Archive> void serialize(Archive& archive) {
+        archive(uid, place_name_key, cleared, depth);
+    }
+    bool operator==(const PersistentDungeon&) const = default;
 };
 
 using SiteBoundarySide = spatial::BoundarySide;
@@ -189,10 +230,29 @@ struct SiteProceduralLayer {
 // SitePersistentLayer 是唯一允許進 Site 存檔的資料層。
 struct SitePersistentLayer {
     std::vector<PersistentBuilding> buildings;
+    std::optional<SiteOrderState> order;
+    std::string place_name_key;
+    std::vector<PersistentNamedNpc> named_npcs;
+    std::vector<PersistentDungeon> dungeons;
 
     bool operator==(const SitePersistentLayer&) const = default;
 
-    template <typename Archive> void serialize(Archive& archive) { archive(buildings); }
+    template <typename Archive> void serialize(Archive& archive) {
+        archive(buildings);
+        bool has_order = order.has_value();
+        archive(has_order);
+        if constexpr (Archive::is_loading::value) {
+            if (has_order) {
+                order.emplace();
+            } else {
+                order.reset();
+            }
+        }
+        if (has_order) {
+            archive(*order);
+        }
+        archive(place_name_key, named_npcs, dungeons);
+    }
 };
 
 // SiteVolatileLayer 是由持久層與規則重建、永不存檔的資料層；M2.1 刻意為空。

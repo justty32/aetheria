@@ -248,6 +248,9 @@ ruin_keep_max_percent = 40
     std::filesystem::copy_file(std::filesystem::path{AETHERIA_SOURCE_DIR} / "data" /
                                    "damage.toml",
                                directory.path() / "damage.toml");
+    std::filesystem::copy_file(std::filesystem::path{AETHERIA_SOURCE_DIR} / "data" /
+                                   "world_observations.toml",
+                               directory.path() / "world_observations.toml");
     return rules::RulesetLoader::load(directory.path());
 }
 

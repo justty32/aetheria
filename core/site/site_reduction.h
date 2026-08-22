@@ -9,6 +9,10 @@
 
 namespace aetheria::site {
 
+// 空 optional 是「Site 沒有這項觀測」；有值 0 才是觀測到無政府狀態。
+[[nodiscard]] std::optional<world::OrderReduction::Value>
+measure_site_order(const SitePersistentLayer& persistent) noexcept;
+
 // ReductionTable 是 Region 歸約欄位唯一的 Site-side 寫入者。
 // row 清單同時決定 delta 與 Region storage；呼叫端拿不到任意 setter。
 class ReductionTable {

@@ -141,8 +141,18 @@ zone::Zone materialize_site_zone(world::RegionTiles& region_tiles, world::Region
 
     SitePersistentLayer persistent;
     if (vars.fast.settlement != world::SettlementTier::None) {
+        const auto& observation_rules = ruleset.world_observation_rules();
+        if (!observation_rules.loaded) {
+            throw std::runtime_error{"Site 具現化缺少世界觀測資料規則"};
+        }
         persistent.buildings.push_back({initial_building_tile(prepared.procedural),
                                         BuildingType::SettlementHall, BuildingState::Active});
+        persistent.order = SiteOrderState{
+            observation_rules.initial_garrison_coverage,
+            observation_rules.initial_patrol_coverage,
+            observation_rules.initial_bandit_pressure,
+            observation_rules.initial_refugee_pressure,
+        };
     }
 
     zone::SitePayload payload{

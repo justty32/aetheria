@@ -105,6 +105,7 @@ Ruleset RulesetLoader::load(const std::filesystem::path& data_directory) {
     load_world_graph(result, data_directory);
     load_power_rules(result, data_directory, global_ids);
     load_combat_rules(result, data_directory);
+    load_world_observation_rules(result, data_directory);
 
     return result;
 }
