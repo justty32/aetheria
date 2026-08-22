@@ -4,6 +4,7 @@
 #include "core/worldgen/gen_noise.h"
 
 #include <algorithm>
+#include <cmath>
 #include <cstdint>
 #include <queue>
 #include <stdexcept>
@@ -13,14 +14,12 @@
 namespace aetheria::worldgen {
 namespace {
 
-inline constexpr std::uint32_t kCoastWarpWavelength = 16;
-inline constexpr double kCoastWarpAmplitude = 15.0;
-
 [[nodiscard]] std::size_t warped_plate_index(const PlateStageOutput& plates,
                                              std::uint64_t stage_seed, std::uint32_t x,
-                                             std::uint32_t y) noexcept {
-    const auto warped =
-        detail::domain_warp(stage_seed, x, y, kCoastWarpWavelength, kCoastWarpAmplitude);
+                                             std::uint32_t y,
+                                             const HeightGenerationConfig& config) noexcept {
+    const auto warped = detail::domain_warp(stage_seed, x, y, config.coast_warp_wavelength,
+                                            config.coast_warp_amplitude);
     const auto sample_x = std::clamp<std::int64_t>(warped.x, 0, plates.width - 1U);
     const auto sample_y = std::clamp<std::int64_t>(warped.y, 0, plates.height - 1U);
     return static_cast<std::size_t>(sample_y) * plates.width +
@@ -87,7 +86,8 @@ HeightStageOutput generate_height(const PlateStageOutput& plates, std::uint64_t 
         throw std::invalid_argument{"板塊階段輸出尺寸不一致"};
     }
     if (config.noise_octaves == 0 || config.noise_octaves > 8 || config.target_land_percent == 0 ||
-        config.target_land_percent >= 100) {
+        config.target_land_percent >= 100 || config.coast_warp_wavelength == 0 ||
+        !std::isfinite(config.coast_warp_amplitude) || config.coast_warp_amplitude < 0.0) {
         throw std::invalid_argument{"高度場參數超出範圍"};
     }
 
@@ -101,7 +101,7 @@ HeightStageOutput generate_height(const PlateStageOutput& plates, std::uint64_t 
                 throw std::invalid_argument{"板塊階段輸出含無效 plate index"};
             }
             const auto base_plate_index = plates.plate_index[warped_plate_index(
-                plates, stage_seed, x, y)];
+                plates, stage_seed, x, y, config)];
             if (base_plate_index >= plates.plates.size()) {
                 throw std::invalid_argument{"板塊階段輸出含無效 plate index"};
             }

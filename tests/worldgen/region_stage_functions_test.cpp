@@ -44,7 +44,9 @@ struct CoastlineMetrics {
 
 [[nodiscard]] CoastlineMetrics measure_coastline(const aetheria::worldgen::PlateStageOutput& plates,
                                                  const aetheria::worldgen::HeightStageOutput& height,
-                                                 std::uint64_t height_seed) {
+                                                 std::uint64_t height_seed,
+                                                 const aetheria::worldgen::HeightGenerationConfig&
+                                                     config) {
     CoastlineMetrics metrics;
     constexpr double kNearSeaLevelEpsilon = 100.0;
     for (std::uint32_t y = 0; y < height.height; ++y) {
@@ -66,8 +68,8 @@ struct CoastlineMetrics {
                 }
             }
 
-            const auto warped =
-                aetheria::worldgen::detail::domain_warp(height_seed, x, y, 16, 15.0);
+            const auto warped = aetheria::worldgen::detail::domain_warp(
+                height_seed, x, y, config.coast_warp_wavelength, config.coast_warp_amplitude);
             const auto sample_x = std::clamp<std::int64_t>(warped.x, 0, plates.width - 1U);
             const auto sample_y = std::clamp<std::int64_t>(warped.y, 0, plates.height - 1U);
             const auto sample_index = static_cast<std::size_t>(sample_y) * plates.width +
@@ -77,7 +79,7 @@ struct CoastlineMetrics {
                                        plates.boundary_effect[index] +
                                        aetheria::worldgen::detail::fbm(
                                            height_seed, x, y,
-                                           aetheria::worldgen::HeightGenerationConfig{}.noise_octaves);
+                                           config.noise_octaves);
             if (std::abs(raw_elevation - height.sea_level) <= kNearSeaLevelEpsilon) {
                 ++metrics.near_sea_level_count;
             }
@@ -137,6 +139,7 @@ TEST(RegionGenerationStage, CoastlineQualityMetricsRemainVisible) {
     constexpr std::array baseline_fractal_ratios{0.125068, 0.033912, 0.061856};
     constexpr std::array baseline_overlap_ratios{0.470716, 0.248000, 0.552632};
     const RegionSlowVariables slow{0, 128, 96};
+    const aetheria::worldgen::HeightGenerationConfig height_config;
     std::size_t total_coastline_count{};
     std::size_t total_land_count{};
     std::size_t total_overlap_count{};
@@ -147,8 +150,8 @@ TEST(RegionGenerationStage, CoastlineQualityMetricsRemainVisible) {
         const auto height_seed = derive_region_stage_seed(
             seed, slow.region_id, aetheria::worldgen::detail::kHeightStageId);
         const auto plates = generate_plates(slow, plate_seed, {});
-        const auto height = generate_height(plates, height_seed, {});
-        const auto metrics = measure_coastline(plates, height, height_seed);
+        const auto height = generate_height(plates, height_seed, height_config);
+        const auto metrics = measure_coastline(plates, height, height_seed, height_config);
         const auto fractal_ratio = static_cast<double>(metrics.coastline_count) /
                                    static_cast<double>(metrics.land_count);
         const auto overlap_ratio = static_cast<double>(metrics.plate_boundary_overlap_count) /

@@ -1,5 +1,6 @@
 #include "core/worldgen/region_skeleton.h"
 
+#include "core/worldgen/field_redistribution.h"
 #include "core/worldgen/gen_grid.h"
 #include "core/worldgen/gen_stage_ids.h"
 #include "core/worldgen/region_seed.h"
@@ -61,18 +62,23 @@ RegionBuildResult build_skeleton(const RegionSlowVariables& slow, std::uint64_t 
     auto height = generate_height(
         plates, derive_region_stage_seed(world_seed, slow.region_id, detail::kHeightStageId),
         config.height);
-    auto erosion = erode_height(
-        height, derive_region_stage_seed(world_seed, slow.region_id, detail::kErosionStageId),
-        config.erosion);
+    auto erosion = redistribute(
+        erode_height(height,
+                     derive_region_stage_seed(world_seed, slow.region_id,
+                                              detail::kErosionStageId),
+                     config.erosion),
+        config.height.redistribution);
     auto elevation = quantize_elevation(erosion);
     auto climate = generate_climate(
         slow, elevation,
         derive_region_stage_seed(world_seed, slow.region_id, detail::kClimateStageId),
         config.climate);
-    auto rivers = generate_rivers(
-        elevation, climate,
-        derive_region_stage_seed(world_seed, slow.region_id, detail::kRiverStageId),
-        config.rivers);
+    auto rivers = redistribute(
+        generate_rivers(elevation, climate,
+                        derive_region_stage_seed(world_seed, slow.region_id,
+                                                 detail::kRiverStageId),
+                        config.rivers),
+        config.rivers.redistribution);
     auto biome = generate_biomes(
         elevation, climate, rivers, ruleset, definitions,
         derive_region_stage_seed(world_seed, slow.region_id, detail::kBiomeStageId), config.biome);

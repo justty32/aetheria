@@ -35,9 +35,43 @@ generation_parameter_hashes(const RegionGenerationConfig& config) noexcept {
     result.groups[0] = begin_group();
     detail::hash_scalar(result.groups[0], config.plates.min_count);
     detail::hash_scalar(result.groups[0], config.plates.max_count);
+    constexpr PlateGenerationConfig default_plates;
+    if (config.plates.oceanic_percent != default_plates.oceanic_percent ||
+        config.plates.drift_radius != default_plates.drift_radius ||
+        config.plates.ocean_base_min != default_plates.ocean_base_min ||
+        config.plates.ocean_base_span != default_plates.ocean_base_span ||
+        config.plates.land_base_min != default_plates.land_base_min ||
+        config.plates.land_base_span != default_plates.land_base_span ||
+        config.plates.boundary_dot_threshold != default_plates.boundary_dot_threshold ||
+        config.plates.convergent_effect != default_plates.convergent_effect ||
+        config.plates.oceanic_divergent_effect != default_plates.oceanic_divergent_effect ||
+        config.plates.mixed_divergent_effect != default_plates.mixed_divergent_effect ||
+        config.plates.boundary_spread_distance != default_plates.boundary_spread_distance ||
+        config.plates.boundary_decay_numerator != default_plates.boundary_decay_numerator ||
+        config.plates.boundary_decay_denominator != default_plates.boundary_decay_denominator) {
+        detail::hash_scalar(result.groups[0], config.plates.oceanic_percent);
+        detail::hash_scalar(result.groups[0], config.plates.drift_radius);
+        detail::hash_scalar(result.groups[0], config.plates.ocean_base_min);
+        detail::hash_scalar(result.groups[0], config.plates.ocean_base_span);
+        detail::hash_scalar(result.groups[0], config.plates.land_base_min);
+        detail::hash_scalar(result.groups[0], config.plates.land_base_span);
+        detail::hash_scalar(result.groups[0], config.plates.boundary_dot_threshold);
+        detail::hash_scalar(result.groups[0], config.plates.convergent_effect);
+        detail::hash_scalar(result.groups[0], config.plates.oceanic_divergent_effect);
+        detail::hash_scalar(result.groups[0], config.plates.mixed_divergent_effect);
+        detail::hash_scalar(result.groups[0], config.plates.boundary_spread_distance);
+        detail::hash_scalar(result.groups[0], config.plates.boundary_decay_numerator);
+        detail::hash_scalar(result.groups[0], config.plates.boundary_decay_denominator);
+    }
     result.groups[1] = begin_group();
     detail::hash_scalar(result.groups[1], config.height.noise_octaves);
     detail::hash_scalar(result.groups[1], config.height.target_land_percent);
+    constexpr HeightGenerationConfig default_height;
+    if (config.height.coast_warp_wavelength != default_height.coast_warp_wavelength ||
+        config.height.coast_warp_amplitude != default_height.coast_warp_amplitude) {
+        detail::hash_scalar(result.groups[1], config.height.coast_warp_wavelength);
+        detail::hash_double(result.groups[1], config.height.coast_warp_amplitude);
+    }
     result.groups[2] = begin_group();
     detail::hash_scalar(result.groups[2], config.erosion.iterations);
     detail::hash_double(result.groups[2], config.erosion.talus);

@@ -22,13 +22,18 @@ using aetheria::tests::TemporaryDirectory;
 using aetheria::tests::write_text;
 using aetheria::worldgen::build_skeleton;
 using aetheria::worldgen::ErosionStageOutput;
+using aetheria::worldgen::ElevationRedistributionParams;
 using aetheria::worldgen::grayscale;
+using aetheria::worldgen::hash_stage;
 using aetheria::worldgen::land_fraction;
 using aetheria::worldgen::land_is_single_component;
+using aetheria::worldgen::MoistureRedistributionParams;
 using aetheria::worldgen::populate;
 using aetheria::worldgen::quantize_elevation;
+using aetheria::worldgen::redistribute;
 using aetheria::worldgen::RegionFastVariables;
 using aetheria::worldgen::RegionSlowVariables;
+using aetheria::worldgen::RiverStageOutput;
 
 [[nodiscard]] aetheria::rules::Ruleset ruleset_with_forest_requirement(
     std::string_view required_terrain) {
@@ -61,6 +66,32 @@ TEST(RegionGeneration, QuantizationIsTheTypedGatewayIntoRegionTiles) {
     EXPECT_EQ(quantized.meters, (std::vector<std::uint16_t>{0, 4095, 4197, UINT16_MAX}));
     EXPECT_LT(quantized.meters.at(1), quantized.sea_level);
     EXPECT_GT(quantized.meters.at(2), quantized.sea_level);
+}
+
+TEST(RegionGeneration, ElevationRedistributionSeamIsIdentityUnlessATestTransformIsInjected) {
+    const ErosionStageOutput raw{2, 1, {100.0, 200.0}, {1, 1}, 0.0};
+    const auto identity = redistribute(raw, ElevationRedistributionParams{});
+    const auto shifted = redistribute(
+        raw, ElevationRedistributionParams{},
+        [](ErosionStageOutput& field, const ElevationRedistributionParams&) {
+            field.elevation.front() += 100.0;
+        });
+
+    EXPECT_EQ(hash_stage(identity), hash_stage(raw));
+    EXPECT_NE(quantize_elevation(shifted).meters, quantize_elevation(identity).meters);
+}
+
+TEST(RegionGeneration, MoistureRedistributionSeamIsIdentityUnlessATestTransformIsInjected) {
+    RiverStageOutput raw{2, 1, {4096, 4096}, {-1, -1}, {1, 1}, {0, 0}, {1000, 2000}, {0, 0}};
+    const auto identity = redistribute(raw, MoistureRedistributionParams{});
+    const auto shifted = redistribute(
+        raw, MoistureRedistributionParams{},
+        [](RiverStageOutput& field, const MoistureRedistributionParams&) {
+            ++field.moisture.front();
+        });
+
+    EXPECT_EQ(hash_stage(identity), hash_stage(raw));
+    EXPECT_NE(hash_stage(shifted), hash_stage(identity));
 }
 
 TEST(RegionGeneration, ProducesTargetLandRatioAndOneConnectedMainland) {

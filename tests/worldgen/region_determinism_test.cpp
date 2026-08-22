@@ -1,6 +1,7 @@
 #include "core/worldgen/region_generator.h"
 #include "tests/support/ruleset_fixture.h"
 
+#include <array>
 #include <cstdint>
 
 #include <gtest/gtest.h>
@@ -40,6 +41,30 @@ TEST(RegionGeneration, SameSeedIsBitIdenticalAcrossEveryStageAndWorldField) {
     EXPECT_EQ(hash_tiles(first_tiles), hash_tiles(second_tiles));
 }
 
+TEST(RegionGeneration, IdentityRedistributionKeepsReferenceWorldHashesBitIdentical) {
+    struct ReferenceHash {
+        std::uint64_t seed;
+        std::uint64_t skeleton;
+        std::uint64_t tiles;
+    };
+    constexpr std::array references{
+        ReferenceHash{UINT64_C(515151), UINT64_C(5754128893694281728),
+                      UINT64_C(16344487931467028048)},
+        ReferenceHash{UINT64_C(12345), UINT64_C(17267498220237237745),
+                      UINT64_C(1588818590191442555)},
+        ReferenceHash{UINT64_C(424242), UINT64_C(793007085422239155),
+                      UINT64_C(15652735773701661944)},
+    };
+
+    for (const auto& reference : references) {
+        const auto result =
+            build_skeleton(RegionSlowVariables{0, 128, 96}, reference.seed, test_ruleset());
+        const auto tiles = populate(result.skeleton, RegionFastVariables{});
+        EXPECT_EQ(hash_skeleton(result.skeleton), reference.skeleton) << reference.seed;
+        EXPECT_EQ(hash_tiles(tiles), reference.tiles) << reference.seed;
+    }
+}
+
 TEST(RegionGeneration, StageAndRegionSeedsAreIndependent) {
     const auto plate = aetheria::worldgen::derive_stage_seed(UINT64_C(77), UINT64_C(1));
     const auto height = aetheria::worldgen::derive_stage_seed(UINT64_C(77), UINT64_C(2));
@@ -63,6 +88,22 @@ TEST(RegionGeneration, ParameterHashesIdentifyTheChangedStageGroup) {
         } else {
             EXPECT_EQ(before.groups[index], after.groups[index]);
         }
+    }
+}
+
+TEST(RegionGeneration, MovedTerrainConstantsRemainInTheirParameterHashGroups) {
+    const RegionGenerationConfig original;
+    auto changed_plate = original;
+    ++changed_plate.plates.boundary_spread_distance;
+    auto changed_height = original;
+    ++changed_height.height.coast_warp_wavelength;
+    const auto before = aetheria::worldgen::generation_parameter_hashes(original);
+    const auto plate_after = aetheria::worldgen::generation_parameter_hashes(changed_plate);
+    const auto height_after = aetheria::worldgen::generation_parameter_hashes(changed_height);
+
+    for (std::size_t index = 0; index < before.groups.size(); ++index) {
+        EXPECT_EQ(before.groups[index] != plate_after.groups[index], index == 0);
+        EXPECT_EQ(before.groups[index] != height_after.groups[index], index == 1);
     }
 }
 

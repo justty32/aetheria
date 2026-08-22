@@ -84,7 +84,7 @@
 
 ### `core/worldgen` — Region 十二階段生成
 
-門面 `region_generator.h` → `region_config.h`（慢／快變數、十二階段 config、參數 hash）、`region_seed.h`、`region_relief_stages.h`（1–4）、`region_climate_stages.h`（5–7）、`region_civ_stages.h`（8–10）、`region_late_stages.h`（11–12）、`region_skeleton.h`、`region_diagnostics.h`。
+門面 `region_generator.h` → `region_config.h`（變數、config、地形常數與參數 hash）、各階段 header、`region_skeleton.h`、`region_diagnostics.h`。`field_redistribution.*` 是高度／濕度的 identity 接縫。
 
 內部共用：`gen_stage_ids.h`（stage id 與高度上下限）、`gen_grid.h`（尺寸檢查、四鄰格、陸地連通分量）、`gen_noise.h`（SplitMix64 stream、value noise、fbm）、`gen_hash.h`（FNV 與灰階化）。`biome_classification.h` 是 terrain／relief 正交裁決的型別隔離入口。
 
@@ -105,6 +105,6 @@
 
 ## `sim/`
 
-`main.cpp` 只接 CLI11。子命令：`gen_commands.*`（Region）、`local_viewer.*`／
+`main.cpp` 只接 CLI11。子命令：`gen_commands.*`（Region）、`terrain_metrics.*`（地形量測）、`local_viewer.*`／
 `site_viewer.*`（分層 PNG）、`world_hash.*`（磁碟狀態）。輸出：`debug_canvas.*`（RGB PNG）、
 `stage_dump.*`／`pgm_writer.*`（階段 PGM）。**stdout 有 CTest 比對，不要順手改。**
