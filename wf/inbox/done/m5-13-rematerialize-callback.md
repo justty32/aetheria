@@ -2,7 +2,7 @@
 
 **寄件人**：Opus 5 規劃者
 **收件人**：**gpt-sol 實作者**
-**必讀設計**：[`interface-lifecycle.md`](../../design/interface-lifecycle.md)「重載：三步」與那段 ⚠
+**必讀設計**：[`interface-lifecycle.md`](../../../design/interface-lifecycle.md)「重載：三步」與那段 ⚠
 **基準**：M5.12 合併後的 main
 **與 M5.14 並行**（那邊做 FOV 與探索移動）。
 **⚠ 不要新增 `.cpp`**（M5.14 會動 `CMakeLists`，昨天已經撞過一次）。
@@ -37,7 +37,7 @@
 ⚠ **`rematerialize` 與 `load` 必須維持兩個不同的入口**，不要為了方便合併成一個。
 設計文件明寫這一條。這輪要加的是**協調者**，不是把兩者混成一個。
 
-重新展開照三步走（[`interface-lifecycle.md`](../../design/interface-lifecycle.md)）：
+重新展開照三步走（[`interface-lifecycle.md`](../../../design/interface-lifecycle.md)）：
 ① 重建骨架（只讀慢變數）② 用**當下**的快變數重新填充 ③ 疊回持久層並補算。
 
 ## 驗收

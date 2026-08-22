@@ -2,6 +2,7 @@
 
 #include "core/world/region_movement.h"
 
+#include <ranges>
 #include <string>
 
 namespace aetheria::zone {
@@ -17,9 +18,27 @@ void rebuild_uid_index(Zone& zone) {
     }
 }
 
+[[nodiscard]] bool has_complete_procedural_layer(const Zone& zone) noexcept {
+    if (const auto* region = std::get_if<RegionPayload>(&zone.payload)) {
+        return !region->layers.empty() &&
+               std::ranges::all_of(region->layers,
+                                   [](const auto& layer) { return layer.second.valid_layout(); });
+    }
+    if (const auto* site = std::get_if<SitePayload>(&zone.payload)) {
+        return site->layers.procedural.valid_layout();
+    }
+    if (const auto* local = std::get_if<LocalPayload>(&zone.payload)) {
+        return local->layers.contains(0) &&
+               std::ranges::all_of(local->layers,
+                                   [](const auto& layer) { return layer.second.valid_layout(); });
+    }
+    return true;
+}
+
 }  // namespace
 
-ZoneManager::ZoneManager(ZoneStore& store) : store_{store} {
+ZoneManager::ZoneManager(ZoneStore& store, ZoneMaterializer materializer)
+    : store_{store}, materializer_{std::move(materializer)} {
     auto root = store_.load(kRootZone);
     if (root == nullptr) {
         root = std::make_unique<Zone>(kRootZone);
@@ -32,6 +51,50 @@ std::optional<ZoneHandle> ZoneManager::get(ZoneKey key) const noexcept {
     if (!zones_.contains(key)) {
         return std::nullopt;
     }
+    return ZoneHandle{key};
+}
+
+std::optional<ZoneHandle> ZoneManager::acquire(ZoneKey key) {
+    return acquire(key, materializer_);
+}
+
+std::optional<ZoneHandle> ZoneManager::acquire(ZoneKey key,
+                                               const ZoneMaterializer& materializer) {
+    AETH_CHECK(!in_tick_);
+    if (const auto loaded = get(key)) {
+        if (has_complete_procedural_layer(*zones_.at(key))) {
+            return loaded;
+        }
+        if (!materializer) {
+            return std::nullopt;
+        }
+    }
+
+    std::unique_ptr<Zone> persistent;
+    if (const auto found = zones_.find(key); found != zones_.end()) {
+        persistent = std::move(found->second);
+        zones_.erase(found);
+        if (key != kRootZone) {
+            remove_from_tick_order(key);
+        }
+    } else {
+        persistent = store_.load(key);
+    }
+
+    if (!materializer) {
+        if (persistent == nullptr || !has_complete_procedural_layer(*persistent)) {
+            return std::nullopt;
+        }
+        add_loaded(std::move(persistent));
+        return ZoneHandle{key};
+    }
+
+    auto materialized = std::invoke(materializer, key, std::move(persistent));
+    if (materialized == nullptr || materialized->key != key ||
+        !has_complete_procedural_layer(*materialized)) {
+        return std::nullopt;
+    }
+    add_loaded(std::move(materialized));
     return ZoneHandle{key};
 }
 

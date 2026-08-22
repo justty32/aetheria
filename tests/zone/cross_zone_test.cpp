@@ -1,9 +1,11 @@
 #include <aetheria/runtime/cross_zone.h>
 
+#include "core/local/local_materialize.h"
 #include "core/serialize/normalized_state_hash.h"
 #include "core/world/region_movement.h"
 #include "core/zone/zone.h"
 #include "core/zone/zone_manager.h"
+#include "tests/local/local_test_support.h"
 #include "tests/support/ruleset_fixture.h"
 
 #include <array>
@@ -20,6 +22,7 @@ using aetheria::local::LocalXY;
 using aetheria::runtime::CrossZoneRuntime;
 using aetheria::runtime::EntityRef;
 using aetheria::runtime::LocalPosition;
+using aetheria::tests::open_site_layer;
 using aetheria::tests::test_ruleset;
 using aetheria::world::MovementPoints;
 using aetheria::world::StableId;
@@ -32,6 +35,31 @@ constexpr auto kRegion = aetheria::zone::child_key(aetheria::zone::kRootZone, 7,
 constexpr auto kSite = aetheria::zone::child_key(kRegion, 4, 5);
 constexpr auto kSource = aetheria::zone::child_key(kSite, 11, 12);
 constexpr auto kDestination = aetheria::zone::child_key(kSite, 12, 12);
+
+[[nodiscard]] ZoneManager::ZoneMaterializer local_materializer(
+    const aetheria::site::SiteProceduralLayer& parent) {
+    return [&parent](ZoneKey key, std::unique_ptr<Zone> persistent) {
+        if (aetheria::zone::parent_of(key) != kSite) {
+            return std::unique_ptr<Zone>{};
+        }
+        const aetheria::site::SiteXY coordinate{
+            static_cast<std::uint16_t>(aetheria::zone::local_x_of(key)),
+            static_cast<std::uint16_t>(aetheria::zone::local_y_of(key))};
+        const auto feature = *test_ruleset().find_feature("feature.none");
+        auto generated = aetheria::local::materialize_local_zone(
+            kSite, parent, coordinate, aetheria::tests::kLocalSiteSeed, feature,
+            test_ruleset());
+        if (persistent == nullptr) {
+            return std::make_unique<Zone>(std::move(generated));
+        }
+        if (persistent->key != key) {
+            return std::unique_ptr<Zone>{};
+        }
+        persistent->payload = std::move(generated.payload);
+        persistent->lod = generated.lod;
+        return persistent;
+    };
+}
 
 [[nodiscard]] std::unique_ptr<Zone> local_zone(ZoneKey key, std::uint16_t marker = 0) {
     auto result = std::make_unique<Zone>(key);
@@ -76,6 +104,77 @@ private:
     return entity;
 }
 
+[[nodiscard]] entt::entity add_persistent_object(Zone& zone, std::uint64_t uid) {
+    const auto entity = zone.reg.create();
+    zone.reg.emplace<StableId>(entity, uid);
+    return entity;
+}
+
+TEST(ZoneManagerAcquire, ColdLoadRestores4096TilesAndPreservesPersistentObject) {
+    const auto parent = open_site_layer();
+    const auto feature = *test_ruleset().find_feature("feature.none");
+    auto saved = aetheria::local::materialize_local_zone(
+        kSite, parent, {12, 12}, aetheria::tests::kLocalSiteSeed, feature,
+        test_ruleset());
+    static_cast<void>(add_persistent_object(saved, 6001));
+    InMemoryZoneStore store{test_ruleset()};
+    store.save(saved);
+
+    ZoneManager manager{store, local_materializer(parent)};
+    ASSERT_TRUE(manager.load(kDestination));
+    std::size_t raw_tile_count = 1;
+    std::size_t raw_persistent_count{};
+    ASSERT_TRUE(manager.with(*manager.get(kDestination), [&](const Zone& loaded) {
+        const auto& layers = std::get<aetheria::zone::LocalPayload>(loaded.payload).layers;
+        raw_tile_count = layers.contains(0) ? layers.at(0).ground.size() : 0U;
+        raw_persistent_count = loaded.reg.view<const StableId>().size();
+    }));
+    EXPECT_EQ(raw_tile_count, 0U);
+    EXPECT_EQ(raw_persistent_count, 1U);
+
+    const auto acquired = manager.acquire(kDestination);
+    ASSERT_TRUE(acquired.has_value());
+    std::size_t tile_count{};
+    std::size_t persistent_count{};
+    ASSERT_TRUE(manager.with(*acquired, [&](const Zone& loaded) {
+        const auto& layers = std::get<aetheria::zone::LocalPayload>(loaded.payload).layers;
+        tile_count = layers.contains(0) ? layers.at(0).ground.size() : 0U;
+        persistent_count = loaded.reg.view<const StableId>().size();
+    }));
+    EXPECT_EQ(tile_count, aetheria::local::kLocalTileCount);
+    EXPECT_EQ(persistent_count, 1U);
+    std::cout << "zone_acquire raw_tiles=" << raw_tile_count
+              << " rematerialized_tiles=" << tile_count
+              << " persistent_objects=" << persistent_count << '\n';
+}
+
+TEST(ZoneManagerAcquire, MissingSnapshotGeneratesAndInvalidResultLeavesNoShell) {
+    const auto parent = open_site_layer();
+    InMemoryZoneStore store{test_ruleset()};
+    ZoneManager manager{store, local_materializer(parent)};
+
+    const auto generated = manager.acquire(kDestination);
+    ASSERT_TRUE(generated.has_value());
+    std::size_t tile_count{};
+    ASSERT_TRUE(manager.with(*generated, [&](const Zone& loaded) {
+        tile_count = std::get<aetheria::zone::LocalPayload>(loaded.payload)
+                         .layers.at(0)
+                         .ground.size();
+    }));
+    EXPECT_EQ(tile_count, aetheria::local::kLocalTileCount);
+
+    const auto failed_key = aetheria::zone::child_key(kSite, 13, 12);
+    ZoneManager failing_manager{
+        store, [](ZoneKey key, std::unique_ptr<Zone>) { return std::make_unique<Zone>(key); }};
+    const bool failure_returned_handle = failing_manager.acquire(failed_key).has_value();
+    const bool failure_left_shell = failing_manager.get(failed_key).has_value();
+    EXPECT_FALSE(failure_returned_handle);
+    EXPECT_FALSE(failure_left_shell);
+    std::cout << "zone_acquire generated_tiles=" << tile_count
+              << " invalid_returned_handle=" << failure_returned_handle
+              << " invalid_left_shell=" << failure_left_shell << '\n';
+}
+
 TEST(CrossZonePeek, LoadedLocalReturnsValueAndAbsentIsExpectedUnknown) {
     InMemoryZoneStore store{test_ruleset()};
     ZoneManager manager{store};
@@ -106,7 +205,9 @@ TEST(CrossZoneMigration, CopiesComponentsInvalidatesOldHandleAndSynchronizesUidI
     PreparedLocalStore store{kDestination, 2};
     auto source = local_zone(kSource, 1);
     const auto old_handle = add_actor(*source, 77);
-    ZoneManager manager{store};
+    ZoneManager manager{store, [](ZoneKey, std::unique_ptr<Zone> loaded) {
+                            return loaded;
+                        }};
     static_cast<void>(manager.adopt(std::move(source)));
     CrossZoneRuntime runtime{manager};
 
@@ -126,6 +227,38 @@ TEST(CrossZoneMigration, CopiesComponentsInvalidatesOldHandleAndSynchronizesUidI
         EXPECT_EQ(loaded.reg.get<const LocalPosition>(*moved).tile, (LocalXY{60, 61}));
         EXPECT_EQ(loaded.touch_count, 1U);
     }));
+}
+
+TEST(CrossZoneMigration, DiskOnlyDestinationIsRematerializedBeforeMove) {
+    const auto parent = open_site_layer();
+    const auto feature = *test_ruleset().find_feature("feature.none");
+    auto destination = aetheria::local::materialize_local_zone(
+        kSite, parent, {12, 12}, aetheria::tests::kLocalSiteSeed, feature,
+        test_ruleset());
+    static_cast<void>(add_persistent_object(destination, 7001));
+    InMemoryZoneStore store{test_ruleset()};
+    store.save(destination);
+    auto source = local_zone(kSource, 1);
+    const auto actor = add_actor(*source, 7002);
+    ZoneManager manager{store, local_materializer(parent)};
+    static_cast<void>(manager.adopt(std::move(source)));
+    CrossZoneRuntime runtime{manager};
+
+    ASSERT_TRUE(runtime.migrate_entity(kSource, actor, kDestination, {60, 61}));
+    const auto moved = runtime.resolve({kDestination, 7002});
+    ASSERT_TRUE(moved.has_value());
+    std::size_t tile_count{};
+    ASSERT_TRUE(manager.with(*manager.get(kDestination), [&](const Zone& loaded) {
+        tile_count = std::get<aetheria::zone::LocalPayload>(loaded.payload)
+                         .layers.at(0)
+                         .ground.size();
+        const auto persistent = runtime.resolve({kDestination, 7001});
+        ASSERT_TRUE(persistent.has_value());
+        EXPECT_EQ(loaded.reg.get<const StableId>(*persistent).uid, 7001U);
+    }));
+    EXPECT_EQ(tile_count, aetheria::local::kLocalTileCount);
+    std::cout << "cross_zone_disk_only migrated=1 destination_tiles=" << tile_count
+              << " persistent_objects=1 moved_uid=7002\n";
 }
 
 TEST(CrossZoneMigration, MissingDestinationReturnsFalseWithoutChangingSource) {
@@ -191,12 +324,15 @@ TEST(CrossZoneMigration, MidTransactionUidConflictRollsBackStagedDestination) {
 }
 
 [[nodiscard]] std::array<std::uint64_t, 2> deterministic_migration_hashes() {
+    const auto parent = open_site_layer();
     InMemoryZoneStore store{test_ruleset()};
     auto source = local_zone(kSource);
     const auto actor = add_actor(*source, 1234, {1, 1});
-    ZoneManager manager{store};
+    auto destination = local_zone(kDestination);
+    static_cast<void>(add_persistent_object(*destination, 4321));
+    store.save(*destination);
+    ZoneManager manager{store, local_materializer(parent)};
     static_cast<void>(manager.adopt(std::move(source)));
-    static_cast<void>(manager.adopt(local_zone(kDestination)));
     CrossZoneRuntime runtime{manager};
     if (!runtime.migrate_entity(kSource, actor, kDestination, {63, 62})) {
         return {};

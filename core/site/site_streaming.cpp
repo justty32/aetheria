@@ -75,15 +75,25 @@ SiteStreamingCoordinator::LoadedSite& SiteStreamingCoordinator::ensure_loaded(
         return found->second;
     }
 
-    zone::ZoneHandle handle = [&] {
-        if (store_.contains(key)) {
-            return rematerialize_site_zone(manager_, region_tiles(), coordinate, world_seed_,
-                                            region_id_, now(), ruleset_);
-        }
-        auto site = materialize_site_zone(region_tiles(), coordinate, world_seed_, region_id_,
-                                          ruleset_);
-        return manager_.adopt(std::make_unique<zone::Zone>(std::move(site)));
-    }();
+    const auto acquired = manager_.acquire(
+        key, [&](zone::ZoneKey requested, std::unique_ptr<zone::Zone> persistent) {
+            if (requested != key) {
+                return std::unique_ptr<zone::Zone>{};
+            }
+            if (persistent != nullptr) {
+                auto site = rematerialize_site_zone(
+                    std::move(*persistent), region_tiles(), coordinate, world_seed_, region_id_,
+                    now(), ruleset_);
+                return std::make_unique<zone::Zone>(std::move(site));
+            }
+            auto site = materialize_site_zone(region_tiles(), coordinate, world_seed_, region_id_,
+                                              ruleset_);
+            return std::make_unique<zone::Zone>(std::move(site));
+        });
+    if (!acquired.has_value()) {
+        throw std::runtime_error{"Site streaming 無法取得完整 Site zone"};
+    }
+    const auto handle = *acquired;
     auto [position, inserted] = loaded_.emplace(key, LoadedSite{handle, coordinate, std::nullopt});
     if (!inserted) {
         throw std::logic_error{"Site streaming 重複登記 loaded zone"};
