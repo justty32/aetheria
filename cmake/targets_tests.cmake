@@ -11,6 +11,7 @@ add_executable(aetheria_tests
     tests/local/local_underground_test.cpp
     tests/rules/ruleset_load_test.cpp
     tests/rules/power_test.cpp
+    tests/rules/individual_rules_test.cpp
     tests/rules/ruleset_error_test.cpp
     tests/rules/ruleset_zone_codec_test.cpp
     tests/serialize/registry_codec_test.cpp
