@@ -19,32 +19,30 @@
 
 ### 實作者（gpt-sol）
 
-- 🔄 **M6-INT-2 併入 M6.5 + 版本號收斂 v18**（`m6-int2-wt`）→ [任務書](inbox/m6-int-2-merge-ai-v18.md)
+- 🔄 **M8.0 Lua 沙箱**（`m8-0-wt`）→ [任務書](inbox/m8-0-lua-sandbox.md)
+- 🔄 **M8.1 可玩迴圈**（`m8-1-wt`）→ [任務書](inbox/m8-1-playable-loop.md)
 
 ### 規劃者（Opus 5）
 
 > **完成的不留這裡。** M0～M2.3 的結論都在 git log 與 `design/` 裡；
 > 下面只留**還沒完成、或會在未來咬人**的東西。
 
-## 📌 下一步：M6 內容（戰鬥規則、勢力 AI、劇情）
+## 📌 進度：M6／M7 完成，M8 可玩迴圈進行中
 
-**M0～M5 完成；M6 進行中，目前 336/336。**
+**M0～M7 完成，402/402。M8 進行中。**
 
 **M6 的設計文件早就寫好了**，不必重新設計，照著實作即可。輪次規劃：
 
-| 輪 | 內容 | 設計文件 | 狀態 |
-|---|---|---|---|
-| M6.0 | 力量體系、等效戰力 `S`、階差門檻 | [power-tiers](../design/power-tiers.md) | ✅ |
-| M6.1 | 四屬性、d100、傷害抗性、`suggest_tier` | [rules-individual](../design/rules-individual.md) | ✅ |
-| M6.2 | 外交四分量、戰爭事件、厭戰、`FactionView` | [diplomacy](../design/diplomacy.md) | ✅ |
-| M6.2b | 外交狀態接進存檔（M6.2 自己指出的缺口） | [zone-save-format](../design/zone-save-format.md) | ✅ |
-| M6.3 | **Region 戰鬥公式**（劍聖區間 N=125／M=522） | [combat-formula](../design/combat-formula.md) | ✅ |
-| M6.4 | 具名命運、配額守恆、**已還 M4 的無偏測試債**（113/113） | [significance-fate](../design/significance-fate.md) | ✅ |
-| M6.5 | 勢力 AI：目標庫、效用評分、AI LOD 三級無偏 | [faction-ai](../design/faction-ai.md) | 🔄 INT-2 整合中 |
-| M6.6 | 湧現任務 + **Godot 顯示 UI**（還了 M2 的債） | [narrative](../design/narrative.md) | ✅ |
-| M6.6b | 治安歸約第五列、四個觀測值接真值 | [interface-world-mid](../design/interface-world-mid.md) | ✅ |
-| M6.6c | 觀測欄位進 v17 與正規化雜湊 | [zone-save-history](../design/zone-save-history.md) | ✅ |
-| M6.7 | **三層校準**：E[Region]≈E[Site]≈E[Local]，誤差 <5% | [event-scaling](../design/event-scaling.md) | [任務書已備](inbox/m6-7-three-layer-calibration.md) |
+| 輪 | 內容 | 狀態 |
+|---|---|---|
+| M6.0～M6.7 | 力量體系、個體規則、外交、戰鬥公式、具名命運、勢力 AI、敘事、三層校準契約 | ✅ |
+| M7.0 | 魔法／信仰／種族三條位階來源（共用接法） | ✅ |
+| M7.1 | 地城：深度曲線、機關、Boss 循環、`cleared` 防刷 | ✅ |
+| M7.2 | **Site 方陣戰鬥**（真 L2 戰鬥器） | ✅ |
+| M7.3 | **Local 逐單位戰鬥**，並對真 Site 校準 | ✅ |
+| M8.0 | Lua 沙箱與六條決定論鐵律 | 🔄 |
+| M8.1 | **可玩迴圈**（bridge + Godot） | 🔄 |
+| M9 | 美術管線、三層音景、主線劇情、通關 | 待 |
 
 ⚠ **校準順序不可顛倒**：先把 Region 公式調到「打起來像那麼回事」，
 再讓 Site 與 Local 去追它。反過來做會失控——低層自由度太高，拿它當基準等於沒有基準。
