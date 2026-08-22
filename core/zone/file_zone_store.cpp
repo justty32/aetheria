@@ -34,7 +34,8 @@ FileZoneStore::FileZoneStore(
     } catch (const std::exception& exception) {
         throw std::runtime_error{"manifest 損毀：" + path.string() + "：" + exception.what()};
     }
-    if (manifest_->format_version != serialize::kSaveFormatVersion) {
+    if (manifest_->format_version != 14 &&
+        manifest_->format_version != serialize::kSaveFormatVersion) {
         throw std::runtime_error{
             "manifest format_version 不符：檔內=" + std::to_string(manifest_->format_version) +
             " 預期=" + std::to_string(serialize::kSaveFormatVersion)};

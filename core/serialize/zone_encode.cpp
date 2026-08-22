@@ -3,6 +3,7 @@
 #include "core/serialize/all_components.h"
 #include "core/serialize/registry_codec.h"
 #include "core/serialize/zone_codec_detail.h"
+#include "core/serialize/zone_diplomacy_codec.h"
 #include "core/site/site_lifecycle.h"
 
 #include <cereal/archives/portable_binary.hpp>
@@ -50,6 +51,9 @@ std::string encode_zone(const zone::Zone& value, const rules::Ruleset& ruleset) 
     detail::validate_zone_meta(value);
     if (!zone::payload_matches_level(value.key, value.payload)) {
         throw std::runtime_error{"SpatialPayload alternative 與 ZoneKey level 不符"};
+    }
+    if (value.diplomacy.has_value() && value.key != zone::kRootZone) {
+        throw std::runtime_error{"外交狀態只能存在 root zone"};
     }
     const auto city_states = value.reg.view<const site::CityBuildState>();
     if (city_states.size() > 1U ||
@@ -132,6 +136,11 @@ std::string encode_zone(const zone::Zone& value, const rules::Ruleset& ruleset) 
             stream, cereal::PortableBinaryOutputArchive::Options::LittleEndian()};
         RegistryOutputArchive registry_archive{archive};
         save_registry_snapshot(value.reg, registry_archive, AllComponents{});
+    }
+    {
+        cereal::PortableBinaryOutputArchive archive{
+            stream, cereal::PortableBinaryOutputArchive::Options::LittleEndian()};
+        detail::save_diplomacy(archive, value.diplomacy, ruleset);
     }
     if (!stream) {
         throw std::runtime_error{"zone 序列化失敗"};
