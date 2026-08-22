@@ -3,7 +3,7 @@
 // 世界層外交權威狀態：有向關係矩陣、條約／宣戰理由與持續戰爭事件。
 // AI 不可 include 本標頭，只能接收複本化的 FactionView。
 
-#include <aetheria/ai/faction_view.h>
+#include <aetheria/ai/faction_ai.h>
 #include <aetheria/diplomacy/peace.h>
 
 #include "core/rules/ruleset.h"
@@ -60,7 +60,26 @@ struct WarEvent {
     constexpr bool operator==(const WarEvent&) const noexcept = default;
 };
 
-// DiplomacyPersistentState 是外交存檔白名單；AI 觀測快取不屬此持久層。
+struct FactionTruth {
+    std::int32_t military_power{};
+    std::int32_t economic_power{};
+    bool present{};
+
+    constexpr bool operator==(const FactionTruth&) const noexcept = default;
+};
+
+struct KnowledgeRecord {
+    std::int32_t military_power{};
+    std::int32_t economic_power{};
+    std::uint16_t uncertainty_permyriad{10000};
+    time::Tick observed_at{};
+    std::int32_t distance{};
+    bool observed{};
+
+    constexpr bool operator==(const KnowledgeRecord&) const noexcept = default;
+};
+
+// DiplomacyPersistentState 是外交／情報／AI 目標的存檔白名單。
 // WorldDiplomacyState 匯出值複本，codec 載入後交回 restore 驗證並重建規則借用。
 struct DiplomacyPersistentState {
     std::uint16_t faction_count{};
@@ -69,6 +88,9 @@ struct DiplomacyPersistentState {
     std::vector<ActiveTreaty> treaties;
     std::vector<CasusBelliClaim> casus_belli;
     std::vector<WarEvent> wars;
+    std::optional<std::vector<FactionTruth>> faction_truths;
+    std::optional<std::vector<KnowledgeRecord>> knowledge;
+    std::optional<std::vector<ai::FactionMindState>> faction_minds;
 
     constexpr bool
     operator==(const DiplomacyPersistentState&) const noexcept = default;
@@ -107,7 +129,8 @@ class WorldDiplomacyState {
 
     [[nodiscard]] WarEvent&
     declare_war(FactionId attacker, FactionId defender,
-                std::optional<rules::CasusBelliDefId> cause, time::Tick now);
+                std::optional<rules::CasusBelliDefId> cause, time::Tick now,
+                bool defensive_alliance_obligation = false);
     void advance_war_xun(WarEvent& war,
                          std::array<std::uint32_t, 2> casualties);
     void add_war_score(WarEvent& war, std::int32_t score_delta) noexcept;
@@ -128,22 +151,21 @@ class WorldDiplomacyState {
 
     void set_faction_truth(FactionId faction, std::int32_t military_power,
                            std::int32_t economic_power);
+    void adjust_faction_truth(FactionId faction, std::int32_t military_delta,
+                              std::int32_t economic_delta);
+    [[nodiscard]] std::optional<FactionTruth> faction_truth(FactionId faction) const;
+    [[nodiscard]] ai::FactionMindState& faction_mind(FactionId faction);
+    [[nodiscard]] const ai::FactionMindState& faction_mind(FactionId faction) const;
     void observe_faction(FactionId observer, FactionId target,
-                         std::uint16_t uncertainty_permyriad, time::Tick now);
+                         std::uint16_t uncertainty_permyriad, time::Tick now,
+                         std::int32_t distance = 0);
+    void observe_faction_by_distance(FactionId observer, FactionId target,
+                                     std::int32_t distance,
+                                     std::uint16_t relationship_quality_permyriad,
+                                     time::Tick now);
 
     private:
     friend struct FactionViewFactory;
-
-    struct FactionTruth {
-        std::int32_t military_power{};
-        std::int32_t economic_power{};
-    };
-    struct KnowledgeRecord {
-        std::int32_t military_power{};
-        std::int32_t economic_power{};
-        std::uint16_t uncertainty_permyriad{10000};
-        time::Tick observed_at{};
-    };
 
     [[nodiscard]] std::size_t faction_index(FactionId faction) const;
     [[nodiscard]] std::size_t matrix_index(FactionId observer,
@@ -152,7 +174,7 @@ class WorldDiplomacyState {
     bounded_relation(std::int64_t value) const noexcept;
     [[nodiscard]] std::int32_t
     estimated_power(FactionId observer, FactionId target, std::int32_t truth,
-                    std::uint16_t uncertainty,
+                    std::uint16_t uncertainty, time::Tick observed_at,
                     std::uint64_t channel) const noexcept;
 
     std::uint16_t faction_count_{};
@@ -162,8 +184,9 @@ class WorldDiplomacyState {
     std::vector<ActiveTreaty> treaties_;
     std::vector<CasusBelliClaim> casus_belli_;
     std::vector<WarEvent> wars_;
-    std::vector<FactionTruth> truths_;
-    std::vector<KnowledgeRecord> knowledge_;
+    std::optional<std::vector<FactionTruth>> truths_;
+    std::optional<std::vector<KnowledgeRecord>> knowledge_;
+    std::optional<std::vector<ai::FactionMindState>> faction_minds_;
 };
 
 struct FactionViewFactory {

@@ -10,11 +10,18 @@
 
 namespace aetheria::serialize {
 
-inline constexpr std::uint32_t kSaveFormatVersion = 17;
+inline constexpr std::uint32_t kSaveFormatVersion = 18;
+
+enum class ZoneDecodeMode : std::uint8_t {
+    CurrentOnly,
+    LegacyFixture,
+};
 
 [[nodiscard]] std::string encode_zone(const zone::Zone& zone, const rules::Ruleset& ruleset);
 [[nodiscard]] std::unique_ptr<zone::Zone> decode_zone(std::string_view bytes,
-                                                      const rules::Ruleset& ruleset);
+                                                      const rules::Ruleset& ruleset,
+                                                      ZoneDecodeMode mode =
+                                                          ZoneDecodeMode::CurrentOnly);
 [[nodiscard]] std::uint64_t persistent_state_hash(const zone::Zone& zone,
                                                   const rules::Ruleset& ruleset);
 

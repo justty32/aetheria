@@ -268,6 +268,25 @@ struct CivilizationRules {
         std::uint8_t influence_season{};
     };
 
+    struct FactionAiRules {
+        struct FactionDef {
+            std::uint16_t faction{};
+            std::string id;
+            std::int32_t expansion{};
+            std::int32_t aggression{};
+            std::int32_t fidelity{};
+            std::int32_t commerce{};
+            std::int32_t piety{};
+            std::int32_t caution{};
+            std::int32_t resentment{};
+        };
+        std::int32_t goal_switch_threshold{};
+        std::int32_t full_ai_field_threshold{};
+        std::int32_t marked_observer_strength{};
+        std::int32_t war_observer_strength{};
+        std::vector<FactionDef> definitions;
+    };
+
     SettlementScoringWeights scoring_weights{};
     std::uint16_t high_elevation_threshold{};
     std::uint16_t target_city_count{};
@@ -292,6 +311,7 @@ struct CivilizationRules {
     std::vector<CrossingRule> crossings;
     HistoryRules history{};
     FactionRules factions{};
+    FactionAiRules faction_ai{};
     bool loaded{};
 };
 

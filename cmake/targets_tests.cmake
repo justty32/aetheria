@@ -162,7 +162,8 @@ add_test(
         -P "${PROJECT_SOURCE_DIR}/cmake/check_named_fate_order_negative.cmake"
 )
 
-# M6.6c 追加區塊：保持在檔尾，避免多路工作切開既有 target 宣告。
+# M6.6c 與 M6.5 整合追加區：測試來源只在檔尾擴充。
 target_sources(aetheria_tests PRIVATE
     tests/site/site_observation_persistence_test.cpp
+    tests/world/faction_ai_test.cpp
 )

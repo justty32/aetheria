@@ -19,7 +19,7 @@ using AllComponentsV15 =
                     world::RegionMoveCommand, world::TurnClock, site::CityBuildState,
                     site::SiteDigest>;
 
-// v16 追加具名命運 ledger；舊清單保留給 v14/v15 位元流解碼。
+// v18 包含具名命運 ledger；舊清單保留給 v14/v15 位元流 fixture 解碼。
 using AllComponents =
     entt::type_list<zone::ZoneMeta, world::StableId, world::RegionPosition, world::MovementPoints,
                     world::RegionMoveCommand, world::TurnClock, site::CityBuildState,

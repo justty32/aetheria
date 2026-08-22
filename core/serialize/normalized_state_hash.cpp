@@ -390,6 +390,42 @@ void hash_diplomacy_state(std::uint64_t& hash, const zone::Zone& zone,
         hash_scalar(hash, war.weariness[1]);
         hash_scalar(hash, static_cast<std::uint8_t>(war.active));
     }
+
+    hash_scalar(hash, static_cast<std::uint8_t>(state.faction_truths.has_value()));
+    if (state.faction_truths.has_value()) {
+        hash_scalar(hash, static_cast<std::uint64_t>(state.faction_truths->size()));
+        for (const auto& truth : *state.faction_truths) {
+            hash_scalar(hash, truth.military_power);
+            hash_scalar(hash, truth.economic_power);
+            hash_scalar(hash, static_cast<std::uint8_t>(truth.present));
+        }
+    }
+    hash_scalar(hash, static_cast<std::uint8_t>(state.knowledge.has_value()));
+    if (state.knowledge.has_value()) {
+        hash_scalar(hash, static_cast<std::uint64_t>(state.knowledge->size()));
+        for (const auto& record : *state.knowledge) {
+            hash_scalar(hash, record.military_power);
+            hash_scalar(hash, record.economic_power);
+            hash_scalar(hash, record.uncertainty_permyriad);
+            hash_scalar(hash, tick_value(record.observed_at));
+            hash_scalar(hash, record.distance);
+            hash_scalar(hash, static_cast<std::uint8_t>(record.observed));
+        }
+    }
+    hash_scalar(hash, static_cast<std::uint8_t>(state.faction_minds.has_value()));
+    if (state.faction_minds.has_value()) {
+        hash_scalar(hash, static_cast<std::uint64_t>(state.faction_minds->size()));
+        for (const auto& mind : *state.faction_minds) {
+            hash_scalar(hash, static_cast<std::uint8_t>(mind.goal));
+            hash_scalar(hash, mind.goal_score);
+            hash_scalar(hash, mind.goal_switches);
+            hash_scalar(hash, static_cast<std::uint8_t>(mind.initialized));
+            hash_scalar(hash, static_cast<std::uint8_t>(mind.forced_goal.has_value()));
+            if (mind.forced_goal.has_value()) {
+                hash_scalar(hash, static_cast<std::uint8_t>(*mind.forced_goal));
+            }
+        }
+    }
 }
 
 }  // namespace

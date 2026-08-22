@@ -71,4 +71,4 @@ N=1/5/20/100 旬驗證 L_FULL／L_ABSENT 的四列歸約誤差、持久物件集
 建築座標測試會在真遮罩上重跑，`site_roundtrip_test.cpp` 驗三次冷往返與非空程序層重算。
 `site_build_{loop,persistence}_test.cpp` 驗人口演化、批次旬界只結算 Region 一次、輸入順序無關、
 單 Site 等價、兩種擺法、絕對歸約不重複與 pending 冷載。
-`site_observation_persistence_test.cpp` 驗 v16 Site 拒讀、觀測欄位逐項進世界雜湊與 v17 冷往返。
+`site_observation_persistence_test.cpp` 驗 v16 Site 拒讀、觀測欄位逐項進世界雜湊與 v18 冷往返。
