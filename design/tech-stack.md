@@ -103,6 +103,24 @@ GDScript ──fetch_layer(...) -> PackedByteArray──▶ 批次拉整層地�
 `~/repo/game_dev/my-rpg-frontend/` 是既有的 Godot + GDExtension 專案，
 `gdext/CMakeLists.txt` 與 `bin/*.gdextension` 的佈局可直接抄。
 
+### ⚠ libtcod：評估過，**不採用**（M5.17）
+
+`TCOD_MapCell` 只有 `transparent / walkable / fov` 三個布林，**遮蔽判斷是查格**
+（`fov_symmetric_shadowcast.c` 的 `is_wall = !map_cell->transparent`），
+而且**沒有「光線由哪格穿到哪格」的 callback**。
+
+我們的牆是**零厚度的邊**：只擋東西向穿越、不擋同一格的南北進出。
+把牆塞進任一側 tile 會**錯擋那個 tile 的其他三邊**；膨脹成整格就是設計已拒絕的浪費地圖。
+兩倍解析度影子網格與 fork FOV 都要重做角點語意，**代價比自己寫還高**。
+
+> **裁定：FOV／BSP／噪聲／RNG／呈現全部不借，維持自己寫。**
+> 唯一值得借的是 **Dijkstra map 的概念**（Local 還沒有尋路）。
+
+⚠ **這條不是「邊比較好」。** 傳統 roguelike 讓牆佔一格是**對它們的玩法夠用**——
+牆可被看見、照亮、破壞、替換，ASCII／vault 編輯也是一字一格。
+aetheria 的例外有具體理由：**同一套 `EdgeDef` 要統一河流、道路、城牆、房牆與門**
+（`core/rules/def_types.h`），所以不能為了配合以格為前提的函式庫倒退資料模型。
+
 ## 測試策略
 
 | 層 | 怎麼測 |
