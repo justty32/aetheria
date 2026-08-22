@@ -15,10 +15,12 @@ namespace aetheria::world {
 enum class CombatLayer : std::uint8_t { Region, Site, Local };
 
 struct CombatScalingRules {
-    // Region 最穩定；Site 與 Local 只增加零均值方差，不改 Region 期望。
+    // Region 最穩定；Site 用真實戰術壓力挪動傷亡，Local 仍增加零均值方差。
     std::array<std::int32_t, 3> random_spread_permyriad{200, 600, 1'200};
     // Ambient、Local、Site、Region、World：可偏離敵方初始戰力的比例。
     std::array<std::int32_t, 5> contribution_delta_permyriad{0, 100, 500, 2'000, 10'000};
+    // 正常固定為 0；故障注入用 +300 證明符號守門能抓到系統性 +3%。
+    std::int32_t site_systematic_bias_permyriad{};
 };
 
 struct CombatPhase {
@@ -49,6 +51,7 @@ struct CombatExecutionCounters {
     std::uint64_t site_face_runs{};
     std::uint64_t local_face_runs{};
     std::uint64_t region_face_damage_writes{};
+    std::uint64_t site_reduction_writes{};
 };
 
 struct LayerCombatResult {
@@ -117,6 +120,7 @@ struct CombatPromotion {
 
 // 同一 resolution_id 只會歸約一次；程序層升降本身不改統計或具名狀態。
 [[nodiscard]] bool demote_combat_event(CombatEventState& state,
-                                       const LayerCombatResult& result) noexcept;
+                                       const LayerCombatResult& result,
+                                       CombatExecutionCounters* counters = nullptr) noexcept;
 
 }  // namespace aetheria::world

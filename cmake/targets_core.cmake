@@ -174,3 +174,8 @@ target_sources(aetheria_core PRIVATE
 target_sources(aetheria_core PRIVATE
     core/world/combat_scaling.cpp
 )
+
+# M7.2 追加區塊：Site cohort 戰鬥；保持在檔尾以利並行合併。
+target_sources(aetheria_core PRIVATE
+    core/site/site_combat.cpp
+)

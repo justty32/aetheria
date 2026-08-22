@@ -8,6 +8,7 @@
 #include <type_traits>
 
 #include "core/base/check.h"
+#include "core/site/site_combat.h"
 #include "core/worldgen/region_seed.h"
 
 namespace aetheria::world {
@@ -173,10 +174,28 @@ LayerCombatResult resolve_scaled_combat(
     const auto index = layer_index(layer);
     AETH_CHECK(index < scaling.random_spread_permyriad.size());
     const auto spread = scaling.random_spread_permyriad[index];
-    const auto varied_a = vary_loss(expected_a, input.side_a.power, spread, event_id,
-                                    sample_seed, kSideASalt ^ index);
-    const auto varied_b = vary_loss(expected_b, input.side_b.power, spread, event_id,
-                                    sample_seed, kSideBSalt ^ index);
+    auto varied_a = expected_a;
+    auto varied_b = expected_b;
+    if (layer == CombatLayer::Site) {
+        const auto site_result = site::simulate_site_battle({
+            .side_a = input.side_a,
+            .side_b = input.side_b,
+            .region_expected_loss_a = expected_a,
+            .region_expected_loss_b = expected_b,
+            .modifier_scale = combat_rules.modifier_scale,
+            .tactical_spread_permyriad = spread,
+            .systematic_bias_permyriad = scaling.site_systematic_bias_permyriad,
+            .event_id = event_id,
+            .sample_seed = sample_seed,
+        });
+        varied_a = site_result.loss_a;
+        varied_b = site_result.loss_b;
+    } else {
+        varied_a = vary_loss(expected_a, input.side_a.power, spread, event_id,
+                             sample_seed, kSideASalt ^ index);
+        varied_b = vary_loss(expected_b, input.side_b.power, spread, event_id,
+                             sample_seed, kSideBSalt ^ index);
+    }
     const auto allocation =
         layer == CombatLayer::Local
             ? apply_personal_contribution(varied_b, input.side_b.power, contribution, scaling)
@@ -213,8 +232,8 @@ CombatPromotion promote_combat_event(const CombatEventState& state,
     return result;
 }
 
-bool demote_combat_event(CombatEventState& state,
-                         const LayerCombatResult& result) noexcept {
+bool demote_combat_event(CombatEventState& state, const LayerCombatResult& result,
+                         CombatExecutionCounters* counters) noexcept {
     AETH_CHECK(state.initial_power_a > 0);
     AETH_CHECK(state.initial_power_b > 0);
     if (result.resolution_id == state.last_resolution_id) {
@@ -227,6 +246,9 @@ bool demote_combat_event(CombatEventState& state,
         state.initial_power_b,
         static_cast<std::int64_t>(state.accumulated_loss_b) + result.loss_b));
     state.last_resolution_id = result.resolution_id;
+    if (counters != nullptr && result.layer == CombatLayer::Site) {
+        ++counters->site_reduction_writes;
+    }
     return true;
 }
 

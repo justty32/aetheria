@@ -188,3 +188,8 @@ add_test(
         -DNEGATIVE_TEST=$<TARGET_FILE:aetheria_combat_scaling_negative>
         -P "${PROJECT_SOURCE_DIR}/cmake/check_combat_scaling_negative.cmake"
 )
+
+# M7.2 追加區塊：Site cohort 戰鬥測試；保持在檔尾以利並行合併。
+target_sources(aetheria_tests PRIVATE
+    tests/site/site_combat_test.cpp
+)
