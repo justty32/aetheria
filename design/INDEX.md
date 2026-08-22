@@ -38,6 +38,7 @@
 | [midmap.md](midmap.md) | L2：Site 種類、小時回合、城建／SRPG／荒野 |
 | [lowmap.md](lowmap.md) | L3：人身尺度、垂直層、探索、持久層 |
 | [interface-world-mid.md](interface-world-mid.md) | **L1↔L2 界面**：投影／歸約、慢快變數、歸約量表、事件升級 |
+| [interface-double-count.md](interface-double-count.md) | 事件升級旁路；**為什麼兩條通道不會算兩次** |
 | [interface-lifecycle.md](interface-lifecycle.md) | **生命週期**：LOD 狀態機、Digest、重載補算、骨架失效 |
 | [interface-verification.md](interface-verification.md) | **界面驗證**：M4 判準、無偏三判準、誠實清單 |
 | [verification-detection-power.md](verification-detection-power.md) | **一個「通過」何時才算通過**：四個假通過陷阱、**無效注入不算通過** |
