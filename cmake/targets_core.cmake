@@ -169,3 +169,9 @@ target_sources(aetheria_faction_ai_objects PRIVATE
 target_sources(aetheria_core PRIVATE
     core/world/faction_ai.cpp
 )
+
+# M7.1 並行追加區：地城規則與共用生成器只在檔尾擴充。
+target_sources(aetheria_core PRIVATE
+    core/rules/ruleset_load_dungeon.cpp
+    core/local/dungeon.cpp
+)

@@ -167,3 +167,8 @@ target_sources(aetheria_tests PRIVATE
     tests/site/site_observation_persistence_test.cpp
     tests/world/faction_ai_test.cpp
 )
+
+# M7.1 並行追加區：地城驗收測試只在檔尾擴充。
+target_sources(aetheria_tests PRIVATE
+    tests/local/dungeon_test.cpp
+)

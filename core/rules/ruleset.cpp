@@ -106,8 +106,15 @@ Ruleset RulesetLoader::load(const std::filesystem::path& data_directory) {
     load_power_rules(result, data_directory, global_ids);
     load_combat_rules(result, data_directory);
     load_world_observation_rules(result, data_directory);
+    load_dungeon_rules(result, data_directory, global_ids);
 
     return result;
+}
+
+const TrapDef* Ruleset::trap(TrapDefId id) const noexcept { return lookup(traps(), id); }
+
+std::optional<TrapDefId> Ruleset::find_trap(std::string_view id) const noexcept {
+    return find_id(trap_index_, id);
 }
 
 }  // namespace aetheria::rules

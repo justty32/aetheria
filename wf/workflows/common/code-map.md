@@ -53,11 +53,12 @@
 | `ruleset_load_defs.cpp` | terrain／relief／feature／edge 四份 def |
 | `ruleset_load_biomes.cpp` | biome 第一命中規則表、movement 季節分母 |
 | `ruleset_load_civilization.cpp`、`ruleset_load_factions.cpp` | 現代城市／道路參數；勢力數、影響力、AI LOD 與七項性格 `FactionDef` |
-| `ruleset_load_history.cpp`、`ruleset_load_history_{values,references}.cpp` | 上古歷史載入編排；數值／結構限制；道路與廢墟引用（共用宣告在 `ruleset_load_history_detail.h`）|
+| `ruleset_load_history*.cpp` | 上古歷史數值、結構與引用載入 |
 | `ruleset_load_crossings.cpp`、`ruleset_load_world_graph.cpp` | 渡河複合 edge 查表與完整性驗證；手工世界通道宣告與 canonical 排序 |
 | `ruleset_load_site*.cpp`、`site_build_rules.h` | Site 地面、F1～F5 與城建循環規則／def 載入 |
 | `world_observation_rules.h`、`ruleset_load_world_observations.cpp` | 治安／任務門檻 |
 | `ruleset_load_individual.cpp` | `attributes.toml`／`damage.toml` 載入與 fail-fast 驗證 |
+| `dungeon_rules.h`、`ruleset_load_dungeon.cpp` | 地城與機關資料 |
 
 `load_*` 是 `RulesetLoader` private static 成員；history detail 只接收入口參考。
 

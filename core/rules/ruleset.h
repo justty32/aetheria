@@ -23,6 +23,7 @@
 #include "core/rules/site_build_rules.h"
 #include "core/rules/combat.h"
 #include "core/rules/world_observation_rules.h"
+#include "core/rules/dungeon_rules.h"
 
 namespace aetheria::rules {
 
@@ -127,6 +128,10 @@ class Ruleset {
     [[nodiscard]] const WorldObservationRules& world_observation_rules() const noexcept {
         return world_observation_rules_;
     }
+    [[nodiscard]] const TrapDef* trap(TrapDefId id) const noexcept;
+    [[nodiscard]] std::optional<TrapDefId> find_trap(std::string_view id) const noexcept;
+    [[nodiscard]] std::span<const TrapDef> traps() const noexcept { return traps_; }
+    [[nodiscard]] const DungeonRules& dungeon_rules() const noexcept { return dungeon_rules_; }
 
     private:
     friend class RulesetLoader;
@@ -172,6 +177,9 @@ class Ruleset {
     std::map<std::string, CasusBelliDefId, std::less<>> casus_belli_index_;
     CombatRules combat_rules_;
     WorldObservationRules world_observation_rules_;
+    std::vector<TrapDef> traps_;
+    std::map<std::string, TrapDefId, std::less<>> trap_index_;
+    DungeonRules dungeon_rules_;
 };
 
 // RulesetLoader 將一個 data 目錄完整解析成不可變 Ruleset。
@@ -223,6 +231,8 @@ class RulesetLoader {
     static void load_combat_rules(Ruleset& result, const std::filesystem::path& data_directory);
     static void load_world_observation_rules(Ruleset& result,
                                              const std::filesystem::path& data_directory);
+    static void load_dungeon_rules(Ruleset& result, const std::filesystem::path& data_directory,
+                                   std::set<std::string, std::less<>>& global_ids);
 };
 
 }  // namespace aetheria::rules

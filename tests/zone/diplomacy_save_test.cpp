@@ -311,7 +311,7 @@ TEST(DiplomacySave, V15FixtureKeepsAllV18FieldsAbsent) {
                  " mind_presence=0\n";
 }
 
-TEST(DiplomacySave, V18StoreRejectsV15Manifest) {
+TEST(DiplomacySave, V20StoreRejectsV15Manifest) {
     TemporaryDirectory directory;
     SaveManifest old_manifest;
     old_manifest.format_version = 15;
@@ -322,14 +322,14 @@ TEST(DiplomacySave, V18StoreRejectsV15Manifest) {
                                            aetheria::zone::detail::encode_manifest(old_manifest));
     try {
         static_cast<void>(FileZoneStore{directory.path(), test_ruleset()});
-        FAIL() << "v15 manifest should be rejected by v18 store";
+        FAIL() << "v15 manifest should be rejected by v20 store";
     } catch (const std::runtime_error& error) {
         std::cout << "diplomacy_v15_reject_error=" << error.what() << '\n';
-        EXPECT_NE(std::string{error.what()}.find("檔內=15 預期=18"), std::string::npos);
+        EXPECT_NE(std::string{error.what()}.find("檔內=15 預期=20"), std::string::npos);
     }
 }
 
-TEST(DiplomacySave, V18StoreRejectsV15ZoneAfterOpening) {
+TEST(DiplomacySave, V20StoreRejectsV15ZoneAfterOpening) {
     TemporaryDirectory directory;
     FileZoneStore store{directory.path(), test_ruleset()};
     aetheria::zone::detail::atomic_replace(
@@ -337,10 +337,10 @@ TEST(DiplomacySave, V18StoreRejectsV15ZoneAfterOpening) {
         aetheria::zone::detail::compress(encode_v15_root_zone(test_ruleset())));
     try {
         static_cast<void>(store.load(kRootZone));
-        FAIL() << "v15 zone should be rejected by an already-open v18 store";
+        FAIL() << "v15 zone should be rejected by an already-open v20 store";
     } catch (const std::runtime_error& error) {
         std::cout << "diplomacy_v15_zone_reject_error=" << error.what() << '\n';
-        EXPECT_NE(std::string{error.what()}.find("檔內=15 預期=18"), std::string::npos);
+        EXPECT_NE(std::string{error.what()}.find("檔內=15 預期=20"), std::string::npos);
     }
 }
 

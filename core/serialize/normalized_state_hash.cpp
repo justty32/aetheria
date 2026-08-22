@@ -511,6 +511,13 @@ std::uint64_t normalized_state_hash(const zone::Zone& zone, const rules::Ruleset
             hash_scalar(hash, building.aging_seconds);
         }
         hash_site_observations(hash, site_payload->layers.persistent);
+    } else if (const auto* local_payload = std::get_if<zone::LocalPayload>(&zone.payload)) {
+        hash_scalar(hash, static_cast<std::uint64_t>(zone.payload.index()));
+        if (!local::valid_dungeon_persistent_state(local_payload->dungeon)) {
+            throw std::runtime_error{"正規化雜湊遇到無效 Local 地城持久層"};
+        }
+        hash_numeric_vector(hash, local_payload->dungeon.triggered_trap_uids);
+        hash_numeric_vector(hash, local_payload->dungeon.claimed_treasure_uids);
     } else {
         hash_scalar(hash, static_cast<std::uint64_t>(zone.payload.index()));
     }
