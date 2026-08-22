@@ -14,7 +14,7 @@ namespace aetheria::worldgen {
 namespace {
 
 inline constexpr std::uint32_t kCoastWarpWavelength = 16;
-inline constexpr double kCoastWarpAmplitude = 8.0;
+inline constexpr double kCoastWarpAmplitude = 15.0;
 
 [[nodiscard]] std::size_t warped_plate_index(const PlateStageOutput& plates,
                                              std::uint64_t stage_seed, std::uint32_t x,

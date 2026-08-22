@@ -67,7 +67,7 @@ struct CoastlineMetrics {
             }
 
             const auto warped =
-                aetheria::worldgen::detail::domain_warp(height_seed, x, y, 16, 8.0);
+                aetheria::worldgen::detail::domain_warp(height_seed, x, y, 16, 15.0);
             const auto sample_x = std::clamp<std::int64_t>(warped.x, 0, plates.width - 1U);
             const auto sample_y = std::clamp<std::int64_t>(warped.y, 0, plates.height - 1U);
             const auto sample_index = static_cast<std::size_t>(sample_y) * plates.width +
