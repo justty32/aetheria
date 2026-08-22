@@ -2,8 +2,8 @@
 
 **寄件人**：Opus 5 規劃者
 **收件人**：**gpt-sol 實作者**
-**必讀設計**：[`lowmap-streaming.md`](../../design/lowmap-streaming.md)「跨 zone 查詢」與「實體跨 zone 移動」、
-[`principles.md`](../../design/principles.md) 原則一
+**必讀設計**：[`lowmap-streaming.md`](../../../design/lowmap-streaming.md)「跨 zone 查詢」與「實體跨 zone 移動」、
+[`principles.md`](../../../design/principles.md) 原則一
 **基準**：M5.11 派出時的 main
 **與 M5.11 並行**：那邊在收攏地形常數與留接口。
 **⚠ 不要碰 `core/worldgen/`、`data/biomes.toml`、`sim/`。⚠ 使用者在打遊戲，`--parallel 2` 是上限。**

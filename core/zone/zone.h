@@ -106,9 +106,14 @@ struct Zone {
 
     ZoneKey key;
     entt::registry reg;
+    // uid_index 是 StableId → 本 registry handle 的執行期索引；不進存檔。
+    // ZoneManager 載入／接管時重建，跨 zone 搬移在同一個 commit 點同步。
+    std::map<std::uint64_t, entt::entity> uid_index;
     SpatialPayload payload;
     LodLevel lod{LodLevel::Full};
     bool pinned{};
+    // 搬入實體視為一次 observer touch；串流協調器可用此單調值提高保留優先度。
+    std::uint64_t touch_count{};
     time::Tick last_saved_tick{};
 };
 

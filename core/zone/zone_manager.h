@@ -125,6 +125,7 @@ public:
     [[nodiscard]] std::vector<ZoneKey> loaded_keys() const;
     [[nodiscard]] std::vector<ZoneKey> tick_order() const { return tick_order_; }
     [[nodiscard]] std::size_t loaded_count() const noexcept { return zones_.size(); }
+    [[nodiscard]] bool is_ticking() const noexcept { return in_tick_; }
 
 private:
     struct MaterializeCommand {

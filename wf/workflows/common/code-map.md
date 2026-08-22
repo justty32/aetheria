@@ -23,6 +23,7 @@
 | `CMakeLists.txt`、`vcpkg.json` | 專案組態與依賴固定；**來源清單不在這裡**，在 `cmake/targets_*.cmake` |
 | `cmake/` | `targets_*.cmake` 來源／測試；`godot_toolchain.cmake` 工具鏈；`check_*.cmake` CTest 檢查 |
 | `core/` | 純 C++ 玩法核心，**不得依賴 godot-cpp** |
+| `core/runtime/` | 跨 zone 執行期 API；生成 target 不可見 |
 | `core/site/`、`core/local/`、`core/spatial/` | L1→L2 Site、L2→L3 Local 路線 A/B，以及兩層共用的規範邊界剖面與遞迴矩形切分 |
 | `bridge/` | `AetheriaCore` Node 與 GDExtension 註冊；唯一可 include godot-cpp 的自有目錄 |
 | `godot/` | 純顯示／呼叫驗證場景與 `.gdextension` 描述檔 |
@@ -100,7 +101,7 @@
 | `time/`、`serialize/` | 曆法邊界與往返；EnTT registry 壓測 |
 | `rules/` | `ruleset_load`／`ruleset_error`（資料不變式錯誤路徑）／`ruleset_zone_codec`（索引重映射）|
 | `world/` | `region_tiles`／`region_step_cost`／`region_path`／`region_turn` |
-| `zone/` | `zone_key`／`zone_lifecycle`／`zone_store_contract`（兩種 store 共用契約）／`file_zone_store`／`file_zone_store_manifest`／`zone_codec`／`zone_manager`／`zone_manager_tick` |
+| `zone/` | `zone_key`／`zone_lifecycle`／`zone_store_contract`（兩種 store 共用契約）／`file_zone_store`／`file_zone_store_manifest`／`zone_codec`／`zone_manager`／`zone_manager_tick`／`cross_zone` |
 | `worldgen/` | 地形函式／氣候函式、決定論／參數隔離、輸出／效能／重測；`history_*`（含身分、災變、回饋、隔離）、城市／首都／道路、`influence_spread`／`governance_release`／勢力量測、`portal_*`、晚期隔離；`*_test_support.h` 只供本目錄 fixture/helper |
 
 ## `sim/`

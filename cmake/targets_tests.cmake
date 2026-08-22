@@ -68,6 +68,7 @@ add_executable(aetheria_tests
     tests/zone/file_zone_store_manifest_test.cpp
     tests/zone/zone_manager_test.cpp
     tests/zone/zone_manager_tick_test.cpp
+    tests/zone/cross_zone_test.cpp
 )
 target_compile_definitions(aetheria_tests PRIVATE
     AETHERIA_SOURCE_DIR="${PROJECT_SOURCE_DIR}"
@@ -84,4 +85,26 @@ add_test(
         -DCOMPILE_COMMANDS=${CMAKE_BINARY_DIR}/compile_commands.json
         -DPROJECT_ROOT=${PROJECT_SOURCE_DIR}
         -P "${PROJECT_SOURCE_DIR}/cmake/check_core_isolation.cmake"
+)
+
+add_executable(aetheria_cross_zone_half_move_negative
+    tests/zone/cross_zone_half_move_negative.cpp
+)
+target_link_libraries(aetheria_cross_zone_half_move_negative
+    PRIVATE aetheria_core GTest::gtest_main
+)
+aetheria_enable_warnings(aetheria_cross_zone_half_move_negative)
+add_test(
+    NAME CrossZoneNegative.HalfMove
+    COMMAND "${CMAKE_COMMAND}"
+        -DNEGATIVE_TEST=$<TARGET_FILE:aetheria_cross_zone_half_move_negative>
+        -P "${PROJECT_SOURCE_DIR}/cmake/check_cross_zone_half_move_negative.cmake"
+)
+add_test(
+    NAME GenerationIsolation.CrossZoneCompileFailure
+    COMMAND "${CMAKE_COMMAND}"
+        -DCXX=${CMAKE_CXX_COMPILER}
+        -DPROJECT_ROOT=${PROJECT_SOURCE_DIR}
+        -DTEST_OBJECT=${CMAKE_BINARY_DIR}/worldgen-cross-zone-negative.o
+        -P "${PROJECT_SOURCE_DIR}/cmake/check_worldgen_cross_zone_isolation.cmake"
 )

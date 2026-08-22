@@ -1,5 +1,7 @@
 #include "core/serialize/normalized_state_hash.h"
 
+#include <aetheria/runtime/cross_zone.h>
+
 #include "core/site/site_build_loop.h"
 #include "core/site/site_lifecycle.h"
 #include "core/world/region_movement.h"
@@ -249,6 +251,7 @@ std::uint64_t normalized_state_hash(const zone::Zone& zone, const rules::Ruleset
     require_stable_ids<world::RegionPosition>(zone);
     require_stable_ids<world::MovementPoints>(zone);
     require_stable_ids<world::RegionMoveCommand>(zone);
+    require_stable_ids<runtime::LocalPosition>(zone);
     std::vector<std::pair<std::uint64_t, entt::entity>> entities;
     for (const auto entity : zone.reg.view<const world::StableId>()) {
         entities.emplace_back(zone.reg.get<const world::StableId>(entity).uid, entity);
@@ -271,6 +274,12 @@ std::uint64_t normalized_state_hash(const zone::Zone& zone, const rules::Ruleset
             hash_scalar(hash, position->z);
             hash_scalar(hash, position->tile.x);
             hash_scalar(hash, position->tile.y);
+        }
+        const auto* local_position = zone.reg.try_get<const runtime::LocalPosition>(entity);
+        hash_scalar(hash, static_cast<std::uint8_t>(local_position != nullptr));
+        if (local_position != nullptr) {
+            hash_scalar(hash, local_position->tile.x);
+            hash_scalar(hash, local_position->tile.y);
         }
         const auto* points = zone.reg.try_get<const world::MovementPoints>(entity);
         hash_scalar(hash, static_cast<std::uint8_t>(points != nullptr));
