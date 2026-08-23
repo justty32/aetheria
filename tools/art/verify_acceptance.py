@@ -57,7 +57,10 @@ def fault_script(root: Path, label: str, replacements: Sequence[tuple[str, str]]
     source = SCRIPT.read_text(encoding="utf-8")
     for old, new in replacements:
         if source.count(old) != 1:
-            raise RuntimeError(f"故障注入 {label} 找不到唯一目標：{old}")
+            raise RuntimeError(
+                f"故障注入 {label} 找不到唯一目標：{old}。"
+                "找不到目標多半代表被注入的那一行已被修改，注入器也要跟著更新。"
+            )
         source = source.replace(old, new)
     path = root / f"fault-{label}.py"
     path.write_text(source, encoding="utf-8")
