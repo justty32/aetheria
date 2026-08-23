@@ -33,9 +33,16 @@ class ProcessResult:
     output: str
     detected_light: str
     rotation_degrees_ccw: int
+    light_warning: str | None
     seam_before: float | None
     seam_after: float | None
     sha256: str
+
+
+@dataclass(frozen=True)
+class GateResult:
+    violations: list[str]
+    warnings: list[str]
 
 
 def parse_hex_color(value: str) -> Rgb:
@@ -206,8 +213,12 @@ def detect_light_direction(image: Image.Image) -> str:
     return f"{vertical}-{horizontal}"
 
 
-def normalize_lighting(image: Image.Image) -> tuple[Image.Image, str, int]:
+def normalize_lighting(image: Image.Image, kind: str) -> tuple[Image.Image, str, int]:
+    if kind not in ("terrain", "object"):
+        raise ValueError(f"未知素材種類 {kind!r}")
     direction = detect_light_direction(image)
+    if kind == "object":
+        return image.copy(), direction, 0
     rotations = {
         "top-left": (None, 0),
         "top-right": (Image.Transpose.ROTATE_90, 90),
@@ -230,6 +241,12 @@ def normalize_lighting(image: Image.Image) -> tuple[Image.Image, str, int]:
         )
         normalized = canvas
     return normalized, direction, degrees
+
+
+def object_light_warning(label: str, direction: str) -> str | None:
+    if direction == "top-left":
+        return None
+    return f"{label}: 主光方向 {direction}（object 僅警告、不旋轉）"
 
 
 def _opaque_boundary(mask: Sequence[bool], width: int, height: int) -> list[bool]:
@@ -354,11 +371,12 @@ def process_asset(
     dither_strength: int = 16,
     outline_width: int = 1,
     seam_width: int = 1,
+    warn_object_light: bool = True,
 ) -> ProcessResult:
     with Image.open(input_path) as source:
         image = crop_align(source, size, kind, background, background_tolerance)
     image = quantize_ordered(image, palette, dither_strength)
-    image, detected_light, rotation = normalize_lighting(image)
+    image, detected_light, rotation = normalize_lighting(image, kind)
     image = normalize_outline(image, kind, palette[0], outline_width)
     before = seam_metric(image) if kind == "terrain" else None
     if kind == "terrain":
@@ -370,6 +388,11 @@ def process_asset(
         output=output_path.as_posix(),
         detected_light=detected_light,
         rotation_degrees_ccw=rotation,
+        light_warning=(
+            object_light_warning(def_id, detected_light)
+            if kind == "object" and warn_object_light
+            else None
+        ),
         seam_before=before,
         seam_after=after,
         sha256=sha256_file(output_path),
@@ -404,6 +427,7 @@ def _load_manifest(path: Path) -> list[dict[str, object]]:
             raise ValueError(f"manifest assets[{index}] 必須是物件")
         def_id = entry.get("def_id")
         size = entry.get("size", [64, 64])
+        kind = entry.get("kind")
         if not isinstance(def_id, str):
             raise ValueError(f"manifest assets[{index}].def_id 必須是字串")
         def_id_relative_path(def_id)
@@ -413,16 +437,24 @@ def _load_manifest(path: Path) -> list[dict[str, object]]:
             or not all(isinstance(value, int) and value > 0 for value in size)
         ):
             raise ValueError(f"manifest assets[{index}].size 必須是兩個正整數")
-        validated.append({"def_id": def_id, "size": (size[0], size[1])})
+        if kind is not None and kind not in ("terrain", "object"):
+            raise ValueError(f"manifest assets[{index}].kind 必須是 terrain 或 object")
+        validated.append({"def_id": def_id, "size": (size[0], size[1]), "kind": kind})
     return validated
 
 
-def run_gate(asset_root: Path, manifest_path: Path, palette: Sequence[Rgb]) -> list[str]:
+def run_gate(
+    asset_root: Path,
+    manifest_path: Path,
+    palette: Sequence[Rgb],
+    warn_object_light: bool = True,
+) -> GateResult:
     entries = _load_manifest(manifest_path)
     expected = {def_id_relative_path(str(entry["def_id"])).as_posix(): entry for entry in entries}
     actual_paths = sorted(path for path in asset_root.rglob("*.png") if path.is_file())
     actual = {path.relative_to(asset_root).as_posix(): path for path in actual_paths}
     violations: list[str] = []
+    warnings: list[str] = []
     for relative_path in sorted(actual.keys() - expected.keys()):
         violations.append(f"{relative_path}: 命名不符 def：檔案未列於 manifest")
     for relative_path in sorted(expected.keys() - actual.keys()):
@@ -452,7 +484,11 @@ def run_gate(asset_root: Path, manifest_path: Path, palette: Sequence[Rgb]) -> l
                 f"{relative_path}: alpha 邊緣不乾淨：半透明像素 {semitransparent}，"
                 f"透明 RGB 污染像素 {polluted_transparent}"
             )
-    return violations
+        if entry["kind"] == "object" and warn_object_light:
+            warning = object_light_warning(relative_path, detect_light_direction(image))
+            if warning is not None:
+                warnings.append(warning)
+    return GateResult(violations=violations, warnings=warnings)
 
 
 def _build_parser() -> argparse.ArgumentParser:
@@ -471,11 +507,13 @@ def _build_parser() -> argparse.ArgumentParser:
     process.add_argument("--dither-strength", type=int, default=16)
     process.add_argument("--outline-width", type=int, default=1)
     process.add_argument("--seam-width", type=int, default=1)
+    process.add_argument("--object-light-policy", choices=("warn", "ignore"), default="warn")
 
     gate = subparsers.add_parser("gate", help="執行入庫閘自動檢查")
     gate.add_argument("--asset-root", type=Path, required=True)
     gate.add_argument("--manifest", type=Path, required=True)
     gate.add_argument("--palette", type=Path, required=True)
+    gate.add_argument("--object-light-policy", choices=("warn", "ignore"), default="warn")
 
     generate = subparsers.add_parser("generate-placeholder-palette", help="重建測試專用佔位色盤")
     generate.add_argument("--output", type=Path, required=True)
@@ -506,16 +544,27 @@ def main(argv: Sequence[str] | None = None) -> int:
                 dither_strength=args.dither_strength,
                 outline_width=args.outline_width,
                 seam_width=args.seam_width,
+                warn_object_light=args.object_light_policy == "warn",
             )
+            if result.light_warning is not None:
+                print(f"警告：{result.light_warning}", file=sys.stderr)
             print(json.dumps(asdict(result), ensure_ascii=False, sort_keys=True))
             return 0
-        violations = run_gate(args.asset_root, args.manifest, palette)
-        if violations:
-            for violation in violations:
+        gate_result = run_gate(
+            args.asset_root,
+            args.manifest,
+            palette,
+            warn_object_light=args.object_light_policy == "warn",
+        )
+        for warning in gate_result.warnings:
+            print(f"警告：{warning}", file=sys.stderr)
+        if gate_result.violations:
+            for violation in gate_result.violations:
                 print(violation, file=sys.stderr)
-            print(f"入庫閘拒絕：共 {len(violations)} 項", file=sys.stderr)
+            print(f"入庫閘拒絕：共 {len(gate_result.violations)} 項", file=sys.stderr)
             return 2
-        print("入庫閘通過")
+        suffix = f"（警告 {len(gate_result.warnings)} 項）" if gate_result.warnings else ""
+        print(f"入庫閘通過{suffix}")
         return 0
     except (OSError, ValueError) as error:
         print(f"錯誤：{error}", file=sys.stderr)

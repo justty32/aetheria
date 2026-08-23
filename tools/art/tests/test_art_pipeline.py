@@ -18,9 +18,17 @@ SCRIPT = ART_DIR / "art_pipeline.py"
 PLACEHOLDER = ART_DIR / "placeholder_palette.json"
 
 
-def _write_manifest(path: Path, def_id: str = "terrain.test", size: tuple[int, int] = (64, 64)) -> None:
+def _write_manifest(
+    path: Path,
+    def_id: str = "terrain.test",
+    size: tuple[int, int] = (64, 64),
+    kind: str | None = None,
+) -> None:
+    entry: dict[str, object] = {"def_id": def_id, "size": list(size)}
+    if kind is not None:
+        entry["kind"] = kind
     path.write_text(
-        json.dumps({"assets": [{"def_id": def_id, "size": list(size)}]}),
+        json.dumps({"assets": [entry]}),
         encoding="utf-8",
     )
 
@@ -58,6 +66,23 @@ def test_placeholder_palette_matches_deterministic_generator(tmp_path: Path) -> 
     art_pipeline.write_placeholder_palette(generated)
     assert generated.read_bytes() == PLACEHOLDER.read_bytes()
     assert len(art_pipeline.load_palette(PLACEHOLDER)) == 64
+
+
+def test_acceptance_script_proves_its_detection_power() -> None:
+    environment = os.environ.copy()
+    environment["PYTHONDONTWRITEBYTECODE"] = "1"
+    result = subprocess.run(
+        [sys.executable, str(ART_DIR / "verify_acceptance.py")],
+        check=False,
+        capture_output=True,
+        text=True,
+        env=environment,
+    )
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+    assert payload["reproducibility"]["injected_hashes_diverge"] is True
+    assert payload["terrain_lighting"]["skip_rotation_hashes_diverge"] is True
+    assert all(case["exit_code"] == 0 for case in payload["gate"]["rule_disabled_controls"].values())
 
 
 def test_def_id_maps_dots_to_slashes() -> None:
@@ -111,12 +136,48 @@ def test_four_light_directions_normalize_to_same_hash(tmp_path: Path) -> None:
     assert len(set(hashes)) == 1, hashes
 
 
-def test_light_rotation_preserves_non_square_output_size() -> None:
+def test_object_four_directions_are_detected_without_rotation(tmp_path: Path) -> None:
+    palette = art_pipeline.load_palette(PLACEHOLDER)
+    base = _directional_tile()
+    rotations = (
+        None,
+        Image.Transpose.ROTATE_90,
+        Image.Transpose.ROTATE_180,
+        Image.Transpose.ROTATE_270,
+    )
+    hashes: list[str] = []
+    directions: list[str] = []
+    for index, transpose in enumerate(rotations):
+        source = base.copy() if transpose is None else base.transpose(transpose)
+        quantized = art_pipeline.quantize_ordered(source, palette)
+        unchanged, direction, degrees = art_pipeline.normalize_lighting(quantized, "object")
+        assert unchanged.tobytes() == quantized.tobytes()
+        assert degrees == 0
+        directions.append(direction)
+        source_path = tmp_path / f"object-{index}.png"
+        source.save(source_path)
+        result = art_pipeline.process_asset(
+            source_path,
+            tmp_path / f"objects-{index}",
+            "object.light",
+            "object",
+            palette,
+        )
+        hashes.append(result.sha256)
+        assert result.rotation_degrees_ccw == 0
+        assert (result.light_warning is None) == (result.detected_light == "top-left")
+    assert set(directions) == {"top-left", "top-right", "bottom-left", "bottom-right"}
+    assert len(set(hashes)) == 4
+
+
+def test_object_lighting_preserves_non_square_pixels_and_size() -> None:
     image = _directional_tile().resize((64, 96), Image.Resampling.NEAREST)
-    rotated, direction, degrees = art_pipeline.normalize_lighting(image.transpose(Image.Transpose.FLIP_LEFT_RIGHT))
+    image = image.transpose(Image.Transpose.FLIP_LEFT_RIGHT)
+    unchanged, direction, degrees = art_pipeline.normalize_lighting(image, "object")
     assert direction == "top-right"
-    assert degrees == 90
-    assert rotated.size == (64, 96)
+    assert degrees == 0
+    assert unchanged.size == (64, 96)
+    assert unchanged.tobytes() == image.tobytes()
 
 
 def test_object_outline_is_uniform_palette_color() -> None:
@@ -195,6 +256,33 @@ def test_gate_accepts_clean_asset(tmp_path: Path) -> None:
     result = _run_cli("gate", "--asset-root", root, "--manifest", manifest, "--palette", PLACEHOLDER)
     assert result.returncode == 0
     assert result.stdout.strip() == "入庫閘通過"
+
+
+def test_gate_warns_for_object_light_without_rejecting_and_can_ignore(tmp_path: Path) -> None:
+    root = tmp_path / "assets"
+    manifest = tmp_path / "manifest.json"
+    _write_manifest(manifest, def_id="object.test", kind="object")
+    image = _directional_tile().transpose(Image.Transpose.FLIP_LEFT_RIGHT)
+    _save_gate_image(root, image, "object/test.png")
+    warned = _run_cli("gate", "--asset-root", root, "--manifest", manifest, "--palette", PLACEHOLDER)
+    assert warned.returncode == 0
+    assert warned.stdout.strip() == "入庫閘通過（警告 1 項）"
+    assert "警告：object/test.png: 主光方向 top-right（object 僅警告、不旋轉）" in warned.stderr
+
+    ignored = _run_cli(
+        "gate",
+        "--asset-root",
+        root,
+        "--manifest",
+        manifest,
+        "--palette",
+        PLACEHOLDER,
+        "--object-light-policy",
+        "ignore",
+    )
+    assert ignored.returncode == 0
+    assert ignored.stdout.strip() == "入庫閘通過"
+    assert ignored.stderr == ""
 
 
 def test_gate_rejects_wrong_dimensions(tmp_path: Path) -> None:
