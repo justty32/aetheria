@@ -2,6 +2,7 @@
 
 // site_build_rules.h 定義城建循環的建築數值、相鄰效果與人口成長規則。
 
+#include "core/rules/building_mapping_rules.h"
 #include "core/rules/def_types.h"
 
 #include <cstdint>
@@ -26,6 +27,7 @@ struct CityBuildingDef {
     std::uint16_t production_per_hour{};
     std::int16_t satisfaction{};
     std::vector<CityAdjacencyBonus> adjacency;
+    PersistentBuildingType persistent_type{PersistentBuildingType::SettlementHall};
 };
 
 struct SiteBuildRules {

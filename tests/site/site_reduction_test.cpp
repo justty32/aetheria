@@ -37,17 +37,17 @@ TEST(SiteReduction, FixedRowsAreTheOnlySiteSideWriter) {
     auto tiles = reduction_region();
     auto live_site = aetheria::site::materialize_site_zone(
         tiles, kReductionCoordinate, kReductionWorldSeed, kReductionRegionId, test_ruleset());
-    aetheria::site::reduce_live_site_xun(tiles, kReductionCoordinate, live_site);
+    aetheria::site::reduce_live_site_xun(tiles, kReductionCoordinate, live_site, test_ruleset());
     EXPECT_EQ(tiles.reduction_value<PopulationReduction>(kReductionCoordinate), 100U);
     EXPECT_EQ(tiles.reduction_value<DevelopmentLevelReduction>(kReductionCoordinate), 1U);
 
     auto& layers = std::get<aetheria::zone::SitePayload>(live_site.payload).layers;
     layers.persistent.buildings.front().state = BuildingState::Idle;
-    aetheria::site::reduce_live_site_xun(tiles, kReductionCoordinate, live_site);
+    aetheria::site::reduce_live_site_xun(tiles, kReductionCoordinate, live_site, test_ruleset());
     const auto before_unlisted_change =
         tiles.reduction_value<PopulationReduction>(kReductionCoordinate);
     std::ranges::fill(layers.procedural.zoning, aetheria::site::SiteZoning::Open);
-    aetheria::site::reduce_live_site_xun(tiles, kReductionCoordinate, live_site);
+    aetheria::site::reduce_live_site_xun(tiles, kReductionCoordinate, live_site, test_ruleset());
     EXPECT_EQ(tiles.reduction_value<PopulationReduction>(kReductionCoordinate),
               before_unlisted_change);
     EXPECT_EQ(tiles.reduction_value<PopulationReduction>(kReductionCoordinate), 75U);
@@ -93,7 +93,7 @@ TEST(SiteReduction, HasLiveSiteNegativeControlProvesRegionFormulaDidNotExecute) 
     auto& building = std::get<aetheria::zone::SitePayload>(live_site.payload)
                          .layers.persistent.buildings.front();
     building.state = BuildingState::Idle;
-    aetheria::site::reduce_live_site_xun(tiles, kReductionCoordinate, live_site);
+    aetheria::site::reduce_live_site_xun(tiles, kReductionCoordinate, live_site, test_ruleset());
 
     const auto skipped = RegionSimulation::advance_xun(tiles);
     EXPECT_EQ(skipped.formula_execution_count, 0U);
@@ -130,7 +130,8 @@ TEST(SiteReduction, RegionTurnRequiresAndRunsOneLiveSiteReductionPassPerXun) {
         ++reduction_passes;
         auto& reducing_tiles = std::get<aetheria::zone::RegionPayload>(reducing_region.payload)
                                    .layers.at(0);
-        aetheria::site::reduce_live_site_xun(reducing_tiles, kReductionCoordinate, live_site);
+        aetheria::site::reduce_live_site_xun(reducing_tiles, kReductionCoordinate, live_site,
+                                             test_ruleset());
     });
     EXPECT_EQ(reduction_passes, 1U);
     EXPECT_EQ(tiles.reduction_value<PopulationReduction>(kReductionCoordinate), 100U);
@@ -155,7 +156,8 @@ TEST(SiteReduction, CollapseAlwaysReducesBeforeUnloadAndCurrentFormatPersistsFas
         std::get<aetheria::zone::SitePayload>(site.payload)
             .layers.persistent.buildings.front().state = BuildingState::Derelict;
     }));
-    aetheria::site::collapse_site_zone(manager, handle, tiles, kReductionCoordinate);
+    aetheria::site::collapse_site_zone(manager, handle, tiles, kReductionCoordinate,
+                                       test_ruleset());
     EXPECT_FALSE(manager.get(handle.key()).has_value());
     EXPECT_FALSE(tiles.site[0].has_live_site);
     EXPECT_EQ(tiles.reduction_value<PopulationReduction>(kReductionCoordinate), 25U);

@@ -149,7 +149,7 @@ void PlayableSession::initialize_scenario() {
     auto& region_tiles = std::get<zone::RegionPayload>(region_->payload).layers.at(0);
     battle_site_.emplace(site::materialize_site_zone(
         region_tiles, battle_tile_, seed_, region_id_, ruleset_));
-    site::reduce_live_site_xun(region_tiles, battle_tile_, *battle_site_);
+    site::reduce_live_site_xun(region_tiles, battle_tile_, *battle_site_, ruleset_);
 
     const auto create_army = [&](PlayableArmy army_value, world::RegionXY position,
                                  world::RegionXY target) {
@@ -186,7 +186,7 @@ void PlayableSession::initialize_coverage_site() {
     install_coverage_dungeon_entrance(layers, local_entrance_, ruleset_);
 
     site::enter_full_site(coverage, region_tiles, coverage_tile_);
-    site::reduce_live_site_xun(region_tiles, coverage_tile_, coverage);
+    site::reduce_live_site_xun(region_tiles, coverage_tile_, coverage, ruleset_);
     const auto initial_dungeon = local::generate_dungeon(
         seed_ ^ UINT64_C(0xD006E002), layers.persistent.dungeons.front(), {},
         ruleset_);
@@ -209,8 +209,8 @@ void PlayableSession::initialize_coverage_site() {
     if (!borrowed) {
         throw std::logic_error{"覆蓋情境 Site 接管後無法借用"};
     }
-    site::unload_site_zone(*coverage_manager_, handle, region_tiles,
-                           coverage_tile_, seed_, region_id_, now());
+    site::unload_site_zone(*coverage_manager_, handle, region_tiles, coverage_tile_, seed_,
+                           region_id_, now(), ruleset_);
 }
 
 std::unique_ptr<zone::Zone> PlayableSession::materialize_coverage_zone(
@@ -360,8 +360,8 @@ void PlayableSession::leave_site() {
     if (!borrowed) {
         throw std::logic_error{"返回 Region 前無法讀取 Site"};
     }
-    site::unload_site_zone(*coverage_manager_, *handle, region_tiles,
-                           coverage_tile_, seed_, region_id_, now());
+    site::unload_site_zone(*coverage_manager_, *handle, region_tiles, coverage_tile_, seed_,
+                           region_id_, now(), ruleset_);
     residence_ = PlayableResidence::Region;
     ++revision_;
     append_event(PlayableEventKind::SiteLeft, coverage_tile_);
@@ -429,14 +429,7 @@ void PlayableSession::perform_city_build(bool managed) {
         if (report.constructions_completed != 1U) {
             throw std::logic_error{"住宅施工沒有完成恰好一棟"};
         }
-        // M2 的持久建築列是 Region 建設等級既有來源；把已完成的城建物件投影
-        // 進同一列，再走正式 ReductionTable，不由 UI 寫 Region 數字。
-        auto& persistent =
-            std::get<zone::SitePayload>(loaded.payload).layers.persistent;
-        persistent.buildings.push_back(
-            {*origin, site::BuildingType::SettlementHall,
-             site::BuildingState::Active});
-        site::reduce_live_site_xun(region_tiles, coverage_tile_, loaded);
+        site::reduce_live_site_xun(region_tiles, coverage_tile_, loaded, ruleset_);
         last_development_after_ =
             region_tiles.reduction_value<world::DevelopmentLevelReduction>(coverage_tile_);
         refresh_quests(loaded);
@@ -445,8 +438,8 @@ void PlayableSession::perform_city_build(bool managed) {
         throw std::logic_error{"城建時 Site 未載入"};
     }
     if (managed) {
-        site::unload_site_zone(*coverage_manager_, handle, region_tiles,
-                               coverage_tile_, seed_, region_id_, now());
+        site::unload_site_zone(*coverage_manager_, handle, region_tiles, coverage_tile_, seed_,
+                               region_id_, now(), ruleset_);
         append_event(PlayableEventKind::ManagedActivity, coverage_tile_,
                      last_development_before_, last_development_after_);
     }
@@ -769,8 +762,8 @@ void PlayableSession::measure_city_management(std::uint32_t samples) {
         throw std::logic_error{"城建期望值量測無法取得 Site"};
     }
     const auto region_bytes = serialize::encode_zone(*region_, ruleset_);
-    site::unload_site_zone(*coverage_manager_, site_handle, region_tiles,
-                           coverage_tile_, seed_, region_id_, now());
+    site::unload_site_zone(*coverage_manager_, site_handle, region_tiles, coverage_tile_, seed_,
+                           region_id_, now(), ruleset_);
 
     calibration_n_ = samples;
     calibration_manual_total_ = 0;
@@ -882,8 +875,7 @@ PlayableAdvanceReport PlayableSession::advance_xun() {
         [&](zone::Zone& reducing_region) {
             auto& reducing_tiles =
                 std::get<zone::RegionPayload>(reducing_region.payload).layers.at(0);
-            site::reduce_live_site_xun(reducing_tiles, battle_tile_,
-                                       *battle_site_);
+            site::reduce_live_site_xun(reducing_tiles, battle_tile_, *battle_site_, ruleset_);
         },
         [&](time::Tick tick) {
             for (const auto faction : {world::FactionId{2}, world::FactionId{3}}) {
@@ -956,7 +948,7 @@ PlayableSession::resolve_encounter(PlayableBattleChoice choice) {
     };
     auto& region_tiles =
         std::get<zone::RegionPayload>(region_->payload).layers.at(0);
-    site::reduce_live_site_xun(region_tiles, *encounter_tile_, *battle_site_);
+    site::reduce_live_site_xun(region_tiles, *encounter_tile_, *battle_site_, ruleset_);
 
     world::NamedFateLedger ledger;
     ledger.members.push_back({
@@ -1058,6 +1050,10 @@ PlayableCoverageSummary PlayableSession::coverage_summary() const {
             std::get<zone::SitePayload>(site_zone.payload).layers.persistent;
         result.dungeon_cleared = !persistent.dungeons.empty() &&
                                  persistent.dungeons.front().cleared;
+        result.persistent_buildings = static_cast<std::uint32_t>(persistent.buildings.size());
+        result.persistent_population =
+            *site::ReductionTable::reduce(std::get<zone::SitePayload>(site_zone.payload).layers)
+                 .value<world::PopulationReduction>();
     };
     if (const auto loaded = coverage_manager_->get(coverage_site_key_)) {
         static_cast<void>(coverage_manager_->with(*loaded, inspect_site));

@@ -107,7 +107,7 @@ TEST(EmergentQuest, FourNonDiplomaticKindsReadOnlyAuthoritativeWorldState) {
     aetheria::site::enter_full_site(live_site, tiles, kReductionCoordinate);
     install_real_observations(live_site);
     aetheria::site::city_build_state(live_site).economy.food_stock = 40;
-    aetheria::site::reduce_live_site_xun(tiles, kReductionCoordinate, live_site);
+    aetheria::site::reduce_live_site_xun(tiles, kReductionCoordinate, live_site, test_ruleset());
 
     const std::array<const aetheria::zone::Zone*, 1> loaded_sites{&live_site};
     const NarrativeWorldView view{&tiles, loaded_sites, {}};
@@ -129,7 +129,7 @@ TEST(EmergentQuest, BanditSuppressionImprovesOrderThroughOneReductionWrite) {
     aetheria::site::enter_full_site(live_site, tiles, kReductionCoordinate);
     install_real_observations(live_site);
     aetheria::site::city_build_state(live_site).economy.food_stock = 100;
-    aetheria::site::reduce_live_site_xun(tiles, kReductionCoordinate, live_site);
+    aetheria::site::reduce_live_site_xun(tiles, kReductionCoordinate, live_site, test_ruleset());
     const std::array<const aetheria::zone::Zone*, 1> loaded_sites{&live_site};
     const NarrativeWorldView view{&tiles, loaded_sites, {}};
     const auto quests = aetheria::narrative::detect_emergent_quests(view, test_ruleset());
@@ -165,7 +165,7 @@ TEST(EmergentQuest, OrderMissingDungeonClearedAndDepthSurviveSaveRoundTrip) {
     persistent.order->bandit_pressure = 17;
     persistent.named_npcs.front().missing = true;
     persistent.dungeons.front().cleared = true;
-    aetheria::site::reduce_live_site_xun(tiles, kReductionCoordinate, live_site);
+    aetheria::site::reduce_live_site_xun(tiles, kReductionCoordinate, live_site, test_ruleset());
     const auto saved_order =
         tiles.reduction_value<aetheria::world::OrderReduction>(kReductionCoordinate);
     const auto saved_depth = persistent.dungeons.front().depth;
@@ -202,14 +202,14 @@ TEST(EmergentQuest, FoodDeliveryChangesTheObservedCityThroughOneReductionWrite) 
     aetheria::site::enter_full_site(live_site, tiles, kReductionCoordinate);
     auto& economy = aetheria::site::city_build_state(live_site).economy;
     economy.food_stock = 40;
-    aetheria::site::reduce_live_site_xun(tiles, kReductionCoordinate, live_site);
+    aetheria::site::reduce_live_site_xun(tiles, kReductionCoordinate, live_site, test_ruleset());
 
     const auto quests = aetheria::narrative::detect_emergent_quests(meaningful_needs());
     const auto delivery = std::ranges::find(quests, EmergentQuestKind::FoodDelivery,
                                             &aetheria::narrative::EmergentQuest::kind);
     ASSERT_NE(delivery, quests.end());
     const auto report =
-        aetheria::narrative::complete_food_delivery(*delivery, tiles, live_site);
+        aetheria::narrative::complete_food_delivery(*delivery, tiles, live_site, test_ruleset());
 
     EXPECT_EQ(report.food_before, 40U);
     EXPECT_EQ(report.delivered, 60U);
@@ -228,14 +228,14 @@ TEST(EmergentQuest, FakeOrStaleNeedCannotChangeAnotherWorldLocation) {
         tiles, kReductionCoordinate, kReductionWorldSeed, kReductionRegionId, test_ruleset());
     aetheria::site::enter_full_site(live_site, tiles, kReductionCoordinate);
     aetheria::site::city_build_state(live_site).economy.food_stock = 55;
-    aetheria::site::reduce_live_site_xun(tiles, kReductionCoordinate, live_site);
+    aetheria::site::reduce_live_site_xun(tiles, kReductionCoordinate, live_site, test_ruleset());
 
     const auto quests = aetheria::narrative::detect_emergent_quests(meaningful_needs());
     const auto delivery = std::ranges::find(quests, EmergentQuestKind::FoodDelivery,
                                             &aetheria::narrative::EmergentQuest::kind);
     ASSERT_NE(delivery, quests.end());
-    EXPECT_THROW(static_cast<void>(
-                     aetheria::narrative::complete_food_delivery(*delivery, tiles, live_site)),
+    EXPECT_THROW(static_cast<void>(aetheria::narrative::complete_food_delivery(
+                     *delivery, tiles, live_site, test_ruleset())),
                  std::logic_error);
     EXPECT_EQ(tiles.reduction_value<aetheria::world::FoodStockReduction>(kReductionCoordinate),
               55U);

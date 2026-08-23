@@ -178,7 +178,7 @@ void advance_absent_to(aetheria::zone::Zone& region, aetheria::time::Tick target
     }
     aetheria::site::unload_site_zone(manager, handle, tiles, kReductionCoordinate,
                                      kReductionWorldSeed, kReductionRegionId,
-                                     aetheria::time::Tick{});
+                                     aetheria::time::Tick{}, test_ruleset());
     EXPECT_FALSE(manager.get(kSiteKey).has_value());
 
     aetheria::world::RegionTurnPipeline region_pipeline{test_ruleset(), store};
@@ -199,7 +199,7 @@ void advance_absent_to(aetheria::zone::Zone& region, aetheria::time::Tick target
         test_ruleset(), &report);
     PathResult result;
     const bool borrowed = manager.with(reloaded, [&](const aetheria::zone::Zone& site) {
-        aetheria::site::reduce_live_site_xun(tiles, kReductionCoordinate, site);
+        aetheria::site::reduce_live_site_xun(tiles, kReductionCoordinate, site, test_ruleset());
         const auto& layers = std::get<aetheria::zone::SitePayload>(site.payload).layers;
         const auto& state = aetheria::site::city_build_state(site);
         result = {quantities(tiles), layers.persistent.buildings, state.buildings, state.pending,
@@ -266,9 +266,9 @@ struct SequenceResult {
             ++result.live_xun;
         } else {
             if (live) {
-                aetheria::site::unload_site_zone(
-                    manager, handle, tiles, kReductionCoordinate, kReductionWorldSeed,
-                    kReductionRegionId, region_now(fixture.region));
+                aetheria::site::unload_site_zone(manager, handle, tiles, kReductionCoordinate,
+                                                 kReductionWorldSeed, kReductionRegionId,
+                                                 region_now(fixture.region), test_ruleset());
                 live = false;
             }
             region_pipeline.advance_xun(fixture.region);
@@ -286,7 +286,7 @@ struct SequenceResult {
         }
     }
     if (!manager.with(handle, [&](const aetheria::zone::Zone& site) {
-            aetheria::site::reduce_live_site_xun(tiles, kReductionCoordinate, site);
+            aetheria::site::reduce_live_site_xun(tiles, kReductionCoordinate, site, test_ruleset());
         })) {
         throw std::runtime_error{"隨機序列終點歸約失敗"};
     }
@@ -337,9 +337,9 @@ struct ControlledUnloadResult {
     const auto zero_time_unloads = unload_count - productive_unloads;
 
     const auto unload_and_reload = [&](std::uint32_t absent_xun) {
-        aetheria::site::unload_site_zone(
-            manager, handle, tiles, kReductionCoordinate, kReductionWorldSeed,
-            kReductionRegionId, region_now(fixture.region));
+        aetheria::site::unload_site_zone(manager, handle, tiles, kReductionCoordinate,
+                                         kReductionWorldSeed, kReductionRegionId,
+                                         region_now(fixture.region), test_ruleset());
         ++result.unloads;
         for (std::uint32_t xun = 0; xun < absent_xun; ++xun) {
             region_pipeline.advance_xun(fixture.region);
@@ -369,7 +369,7 @@ struct ControlledUnloadResult {
         }
     }
     if (!manager.with(handle, [&](const aetheria::zone::Zone& site) {
-            aetheria::site::reduce_live_site_xun(tiles, kReductionCoordinate, site);
+            aetheria::site::reduce_live_site_xun(tiles, kReductionCoordinate, site, test_ruleset());
         })) {
         throw std::runtime_error{"控制卸載診斷終點歸約失敗"};
     }
@@ -530,9 +530,9 @@ TEST(SiteLifecycle, PopulationFractionSurvivesUnloadReload) {
         before = aetheria::site::city_build_state(site).economy.population_micro_remainder;
     }));
     ASSERT_NE(before, 0);
-    aetheria::site::unload_site_zone(
-        manager, handle, tiles, kReductionCoordinate, kReductionWorldSeed, kReductionRegionId,
-        region_now(fixture.region));
+    aetheria::site::unload_site_zone(manager, handle, tiles, kReductionCoordinate,
+                                     kReductionWorldSeed, kReductionRegionId,
+                                     region_now(fixture.region), test_ruleset());
     const auto reloaded = aetheria::site::rematerialize_site_zone(
         manager, tiles, kReductionCoordinate, kReductionWorldSeed, kReductionRegionId,
         region_now(fixture.region), test_ruleset());
@@ -561,7 +561,7 @@ TEST(SiteLifecycle, SkippingCatchUpIsDetectedAboveTenPercent) {
     }));
     aetheria::site::unload_site_zone(manager, handle, tiles, kReductionCoordinate,
                                      kReductionWorldSeed, kReductionRegionId,
-                                     aetheria::time::Tick{});
+                                     aetheria::time::Tick{}, test_ruleset());
     aetheria::world::RegionTurnPipeline region_pipeline{test_ruleset(), store};
     const auto target = aetheria::time::Tick{} +
                         aetheria::time::kXun * static_cast<std::int64_t>(xun);
@@ -575,7 +575,7 @@ TEST(SiteLifecycle, SkippingCatchUpIsDetectedAboveTenPercent) {
         ASSERT_TRUE(site.reg.view<const aetheria::site::CityBuildState>().empty());
         site.lod = aetheria::zone::LodLevel::Coarse;
         tiles.site[0].has_live_site = true;
-        aetheria::site::reduce_live_site_xun(tiles, kReductionCoordinate, site);
+        aetheria::site::reduce_live_site_xun(tiles, kReductionCoordinate, site, test_ruleset());
         broken = quantities(tiles);
     }));
     const auto error = maximum_error(full.quantities, broken);
@@ -602,7 +602,7 @@ TEST(SiteLifecycle, AgingIsClosedFormAndSaturatesAfterTwentyFourXun) {
     }));
     aetheria::site::unload_site_zone(manager, handle, tiles, kReductionCoordinate,
                                      kReductionWorldSeed, kReductionRegionId,
-                                     aetheria::time::Tick{});
+                                     aetheria::time::Tick{}, test_ruleset());
     SiteCatchUpReport report;
     constexpr std::uint32_t xun = 10'000;
     const auto now = aetheria::time::Tick{} +

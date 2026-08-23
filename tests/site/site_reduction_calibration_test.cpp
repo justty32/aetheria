@@ -12,6 +12,7 @@
 #include <cstddef>
 #include <cstdint>
 #include <iostream>
+#include <limits>
 #include <vector>
 
 #include <gtest/gtest.h>
@@ -82,7 +83,7 @@ template <typename Actual, typename Expected>
     state.economy.food_stock = initial.food;
     state.economy.production_stock = initial.production;
     state.economy.population_micro_remainder = 0;
-    aetheria::site::reduce_live_site_xun(region_tiles, kReductionCoordinate, site);
+    aetheria::site::reduce_live_site_xun(region_tiles, kReductionCoordinate, site, test_ruleset());
     aetheria::zone::InMemoryZoneStore store{test_ruleset()};
     aetheria::site::SiteTurnPipeline pipeline{test_ruleset(), store};
     static_cast<void>(pipeline.advance_hours(site, region, 0, kReductionCoordinate, xun * 240U));
@@ -106,19 +107,23 @@ template <typename Actual, typename Expected>
     return state;
 }
 
-[[nodiscard]] double maximum_error(const Quantities& actual, const Quantities& expected) {
+[[nodiscard]] double maximum_economy_error(const Quantities& actual, const Quantities& expected) {
     return std::max({relative_error(actual.population, expected.population),
-                     relative_error(actual.development, expected.development),
                      relative_error(actual.food, expected.food),
                      relative_error(actual.production, expected.production)});
 }
 
-TEST(SiteReduction, ThousandRandomRegionStatesStayCalibrated) {
+TEST(SiteReduction, EconomyStaysCalibratedAndDevelopmentCompositionGapIsExplicit) {
     constexpr std::size_t sample_count = 1000;
     const auto& ruleset = test_ruleset();
     std::vector<double> errors;
     errors.reserve(sample_count);
     std::size_t nonzero_errors{};
+    std::size_t development_mismatches{};
+    std::uint16_t minimum_site_development = std::numeric_limits<std::uint16_t>::max();
+    std::uint16_t maximum_site_development{};
+    std::uint16_t minimum_region_development = std::numeric_limits<std::uint16_t>::max();
+    std::uint16_t maximum_region_development{};
     for (std::size_t sample = 0; sample < sample_count; ++sample) {
         const auto random = aetheria::worldgen::splitmix64(UINT64_C(0x4D2C4) ^ sample);
         const auto settlement = static_cast<SettlementTier>(1U + random % 3U);
@@ -139,19 +144,32 @@ TEST(SiteReduction, ThousandRandomRegionStatesStayCalibrated) {
         const auto actual = run_site_formula(
             tiles, kReductionWorldSeed ^ random, calibration_xun, initial);
         const auto expected = run_region_formula(settlement, calibration_xun, initial);
-        const auto error = maximum_error(actual, expected);
+        const auto error = maximum_economy_error(actual, expected);
         errors.push_back(error);
         nonzero_errors += error > 0.0 ? 1U : 0U;
+        development_mismatches += actual.development != expected.development ? 1U : 0U;
+        minimum_site_development = std::min(minimum_site_development, actual.development);
+        maximum_site_development = std::max(maximum_site_development, actual.development);
+        minimum_region_development = std::min(minimum_region_development, expected.development);
+        maximum_region_development = std::max(maximum_region_development, expected.development);
     }
     const auto distribution = summarize(std::move(errors));
     std::cout << "calibration_real samples=" << sample_count << " xun_per_sample=1"
               << " nonzero=" << nonzero_errors << " min=" << distribution.minimum
               << " median=" << distribution.median << " p95=" << distribution.p95
-              << " max=" << distribution.maximum << " over_5pct="
-              << distribution.over_five_percent << '\n';
+              << " max=" << distribution.maximum << " over_5pct=" << distribution.over_five_percent
+              << " development_mismatches=" << development_mismatches
+              << " site_development=" << minimum_site_development << ".."
+              << maximum_site_development << " region_development=" << minimum_region_development
+              << ".." << maximum_region_development << '\n';
     EXPECT_GT(nonzero_errors, 0U);
     EXPECT_LT(distribution.maximum, 0.05);
     EXPECT_EQ(distribution.over_five_percent, 0.0);
+    EXPECT_EQ(development_mismatches, sample_count);
+    EXPECT_EQ(minimum_site_development, 9U);
+    EXPECT_EQ(maximum_site_development, 9U);
+    EXPECT_EQ(minimum_region_development, 1U);
+    EXPECT_EQ(maximum_region_development, 1U);
 }
 
 TEST(SiteReduction, ReductionFitsThirtyMillisecondBudget) {
@@ -160,7 +178,7 @@ TEST(SiteReduction, ReductionFitsThirtyMillisecondBudget) {
         tiles, kReductionCoordinate, kReductionWorldSeed, kReductionRegionId, test_ruleset());
     const auto minimum_milliseconds = aetheria::tests::minimum_milliseconds_after_warmup([&] {
         const auto start = std::chrono::steady_clock::now();
-        aetheria::site::reduce_live_site_xun(tiles, kReductionCoordinate, site);
+        aetheria::site::reduce_live_site_xun(tiles, kReductionCoordinate, site, test_ruleset());
         const auto elapsed = std::chrono::steady_clock::now() - start;
         return std::chrono::duration<double, std::milli>{elapsed}.count();
     });

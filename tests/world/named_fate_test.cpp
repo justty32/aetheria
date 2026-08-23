@@ -1,6 +1,6 @@
 #include "core/rules/attributes.h"
-#include "core/serialize/zone_codec.h"
 #include "core/serialize/normalized_state_hash.h"
+#include "core/serialize/zone_codec.h"
 #include "core/site/site_build_loop.h"
 #include "core/site/site_reduction.h"
 #include "core/world/named_fate.h"
@@ -48,7 +48,8 @@ constexpr RegionXY kCoordinate{};
     RegionTiles tiles{1, 1};
     auto site = make_site_zone(population);
     aetheria::site::ReductionTable::apply(
-        tiles, kCoordinate, aetheria::site::ReductionTable::reduce(site));
+        tiles, kCoordinate,
+        aetheria::site::ReductionTable::reduce(site, aetheria::tests::test_ruleset()));
     return tiles;
 }
 

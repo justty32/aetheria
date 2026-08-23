@@ -31,7 +31,8 @@ TEST(SiteRoundTrip, PersistentMutationBetweenCollapseAndExpandBreaksHashSequence
     const auto handle = aetheria::site::rematerialize_site_zone(
         manager, tiles, kRoundTripCoordinate, kRoundTripWorldSeed, kRoundTripRegionId,
         test_ruleset());
-    aetheria::site::collapse_site_zone(manager, handle, tiles, kRoundTripCoordinate);
+    aetheria::site::collapse_site_zone(manager, handle, tiles, kRoundTripCoordinate,
+                                       test_ruleset());
     ASSERT_FALSE(manager.get(kRoundTripSiteKey).has_value());
     const auto collapsed_hash = disk_world_hash(directory);
 

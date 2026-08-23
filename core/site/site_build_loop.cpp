@@ -217,7 +217,7 @@ SiteBatchAdvanceReport SiteTurnPipeline::advance_hours(zone::Zone& region,
             ++batch.site_hours_advanced;
             report.constructions_completed += completed;
             if (completed != 0) {
-                reduce_live_site_xun(tiles, target.coordinate, site);
+                reduce_live_site_xun(tiles, target.coordinate, site, ruleset_);
                 ++report.completion_reductions;
                 ++batch.reduction_writes;
             }
@@ -233,7 +233,7 @@ SiteBatchAdvanceReport SiteTurnPipeline::advance_hours(zone::Zone& region,
             region_turn_.settle_elapsed_xun(region, {}, [&](zone::Zone& reducing_region) {
                 for (const auto& target : ordered) {
                     auto& reducing_tiles = require_region_layer(reducing_region, target.region_z);
-                    reduce_live_site_xun(reducing_tiles, target.coordinate, *target.site);
+                    reduce_live_site_xun(reducing_tiles, target.coordinate, *target.site, ruleset_);
                     ++batch.reduction_writes;
                     ++batch.xun_reduction_writes;
                 }

@@ -114,7 +114,8 @@ TEST(SiteRoundTrip, ThreeColdRoundTripsKeepEveryHashAndRecomputeProceduralLayer)
             }));
         }
 
-        aetheria::site::collapse_site_zone(manager, handle, tiles, kRoundTripCoordinate);
+        aetheria::site::collapse_site_zone(manager, handle, tiles, kRoundTripCoordinate,
+                                           test_ruleset());
         ASSERT_FALSE(manager.get(kRoundTripSiteKey).has_value());
         hashes[round * 2 + 1] = disk_world_hash(directory);
 
@@ -145,7 +146,8 @@ TEST(SiteRoundTrip, ThreeColdRoundTripsKeepEveryHashAndRecomputeProceduralLayer)
                                 std::chrono::steady_clock::now() - expand_start}
                                 .count();
         const auto collapse_start = std::chrono::steady_clock::now();
-        aetheria::site::collapse_site_zone(manager, handle, tiles, kRoundTripCoordinate);
+        aetheria::site::collapse_site_zone(manager, handle, tiles, kRoundTripCoordinate,
+                                           test_ruleset());
         const auto collapse = std::chrono::duration<double, std::milli>{
                                   std::chrono::steady_clock::now() - collapse_start}
                                   .count();

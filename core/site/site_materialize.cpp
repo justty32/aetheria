@@ -1,7 +1,7 @@
 #include "core/site/site_materialize.h"
 
-#include "core/site/site_projection.h"
 #include "core/site/site_lifecycle.h"
+#include "core/site/site_projection.h"
 #include "core/site/site_reduction.h"
 #include "core/site/site_wilderness.h"
 #include "core/zone/zone_key.h"
@@ -249,7 +249,8 @@ zone::ZoneHandle rematerialize_site_zone(zone::ZoneManager& manager,
 
 void freeze_site_zone(zone::ZoneManager& manager, zone::ZoneHandle handle,
                       world::RegionTiles& region_tiles, world::RegionXY coordinate,
-                      std::uint64_t world_seed, std::uint32_t region_id, time::Tick now) {
+                      std::uint64_t world_seed, std::uint32_t region_id, time::Tick now,
+                      const rules::Ruleset& ruleset) {
     if (zone::level_of(handle.key()) != zone::ZoneLevel::Site) {
         throw std::invalid_argument{"Site freeze 只接受 Site ZoneKey"};
     }
@@ -261,7 +262,7 @@ void freeze_site_zone(zone::ZoneManager& manager, zone::ZoneHandle handle,
         if (loaded.lod != zone::LodLevel::Full && loaded.lod != zone::LodLevel::Coarse) {
             throw std::logic_error{"Site freeze 要求起點為 L_FULL/L_COARSE"};
         }
-        reduce_live_site_xun(region_tiles, coordinate, loaded);
+        reduce_live_site_xun(region_tiles, coordinate, loaded, ruleset);
         auto states = loaded.reg.view<CityBuildState>();
         if (states.size() != 1U) {
             throw std::logic_error{"Site freeze 要求恰有一個 CityBuildState"};
@@ -362,13 +363,16 @@ void evict_frozen_site_zone(zone::ZoneManager& manager, zone::ZoneHandle handle,
 
 void unload_site_zone(zone::ZoneManager& manager, zone::ZoneHandle handle,
                       world::RegionTiles& region_tiles, world::RegionXY coordinate,
-                      std::uint64_t world_seed, std::uint32_t region_id, time::Tick now) {
-    freeze_site_zone(manager, handle, region_tiles, coordinate, world_seed, region_id, now);
+                      std::uint64_t world_seed, std::uint32_t region_id, time::Tick now,
+                      const rules::Ruleset& ruleset) {
+    freeze_site_zone(manager, handle, region_tiles, coordinate, world_seed, region_id, now,
+                     ruleset);
     evict_frozen_site_zone(manager, handle, region_tiles, coordinate, now);
 }
 
 void collapse_site_zone(zone::ZoneManager& manager, zone::ZoneHandle handle,
-                        world::RegionTiles& region_tiles, world::RegionXY coordinate) {
+                        world::RegionTiles& region_tiles, world::RegionXY coordinate,
+                        const rules::Ruleset& ruleset) {
     if (zone::level_of(handle.key()) != zone::ZoneLevel::Site) {
         throw std::invalid_argument{"Site collapse 只接受 Site ZoneKey"};
     }
@@ -380,7 +384,7 @@ void collapse_site_zone(zone::ZoneManager& manager, zone::ZoneHandle handle,
         if (loaded.lod != zone::LodLevel::Coarse) {
             throw std::logic_error{"Site collapse 要求起點為 L_COARSE"};
         }
-        reduce_live_site_xun(region_tiles, coordinate, loaded);
+        reduce_live_site_xun(region_tiles, coordinate, loaded, ruleset);
     });
     if (!borrowed) {
         throw std::logic_error{"Site collapse 要求 zone 已載入"};

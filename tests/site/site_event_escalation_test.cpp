@@ -50,7 +50,7 @@ TEST(SiteEventEscalation, RegionSignificanceChangesRegionImmediatelyAndWorldHash
     tiles.owner[0] = static_cast<aetheria::world::FactionId>(2);
     auto live_site = aetheria::site::materialize_site_zone(
         tiles, kReductionCoordinate, kReductionWorldSeed, kReductionRegionId, test_ruleset());
-    aetheria::site::reduce_live_site_xun(tiles, kReductionCoordinate, live_site);
+    aetheria::site::reduce_live_site_xun(tiles, kReductionCoordinate, live_site, test_ruleset());
 
     aetheria::zone::Zone region{
         aetheria::zone::child_key(aetheria::zone::kRootZone, kReductionRegionId, 0)};
@@ -70,7 +70,7 @@ TEST(SiteEventEscalation, RegionSignificanceChangesRegionImmediatelyAndWorldHash
                                        BuildingState::Idle};
 
     const bool escalated = aetheria::site::apply_site_building_state_event(
-        region_tiles, kReductionCoordinate, live_site, event);
+        region_tiles, kReductionCoordinate, live_site, event, test_ruleset());
     store.save(region);
     const auto after_hash = aetheria::sim::world_state_hash(directory.path(), test_ruleset());
 
@@ -86,7 +86,8 @@ TEST(SiteEventEscalation, RegionSignificanceChangesRegionImmediatelyAndWorldHash
             BuildingState::Idle};
         const auto start = std::chrono::steady_clock::now();
         const bool performance_escalated = aetheria::site::apply_site_building_state_event(
-            performance_tiles, kReductionCoordinate, performance_site, performance_event);
+            performance_tiles, kReductionCoordinate, performance_site, performance_event,
+            test_ruleset());
         const auto elapsed = std::chrono::steady_clock::now() - start;
         EXPECT_TRUE(performance_escalated);
         return std::chrono::duration<double, std::milli>{elapsed}.count();
@@ -115,16 +116,16 @@ TEST(SiteEventEscalation, SiteSignificanceWaitsForTheXunReduction) {
     auto tiles = reduction_region();
     auto live_site = aetheria::site::materialize_site_zone(
         tiles, kReductionCoordinate, kReductionWorldSeed, kReductionRegionId, test_ruleset());
-    aetheria::site::reduce_live_site_xun(tiles, kReductionCoordinate, live_site);
+    aetheria::site::reduce_live_site_xun(tiles, kReductionCoordinate, live_site, test_ruleset());
     auto& layers = std::get<aetheria::zone::SitePayload>(live_site.payload).layers;
     const SiteBuildingStateEvent event{Significance::Site,
                                        layers.persistent.buildings.front().tile,
                                        BuildingState::Idle};
 
     const bool escalated = aetheria::site::apply_site_building_state_event(
-        tiles, kReductionCoordinate, live_site, event);
+        tiles, kReductionCoordinate, live_site, event, test_ruleset());
     const auto before_xun = tiles.reduction_value<PopulationReduction>(kReductionCoordinate);
-    aetheria::site::reduce_live_site_xun(tiles, kReductionCoordinate, live_site);
+    aetheria::site::reduce_live_site_xun(tiles, kReductionCoordinate, live_site, test_ruleset());
     const auto after_xun = tiles.reduction_value<PopulationReduction>(kReductionCoordinate);
 
     EXPECT_FALSE(escalated);
@@ -144,15 +145,16 @@ TEST(SiteEventEscalation, XunSnapshotKeepsOtherChangeWithoutCountingEscalationTw
     layers.persistent.buildings.push_back(
         PersistentBuilding{other_tile, aetheria::site::BuildingType::SettlementHall,
                            BuildingState::Active});
-    aetheria::site::reduce_live_site_xun(tiles, kReductionCoordinate, live_site);
+    aetheria::site::reduce_live_site_xun(tiles, kReductionCoordinate, live_site, test_ruleset());
     const auto baseline = tiles.reduction_value<PopulationReduction>(kReductionCoordinate);
 
     const bool escalated = aetheria::site::apply_site_building_state_event(
         tiles, kReductionCoordinate, live_site,
-        SiteBuildingStateEvent{Significance::Region, event_tile, BuildingState::Idle});
+        SiteBuildingStateEvent{Significance::Region, event_tile, BuildingState::Idle},
+        test_ruleset());
     const auto after_event = tiles.reduction_value<PopulationReduction>(kReductionCoordinate);
     layers.persistent.buildings.back().state = BuildingState::Idle;
-    aetheria::site::reduce_live_site_xun(tiles, kReductionCoordinate, live_site);
+    aetheria::site::reduce_live_site_xun(tiles, kReductionCoordinate, live_site, test_ruleset());
     const auto after_xun = tiles.reduction_value<PopulationReduction>(kReductionCoordinate);
 
     const auto event_effect = baseline - after_event;

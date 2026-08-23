@@ -141,7 +141,7 @@ bool valid_persistent_layer(const SitePersistentLayer& layer) noexcept {
     const auto buildings_valid =
         std::ranges::all_of(layer.buildings, [](const PersistentBuilding& building) {
             return building.tile.x < kSiteWidth && building.tile.y < kSiteHeight &&
-                   building.type <= BuildingType::SettlementHall &&
+                   building.type <= BuildingType::CivicSquare &&
                    building.state <= BuildingState::Ruined;
         });
     const auto order_valid =

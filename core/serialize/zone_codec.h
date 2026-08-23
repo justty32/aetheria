@@ -10,7 +10,7 @@
 
 namespace aetheria::serialize {
 
-inline constexpr std::uint32_t kSaveFormatVersion = 20;
+inline constexpr std::uint32_t kSaveFormatVersion = 21;
 
 enum class ZoneDecodeMode : std::uint8_t {
     CurrentOnly,

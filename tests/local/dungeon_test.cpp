@@ -203,7 +203,7 @@ TEST(DungeonPersistence, V20ColdRoundTripKeepsTriggeredAndClaimedStateInNormaliz
     EXPECT_EQ(before, after);
     const auto& restored = std::get<aetheria::zone::LocalPayload>(loaded->payload).dungeon;
     EXPECT_EQ(restored, payload.dungeon);
-    std::cout << "dungeon_v20_roundtrip triggered=2 claimed=2 hash=" << before << '\n';
+    std::cout << "dungeon_v21_roundtrip triggered=2 claimed=2 hash=" << before << '\n';
 }
 
 TEST(DungeonPersistence, ClearedUsesExistingSiteFlagAndTenReloadOutputsConverge) {

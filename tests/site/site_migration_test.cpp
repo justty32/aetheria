@@ -144,7 +144,7 @@ TEST(SiteMigration, SlowVariableChangeRetainsRelocatesAndExplicitlyDestroysWitho
     }));
     aetheria::site::unload_site_zone(manager, handle, tiles, kReductionCoordinate,
                                      kReductionWorldSeed, kReductionRegionId,
-                                     aetheria::time::Tick{});
+                                     aetheria::time::Tick{}, test_ruleset());
     ASSERT_FALSE(manager.get(kSiteKey).has_value());
 
     tiles.relief[0] = changed.relief;
@@ -177,7 +177,7 @@ TEST(SiteMigration, SlowVariableChangeRetainsRelocatesAndExplicitlyDestroysWitho
     }));
     aetheria::site::unload_site_zone(manager, handle, tiles, kReductionCoordinate,
                                      kReductionWorldSeed, kReductionRegionId,
-                                     aetheria::time::Tick{});
+                                     aetheria::time::Tick{}, test_ruleset());
     aetheria::site::SiteCatchUpReport second_report;
     handle = aetheria::site::rematerialize_site_zone(
         manager, tiles, kReductionCoordinate, kReductionWorldSeed, kReductionRegionId,

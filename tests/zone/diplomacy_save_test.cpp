@@ -30,9 +30,9 @@ namespace {
 using aetheria::rules::Ruleset;
 using aetheria::serialize::AllComponentsV15;
 using aetheria::serialize::normalized_state_hash;
-using aetheria::serialize::ZoneDecodeMode;
 using aetheria::serialize::RegistryOutputArchive;
 using aetheria::serialize::save_registry_snapshot;
+using aetheria::serialize::ZoneDecodeMode;
 using aetheria::tests::TemporaryDirectory;
 using aetheria::tests::test_ruleset;
 using aetheria::time::kXun;
@@ -322,10 +322,10 @@ TEST(DiplomacySave, V20StoreRejectsV15Manifest) {
                                            aetheria::zone::detail::encode_manifest(old_manifest));
     try {
         static_cast<void>(FileZoneStore{directory.path(), test_ruleset()});
-        FAIL() << "v15 manifest should be rejected by v20 store";
+        FAIL() << "v15 manifest should be rejected by v21 store";
     } catch (const std::runtime_error& error) {
         std::cout << "diplomacy_v15_reject_error=" << error.what() << '\n';
-        EXPECT_NE(std::string{error.what()}.find("檔內=15 預期=20"), std::string::npos);
+        EXPECT_NE(std::string{error.what()}.find("檔內=15 預期=21"), std::string::npos);
     }
 }
 
@@ -337,10 +337,10 @@ TEST(DiplomacySave, V20StoreRejectsV15ZoneAfterOpening) {
         aetheria::zone::detail::compress(encode_v15_root_zone(test_ruleset())));
     try {
         static_cast<void>(store.load(kRootZone));
-        FAIL() << "v15 zone should be rejected by an already-open v20 store";
+        FAIL() << "v15 zone should be rejected by an already-open v21 store";
     } catch (const std::runtime_error& error) {
         std::cout << "diplomacy_v15_zone_reject_error=" << error.what() << '\n';
-        EXPECT_NE(std::string{error.what()}.find("檔內=15 預期=20"), std::string::npos);
+        EXPECT_NE(std::string{error.what()}.find("檔內=15 預期=21"), std::string::npos);
     }
 }
 

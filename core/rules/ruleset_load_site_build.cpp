@@ -78,6 +78,13 @@ void RulesetLoader::load_site_build(Ruleset& result,
             static_cast<std::uint16_t>(read_nonnegative("production_per_hour", UINT16_MAX));
         def.satisfaction =
             static_cast<std::int16_t>(read_nonnegative("satisfaction", INT16_MAX));
+        const auto persistent_type =
+            persistent_building_type_from_string(require_string(table, "persistent_type", path));
+        if (!persistent_type.has_value() ||
+            *persistent_type == PersistentBuildingType::SettlementHall) {
+            throw std::runtime_error{"site_build.toml 城建持久型別無效：" + def.id};
+        }
+        def.persistent_type = *persistent_type;
         const auto id = append_def<CityBuildingDefId>(result.city_buildings_, std::move(def));
         result.city_building_index_.emplace(result.city_buildings_.back().id, id);
     }

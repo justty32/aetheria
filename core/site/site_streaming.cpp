@@ -212,7 +212,7 @@ StreamingTransitionReport SiteStreamingCoordinator::finish_turn() {
         auto& state = region_tiles().site.at(region_tiles().index_of(loaded.coordinate));
         if (state.lod == zone::LodLevel::Full || state.lod == zone::LodLevel::Coarse) {
             freeze_site_zone(manager_, loaded.handle, region_tiles(), loaded.coordinate,
-                             world_seed_, region_id_, current_time);
+                             world_seed_, region_id_, current_time, ruleset_);
             loaded.frozen_since = current_time;
             ++report.demotions;
         }

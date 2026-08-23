@@ -33,8 +33,8 @@ TEST(SiteBuildLoop, AbsoluteXunReductionCannotCountHourlyProductionTwiceAndState
         pipeline.advance_hours(fixture.site, fixture.region, 0, kBuildCoordinate, 240));
     auto& tiles = std::get<aetheria::zone::RegionPayload>(fixture.region.payload).layers.at(0);
     const auto once = tiles.reduction_value<ProductionStockReduction>(kBuildCoordinate);
-    aetheria::site::reduce_live_site_xun(tiles, kBuildCoordinate, fixture.site);
-    aetheria::site::reduce_live_site_xun(tiles, kBuildCoordinate, fixture.site);
+    aetheria::site::reduce_live_site_xun(tiles, kBuildCoordinate, fixture.site, test_ruleset());
+    aetheria::site::reduce_live_site_xun(tiles, kBuildCoordinate, fixture.site, test_ruleset());
     const auto thrice = tiles.reduction_value<ProductionStockReduction>(kBuildCoordinate);
     EXPECT_EQ(once, thrice);
     EXPECT_EQ(thrice, aetheria::site::city_build_state(fixture.site).economy.production_stock);

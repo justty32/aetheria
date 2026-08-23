@@ -1,6 +1,7 @@
 #pragma once
 
-// site_projection.h 定義 L1→L2 投影的慢／快變數界面、城區程序骨架與三層資料型別。
+// site_projection.h 定義 L1→L2
+// 投影的慢／快變數界面、城區程序骨架與三層資料型別。
 
 #include "core/rules/ruleset.h"
 #include "core/site/local_reduction_schema.h"
@@ -78,9 +79,7 @@ enum class SiteZoning : std::uint8_t {
     Commercial,
 };
 
-enum class BuildingType : std::uint8_t {
-    SettlementHall,
-};
+using BuildingType = rules::PersistentBuildingType;
 
 enum class BuildingState : std::uint8_t {
     Active,
