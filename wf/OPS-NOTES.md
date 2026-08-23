@@ -79,6 +79,30 @@ free-while-emitting 的 Godot 警告。
 watcher 已改成把每個 worktree 的 `.codex-inbox/` 都掃進來，不要求 codex 寫絕對路徑
 （少一個會寫錯的地方）。
 
+## ⚠ 兩個派工旗標的坑（2026-08-23 各踩一次）
+
+- **不要帶 `-s workspace-write`**。使用者 config 是 `sandbox_mode = "danger-full-access"`，
+  帶了就覆蓋它，codex 把 `.git` 當唯讀，`git merge` 在建 `.git/ORIG_HEAD.lock` 時
+  exit 128 `Read-only file system`，一次 commit 都做不了。要嘛不帶，要嘛明寫
+  `-s danger-full-access`。
+- **`resume` 不吃自己後面的旗標**：`codex exec resume --last -C dir -s ...` 會把它們當
+  prompt 而報 usage 錯。正確位置是 `exec` 之後、`resume` 之前：
+  `codex exec -C <dir> -s danger-full-access -c ... resume --last "<prompt>"`。
+
+## ⚠⚠ 驗收門檻如果是估的，就是在誘使實作者湊數
+
+M8-INT-7 我寫「合併後 ctest 必須 ≥ 420」——那個數字是我拍腦袋估的。
+實際聯集是 **414**（共同基線 402 + M8.0 Lua 10 + M8.2 runtime 2，
+而且 `412 + 404 − 402 = 414` 同時還原了兩個舊數字）。
+
+這次守住是因為它先寫 `.ask` 說「我採用完整聯集、不造測試湊數」再繼續——
+**但下次可能就直接補兩個空殼測試給我看，而那完全符合我寫的門檻。**
+
+**通則：門檻要從組成推導。** 推不出來就寫
+「N 必須大於 412 **並附上 N 的分解**」，不要寫一個看起來很像的整數。
+真正要防的是「少跑不會變紅」，關係斷言擋得住，猜的整數擋不住。
+（同一條病也出現在那三個寫死的 Region tile hash 基準上。）
+
 ## ⚠ 派工任務書裡最值得寫的一句
 
 > **如果你發現 X 其實可以被 Y 取代／誤差變大／某條規則一次都沒命中，
