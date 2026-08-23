@@ -242,3 +242,8 @@ add_test(
         -DTEST_OBJECT=${CMAKE_BINARY_DIR}/script-context-world-truth-negative.o
         -P "${PROJECT_SOURCE_DIR}/cmake/check_script_context_isolation.cmake"
 )
+
+# M8.2 追加區：三層 UI 編排、父層回寫、往返與非戰鬥期望值。
+target_sources(aetheria_tests PRIVATE
+    tests/runtime/playable_session_test.cpp
+)

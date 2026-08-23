@@ -23,10 +23,10 @@
 | `CMakeLists.txt`、`vcpkg.json` | 專案組態與依賴；來源清單在 `cmake/targets_*.cmake` |
 | `cmake/` | target 清單、Godot 工具鏈與 CTest 檢查 |
 | `core/` | 純 C++ 玩法核心，**不得依賴 godot-cpp** |
-| `core/runtime/` | 跨 zone API；`playable_session.*` 編排 M8；生成 target 不可見 |
+| `core/runtime/` | 跨 zone API；`playable_session.*` 編排 M8 三層駐留與權威回寫 |
 | `core/site/`、`core/local/`、`core/spatial/` | L1→L2、L2→L3 與共用邊界／切分／歸約 |
-| `bridge/` | `AetheriaCore` GDExtension；驗證、批次狀態；唯一依賴 godot-cpp |
-| `godot/` | `main.gd` UI；只顯示並轉發輸入 |
+| `bridge/` | `AetheriaCore` GDExtension；批次快照／M8 命令；唯一依賴 godot-cpp |
+| `godot/` | `main.gd` UI；只顯示快照並轉發輸入 |
 | `tests/` | GoogleTest 單元測試 |
 | `sim/` | 不需 Godot 的 headless CLI 探針 |
 | `data/` | TOML def 與資料驅動規則 |
@@ -86,19 +86,15 @@
 
 [core/narrative 與 core/script 詳圖](code-map-narrative-script.md)：湧現任務、事件 feed、Lua 沙箱、受限 Context 與相關測試。
 
-### `core/worldgen` — Region 十二階段生成
-
-門面 `region_generator.h` → `region_config.h`（變數、常數、參數 hash）、各階段 header、`region_skeleton.h`／`region_diagnostics.h`；`field_redistribution.*` 是高度／濕度 identity 接縫。
-
-內部共用：`gen_stage_ids.h`、`gen_grid.h`、`gen_noise.h`、`gen_hash.h`；`biome_classification.h` 隔離 terrain／relief 裁決。
-
-實作：`region_seed.cpp`（種子推導與參數 hash）、`stage_plates/height/erosion/climate/rivers/biomes/features.cpp`（階段 1–7；量化閘口在 `stage_erosion.cpp`，地物約束在 `feature_placement.*`）、`civ_tiles.*`（人文階段共用底圖）、`settlement_scoring.cpp`＋`city_scoring.*`（共用純評分）、`city_selection.*`（canonical 分級選點）、`history_layer.cpp`＋`history_roads.*`（階段 8 選址／災變／古道）、`city_sites.cpp`（階段 9）、`road_path.*`＋`road_loops.*`＋`road_network.cpp`（階段 10 工程路徑／MST／補環路）、`portal_candidates.*`＋`portal_boundary_candidates.cpp`＋`portal_generation.cpp`（階段 11 候選、邊界落點與補路）、`capital_selection.cpp`＋`influence_claim.cpp`＋`governance_release.cpp`＋`influence_spread.*`＋`faction_generation.cpp`（階段 12 首都、全域認領、治理釋回與編排）、`region_build.cpp`＋`region_populate.cpp`（骨架／落地）、`region_stage_hash.cpp`＋`region_result_hash.cpp`（決定論 hash）、`region_debug.cpp`（診斷與灰階圖）。
+[core/worldgen 詳圖](code-map-worldgen.md)：Region 十二階段生成、內部共用 header、各階段實作與決定論 hash。
 
 ## `tests/`
 
 | 目錄 | 內容 |
 |---|---|
 | `support/` | 跨目錄共用的 ruleset fixture 與固定暖機、min-of-N 效能量測 helper |
+| `runtime/` | M8 三層進退、上層回寫、重進持久性與親自／代管校準 |
+| `narrative/` | 五種湧現任務、運糧／清剿歸約、命運模板與事件 feed |
 | `site/` | Site 投影隔離、展開、持久建築、存檔／世界雜湊、效能 |
 | `sim/` | 世界級正規化雜湊的跨歷史、磁碟列舉、負向控制與錯誤路徑測試 |
 | `time/`、`serialize/` | 曆法邊界與往返；EnTT registry 壓測 |
