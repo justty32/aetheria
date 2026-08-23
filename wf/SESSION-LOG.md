@@ -104,7 +104,8 @@ M9 輪次規劃（**M8.3 先於 M9.0**，因為主線推進條件掛在城建上
   （兩個 v16、兩個 v17），每次都要另開一輪整合。
 
 **操作心得** → **獨立一檔** [OPS-NOTES.md](OPS-NOTES.md)
-（派 codex 的參數、限流歸屬怎麼判、與 Skyrim agent 的 CPU 協定、8 KB 上限）。
+（派 codex 的參數、限流歸屬怎麼判、與 Skyrim agent 的 CPU 協定）；
+**驗收**心得 → [OPS-VERIFY.md](OPS-VERIFY.md)。
 
 ## 各工作流 session-log
 
