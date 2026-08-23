@@ -19,11 +19,6 @@
 
 ### 實作者（gpt-sol）
 
-- 🔄 **M8.2 把其餘玩法接進迴圈**（`m8-2-wt`）→ [任務書](inbox/m8-2-loop-coverage.md)
-  ⚠ **2026-08-22 收工時仍在跑**，codex 是 nohup 的、會自己 commit 到該分支。
-  下次開場先 `git show m8-2-wt:wf/inbox/m8-2-loop-coverage-complete.md`，
-  再驗負向控制、合併。
-
 ### 規劃者（Opus 5）
 
 > **完成的不留這裡。** M0～M2.3 的結論都在 git log 與 `design/` 裡；

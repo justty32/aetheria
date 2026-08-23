@@ -12,6 +12,7 @@ housing_capacity = 500
 food_per_hour = 0
 production_per_hour = 0
 satisfaction = 0
+persistent_type = "residence"
 
 [[buildings]]
 id = "city.farm"
@@ -22,6 +23,7 @@ housing_capacity = 0
 food_per_hour = 3
 production_per_hour = 0
 satisfaction = 0
+persistent_type = "farm"
 
 [[buildings]]
 id = "city.mine"
@@ -32,6 +34,7 @@ housing_capacity = 0
 food_per_hour = 0
 production_per_hour = 0
 satisfaction = 0
+persistent_type = "mine"
 
 [[buildings]]
 id = "city.workshop"
@@ -42,6 +45,7 @@ housing_capacity = 0
 food_per_hour = 0
 production_per_hour = 2
 satisfaction = 0
+persistent_type = "workshop"
 
 [[buildings]]
 id = "city.square"
@@ -52,6 +56,7 @@ housing_capacity = 0
 food_per_hour = 0
 production_per_hour = 0
 satisfaction = 0
+persistent_type = "civic_square"
 
 [[adjacency]]
 source = "city.workshop"

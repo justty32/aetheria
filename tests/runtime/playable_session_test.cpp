@@ -37,8 +37,8 @@ TEST(PlayableCoverage, ThreeLayersReturnAndWriteAuthoritativeParentValues) {
     value.build_city();
     auto after_build = value.coverage_summary();
     EXPECT_EQ(after_build.last_development_before, 1U);
-    EXPECT_EQ(after_build.last_development_after, 2U);
-    EXPECT_EQ(after_build.development, 2U);
+    EXPECT_EQ(after_build.last_development_after, 3U);
+    EXPECT_EQ(after_build.development, 3U);
     EXPECT_EQ(after_build.city_buildings, 1U);
 
     value.accept_bandit_quest();

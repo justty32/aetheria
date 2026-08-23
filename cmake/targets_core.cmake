@@ -220,3 +220,8 @@ target_link_libraries(aetheria_core PRIVATE
 target_compile_definitions(aetheria_core PRIVATE
     SOL_ALL_SAFETIES_ON=1
 )
+
+# M8.3 追加區：城建 def 到持久建築型別的正式 Ruleset 映射。
+target_sources(aetheria_core PRIVATE
+    core/rules/building_mapping_rules.cpp
+)

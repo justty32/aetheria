@@ -1,6 +1,7 @@
 #pragma once
 
-// site_materialize.h 把單一 Region tile 確定性展開成 L_COARSE Site zone，並管理其收回／重算。
+// site_materialize.h 把單一 Region tile 確定性展開成 L_COARSE Site
+// zone，並管理其收回／重算。
 
 #include "core/rules/ruleset.h"
 #include "core/site/site_lifecycle.h"
@@ -24,8 +25,9 @@ namespace aetheria::site {
     world::RegionXY coordinate, std::uint64_t world_seed, std::uint32_t region_id,
     time::Tick now, const rules::Ruleset& ruleset, SiteCatchUpReport* report = nullptr);
 
-// rematerialize_site_zone 只接受 L_ABSENT（未載入）的 Site，從 store 冷載持久層，
-// 再以當下 Region tile 重算程序層。回傳 handle 指向 L_COARSE Site。
+// rematerialize_site_zone 只接受 L_ABSENT（未載入）的 Site，從 store
+// 冷載持久層， 再以當下 Region tile 重算程序層。回傳 handle 指向 L_COARSE
+// Site。
 [[nodiscard]] zone::ZoneHandle rematerialize_site_zone(
     zone::ZoneManager& manager, world::RegionTiles& region_tiles,
     world::RegionXY coordinate, std::uint64_t world_seed, std::uint32_t region_id,
@@ -40,7 +42,8 @@ namespace aetheria::site {
 // L_FROZEN 保留 SiteDigest 在記憶體；thaw 重建程序層但不經磁碟。
 void freeze_site_zone(zone::ZoneManager& manager, zone::ZoneHandle handle,
                       world::RegionTiles& region_tiles, world::RegionXY coordinate,
-                      std::uint64_t world_seed, std::uint32_t region_id, time::Tick now);
+                      std::uint64_t world_seed, std::uint32_t region_id, time::Tick now,
+                      const rules::Ruleset& ruleset);
 void thaw_site_zone(zone::ZoneManager& manager, zone::ZoneHandle handle,
                     world::RegionTiles& region_tiles, world::RegionXY coordinate,
                     std::uint64_t world_seed, std::uint32_t region_id, time::Tick now,
@@ -51,11 +54,14 @@ void evict_frozen_site_zone(zone::ZoneManager& manager, zone::ZoneHandle handle,
 
 // collapse_site_zone 先強制歸約，再把 L_COARSE Site 寫盤並移出 manager。
 void collapse_site_zone(zone::ZoneManager& manager, zone::ZoneHandle handle,
-                        world::RegionTiles& region_tiles, world::RegionXY coordinate);
+                        world::RegionTiles& region_tiles, world::RegionXY coordinate,
+                        const rules::Ruleset& ruleset);
 
-// M4 卸載入口：以 digest 取代 live 城建 component，記錄卸載時鐘後進入 L_ABSENT。
+// M4 卸載入口：以 digest 取代 live 城建 component，記錄卸載時鐘後進入
+// L_ABSENT。
 void unload_site_zone(zone::ZoneManager& manager, zone::ZoneHandle handle,
                       world::RegionTiles& region_tiles, world::RegionXY coordinate,
-                      std::uint64_t world_seed, std::uint32_t region_id, time::Tick now);
+                      std::uint64_t world_seed, std::uint32_t region_id, time::Tick now,
+                      const rules::Ruleset& ruleset);
 
 }  // namespace aetheria::site

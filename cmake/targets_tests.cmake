@@ -247,3 +247,8 @@ add_test(
 target_sources(aetheria_tests PRIVATE
     tests/runtime/playable_session_test.cpp
 )
+
+# M8.3 追加區：正式建築型別映射、Region 權重與冷載入驗收。
+target_sources(aetheria_tests PRIVATE
+    tests/site/site_building_mapping_test.cpp
+)

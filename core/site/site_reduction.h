@@ -18,13 +18,23 @@ measure_site_order(const SitePersistentLayer& persistent) noexcept;
 class ReductionTable {
 public:
     [[nodiscard]] static world::RegionTileDelta reduce(const SiteLayers& layers);
-    [[nodiscard]] static world::RegionTileDelta reduce(const zone::Zone& site);
+    [[nodiscard]] static world::RegionTileDelta reduce(const zone::Zone& site,
+                                                       const rules::Ruleset& ruleset);
     static void apply(world::RegionTiles& tiles, world::RegionXY coordinate,
                       const world::RegionTileDelta& delta);
 };
 
+struct BuildingReductionWeight {
+    world::PopulationReduction::Value population{};
+    world::DevelopmentLevelReduction::Value development{};
+
+    constexpr bool operator==(const BuildingReductionWeight&) const noexcept = default;
+};
+
+[[nodiscard]] const BuildingReductionWeight& building_reduction_weight(BuildingType type);
+
 // 每旬對仍在記憶體中的 Site 呼叫一次；亦由 collapse 路徑在卸載前強制呼叫。
 void reduce_live_site_xun(world::RegionTiles& tiles, world::RegionXY coordinate,
-                          const zone::Zone& live_site);
+                          const zone::Zone& live_site, const rules::Ruleset& ruleset);
 
 }  // namespace aetheria::site

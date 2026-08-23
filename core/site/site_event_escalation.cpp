@@ -35,8 +35,8 @@ namespace {
 }  // namespace
 
 bool apply_site_building_state_event(world::RegionTiles& tiles, world::RegionXY coordinate,
-                                     zone::Zone& live_site,
-                                     const SiteBuildingStateEvent& event) {
+                                     zone::Zone& live_site, const SiteBuildingStateEvent& event,
+                                     const rules::Ruleset& ruleset) {
     if (event.significance > world::Significance::World) {
         throw std::invalid_argument{"Site 事件含無效的重要性等級"};
     }
@@ -54,7 +54,7 @@ bool apply_site_building_state_event(world::RegionTiles& tiles, world::RegionXY 
     building->state = event.new_state;
     try {
         if (escalated) {
-            ReductionTable::apply(tiles, coordinate, ReductionTable::reduce(layers));
+            ReductionTable::apply(tiles, coordinate, ReductionTable::reduce(live_site, ruleset));
         }
     } catch (...) {
         building->state = old_state;

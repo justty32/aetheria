@@ -92,11 +92,10 @@ TEST(WildernessLifecycle, PersistentLayerIsEmptyAndProceduralEntitiesAreNotSeria
     EXPECT_TRUE(loaded->reg.view<const CityBuildState>().empty());
     EXPECT_TRUE(loaded_layers.procedural.skeleton.ground.empty());
     EXPECT_EQ(live_counts(*loaded), LiveCounts{});
-    std::cout << "wild_persistence persistent_buildings=0 serialized_procedural_entities=0"
-              << " live_vegetation=" << before.vegetation
-              << " live_resources=" << before.resources
-              << " live_encounters=" << before.encounters
-              << " live_travelers=" << before.travelers
+    std::cout << "wild_persistence persistent_buildings=0 "
+                 "serialized_procedural_entities=0"
+              << " live_vegetation=" << before.vegetation << " live_resources=" << before.resources
+              << " live_encounters=" << before.encounters << " live_travelers=" << before.travelers
               << " live_portals=" << before.portals << '\n';
 }
 
@@ -135,7 +134,7 @@ TEST(WildernessLifecycle, ColdRematerializeRecomputesAfterProceduralCorruption) 
         }
         EXPECT_EQ(live_counts(zone), LiveCounts{});
     }));
-    aetheria::site::collapse_site_zone(manager, first, tiles, kWildCenter);
+    aetheria::site::collapse_site_zone(manager, first, tiles, kWildCenter, test_ruleset());
     ASSERT_FALSE(manager.get(key).has_value());
 
     const auto second = aetheria::site::rematerialize_site_zone(

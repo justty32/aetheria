@@ -195,6 +195,7 @@ housing_capacity=500
 food_per_hour=0
 production_per_hour=0
 satisfaction=0
+persistent_type="residence"
 [[buildings]]
 id="city.farm"
 width=2
@@ -204,6 +205,7 @@ housing_capacity=0
 food_per_hour=2
 production_per_hour=0
 satisfaction=0
+persistent_type="farm"
 [[adjacency]]
 source="city.house"
 neighbor="city.farm"

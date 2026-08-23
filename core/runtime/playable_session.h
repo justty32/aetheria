@@ -131,6 +131,8 @@ struct PlayableCoverageSummary {
     std::uint64_t manual_total{};
     std::uint64_t managed_total{};
     double signed_relative_error_percent{};
+    std::uint32_t persistent_buildings{};
+    world::PopulationReduction::Value persistent_population{};
 };
 
 // PlayableSession 是 M8.1 的 core 編排門面。呼叫端獨占 session；所有 getter

@@ -171,7 +171,7 @@ bool valid_city_build_state(const CityBuildState& state,
         }
         if (object.kind == SiteMigrationObjectKind::PersistentBuilding) {
             return object.definition_id.empty() &&
-                   object.persistent_type <= BuildingType::SettlementHall &&
+                   object.persistent_type <= BuildingType::CivicSquare &&
                    object.persistent_state <= BuildingState::Ruined;
         }
         return ruleset.find_city_building(object.definition_id).has_value();

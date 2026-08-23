@@ -28,9 +28,9 @@ namespace {
 
 using aetheria::rules::Ruleset;
 using aetheria::serialize::AllComponents;
-using aetheria::serialize::RegistryOutputArchive;
 using aetheria::serialize::decode_zone;
 using aetheria::serialize::normalized_state_hash;
+using aetheria::serialize::RegistryOutputArchive;
 using aetheria::serialize::save_registry_snapshot;
 using aetheria::site::BuildingState;
 using aetheria::site::BuildingType;
@@ -38,8 +38,8 @@ using aetheria::site::PersistentBuilding;
 using aetheria::site::PersistentDungeon;
 using aetheria::site::PersistentNamedNpc;
 using aetheria::site::SiteOrderState;
-using aetheria::tests::TemporaryDirectory;
 using aetheria::tests::kSite;
+using aetheria::tests::TemporaryDirectory;
 using aetheria::tests::test_ruleset;
 using aetheria::zone::FileZoneStore;
 using aetheria::zone::SaveManifest;
@@ -107,16 +107,17 @@ void save_world_root(FileZoneStore& store) {
 }
 
 TEST(SiteObservationPersistence, V16SiteIsRejectedInsteadOfLoadingNewFieldsAsDefaults) {
-    static_assert(aetheria::serialize::kSaveFormatVersion == 20);
+    static_assert(aetheria::serialize::kSaveFormatVersion == 21);
     const auto legacy = encode_v16_site_zone(test_ruleset());
     try {
         static_cast<void>(decode_zone(legacy, test_ruleset()));
-        FAIL() << "v16 Site payload should be rejected before its legacy fields are decoded";
+        FAIL() << "v16 Site payload should be rejected before its legacy fields "
+                  "are decoded";
     } catch (const std::runtime_error& error) {
         const std::string message{error.what()};
         EXPECT_NE(message.find("zone format_version"), std::string::npos);
         EXPECT_NE(message.find("檔內=16"), std::string::npos);
-        EXPECT_NE(message.find("預期=20"), std::string::npos);
+        EXPECT_NE(message.find("預期=21"), std::string::npos);
         std::cout << "site_v16_rejected error=\"" << message << "\"\n";
     }
 
@@ -128,7 +129,8 @@ TEST(SiteObservationPersistence, V16SiteIsRejectedInsteadOfLoadingNewFieldsAsDef
     EXPECT_FALSE(persistent.order.has_value());
     EXPECT_TRUE(persistent.named_npcs.empty());
     EXPECT_TRUE(persistent.dungeons.empty());
-    std::cout << "site_v20_defaults accepted=1 order_present=0 named_npcs=0 dungeons=0\n";
+    std::cout << "site_v21_defaults accepted=1 order_present=0 named_npcs=0 "
+                 "dungeons=0\n";
 }
 
 TEST(SiteObservationPersistence, EveryObservationFieldChangesWorldHashIndependently) {

@@ -3,6 +3,7 @@
 #include "core/site/site_build_loop.h"
 #include "core/zone/zone_key.h"
 
+#include <array>
 #include <limits>
 #include <stdexcept>
 #include <type_traits>
@@ -10,17 +11,24 @@
 namespace aetheria::site {
 namespace {
 
+constexpr std::array<BuildingReductionWeight, 6> kBuildingWeights{{
+    {100, 1},  // SettlementHall
+    {0, 2},    // Residence
+    {0, 1},    // Farm
+    {0, 2},    // Mine
+    {0, 2},    // Workshop
+    {0, 1},    // CivicSquare
+}};
+
 [[nodiscard]] std::uint32_t population_contribution(const PersistentBuilding& building) {
-    if (building.type != BuildingType::SettlementHall) {
-        throw std::runtime_error{"歸約量表遇到未登記的建築型別"};
-    }
+    const auto base = building_reduction_weight(building.type).population;
     switch (building.state) {
     case BuildingState::Active:
-        return 100;
+        return base;
     case BuildingState::Idle:
-        return 75;
+        return base * 3U / 4U;
     case BuildingState::Derelict:
-        return 25;
+        return base / 4U;
     case BuildingState::Ruined:
         return 0;
     }
@@ -28,13 +36,11 @@ namespace {
 }
 
 [[nodiscard]] std::uint16_t development_contribution(const PersistentBuilding& building) {
-    if (building.type != BuildingType::SettlementHall) {
-        throw std::runtime_error{"歸約量表遇到未登記的建築型別"};
-    }
+    const auto base = building_reduction_weight(building.type).development;
     switch (building.state) {
     case BuildingState::Active:
     case BuildingState::Idle:
-        return 1;
+        return base;
     case BuildingState::Derelict:
     case BuildingState::Ruined:
         return 0;
@@ -79,6 +85,14 @@ void validate_site_identity(const zone::Zone& live_site, world::RegionXY coordin
 
 }  // namespace
 
+const BuildingReductionWeight& building_reduction_weight(BuildingType type) {
+    const auto index = static_cast<std::size_t>(type);
+    if (index >= kBuildingWeights.size()) {
+        throw std::runtime_error{"歸約量表遇到未登記的建築型別"};
+    }
+    return kBuildingWeights[index];
+}
+
 std::optional<world::OrderReduction::Value>
 measure_site_order(const SitePersistentLayer& persistent) noexcept {
     if (!persistent.order.has_value()) {
@@ -113,7 +127,8 @@ world::RegionTileDelta ReductionTable::reduce(const SiteLayers& layers) {
     return result;
 }
 
-world::RegionTileDelta ReductionTable::reduce(const zone::Zone& site) {
+world::RegionTileDelta ReductionTable::reduce(const zone::Zone& site,
+                                              const rules::Ruleset& ruleset) {
     const auto* payload = std::get_if<zone::SitePayload>(&site.payload);
     if (payload == nullptr) {
         throw std::invalid_argument{"ReductionTable::reduce(zone) 只接受 SitePayload"};
@@ -126,7 +141,30 @@ world::RegionTileDelta ReductionTable::reduce(const zone::Zone& site) {
     if (states.size() != 1U) {
         throw std::logic_error{"Site 歸約遇到多個 CityBuildState"};
     }
-    const auto& economy = states.get<const CityBuildState>(*states.begin()).economy;
+    const auto& state = states.get<const CityBuildState>(*states.begin());
+    auto& development_observation =
+        std::get<world::ReductionValue<world::DevelopmentLevelReduction>>(result.values_).value;
+    if (!development_observation.has_value()) {
+        throw std::logic_error{"城市 Site 的建設歸約列不得缺席"};
+    }
+    auto development = *development_observation;
+    for (const auto& building : state.buildings) {
+        const auto id = ruleset.find_city_building(building.definition_id);
+        const auto* definition = id.has_value() ? ruleset.city_building(*id) : nullptr;
+        if (definition == nullptr) {
+            throw std::runtime_error{"歸約量表遇到未登記的城建 def：" + building.definition_id};
+        }
+        const auto contribution =
+            building_reduction_weight(definition->persistent_type).development;
+        if (contribution >
+            std::numeric_limits<world::DevelopmentLevelReduction::Value>::max() - development) {
+            throw std::overflow_error{"Site 歸約量超出 Region 欄位容量"};
+        }
+        development =
+            static_cast<world::DevelopmentLevelReduction::Value>(development + contribution);
+    }
+    development_observation = development;
+    const auto& economy = state.economy;
     std::get<world::ReductionValue<world::PopulationReduction>>(result.values_).value =
         economy.population;
     std::get<world::ReductionValue<world::FoodStockReduction>>(result.values_).value =
@@ -146,7 +184,7 @@ void ReductionTable::apply(world::RegionTiles& tiles, world::RegionXY coordinate
 }
 
 void reduce_live_site_xun(world::RegionTiles& tiles, world::RegionXY coordinate,
-                          const zone::Zone& live_site) {
+                          const zone::Zone& live_site, const rules::Ruleset& ruleset) {
     validate_site_identity(live_site, coordinate);
     const auto index = tiles.index_of(coordinate);
     if (!tiles.site.at(index).has_live_site) {
@@ -156,7 +194,7 @@ void reduce_live_site_xun(world::RegionTiles& tiles, world::RegionXY coordinate,
     if (payload == nullptr) {
         throw std::invalid_argument{"Site Zone 缺少 SitePayload"};
     }
-    ReductionTable::apply(tiles, coordinate, ReductionTable::reduce(live_site));
+    ReductionTable::apply(tiles, coordinate, ReductionTable::reduce(live_site, ruleset));
 }
 
 }  // namespace aetheria::site

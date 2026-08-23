@@ -75,8 +75,9 @@ struct NarrativeWorldSnapshot {
     std::vector<DungeonObservation> dungeons;
 };
 
-// NarrativeWorldView 只借用權威 Region 與目前載入的 Site；不保存第二份世界狀態。
-// faction_tensions 是留給外交真值接線的介面，本輪刻意不擁有也不推導外交狀態。
+// NarrativeWorldView 只借用權威 Region 與目前載入的
+// Site；不保存第二份世界狀態。 faction_tensions
+// 是留給外交真值接線的介面，本輪刻意不擁有也不推導外交狀態。
 struct NarrativeWorldView {
     const world::RegionTiles* region_tiles{};
     std::span<const zone::Zone* const> loaded_sites;
@@ -119,8 +120,10 @@ detect_emergent_quests(const NarrativeWorldSnapshot& snapshot);
 detect_emergent_quests(const NarrativeWorldView& world_view, const rules::Ruleset& ruleset);
 
 // 只改 Site 城市糧倉，再呼叫既有 L2→L1 歸約；沒有任務專用 Region setter。
-[[nodiscard]] FoodDeliveryReport complete_food_delivery(
-    const EmergentQuest& quest, world::RegionTiles& region_tiles, zone::Zone& live_site);
+[[nodiscard]] FoodDeliveryReport complete_food_delivery(const EmergentQuest& quest,
+                                                        world::RegionTiles& region_tiles,
+                                                        zone::Zone& live_site,
+                                                        const rules::Ruleset& ruleset);
 
 // 只降低 Site 持久層的盜匪壓力，再經正式歸約列更新 Region city.order。
 [[nodiscard]] BanditSuppressionReport complete_bandit_suppression(const EmergentQuest& quest,

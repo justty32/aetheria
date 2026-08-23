@@ -215,8 +215,8 @@ std::vector<EmergentQuest> detect_emergent_quests(const NarrativeWorldView& worl
 }
 
 FoodDeliveryReport complete_food_delivery(const EmergentQuest& quest,
-                                          world::RegionTiles& region_tiles,
-                                          zone::Zone& live_site) {
+                                          world::RegionTiles& region_tiles, zone::Zone& live_site,
+                                          const rules::Ruleset& ruleset) {
     if (quest.kind != EmergentQuestKind::FoodDelivery ||
         quest.observed_value >= quest.required_value) {
         throw std::invalid_argument{"完成運糧只接受仍有真實缺口的運糧任務"};
@@ -233,7 +233,7 @@ FoodDeliveryReport complete_food_delivery(const EmergentQuest& quest,
     }
     economy.food_stock += delivered;
     try {
-        site::reduce_live_site_xun(region_tiles, quest.coordinate, live_site);
+        site::reduce_live_site_xun(region_tiles, quest.coordinate, live_site, ruleset);
     } catch (...) {
         economy.food_stock -= delivered;
         throw;
@@ -278,7 +278,7 @@ BanditSuppressionReport complete_bandit_suppression(const EmergentQuest& quest,
         throw std::logic_error{"清剿完成未能提高 Site 治安"};
     }
     try {
-        site::reduce_live_site_xun(region_tiles, quest.coordinate, live_site);
+        site::reduce_live_site_xun(region_tiles, quest.coordinate, live_site, ruleset);
     } catch (...) {
         order.bandit_pressure = pressure_before;
         throw;
