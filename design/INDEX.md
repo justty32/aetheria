@@ -102,7 +102,9 @@
 |---|---|
 | [definitions.md](definitions.md) | **種類一律不寫死 enum**，改資料檔 def + 下標 |
 | [definitions-layout.md](definitions-layout.md) | 規則檔的 TOML 佈局、載入順序、def 之間的引用解析 |
-| [rules-extensibility.md](rules-extensibility.md) | 三級擴展：資料表 / Lua / core；腳本的決定論鐵律 |
+| [rules-extensibility.md](rules-extensibility.md) | 三級擴展：資料表 / Lua / core；腳本的決定論鐵律。⚠ 熱重載**不動世界狀態** |
+| [runtime-injection.md](runtime-injection.md) | **可編輯的沙盒（矮人要塞模型）**：存檔分世界／角色、注入是歷史不是旁路 |
+| [type-data-audit.md](type-data-audit.md) | 原則五盤點：18 對、兵種／建築／AI 做錯；打掉 vs 補 |
 
 ### 內容與呈現
 
