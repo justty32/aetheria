@@ -41,6 +41,20 @@
 
 ## 功能缺口（知道是空的）
 
+- 🔴 **遊戲不會存檔**（2026-08-27 量到）：可玩 session 用 `zone::InMemoryZoneStore`
+  （`core/runtime/playable_session.h:233`），`bridge/` 與 `godot/main.gd` 沒有任何存讀檔呼叫；
+  會落地的 `FileZoneStore` 只有測試與 `sim` CLI 在用。
+  **M8.1「遊戲第一次能玩」不含存讀檔**，而所有存檔相關的判準都只在測試裡跑過。
+- 🔴 **在 TOML 加一個勢力，所有既有存檔立刻讀不開**：
+  `core/serialize/zone_diplomacy_codec.cpp:57,151` 檢查「存檔勢力數 ≠ 目前 Ruleset ⇒ throw」。
+  這是「存檔自帶 raws」的**反面**，直接擋住執行期注入。
+- ⚠ **def 的 remap 只驗字串 id 在不在，不驗內容**：把 `terrain.swamp` 的 `move_cost` 改掉，
+  舊存檔照樣載入、沒有任何警告（`core/serialize/zone_decode.cpp:26-44`）。
+  與「生成參數雜湊要進 manifest」是同一類問題，但 def 這邊沒做。
+- ⚠ **原則七的注入插入點是死代碼**：`ZoneManager::queue_materialize/unload/destroy`
+  + `flush_commands()`（`core/zone/zone_manager.h:106-108`）語意正確但
+  `core/`、`bridge/` 內**沒有任何呼叫端**；`TurnStage::TurnEnd`
+  （`core/world/region_turn.cpp:181`）只是一行 `notify`，是空的。
 - 🔴 **AI 在地圖上什麼都不做**：`Develop`／`Prepare`／`Expand`／`StatisticalProgress`
   四個動作在 `execute_faction_command` 裡都是 `break;`，只改抽象國力數字。
   **不會派兵、不會建城。**

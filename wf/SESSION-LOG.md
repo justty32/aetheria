@@ -82,6 +82,11 @@ M9 輪次規劃（**M8.3 先於 M9.0**，因為主線推進條件掛在城建上
 它被翻譯成 `rules-extensibility.md` 的「熱重載」，而熱重載保證的是**不動世界狀態**，
 需求要的正是動世界狀態。→ **[runtime-injection.md](../design/runtime-injection.md)**
 
+**2026-08-27 調查完現況**（六項全沒實現，且**遊戲根本不會存檔**）→
+**[investigation/runtime-injection-status.md](workflows/investigation/runtime-injection-status.md)**
+（結論與差距）＋ [runtime-injection-assets.md](workflows/investigation/runtime-injection-assets.md)
+（已有的地基與插入點）。**下一步是規劃方案，本輪只調查。**
+
 **會在未來咬人** → **獨立一檔** [KNOWN-TRAPS.md](KNOWN-TRAPS.md)
 （假通過與驗證、原則五被侵蝕、AI 在地圖上什麼都不做、Region 沒有建築組成輸入）。
 

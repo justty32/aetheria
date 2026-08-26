@@ -57,6 +57,9 @@
 ### 已量到的代價
 
 依賴世界雜湊的測試 **12 個檔**、寫死的雜湊常數 **11 個**。
+⚠ **2026-08-27 重量：21 個檔、14 個寫死的 64-bit 常數**（其中有 FNV offset basis 之類
+非基準值，要逐條分辨）——以
+[investigation/runtime-injection-status.md](../wf/workflows/investigation/runtime-injection-status.md) 為準。
 ⚠ 而 [KNOWN-TRAPS](../wf/KNOWN-TRAPS.md) 早就記著「那些寫死的 hash 是 golden snapshot、
 不是領域不變量，**該改成關係斷言**」——**這批本來就在待修清單上**，
 不是這個裁定額外製造的成本。
@@ -85,6 +88,14 @@
 | 三層資料（程序／持久／易失） | 注入寫進**持久層**，程序層照常由 seed + 高層狀態重算 |
 
 ⚠ 但**原則五目前只做對一半**——見下。
+
+## ⚠ 現況調查（2026-08-27）：比這份文件寫的還差一步
+
+**遊戲根本不會存檔**——可玩 session 用 `InMemoryZoneStore`，`bridge/` 與 `godot/` 沒有存讀檔。
+六類內容一項都沒實現，完整盤點與佐證見
+**[investigation/runtime-injection-status.md](../wf/workflows/investigation/runtime-injection-status.md)**；
+已經有的地基（存檔目錄結構、字串 id remap、FIFO 插入點）見
+[runtime-injection-assets.md](../wf/workflows/investigation/runtime-injection-assets.md)。
 
 ## 已經擋在路上的三件事
 
