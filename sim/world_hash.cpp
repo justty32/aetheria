@@ -1,5 +1,7 @@
 #include "sim/world_hash.h"
 
+#include "core/runtime/save_raws.h"
+#include "core/rules/ruleset.h"
 #include "core/serialize/normalized_state_hash.h"
 #include "core/zone/file_zone_store.h"
 
@@ -86,7 +88,11 @@ find_zone_files(const std::filesystem::path& slot_directory) {
 [[nodiscard]] std::unique_ptr<zone::FileZoneStore>
 open_store(const std::filesystem::path& slot_directory, const rules::Ruleset& ruleset) {
     try {
-        return std::make_unique<zone::FileZoneStore>(slot_directory, ruleset);
+        auto store = std::make_unique<zone::FileZoneStore>(slot_directory, ruleset);
+        if (!store->manifest().has_value() || store->manifest()->raws_hash == 0) {
+            throw std::runtime_error{"manifest 缺少 v23 raws 內容雜湊"};
+        }
+        return store;
     } catch (const std::exception& exception) {
         throw std::runtime_error{"世界狀態雜湊無法開啟 " +
                                  (slot_directory / "manifest.bin").string() + "：" +
@@ -96,8 +102,9 @@ open_store(const std::filesystem::path& slot_directory, const rules::Ruleset& ru
 
 }  // namespace
 
-WorldStateHashReport world_state_hash(const std::filesystem::path& slot_directory,
-                                      const rules::Ruleset& ruleset) {
+WorldStateHashReport world_state_hash(const std::filesystem::path& slot_directory) {
+    static_cast<void>(runtime::save_raws_hash(slot_directory));
+    const auto ruleset = rules::RulesetLoader::load(runtime::save_raws_directory(slot_directory));
     auto files = find_zone_files(slot_directory);
     auto store = open_store(slot_directory, ruleset);
     std::vector<std::pair<zone::ZoneKey, std::uint64_t>> zone_hashes;
@@ -136,9 +143,9 @@ WorldStateHashReport world_state_hash(const std::filesystem::path& slot_director
     return {hash, zone_hashes.size()};
 }
 
-int run_world_hash(const std::filesystem::path& slot_directory, const rules::Ruleset& ruleset) {
+int run_world_hash(const std::filesystem::path& slot_directory) {
     const auto start = std::chrono::steady_clock::now();
-    const auto report = world_state_hash(slot_directory, ruleset);
+    const auto report = world_state_hash(slot_directory);
     const auto elapsed = std::chrono::steady_clock::now() - start;
     const auto milliseconds = std::chrono::duration<double, std::milli>{elapsed}.count();
     std::cout << "world_hash=" << report.hash << " zone_count=" << report.zone_count

@@ -46,6 +46,7 @@ static_assert(std::is_same_v<decltype(SiteBuildingStateEvent::significance), Sig
 
 TEST(SiteEventEscalation, RegionSignificanceChangesRegionImmediatelyAndWorldHashSeesIt) {
     aetheria::tests::TemporaryDirectory directory;
+    const auto raws_hash = aetheria::tests::prepare_test_save_raws(directory.path());
     auto tiles = reduction_region();
     tiles.owner[0] = static_cast<aetheria::world::FactionId>(2);
     auto live_site = aetheria::site::materialize_site_zone(
@@ -62,8 +63,9 @@ TEST(SiteEventEscalation, RegionSignificanceChangesRegionImmediatelyAndWorldHash
     aetheria::zone::FileZoneStore store{directory.path(), test_ruleset()};
     store.save(aetheria::zone::Zone{aetheria::zone::kRootZone});
     store.save(region);
-    store.write_manifest(aetheria::zone::SaveManifest{.world_seed = kReductionWorldSeed});
-    const auto before_hash = aetheria::sim::world_state_hash(directory.path(), test_ruleset());
+    store.write_manifest(aetheria::zone::SaveManifest{
+        .world_seed = kReductionWorldSeed, .raws_hash = raws_hash});
+    const auto before_hash = aetheria::sim::world_state_hash(directory.path());
     auto& layers = std::get<aetheria::zone::SitePayload>(live_site.payload).layers;
     const SiteBuildingStateEvent event{Significance::Region,
                                        layers.persistent.buildings.front().tile,
@@ -72,7 +74,7 @@ TEST(SiteEventEscalation, RegionSignificanceChangesRegionImmediatelyAndWorldHash
     const bool escalated = aetheria::site::apply_site_building_state_event(
         region_tiles, kReductionCoordinate, live_site, event, test_ruleset());
     store.save(region);
-    const auto after_hash = aetheria::sim::world_state_hash(directory.path(), test_ruleset());
+    const auto after_hash = aetheria::sim::world_state_hash(directory.path());
 
     const auto minimum_milliseconds = aetheria::tests::minimum_milliseconds_after_warmup([&] {
         auto performance_tiles = reduction_region();

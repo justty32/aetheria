@@ -37,7 +37,8 @@ public:
   [[nodiscard]] godot::Array poll_events() const;
   // 建立新的 core 可玩 session；外部整數先在 bridge 驗證。
   [[nodiscard]] godot::Dictionary new_game(std::int64_t seed,
-                                           std::int64_t region_id);
+                                           std::int64_t region_id,
+                                           const godot::String &data_path);
   [[nodiscard]] godot::Dictionary save_game(const godot::String &slot_path);
   [[nodiscard]] godot::Dictionary load_game(const godot::String &slot_path);
   [[nodiscard]] godot::PackedStringArray

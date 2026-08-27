@@ -1,6 +1,7 @@
 #include "bridge/aetheria_core.h"
 
 #include "core/api/version.h"
+#include "core/runtime/save_raws.h"
 #include "core/rules/ruleset.h"
 #include "core/runtime/playable_session.h"
 #include "core/zone/file_zone_store.h"
@@ -274,7 +275,7 @@ void AetheriaCore::_bind_methods() {
   godot::ClassDB::bind_method(godot::D_METHOD("poll_events"),
                               &AetheriaCore::poll_events);
   godot::ClassDB::bind_method(
-      godot::D_METHOD("new_game", "seed", "region_id"),
+      godot::D_METHOD("new_game", "seed", "region_id", "data_path"),
       &AetheriaCore::new_game);
   godot::ClassDB::bind_method(
       godot::D_METHOD("save_game", "slot_path"),
@@ -380,20 +381,25 @@ godot::Array AetheriaCore::poll_events() const {
 }
 
 godot::Dictionary AetheriaCore::new_game(std::int64_t seed,
-                                         std::int64_t region_id) {
+                                         std::int64_t region_id,
+                                         const godot::String &data_path) {
   if (seed < 0 || region_id < 0 ||
       static_cast<std::uint64_t>(region_id) >
           std::numeric_limits<std::uint32_t>::max()) {
     return error_result(
         "seed 與 region_id 必須是非負整數，region_id 不得超過 uint32");
   }
+  const std::filesystem::path data_directory{data_path.utf8().get_data()};
+  if (!data_directory.is_absolute()) {
+    return error_result("新世界 data 目錄必須使用絕對路徑");
+  }
   try {
     auto ruleset = std::make_unique<rules::Ruleset>(
-        rules::RulesetLoader::load(AETHERIA_DEFAULT_DATA_DIR));
+        rules::RulesetLoader::load(data_directory));
     auto store = std::make_unique<zone::InMemoryZoneStore>(*ruleset);
     auto playable = std::make_unique<runtime::PlayableSession>(
         static_cast<std::uint64_t>(seed),
-        static_cast<std::uint32_t>(region_id), AETHERIA_DEFAULT_DATA_DIR,
+        static_cast<std::uint32_t>(region_id), data_directory.string(),
         *store);
     playable_ruleset_ = std::move(ruleset);
     playable_store_ = std::move(store);
@@ -438,11 +444,12 @@ godot::Dictionary AetheriaCore::load_game(const godot::String &slot_path) {
     return error_result("讀檔槽必須使用絕對路徑");
   }
   try {
+    const auto raws_directory = runtime::save_raws_directory(path);
+    static_cast<void>(runtime::save_raws_hash(path));
     auto ruleset = std::make_unique<rules::Ruleset>(
-        rules::RulesetLoader::load(AETHERIA_DEFAULT_DATA_DIR));
+        rules::RulesetLoader::load(raws_directory));
     auto store = std::make_unique<zone::FileZoneStore>(path, *ruleset);
-    auto playable = runtime::PlayableSession::load(AETHERIA_DEFAULT_DATA_DIR,
-                                                    *store);
+    auto playable = runtime::PlayableSession::load(path, *store);
     playable_.reset();
     playable_store_.reset();
     playable_ruleset_.reset();

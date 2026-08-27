@@ -25,7 +25,7 @@ struct SessionLoadMetadata {
 // 最後才寫 manifest。active_store 與 destination 可以是同一物件。
 void save_session(zone::ZoneStore& active_store, zone::ZoneStore& destination,
                   zone::ZoneManager& manager, std::uint64_t world_seed,
-                  time::Tick now);
+                  std::uint64_t raws_hash, time::Tick now);
 
 // 僅讀 manifest 與 zone keys，不生成世界；存檔必須恰有一個 Region。
 [[nodiscard]] SessionLoadMetadata inspect_session_save(const zone::ZoneStore& store);

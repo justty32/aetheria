@@ -18,11 +18,16 @@
 #include "core/zone/zone_manager.h"
 
 #include <cstdint>
+#include <filesystem>
 #include <memory>
 #include <optional>
 #include <string>
 #include <string_view>
 #include <vector>
+
+namespace aetheria::zone {
+class FileZoneStore;
+}
 
 namespace aetheria::runtime {
 
@@ -142,7 +147,7 @@ public:
                     std::string data_directory, zone::ZoneStore& store);
 
     [[nodiscard]] static std::unique_ptr<PlayableSession>
-    load(std::string data_directory, zone::ZoneStore& store);
+    load(std::filesystem::path slot_directory, zone::ZoneStore& store);
 
     PlayableSession(const PlayableSession&) = delete;
     PlayableSession& operator=(const PlayableSession&) = delete;
@@ -204,14 +209,15 @@ public:
     [[nodiscard]] world::RegionXY coverage_tile() const noexcept {
         return coverage_tile_;
     }
-    void save_game(zone::ZoneStore& destination);
+    void save_game(zone::FileZoneStore& destination);
     [[nodiscard]] const world::WorldDiplomacyState& diplomacy() const noexcept {
         return *diplomacy_;
     }
 
 private:
     struct LoadTag {};
-    PlayableSession(LoadTag, std::string data_directory, zone::ZoneStore& store);
+    PlayableSession(LoadTag, std::filesystem::path slot_directory,
+                    zone::ZoneStore& store);
     [[nodiscard]] world::RegionPosition& position_of(world::StableId unit);
     [[nodiscard]] const world::RegionPosition& position_of(world::StableId unit) const;
     [[nodiscard]] world::ArmyState& army(world::StableId unit);
@@ -241,6 +247,7 @@ private:
 
     std::uint64_t seed_{};
     std::uint32_t region_id_{};
+    std::filesystem::path base_raws_directory_;
     rules::Ruleset ruleset_;
     zone::ZoneStore& store_;
     world::RegionTurnPipeline turn_pipeline_;

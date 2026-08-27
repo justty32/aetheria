@@ -48,6 +48,7 @@ inline constexpr auto kRoundTripSiteKey = zone::child_key(kRoundTripRegionKey, 4
 
 [[nodiscard]] inline site::SiteProceduralLayer prepare_idle_digest(
     zone::FileZoneStore& store, world::RegionTiles& tiles) {
+    const auto raws_hash = prepare_test_save_raws(store.slot_directory());
     store.save(zone::Zone{zone::kRootZone});
     auto materialized = site::materialize_site_zone(tiles, kRoundTripCoordinate,
                                                     kRoundTripWorldSeed, kRoundTripRegionId,
@@ -70,12 +71,13 @@ inline constexpr auto kRoundTripSiteKey = zone::child_key(kRoundTripRegionKey, 4
     auto& site_state = tiles.site.at(tiles.index_of(kRoundTripCoordinate));
     site_state.lod = zone::LodLevel::Absent;
     site_state.has_live_site = false;
-    store.write_manifest(zone::SaveManifest{.world_seed = kRoundTripWorldSeed});
+    store.write_manifest(zone::SaveManifest{
+        .world_seed = kRoundTripWorldSeed, .raws_hash = raws_hash});
     return expected_procedural;
 }
 
 [[nodiscard]] inline std::uint64_t disk_world_hash(const TemporaryDirectory& directory) {
-    const auto report = sim::world_state_hash(directory.path(), test_ruleset());
+    const auto report = sim::world_state_hash(directory.path());
     EXPECT_EQ(report.zone_count, 2U);
     return report.hash;
 }

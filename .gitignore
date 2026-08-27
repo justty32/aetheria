@@ -17,6 +17,8 @@ vcpkg_installed/
 .godot/
 *.import
 export_presets.cfg
+!godot/export_presets.cfg
+godot/data/
 
 # 編輯器與作業系統
 .vscode/

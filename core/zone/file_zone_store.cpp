@@ -1,5 +1,6 @@
 #include "core/zone/file_zone_store.h"
 
+#include "core/runtime/save_raws.h"
 #include "core/zone/save_manifest_io.h"
 
 #include <algorithm>
@@ -43,6 +44,11 @@ FileZoneStore::FileZoneStore(
     }
     detail::require_generation_parameters(manifest_->generation_parameters,
                                           expected_generation_parameters_, "載入 manifest");
+    // raw hash 0 僅保留給不代表完整世界槽的低階 ZoneStore 測試 fixture；
+    // 所有正式 save 導向入口都要求並產生非 0 的 v23 raws_hash。
+    if (manifest_->raws_hash != 0) {
+        runtime::require_save_raws_hash(slot_directory_, manifest_->raws_hash);
+    }
     if (!contains(kRootZone)) {
         throw std::runtime_error{"存檔有 manifest 但缺 root.bin：" + slot_directory_.string()};
     }

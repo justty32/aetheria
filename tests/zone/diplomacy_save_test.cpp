@@ -199,6 +199,7 @@ void populate_non_default_diplomacy(WorldDiplomacyState& state) {
 
 TEST(DiplomacySave, ColdDiskRoundTripPreservesNonDefaultDirectedStateAndHash) {
     TemporaryDirectory directory;
+    const auto raws_hash = aetheria::tests::prepare_test_save_raws(directory.path());
     std::uint64_t before_hash{};
     {
         FileZoneStore store{directory.path(), test_ruleset()};
@@ -210,6 +211,7 @@ TEST(DiplomacySave, ColdDiskRoundTripPreservesNonDefaultDirectedStateAndHash) {
         store.save(*source);
         SaveManifest manifest;
         manifest.now = source->last_saved_tick;
+        manifest.raws_hash = raws_hash;
         store.write_manifest(manifest);
         source.reset();
         EXPECT_EQ(source, nullptr);
@@ -265,9 +267,9 @@ TEST(DiplomacySave, ColdDiskRoundTripPreservesNonDefaultDirectedStateAndHash) {
         Tick{12 * static_cast<std::int64_t>(kXun)}, test_ruleset());
     EXPECT_EQ(loaded_decision.decision.command, replay_decision.decision.command);
     const auto first_world_hash =
-        aetheria::sim::world_state_hash(directory.path(), test_ruleset()).hash;
+        aetheria::sim::world_state_hash(directory.path()).hash;
     const auto second_world_hash =
-        aetheria::sim::world_state_hash(directory.path(), test_ruleset()).hash;
+        aetheria::sim::world_state_hash(directory.path()).hash;
     EXPECT_EQ(first_world_hash, second_world_hash);
     std::cout << "diplomacy_roundtrip before_hash=" << before_hash << " after_hash=" << after_hash
               << " world_hash=" << first_world_hash << " forward=" << forward.favor << ','
@@ -311,7 +313,7 @@ TEST(DiplomacySave, V15FixtureKeepsAllV18FieldsAbsent) {
                  " mind_presence=0\n";
 }
 
-TEST(DiplomacySave, V20StoreRejectsV15Manifest) {
+TEST(DiplomacySave, CurrentStoreRejectsV15Manifest) {
     TemporaryDirectory directory;
     SaveManifest old_manifest;
     old_manifest.format_version = 15;
@@ -322,14 +324,14 @@ TEST(DiplomacySave, V20StoreRejectsV15Manifest) {
                                            aetheria::zone::detail::encode_manifest(old_manifest));
     try {
         static_cast<void>(FileZoneStore{directory.path(), test_ruleset()});
-        FAIL() << "v15 manifest should be rejected by v22 store";
+        FAIL() << "v15 manifest should be rejected by v23 store";
     } catch (const std::runtime_error& error) {
         std::cout << "diplomacy_v15_reject_error=" << error.what() << '\n';
-        EXPECT_NE(std::string{error.what()}.find("檔內=15 預期=22"), std::string::npos);
+        EXPECT_NE(std::string{error.what()}.find("檔內=15 預期=23"), std::string::npos);
     }
 }
 
-TEST(DiplomacySave, V20StoreRejectsV15ZoneAfterOpening) {
+TEST(DiplomacySave, CurrentStoreRejectsV15ZoneAfterOpening) {
     TemporaryDirectory directory;
     FileZoneStore store{directory.path(), test_ruleset()};
     aetheria::zone::detail::atomic_replace(
@@ -337,10 +339,10 @@ TEST(DiplomacySave, V20StoreRejectsV15ZoneAfterOpening) {
         aetheria::zone::detail::compress(encode_v15_root_zone(test_ruleset())));
     try {
         static_cast<void>(store.load(kRootZone));
-        FAIL() << "v15 zone should be rejected by an already-open v22 store";
+        FAIL() << "v15 zone should be rejected by an already-open v23 store";
     } catch (const std::runtime_error& error) {
         std::cout << "diplomacy_v15_zone_reject_error=" << error.what() << '\n';
-        EXPECT_NE(std::string{error.what()}.find("檔內=15 預期=22"), std::string::npos);
+        EXPECT_NE(std::string{error.what()}.find("檔內=15 預期=23"), std::string::npos);
     }
 }
 

@@ -89,17 +89,17 @@ TEST(SessionPersistence, ColdFileStoreLoadPreservesPlayableWorldSnapshotAndHash)
             session->save_game(destination);
         }
         hash_before =
-            aetheria::sim::world_state_hash(directory.path(), test_ruleset()).hash;
+            aetheria::sim::world_state_hash(directory.path()).hash;
         session.reset();
     }
 
     aetheria::zone::FileZoneStore cold_store{directory.path(), test_ruleset()};
-    auto loaded = PlayableSession::load(AETHERIA_SOURCE_DIR "/data", cold_store);
+    auto loaded = PlayableSession::load(directory.path(), cold_store);
     ASSERT_TRUE(before.has_value());
     EXPECT_EQ(snapshot(*loaded), *before);
     loaded->save_game(cold_store);
     const auto hash_after =
-        aetheria::sim::world_state_hash(directory.path(), test_ruleset()).hash;
+        aetheria::sim::world_state_hash(directory.path()).hash;
     EXPECT_EQ(hash_after, hash_before);
 }
 

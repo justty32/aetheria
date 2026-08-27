@@ -100,7 +100,7 @@ TEST(FileZoneStore, RejectsZoneFormatVersionMismatch) {
 
     auto raw = zstd_decompress(read_file(store.path_for(key)));
     ASSERT_GE(raw.size(), 9U);
-    static_assert(kSaveFormatVersion == 22);
+    static_assert(kSaveFormatVersion == 23);
     const std::uint32_t bad_version = 20;
     for (std::size_t index = 0; index < sizeof(bad_version); ++index) {
         raw[5 + index] = static_cast<char>((bad_version >> (index * 8U)) & UINT32_C(0xFF));
@@ -109,10 +109,10 @@ TEST(FileZoneStore, RejectsZoneFormatVersionMismatch) {
 
     try {
         static_cast<void>(store.load(key));
-        FAIL() << "v20 zone should be rejected by v22 decoder";
+        FAIL() << "v20 zone should be rejected by v23 decoder";
     } catch (const std::runtime_error& error) {
         std::cout << "zone_v20_reject_error=" << error.what() << '\n';
-        EXPECT_NE(std::string{error.what()}.find("檔內=20 預期=22"), std::string::npos);
+        EXPECT_NE(std::string{error.what()}.find("檔內=20 預期=23"), std::string::npos);
     }
 }
 

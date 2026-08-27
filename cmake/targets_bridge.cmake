@@ -14,4 +14,9 @@ set_target_properties(aetheria_bridge PROPERTIES
     LIBRARY_OUTPUT_DIRECTORY "${PROJECT_SOURCE_DIR}/godot/bin"
     RUNTIME_OUTPUT_DIRECTORY "${PROJECT_SOURCE_DIR}/godot/bin"
 )
+add_custom_command(TARGET aetheria_bridge POST_BUILD
+    COMMAND "${CMAKE_COMMAND}" -E copy_directory
+        "${PROJECT_SOURCE_DIR}/data" "${PROJECT_SOURCE_DIR}/godot/data"
+    COMMENT "Stage baseline TOML raws for Godot editor/export"
+)
 aetheria_enable_warnings(aetheria_bridge)

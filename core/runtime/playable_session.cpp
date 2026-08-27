@@ -1,6 +1,7 @@
 // playable_session.cpp：最小可玩情境的權威 core 編排。
 
 #include "core/runtime/playable_session.h"
+#include "core/runtime/save_raws.h"
 #include "core/runtime/session_persistence.h"
 
 #include "core/local/dungeon.h"
@@ -17,6 +18,7 @@
 #include "core/world/faction_ai.h"
 #include "core/worldgen/region_generator.h"
 #include "core/worldgen/region_seed.h"
+#include "core/zone/file_zone_store.h"
 
 #include <aetheria/runtime/cross_zone.h>
 
@@ -34,6 +36,12 @@
 
 namespace aetheria::runtime {
 namespace {
+
+[[nodiscard]] rules::Ruleset
+load_saved_ruleset(const std::filesystem::path& slot_directory) {
+    static_cast<void>(save_raws_hash(slot_directory));
+    return rules::RulesetLoader::load(save_raws_directory(slot_directory));
+}
 
 [[nodiscard]] rules::CombatModifiers neutral_modifiers(
     const rules::CombatRules& rules) noexcept {
@@ -100,7 +108,8 @@ void install_coverage_dungeon_entrance(site::SiteLayers& layers,
 PlayableSession::PlayableSession(std::uint64_t seed, std::uint32_t region_id,
                                  std::string data_directory, zone::ZoneStore& store)
     : seed_{seed}, region_id_{region_id},
-      ruleset_{rules::RulesetLoader::load(data_directory)}, store_{store},
+      base_raws_directory_{std::move(data_directory)},
+      ruleset_{rules::RulesetLoader::load(base_raws_directory_)}, store_{store},
       turn_pipeline_{ruleset_, store_} {
     if (store_.manifest().has_value() || !store_.stored_keys().empty()) {
         throw std::logic_error{"new_game 需要空的 ZoneStore"};
@@ -113,10 +122,15 @@ PlayableSession::PlayableSession(std::uint64_t seed, std::uint32_t region_id,
     initialize_diplomacy();
 }
 
-PlayableSession::PlayableSession(LoadTag, std::string data_directory,
+PlayableSession::PlayableSession(LoadTag, std::filesystem::path slot_directory,
                                  zone::ZoneStore& store)
-    : ruleset_{rules::RulesetLoader::load(data_directory)}, store_{store},
+    : base_raws_directory_{save_raws_directory(slot_directory)},
+      ruleset_{load_saved_ruleset(slot_directory)}, store_{store},
       turn_pipeline_{ruleset_, store_} {
+    if (!store_.manifest().has_value() || store_.manifest()->raws_hash == 0) {
+        throw std::runtime_error{"存檔 manifest 缺少 v23 raws 內容雜湊"};
+    }
+    require_save_raws_hash(slot_directory, store_.manifest()->raws_hash);
     const auto metadata = inspect_session_save(store_);
     seed_ = metadata.world_seed;
     region_id_ = metadata.region_id;
@@ -132,9 +146,9 @@ PlayableSession::PlayableSession(LoadTag, std::string data_directory,
 }
 
 std::unique_ptr<PlayableSession>
-PlayableSession::load(std::string data_directory, zone::ZoneStore& store) {
+PlayableSession::load(std::filesystem::path slot_directory, zone::ZoneStore& store) {
     return std::unique_ptr<PlayableSession>{
-        new PlayableSession{LoadTag{}, std::move(data_directory), store}};
+        new PlayableSession{LoadTag{}, std::move(slot_directory), store}};
 }
 
 void PlayableSession::initialize_scenario() {
@@ -460,7 +474,8 @@ void PlayableSession::initialize_diplomacy() {
         if (loaded.diplomacy.has_value()) {
             throw std::logic_error{"新遊戲 root 已有外交狀態"};
         }
-        loaded.diplomacy.emplace(3, seed_, ruleset_);
+        loaded.diplomacy.emplace(
+            ruleset_.civilization_rules().factions.faction_count, seed_, ruleset_);
         diplomacy_ = &*loaded.diplomacy;
     });
     if (!initialized || diplomacy_ == nullptr) {
@@ -469,8 +484,12 @@ void PlayableSession::initialize_diplomacy() {
     diplomacy_->set_faction_truth(world::FactionId{1}, 120'000, 80'000);
     diplomacy_->set_faction_truth(world::FactionId{2}, 48'000, 42'000);
     diplomacy_->set_faction_truth(world::FactionId{3}, 60'000, 70'000);
-    for (std::uint16_t observer = 1; observer <= 3; ++observer) {
-        for (std::uint16_t target = 1; target <= 3; ++target) {
+    const auto faction_count = ruleset_.civilization_rules().factions.faction_count;
+    for (std::uint16_t faction = 4; faction <= faction_count; ++faction) {
+        diplomacy_->set_faction_truth(world::FactionId{faction}, 0, 0);
+    }
+    for (std::uint16_t observer = 1; observer <= faction_count; ++observer) {
+        for (std::uint16_t target = 1; target <= faction_count; ++target) {
             if (observer != target) {
                 diplomacy_->observe_faction(world::FactionId{observer},
                                             world::FactionId{target}, 0,
@@ -1344,11 +1363,27 @@ time::Tick PlayableSession::now() const {
     return world::turn_clock(*region_).now;
 }
 
-void PlayableSession::save_game(zone::ZoneStore& destination) {
+void PlayableSession::save_game(zone::FileZoneStore& destination) {
     if (encounter_tile_.has_value()) {
         throw std::logic_error{"遭遇尚未處理：只能在回合尾端、無 pending 遭遇時存檔"};
     }
-    save_session(store_, destination, *manager_, seed_, now());
+    const auto source_hash = raws_directory_hash(base_raws_directory_);
+    const auto destination_raws = save_raws_directory(destination.slot_directory());
+    std::error_code error;
+    const bool destination_has_raws = std::filesystem::exists(destination_raws, error);
+    if (error) {
+        throw std::runtime_error{"無法檢查目的存檔 raws：" + error.message()};
+    }
+    std::uint64_t destination_hash{};
+    if (!destination_has_raws) {
+        destination_hash = copy_save_raws(base_raws_directory_, destination.slot_directory());
+    } else {
+        destination_hash = save_raws_hash(destination.slot_directory());
+    }
+    if (source_hash != destination_hash) {
+        throw std::runtime_error{"目的存檔 raws 與目前世界的基底 raws 不符，拒絕改寫"};
+    }
+    save_session(store_, destination, *manager_, seed_, destination_hash, now());
 }
 
 } // namespace aetheria::runtime

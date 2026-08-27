@@ -146,7 +146,7 @@ TEST(SiteBuildingMapping, HouseAndSettlementHallHaveDifferentObservableRegionEff
 }
 
 TEST(SiteBuildingMapping, ColdFileLoadDerivesTheSameTypeAndWeightFromDefinitionId) {
-    static_assert(aetheria::serialize::kSaveFormatVersion == 22);
+    static_assert(aetheria::serialize::kSaveFormatVersion == 23);
     auto fixture = build_fixture();
     aetheria::site::start_construction(fixture.site, "city.house", {10, 10},
                                        test_ruleset());

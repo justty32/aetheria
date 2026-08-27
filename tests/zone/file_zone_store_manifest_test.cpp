@@ -70,7 +70,7 @@ void write_raw_manifest(const std::filesystem::path& path, const SaveManifest& m
     archive(manifest.format_version, manifest.next_detached_id, manifest.next_entity_uid,
             manifest.dims.region_width, manifest.dims.region_height, manifest.dims.site_width,
             manifest.dims.site_height, manifest.world_seed, manifest.generation_parameters.groups,
-            now);
+            manifest.raws_hash, now);
     write_file(path, std::move(stream).str());
 }
 
@@ -160,7 +160,7 @@ TEST(FileZoneStore, RejectsManifestFormatVersionMismatch) {
 
     EXPECT_THROW(static_cast<void>(FileZoneStore{directory.path(), test_ruleset()}),
                  std::runtime_error);
-    EXPECT_EQ(read_file(directory.path() / "manifest.bin").size(), 149U);
+    EXPECT_EQ(read_file(directory.path() / "manifest.bin").size(), 157U);
 }
 
 TEST(FileZoneStore, RejectsGenerationParameterGroupMismatchByName) {
