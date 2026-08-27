@@ -223,6 +223,7 @@ public:
     [[nodiscard]] std::uint64_t history_head_hash() const noexcept;
     [[nodiscard]] std::uint64_t history_head_seq() const noexcept;
     void set_interrupt_after_journal_for_testing(bool enabled);
+    void set_interrupt_after_save_for_testing(bool enabled);
     [[nodiscard]] const world::WorldDiplomacyState& diplomacy() const noexcept {
         return *diplomacy_;
     }
@@ -265,6 +266,7 @@ private:
     std::uint64_t seed_{};
     std::uint32_t region_id_{};
     std::filesystem::path base_raws_directory_;
+    std::optional<std::filesystem::path> character_save_path_;
     rules::Ruleset ruleset_;
     zone::ZoneStore& store_;
     world::RegionTurnPipeline turn_pipeline_;

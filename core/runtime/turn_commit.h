@@ -6,6 +6,7 @@
 
 #include <cstdint>
 #include <filesystem>
+#include <functional>
 #include <string_view>
 
 namespace aetheria::zone {
@@ -30,7 +31,7 @@ public:
         return committed_seq_;
     }
     [[nodiscard]] bool recovery_needed() const noexcept {
-        return history_.head_seq() > committed_seq_;
+        return !marker_exists_ || history_.head_seq() > committed_seq_;
     }
     [[nodiscard]] const history::HistoryLog& history() const noexcept {
         return history_;
@@ -39,14 +40,18 @@ public:
     void replay_tail(PlayableSession& session) const;
     void replay_all(PlayableSession& session) const;
 
-    // zone/manifest 全部成功後才前推 marker；marker 舊值會在套用前先落盤。
+    // zone/manifest 與同一交易的附屬狀態全部成功後才前推 marker。
     void commit_world(zone::ZoneStore& active_store,
                       zone::ZoneStore& destination, zone::ZoneManager& manager,
                       std::uint64_t world_seed, std::uint64_t raws_hash,
-                      time::Tick now);
+                      time::Tick now,
+                      const std::function<void()>& persist_before_marker = {});
 
     void set_interrupt_after_journal_for_testing(bool enabled) noexcept {
         interrupt_after_journal_ = enabled;
+    }
+    void set_interrupt_after_save_for_testing(bool enabled) noexcept {
+        interrupt_after_save_ = enabled;
     }
 
     [[nodiscard]] static std::filesystem::path
@@ -64,7 +69,9 @@ private:
     history::HistoryLog history_;
     std::filesystem::path slot_directory_;
     std::uint64_t committed_seq_{};
+    bool marker_exists_{};
     bool interrupt_after_journal_{};
+    bool interrupt_after_save_{};
 };
 
 }  // namespace aetheria::runtime

@@ -257,24 +257,37 @@ PlayableSession::~PlayableSession() = default;
 std::unique_ptr<PlayableSession>
 PlayableSession::load(std::filesystem::path slot_directory, zone::ZoneStore& store,
                       std::string_view character_name) {
-    auto result = std::unique_ptr<PlayableSession>{
-        new PlayableSession{LoadTag{}, slot_directory, store}};
     if (!store.manifest().has_value()) {
         throw std::runtime_error{"載入角色前世界存檔缺少 manifest"};
     }
     const auto manifest = *store.manifest();
-    result->import_character_state(read_character_save(
-        character_save_path(slot_directory, character_name),
-        {manifest.world_seed, manifest.raws_hash}));
-    if (result->turn_commit_->recovery_needed()) {
-        result->turn_commit_->replay_tail(*result);
-        result->turn_commit_->commit_world(
-            result->store_, result->store_, *result->manager_, result->seed_,
-            manifest.raws_hash, result->now());
-        write_character_save(character_save_path(slot_directory, character_name),
-                             {manifest.world_seed, manifest.raws_hash},
-                             result->export_character_state());
+    const auto character_path =
+        character_save_path(slot_directory, character_name);
+    TurnCommit recovery{slot_directory};
+    if (recovery.recovery_needed()) {
+        const auto metadata = inspect_session_save(store);
+        const auto recovery_ruleset = load_saved_ruleset(slot_directory);
+        zone::InMemoryZoneStore rebuilt_store{recovery_ruleset};
+        PlayableSession rebuilt{
+            metadata.world_seed, metadata.region_id,
+            save_raws_directory(slot_directory).string(), rebuilt_store};
+        recovery.replay_all(rebuilt);
+        recovery.commit_world(
+            rebuilt_store, store, *rebuilt.manager_, metadata.world_seed,
+            manifest.raws_hash, rebuilt.now(), [&] {
+                write_character_save(
+                    character_path,
+                    {metadata.world_seed, manifest.raws_hash},
+                    rebuilt.export_character_state());
+            });
     }
+
+    auto result = std::unique_ptr<PlayableSession>{
+        new PlayableSession{LoadTag{}, slot_directory, store}};
+    result->character_save_path_ = character_path;
+    result->import_character_state(read_character_save(
+        character_path,
+        {manifest.world_seed, manifest.raws_hash}));
     return result;
 }
 
@@ -1286,8 +1299,17 @@ PlayableAdvanceReport PlayableSession::advance_xun() {
         });
     if (!replaying_history_ && !encounter_tile_.has_value() &&
         turn_commit_->history().bound()) {
+        if (!character_save_path_.has_value()) {
+            throw std::logic_error{"已綁定世界槽但缺少目前角色檔路徑"};
+        }
+        const auto raws_hash = raws_directory_hash(base_raws_directory_);
         turn_commit_->commit_world(store_, store_, *manager_, seed_,
-                                   raws_directory_hash(base_raws_directory_), now());
+                                   raws_hash, now(), [&] {
+                                       write_character_save(
+                                           *character_save_path_,
+                                           {seed_, raws_hash},
+                                           export_character_state());
+                                   });
     }
     const auto player_after = position_of(player_army_id_).tile;
     const auto enemy_after = position_of(enemy_army_id_).tile;
@@ -1693,6 +1715,10 @@ void PlayableSession::set_interrupt_after_journal_for_testing(bool enabled) {
     turn_commit_->set_interrupt_after_journal_for_testing(enabled);
 }
 
+void PlayableSession::set_interrupt_after_save_for_testing(bool enabled) {
+    turn_commit_->set_interrupt_after_save_for_testing(enabled);
+}
+
 void PlayableSession::save_game(zone::FileZoneStore& destination,
                                 std::string_view character_name) {
     if (encounter_tile_.has_value()) {
@@ -1716,11 +1742,15 @@ void PlayableSession::save_game(zone::FileZoneStore& destination,
     if (source_hash != destination_hash) {
         throw std::runtime_error{"目的存檔 raws 與目前世界的基底 raws 不符，拒絕改寫"};
     }
+    character_save_path_ = character_path;
     turn_commit_->attach(destination.slot_directory());
     turn_commit_->commit_world(store_, destination, *manager_, seed_,
-                               destination_hash, now());
-    write_character_save(character_path, {seed_, destination_hash},
-                         export_character_state());
+                               destination_hash, now(), [&] {
+                                   write_character_save(
+                                       character_path,
+                                       {seed_, destination_hash},
+                                       export_character_state());
+                               });
 }
 
 } // namespace aetheria::runtime

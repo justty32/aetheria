@@ -145,7 +145,6 @@ void TurnCommit::attach(const std::filesystem::path& slot_directory) {
     history_.bind(log_path(slot_directory));
     slot_directory_ = slot_directory;
     load_marker();
-    ensure_marker();
 }
 
 void TurnCommit::replay_tail(PlayableSession& session) const {
@@ -162,9 +161,16 @@ void TurnCommit::commit_world(zone::ZoneStore& active_store,
                               zone::ZoneStore& destination,
                               zone::ZoneManager& manager,
                               std::uint64_t world_seed,
-                              std::uint64_t raws_hash, time::Tick now) {
-    ensure_marker();
+                              std::uint64_t raws_hash, time::Tick now,
+                              const std::function<void()>& persist_before_marker) {
     save_session(active_store, destination, manager, world_seed, raws_hash, now);
+    if (persist_before_marker) {
+        persist_before_marker();
+    }
+    if (interrupt_after_save_) {
+        throw std::runtime_error{
+            "M10.3a 測試鉤：zone/manifest 與角色檔已落，marker 未前推"};
+    }
     write_marker(history_.head_seq());
 }
 
@@ -190,8 +196,10 @@ void TurnCommit::load_marker() {
             throw std::runtime_error{"無法檢查 history.commit：" + error.message()};
         }
         committed_seq_ = 0;
+        marker_exists_ = false;
         return;
     }
+    marker_exists_ = true;
     committed_seq_ = decode_marker(path);
     if (committed_seq_ > history_.head_seq()) {
         throw std::runtime_error{"history.commit 超過日誌鏈頭：marker=" +
@@ -217,6 +225,7 @@ void TurnCommit::ensure_marker() {
 void TurnCommit::write_marker(std::uint64_t value) {
     atomic_write(marker_path(slot_directory_), marker_bytes(value));
     committed_seq_ = value;
+    marker_exists_ = true;
 }
 
 void TurnCommit::apply_entry(PlayableSession& session,
