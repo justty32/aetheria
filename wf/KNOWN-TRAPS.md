@@ -68,6 +68,20 @@
 - ⚠ **沒有「建造領主廳」命令**：住宅走完整施工 pipeline，領主廳只能用既有持久物件
   fixture 驗證。不能說兩者都有玩家施工流程。
 
+- ⚠ **讀檔後的亂數軌跡不保證與不中斷遊玩一致**（2026-08-27，M10.0c 實作者自揭）：
+  `revision_`／`next_event_id_` 參與後續戰鬥的亂數輸入，但只活在 session 記憶體、
+  冷讀後重置。立即快照一致、未來軌跡分岔。M10.3a 日誌記命令時要一併把亂數輸入
+  改成只依賴持久態。
+- ⚠ **bridge 的 include 鐵律破了**（2026-08-27 量到）：tech-stack 說 `bridge/` 只准
+  include `core/api/`，實況 8 個 core include 只有 1 個合規，連 `playable_session.h`
+  都直接進了 `aetheria_core.h:4`。
+- ⚠ **「free 後從 core 重建」的自證是子集**（2026-08-27 量到）：`main.gd` 的重建鈕
+  只 free `_view` 不 free 持有 `_selected_unit_id` 的 main 節點——
+  M9「關掉 core 重開畫面完全一致」現在**測不出來**。
+- ⚠ **godot 色表漏了 `terrain.taiga`／`terrain.steppe`**：兩種地形實際會生成
+  （`data/biomes.toml:18,23`），畫面上落洋紅 fallback（`region_debug_renderer.gd:30`）。
+  色表 5 筆 vs terrain def 7 筆——「不必維護索引表」的規格已經被違反且漏了。
+
 ## 混淆點
 
 - ⚠ 「戰鬥位階」與「聚合提升重要性」共用 significance 等級表但升級規則不同。

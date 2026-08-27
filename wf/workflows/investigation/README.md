@@ -46,3 +46,6 @@
 |---|---|---|
 | [runtime-injection-status.md](runtime-injection-status.md) | 執行期注入（存檔進行中加入地形／文化／勢力／人物／物品定義）做了沒——**結論與差距** | 2026-08-27 |
 | [runtime-injection-assets.md](runtime-injection-assets.md) | 同題：**已經有的地基與插入點**（哪些是接線問題，不是從零蓋）| 2026-08-27 |
+| [art-pipeline-status.md](art-pipeline-status.md) | 美術管線通了幾成——閘三/閘四完工，閘一/閘二零程式碼，godot 零吃圖路徑，`VisualRef` 死重 | 2026-08-27 |
+| [godot-pipeline-status.md](godot-pipeline-status.md) | godot 端是 core 除錯控制台不是遊戲畫面——三層場景 0 套、整圖重畫、兩鐵律一守一破 | 2026-08-27 |
+| [bridge-coverage-status.md](bridge-coverage-status.md) | core→bridge 覆蓋——缺口移到 session↔core：腳本掛勾死的、位階系統孤兒、外交 25 露 1 | 2026-08-27 |
