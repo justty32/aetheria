@@ -204,16 +204,17 @@ PlayableSession::PlayableSession(std::uint64_t seed, std::uint32_t region_id,
         throw std::logic_error{"new_game 需要空的 ZoneStore"};
     }
     const auto uid_config = load_playable_uids(base_raws_directory_);
-    if (!uid_config.player_army.has_value() || !uid_config.enemy_army.has_value()) {
+    if (!uid_config.player_army.has_value() || !uid_config.enemy_army.has_value() ||
+        !uid_config.named_commander.has_value()) {
         throw std::runtime_error{"新世界基底 raws 缺少 playable_session_uids"};
     }
     player_army_id_ = world::StableId{
         store_.allocate_entity_uid(uid_config.player_army)};
     enemy_army_id_ = world::StableId{
         store_.allocate_entity_uid(uid_config.enemy_army)};
-    preferred_named_uid_ = uid_config.named_commander;
-    turn_commit_ = std::make_unique<TurnCommit>(
-        raws_directory_hash(base_raws_directory_));
+    named_commander_uid_ =
+        store_.allocate_entity_uid(uid_config.named_commander);
+    turn_commit_ = std::make_unique<TurnCommit>();
     manager_ = std::make_unique<zone::ZoneManager>(
         store_, [this](zone::ZoneKey key, std::unique_ptr<zone::Zone> persistent) {
             return materialize_session_zone(key, std::move(persistent));
@@ -231,10 +232,12 @@ PlayableSession::PlayableSession(LoadTag, std::filesystem::path slot_directory,
         throw std::runtime_error{"存檔 manifest 缺少 v23 raws 內容雜湊"};
     }
     require_save_raws_hash(slot_directory, store_.manifest()->raws_hash);
-    preferred_named_uid_ =
-        load_playable_uids(base_raws_directory_).named_commander;
-    turn_commit_ = std::make_unique<TurnCommit>(
-        slot_directory, store_.manifest()->raws_hash);
+    const auto named_uid = load_playable_uids(base_raws_directory_).named_commander;
+    if (!named_uid.has_value()) {
+        throw std::runtime_error{"存檔基底 raws 缺少 named_commander uid"};
+    }
+    named_commander_uid_ = *named_uid;
+    turn_commit_ = std::make_unique<TurnCommit>(slot_directory);
     const auto metadata = inspect_session_save(store_);
     seed_ = metadata.world_seed;
     region_id_ = metadata.region_id;
@@ -1353,10 +1356,8 @@ PlayableSession::resolve_encounter(PlayableBattleChoice choice) {
     site::reduce_live_site_xun(region_tiles, *encounter_tile_, *battle_site_, ruleset_);
 
     world::NamedFateLedger ledger;
-    const auto named_uid = store_.allocate_entity_uid(preferred_named_uid_);
-    preferred_named_uid_.reset();
     ledger.members.push_back({
-        .entity_uid = named_uid,
+        .entity_uid = named_commander_uid_,
         .cohort_id = enemy_army_id_.uid,
         .name_key = "守軍隊長艾琳",
         .significance = world::Significance::Site,
@@ -1676,7 +1677,7 @@ void PlayableSession::replay_history_from(
     if (source_raws_hash != raws_directory_hash(base_raws_directory_)) {
         throw std::runtime_error{"replay 的基底 raws 與 session 不同"};
     }
-    TurnCommit source{slot_directory, source_raws_hash};
+    TurnCommit source{slot_directory};
     source.replay_all(*this);
 }
 

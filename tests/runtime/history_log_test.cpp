@@ -3,6 +3,7 @@
 #include "core/runtime/save_raws.h"
 #include "core/runtime/session_persistence.h"
 #include "core/zone/file_zone_store.h"
+#include "core/zone/save_manifest_io.h"
 #include "sim/world_hash.h"
 #include "tests/support/ruleset_fixture.h"
 #include "tests/zone/zone_test_support.h"
@@ -68,8 +69,7 @@ void play_battle_and_coverage(PlayableSession& session) {
     const auto raws_hash = aetheria::runtime::save_raws_hash(source_slot);
     aetheria::zone::FileZoneStore source{source_slot, test_ruleset()};
     const auto metadata = aetheria::runtime::inspect_session_save(source);
-    const aetheria::history::HistoryLog source_history{
-        source_slot / "history.log", raws_hash};
+    const aetheria::history::HistoryLog source_history{source_slot / "history.log"};
     aetheria::zone::InMemoryZoneStore active{test_ruleset()};
     PlayableSession replay{metadata.world_seed, metadata.region_id,
                            aetheria::runtime::save_raws_directory(source_slot).string(),
@@ -77,8 +77,28 @@ void play_battle_and_coverage(PlayableSession& session) {
     replay.replay_history_from(source_slot);
     aetheria::zone::FileZoneStore destination{replay_slot, test_ruleset()};
     replay.save_game(destination, "replay");
-    const auto zone_identity = aetheria::sim::world_state_hash(replay_slot).hash;
-    return zone_identity ^ raws_hash ^ source_history.head_hash();
+    const auto replayed = aetheria::sim::world_state_hash(replay_slot);
+    return aetheria::sim::compose_world_identity(
+        replayed.zone_hash, raws_hash, source_history.head_hash());
+}
+
+void fold_u64_for_test(std::uint64_t& hash, std::uint64_t value) noexcept {
+    constexpr auto kFnvPrime = UINT64_C(1099511628211);
+    for (std::size_t byte = 0; byte < sizeof(value); ++byte) {
+        hash ^= static_cast<std::uint8_t>(value & UINT8_MAX);
+        hash *= kFnvPrime;
+        value >>= 8U;
+    }
+}
+
+[[nodiscard]] std::uint64_t fold_identity_for_test(
+    std::uint64_t zone_hash, std::uint64_t raws_hash,
+    std::uint64_t head_hash) noexcept {
+    auto hash = UINT64_C(14695981039346656037);
+    fold_u64_for_test(hash, zone_hash);
+    fold_u64_for_test(hash, raws_hash);
+    fold_u64_for_test(hash, head_hash);
+    return hash;
 }
 
 [[nodiscard]] auto layer_fields(const aetheria::world::LayerCombatResult& value) {
@@ -188,22 +208,9 @@ TEST(HistoryAcceptance, JournalBeforeApplyInterruptionRecoversBitExactly) {
               << " direct_hash=" << direct_hash << '\n';
 }
 
-TEST(HistoryAcceptance, NoCommandWorldMatchesV23AndCommandNegativeDiffers) {
-    constexpr std::uint64_t kV23EmptyHash = UINT64_C(17114528469974780418);
+TEST(HistoryAcceptance, EmptyWorldPreservesV23ZoneAndFoldsThreeComponents) {
+    constexpr std::uint64_t kV23ZoneHash = UINT64_C(17114528469974780418);
     TemporaryDirectory workspace;
-    const auto changed_slot = workspace.path() / "changed";
-    {
-        aetheria::zone::InMemoryZoneStore active{test_ruleset()};
-        PlayableSession session{UINT64_C(999999), 51, AETHERIA_SOURCE_DIR "/data", active};
-        session.issue_move(session.player_army_id(), session.coverage_tile());
-        aetheria::zone::FileZoneStore destination{changed_slot, test_ruleset()};
-        session.save_game(destination, "default");
-    }
-    const auto changed_hash = aetheria::sim::world_state_hash(changed_slot).hash;
-    EXPECT_NE(changed_hash, kV23EmptyHash);
-    std::cout << "acceptance4 command_injected=RED v23_hash=" << kV23EmptyHash
-              << " actual_hash=" << changed_hash << '\n';
-
     const auto empty_slot = workspace.path() / "empty";
     {
         aetheria::zone::InMemoryZoneStore active{test_ruleset()};
@@ -211,10 +218,123 @@ TEST(HistoryAcceptance, NoCommandWorldMatchesV23AndCommandNegativeDiffers) {
         aetheria::zone::FileZoneStore destination{empty_slot, test_ruleset()};
         session.save_game(destination, "default");
     }
-    const auto empty_hash = aetheria::sim::world_state_hash(empty_slot).hash;
-    EXPECT_EQ(empty_hash, kV23EmptyHash);
-    std::cout << "acceptance4 command_restored=GREEN v23_hash=" << kV23EmptyHash
-              << " actual_hash=" << empty_hash << '\n';
+    const auto report = aetheria::sim::world_state_hash(empty_slot);
+    const auto independently_folded = fold_identity_for_test(
+        report.zone_hash, report.raws_hash, report.history_head_hash);
+    EXPECT_EQ(report.zone_hash, kV23ZoneHash);
+    EXPECT_EQ(report.history_head_seq, 0U);
+    EXPECT_EQ(report.history_head_hash,
+              aetheria::history::kHistoryGenesisHash);
+    EXPECT_EQ(report.hash, independently_folded);
+    std::cout << "acceptance_hash zone_v23=" << kV23ZoneHash
+              << " zone_actual=" << report.zone_hash << '\n'
+              << "acceptance_hash empty_head_seq=" << report.history_head_seq
+              << " empty_head_hash=" << report.history_head_hash << '\n'
+              << "acceptance_hash folded_expected=" << independently_folded
+              << " composed_actual=" << report.hash << '\n';
+}
+
+TEST(HistoryAcceptance, EveryIdentityComponentAndFoldOrderChangesComposition) {
+    TemporaryDirectory workspace;
+    const auto baseline_slot = workspace.path() / "baseline";
+    {
+        aetheria::zone::InMemoryZoneStore active{test_ruleset()};
+        PlayableSession session{UINT64_C(999999), 51, AETHERIA_SOURCE_DIR "/data", active};
+        aetheria::zone::FileZoneStore destination{baseline_slot, test_ruleset()};
+        session.save_game(destination, "default");
+    }
+    const auto baseline = aetheria::sim::world_state_hash(baseline_slot);
+
+    const auto zone_slot = workspace.path() / "zone";
+    std::filesystem::copy(baseline_slot, zone_slot,
+                          std::filesystem::copy_options::recursive);
+    std::filesystem::path changed_zone_path;
+    std::string original_zone_bytes;
+    {
+        aetheria::zone::FileZoneStore store{zone_slot, test_ruleset()};
+        const auto keys = store.stored_keys();
+        const auto region = std::ranges::find_if(
+            keys, [](const auto key) { return key != aetheria::zone::kRootZone; });
+        ASSERT_NE(region, keys.end());
+        auto changed = store.load(*region);
+        ASSERT_NE(changed, nullptr);
+        changed_zone_path = store.path_for(*region);
+        original_zone_bytes = read_bytes(changed_zone_path);
+        auto& tiles =
+            std::get<aetheria::zone::RegionPayload>(changed->payload).layers.at(0);
+        ++tiles.temperature.at(0);
+        store.save(*changed);
+    }
+    const auto zone_changed = aetheria::sim::world_state_hash(zone_slot);
+    EXPECT_NE(zone_changed.zone_hash, baseline.zone_hash);
+    EXPECT_EQ(zone_changed.raws_hash, baseline.raws_hash);
+    EXPECT_EQ(zone_changed.history_head_hash, baseline.history_head_hash);
+    EXPECT_NE(zone_changed.hash, baseline.hash);
+    write_bytes(changed_zone_path, original_zone_bytes);
+    const auto zone_restored = aetheria::sim::world_state_hash(zone_slot);
+    EXPECT_EQ(zone_restored.hash, baseline.hash);
+    std::cout << "acceptance_components zone_injected=RED before=" << baseline.hash
+              << " after=" << zone_changed.hash
+              << " zone_restored=GREEN actual=" << zone_restored.hash << '\n';
+
+    const auto raws_slot = workspace.path() / "raws";
+    std::filesystem::copy(baseline_slot, raws_slot,
+                          std::filesystem::copy_options::recursive);
+    const auto manifest_path = raws_slot / "manifest.bin";
+    const auto original_manifest_bytes = read_bytes(manifest_path);
+    auto manifest = aetheria::zone::detail::decode_manifest(
+        original_manifest_bytes);
+    const auto terrain_path =
+        aetheria::runtime::save_raws_directory(raws_slot) / "terrain.toml";
+    const auto original_terrain = read_bytes(terrain_path);
+    write_bytes(terrain_path, original_terrain +
+                                  "\n# world identity negative control\n");
+    manifest.raws_hash = aetheria::runtime::save_raws_hash(raws_slot);
+    aetheria::zone::detail::atomic_replace(
+        manifest_path, aetheria::zone::detail::encode_manifest(manifest));
+    const auto raws_changed = aetheria::sim::world_state_hash(raws_slot);
+    EXPECT_EQ(raws_changed.zone_hash, baseline.zone_hash);
+    EXPECT_NE(raws_changed.raws_hash, baseline.raws_hash);
+    EXPECT_EQ(raws_changed.history_head_hash, baseline.history_head_hash);
+    EXPECT_NE(raws_changed.hash, baseline.hash);
+    write_bytes(terrain_path, original_terrain);
+    aetheria::zone::detail::atomic_replace(manifest_path,
+                                            original_manifest_bytes);
+    const auto raws_restored = aetheria::sim::world_state_hash(raws_slot);
+    EXPECT_EQ(raws_restored.hash, baseline.hash);
+    std::cout << "acceptance_components raws_injected=RED before=" << baseline.hash
+              << " after=" << raws_changed.hash
+              << " raws_restored=GREEN actual=" << raws_restored.hash << '\n';
+
+    const auto history_slot = workspace.path() / "history";
+    std::filesystem::copy(baseline_slot, history_slot,
+                          std::filesystem::copy_options::recursive);
+    const auto history_path = history_slot / "history.log";
+    const auto original_history = read_bytes(history_path);
+    aetheria::history::HistoryLog history{history_path};
+    static_cast<void>(history.append(aetheria::time::Tick{1},
+                                     "identity_negative_control", "value = 1\n"));
+    const auto history_changed = aetheria::sim::world_state_hash(history_slot);
+    EXPECT_EQ(history_changed.zone_hash, baseline.zone_hash);
+    EXPECT_EQ(history_changed.raws_hash, baseline.raws_hash);
+    EXPECT_NE(history_changed.history_head_hash, baseline.history_head_hash);
+    EXPECT_NE(history_changed.hash, baseline.hash);
+    write_bytes(history_path, original_history);
+    const auto history_restored = aetheria::sim::world_state_hash(history_slot);
+    EXPECT_EQ(history_restored.hash, baseline.hash);
+    std::cout << "acceptance_components head_injected=RED before=" << baseline.hash
+              << " after=" << history_changed.hash
+              << " head_restored=GREEN actual=" << history_restored.hash << '\n';
+
+    const auto reordered = fold_identity_for_test(
+        baseline.raws_hash, baseline.zone_hash, baseline.history_head_hash);
+    const auto canonical = fold_identity_for_test(
+        baseline.zone_hash, baseline.raws_hash, baseline.history_head_hash);
+    EXPECT_NE(reordered, baseline.hash);
+    EXPECT_EQ(canonical, baseline.hash);
+    std::cout << "acceptance_components order_swapped=RED canonical=" << baseline.hash
+              << " swapped=" << reordered
+              << " order_restored=GREEN actual=" << canonical << '\n';
 }
 
 TEST(HistoryAcceptance, ManifestAllocatorSurvivesColdReadWithoutCollision) {
@@ -240,9 +360,34 @@ TEST(HistoryAcceptance, ManifestAllocatorSurvivesColdReadWithoutCollision) {
     aetheria::zone::FileZoneStore second_cold{slot, test_ruleset()};
     const auto fourth = second_cold.allocate_entity_uid();
     EXPECT_EQ((std::array{player, enemy, third, fourth}),
-              (std::array<std::uint64_t, 4>{1001, 2001, 2002, 2003}));
+              (std::array<std::uint64_t, 4>{1001, 2001, 9002, 9003}));
     std::cout << "acceptance5 uid_sequence=" << player << ',' << enemy << ','
               << third << ',' << fourth << '\n';
+}
+
+TEST(HistoryAcceptance, NamedCommanderUidIsReservedBeforeLaterAllocations) {
+    aetheria::zone::InMemoryZoneStore active{test_ruleset()};
+    PlayableSession session{UINT64_C(515151), 51, AETHERIA_SOURCE_DIR "/data", active};
+    const auto later_uid = active.allocate_entity_uid(UINT64_C(9002));
+
+    std::string failure;
+    try {
+        session.issue_move(session.player_army_id(), session.guided_target());
+        EXPECT_FALSE(session.advance_xun().encounter_pending);
+        EXPECT_TRUE(session.advance_xun().encounter_pending);
+        static_cast<void>(
+            session.resolve_encounter(PlayableBattleChoice::CommandSite));
+    } catch (const std::logic_error& error) {
+        failure = error.what();
+    }
+
+    if (failure.empty()) {
+        std::cout << "acceptance_uid reserved=GREEN later_uid=" << later_uid << '\n';
+    } else {
+        std::cout << "acceptance_uid delayed_claim=RED later_uid=" << later_uid
+                  << " error=" << failure << '\n';
+    }
+    EXPECT_TRUE(failure.empty());
 }
 
 TEST(HistoryAcceptance, CombatAfterColdReadMatchesUninterruptedFieldByField) {

@@ -88,10 +88,7 @@ template <typename Value>
 
 }  // namespace
 
-HistoryLog::HistoryLog(std::uint64_t genesis_hash) : genesis_hash_{genesis_hash} {}
-
-HistoryLog::HistoryLog(std::filesystem::path path, std::uint64_t genesis_hash)
-    : path_{std::move(path)}, genesis_hash_{genesis_hash} {
+HistoryLog::HistoryLog(std::filesystem::path path) : path_{std::move(path)} {
     load();
 }
 
@@ -114,7 +111,7 @@ const HistoryEntry& HistoryLog::append(time::Tick tick, std::string_view kind,
 }
 
 std::uint64_t HistoryLog::head_hash() const noexcept {
-    return entries_.empty() ? genesis_hash_ : entries_.back().entry_hash;
+    return entries_.empty() ? kHistoryGenesisHash : entries_.back().entry_hash;
 }
 
 std::uint64_t HistoryLog::head_seq() const noexcept {
@@ -137,7 +134,7 @@ void HistoryLog::bind(std::filesystem::path path) {
         throw std::runtime_error{"無法檢查 history.log：" + error.message()};
     }
     if (exists) {
-        HistoryLog existing{path, genesis_hash_};
+        HistoryLog existing{path};
         if (existing.entries_ != entries_) {
             throw std::runtime_error{"目的槽 history.log 與目前 session 歷史不一致"};
         }
@@ -152,7 +149,7 @@ void HistoryLog::bind(std::filesystem::path path) {
 }
 
 void HistoryLog::verify() const {
-    auto expected_prev = genesis_hash_;
+    auto expected_prev = kHistoryGenesisHash;
     std::uint64_t expected_seq{1};
     for (const auto& entry : entries_) {
         if (entry.seq != expected_seq) {

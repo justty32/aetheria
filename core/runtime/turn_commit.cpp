@@ -118,11 +118,8 @@ void atomic_write(const std::filesystem::path& path, std::string_view bytes) {
 
 }  // namespace
 
-TurnCommit::TurnCommit(std::uint64_t genesis_hash) : history_{genesis_hash} {}
-
-TurnCommit::TurnCommit(std::filesystem::path slot_directory,
-                       std::uint64_t genesis_hash)
-    : history_{log_path(slot_directory), genesis_hash},
+TurnCommit::TurnCommit(std::filesystem::path slot_directory)
+    : history_{log_path(slot_directory)},
       slot_directory_{std::move(slot_directory)} {
     load_marker();
 }

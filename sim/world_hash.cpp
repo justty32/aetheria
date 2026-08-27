@@ -24,10 +24,6 @@ namespace {
 
 inline constexpr std::uint64_t kFnvOffset = UINT64_C(14695981039346656037);
 inline constexpr std::uint64_t kFnvPrime = UINT64_C(1099511628211);
-// 目前基底 raws 的相容性鹽：讓 M10.3a 零命令世界沿用 v23 數值；其他 raws
-// 仍會透過 raws_hash XOR 改變身分。日誌鏈則以 head XOR genesis 貢獻增量。
-inline constexpr std::uint64_t kV23BaseRawsCompatibility =
-    UINT64_C(17134265233666862005);
 
 void hash_u64(std::uint64_t& hash, std::uint64_t value) noexcept {
     for (std::size_t byte = 0; byte < sizeof(value); ++byte) {
@@ -121,6 +117,16 @@ open_store(const std::filesystem::path& slot_directory, const rules::Ruleset& ru
 
 }  // namespace
 
+std::uint64_t compose_world_identity(std::uint64_t zone_hash,
+                                     std::uint64_t raws_hash,
+                                     std::uint64_t history_head_hash) noexcept {
+    auto hash = kFnvOffset;
+    hash_u64(hash, zone_hash);
+    hash_u64(hash, raws_hash);
+    hash_u64(hash, history_head_hash);
+    return hash;
+}
+
 WorldStateHashReport world_state_hash(const std::filesystem::path& slot_directory) {
     const auto raws_hash = runtime::save_raws_hash(slot_directory);
     const auto ruleset = rules::RulesetLoader::load(runtime::save_raws_directory(slot_directory));
@@ -153,16 +159,21 @@ WorldStateHashReport world_state_hash(const std::filesystem::path& slot_director
         }
     }
 
-    auto hash = kFnvOffset;
-    hash_u64(hash, static_cast<std::uint64_t>(zone_hashes.size()));
-    for (const auto& [key, zone_hash] : zone_hashes) {
-        hash_u64(hash, zone::value_of(key));
-        hash_u64(hash, zone_hash);
+    auto zone_hash = kFnvOffset;
+    hash_u64(zone_hash, static_cast<std::uint64_t>(zone_hashes.size()));
+    for (const auto& [key, component_hash] : zone_hashes) {
+        hash_u64(zone_hash, zone::value_of(key));
+        hash_u64(zone_hash, component_hash);
     }
-    const history::HistoryLog history{slot_directory / "history.log", raws_hash};
-    const auto history_delta = history.head_hash() ^ history.genesis_hash();
-    return {hash ^ raws_hash ^ history_delta ^ kV23BaseRawsCompatibility,
-            zone_hashes.size()};
+    const history::HistoryLog history{slot_directory / "history.log"};
+    return {
+        .hash = compose_world_identity(zone_hash, raws_hash, history.head_hash()),
+        .zone_count = zone_hashes.size(),
+        .zone_hash = zone_hash,
+        .raws_hash = raws_hash,
+        .history_head_hash = history.head_hash(),
+        .history_head_seq = history.head_seq(),
+    };
 }
 
 int run_world_hash(const std::filesystem::path& slot_directory) {
@@ -170,19 +181,22 @@ int run_world_hash(const std::filesystem::path& slot_directory) {
     const auto report = world_state_hash(slot_directory);
     const auto elapsed = std::chrono::steady_clock::now() - start;
     const auto milliseconds = std::chrono::duration<double, std::milli>{elapsed}.count();
-    std::cout << "world_hash=" << report.hash << " zone_count=" << report.zone_count
-              << " elapsed_ms=" << milliseconds << '\n';
+    std::cout << "zone_hash=" << report.zone_hash
+              << " zone_count=" << report.zone_count << '\n'
+              << "raws_hash=" << report.raws_hash << '\n'
+              << "history_head_hash=" << report.history_head_hash
+              << " history_seq=" << report.history_head_seq << '\n'
+              << "world_hash=" << report.hash << " elapsed_ms=" << milliseconds
+              << '\n';
     return 0;
 }
 
 int run_replay(const std::filesystem::path& slot_directory) {
-    const auto raws_hash = runtime::save_raws_hash(slot_directory);
     const auto ruleset = rules::RulesetLoader::load(
         runtime::save_raws_directory(slot_directory));
     zone::FileZoneStore source{slot_directory, ruleset};
     const auto metadata = runtime::inspect_session_save(source);
-    const history::HistoryLog source_history{slot_directory / "history.log",
-                                             raws_hash};
+    const history::HistoryLog source_history{slot_directory / "history.log"};
 
     zone::InMemoryZoneStore replay_store{ruleset};
     runtime::PlayableSession replay{metadata.world_seed, metadata.region_id,
@@ -204,14 +218,30 @@ int run_replay(const std::filesystem::path& slot_directory) {
     zone::FileZoneStore replay_destination{temporary, ruleset};
     replay.save_game(replay_destination, "replay");
 
-    const auto stored_hash = world_state_hash(slot_directory).hash;
-    const auto replay_zone_hash = world_state_hash(temporary).hash;
-    const auto replay_hash = replay_zone_hash ^ raws_hash ^ source_history.head_hash();
-    std::cout << "stored_world_hash=" << stored_hash
+    const auto stored = world_state_hash(slot_directory);
+    const auto replayed = world_state_hash(temporary);
+    const auto replay_hash = compose_world_identity(
+        replayed.zone_hash, replayed.raws_hash, source_history.head_hash());
+    std::cout << "stored_zone_hash=" << stored.zone_hash
+              << " replay_zone_hash=" << replayed.zone_hash << '\n'
+              << "stored_raws_hash=" << stored.raws_hash
+              << " replay_raws_hash=" << replayed.raws_hash << '\n'
+              << "stored_head_hash=" << stored.history_head_hash
+              << " replay_head_hash=" << source_history.head_hash() << '\n'
+              << "stored_world_hash=" << stored.hash
               << " replay_world_hash=" << replay_hash
               << " history_seq=" << source_history.head_seq() << '\n';
-    if (stored_hash != replay_hash) {
-        throw std::runtime_error{"sim replay 世界身分雜湊不一致"};
+    if (stored.zone_hash != replayed.zone_hash) {
+        throw std::runtime_error{"sim replay zone 分量不一致"};
+    }
+    if (stored.raws_hash != replayed.raws_hash) {
+        throw std::runtime_error{"sim replay raws 分量不一致"};
+    }
+    if (stored.history_head_hash != source_history.head_hash()) {
+        throw std::runtime_error{"sim replay history head 分量不一致"};
+    }
+    if (stored.hash != replay_hash) {
+        throw std::runtime_error{"sim replay 世界身分合成值不一致"};
     }
     return 0;
 }

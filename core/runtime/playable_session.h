@@ -283,7 +283,7 @@ private:
     std::uint64_t revision_{1};
     world::StableId player_army_id_{};
     world::StableId enemy_army_id_{};
-    std::optional<std::uint64_t> preferred_named_uid_;
+    std::uint64_t named_commander_uid_{};
     std::uint64_t current_command_seq_{};
     bool replaying_history_{};
     world::RegionXY player_start_{61, 48};

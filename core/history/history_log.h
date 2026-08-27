@@ -13,6 +13,8 @@
 
 namespace aetheria::history {
 
+inline constexpr std::uint64_t kHistoryGenesisHash = 0;
+
 struct HistoryEntry {
     std::uint64_t seq{};
     time::Tick tick{};
@@ -26,8 +28,8 @@ struct HistoryEntry {
 
 class HistoryLog {
 public:
-    explicit HistoryLog(std::uint64_t genesis_hash);
-    HistoryLog(std::filesystem::path path, std::uint64_t genesis_hash);
+    HistoryLog() = default;
+    explicit HistoryLog(std::filesystem::path path);
 
     const HistoryEntry& append(time::Tick tick, std::string_view kind,
                                std::string_view payload);
@@ -37,7 +39,7 @@ public:
     [[nodiscard]] std::uint64_t head_hash() const noexcept;
     [[nodiscard]] std::uint64_t head_seq() const noexcept;
     [[nodiscard]] std::uint64_t genesis_hash() const noexcept {
-        return genesis_hash_;
+        return kHistoryGenesisHash;
     }
     [[nodiscard]] bool bound() const noexcept { return !path_.empty(); }
     [[nodiscard]] const std::filesystem::path& path() const noexcept { return path_; }
@@ -54,7 +56,6 @@ private:
     void append_bytes(const HistoryEntry& entry) const;
 
     std::filesystem::path path_;
-    std::uint64_t genesis_hash_{};
     std::vector<HistoryEntry> entries_;
 };
 

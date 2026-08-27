@@ -54,7 +54,10 @@ if(NOT new_hash_result EQUAL 0)
     message(FATAL_ERROR "新槽 verify world-hash 失敗：${new_hash_error}")
 endif()
 foreach(hash_output IN ITEMS "${old_hash_output}" "${new_hash_output}")
-    if(NOT hash_output MATCHES "world_hash=[0-9]+ zone_count=4 elapsed_ms=[0-9.]+")
+    if(NOT hash_output MATCHES "zone_hash=[0-9]+ zone_count=4" OR
+       NOT hash_output MATCHES "raws_hash=[0-9]+" OR
+       NOT hash_output MATCHES "history_head_hash=[0-9]+ history_seq=0" OR
+       NOT hash_output MATCHES "world_hash=[0-9]+ elapsed_ms=[0-9.]+")
         message(FATAL_ERROR "verify world-hash 輸出格式不符：${hash_output}")
     endif()
 endforeach()

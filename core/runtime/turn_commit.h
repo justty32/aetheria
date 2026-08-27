@@ -19,8 +19,8 @@ class PlayableSession;
 
 class TurnCommit {
 public:
-    explicit TurnCommit(std::uint64_t genesis_hash);
-    TurnCommit(std::filesystem::path slot_directory, std::uint64_t genesis_hash);
+    TurnCommit() = default;
+    explicit TurnCommit(std::filesystem::path slot_directory);
 
     [[nodiscard]] const history::HistoryEntry&
     record(time::Tick tick, std::string_view kind, std::string_view payload);
