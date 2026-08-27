@@ -2,6 +2,7 @@
 
 #include "core/narrative/narrative_event.h"
 #include "core/runtime/playable_session.h"
+#include "core/zone/zone_store.h"
 
 #include <cstdint>
 #include <memory>
@@ -10,6 +11,7 @@
 #include <godot_cpp/variant/array.hpp>
 #include <godot_cpp/variant/dictionary.hpp>
 #include <godot_cpp/variant/string.hpp>
+#include <godot_cpp/variant/packed_string_array.hpp>
 
 namespace aetheria::bridge {
 
@@ -36,6 +38,10 @@ public:
   // 建立新的 core 可玩 session；外部整數先在 bridge 驗證。
   [[nodiscard]] godot::Dictionary new_game(std::int64_t seed,
                                            std::int64_t region_id);
+  [[nodiscard]] godot::Dictionary save_game(const godot::String &slot_path);
+  [[nodiscard]] godot::Dictionary load_game(const godot::String &slot_path);
+  [[nodiscard]] godot::PackedStringArray
+  list_saves(const godot::String &saves_directory) const;
   // 一次打包整個 Region、部隊、事件與戰報；不存在逐格 getter。
   [[nodiscard]] godot::Dictionary get_playable_snapshot() const;
   // 送移動意圖；合法性仍由 core RegionTurnPipeline 裁決。
@@ -51,6 +57,8 @@ public:
 
 private:
   narrative::EventFeed event_feed_{narrative::make_fate_presentation_fixture()};
+  std::unique_ptr<rules::Ruleset> playable_ruleset_;
+  std::unique_ptr<zone::ZoneStore> playable_store_;
   std::unique_ptr<runtime::PlayableSession> playable_;
 };
 

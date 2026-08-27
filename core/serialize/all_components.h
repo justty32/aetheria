@@ -2,6 +2,7 @@
 
 #include "core/zone/zone.h"
 #include "core/world/region_movement.h"
+#include "core/world/army_state.h"
 #include "core/world/named_fate.h"
 #include "core/site/site_projection.h"
 #include "core/site/site_build_loop.h"
@@ -19,11 +20,11 @@ using AllComponentsV15 =
                     world::RegionMoveCommand, world::TurnClock, site::CityBuildState,
                     site::SiteDigest>;
 
-// v21 沿用 v20 的 registry 清單；本版只隔離舊 marker 的不可分辨語意。
+// v22 在尾端加入部隊權威狀態；既有 component 順序不變。
 using AllComponents =
     entt::type_list<zone::ZoneMeta, world::StableId, world::RegionPosition, world::MovementPoints,
                     world::RegionMoveCommand, world::TurnClock, site::CityBuildState,
-                    site::SiteDigest, world::NamedFateLedger>;
+                    site::SiteDigest, world::NamedFateLedger, world::ArmyState>;
 
 // SavedSiteLayers 是 Site 存檔可見的資料層白名單。
 // 程序層與易失層刻意不在清單中。

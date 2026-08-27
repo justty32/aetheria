@@ -3,6 +3,7 @@
 #include "core/api/version.h"
 #include "core/rules/ruleset.h"
 #include "core/runtime/playable_session.h"
+#include "core/zone/file_zone_store.h"
 #include "core/time/tick.h"
 #include "core/world/region_tiles.h"
 #include "core/worldgen/region_generator.h"
@@ -17,6 +18,7 @@
 #include <chrono>
 #include <cstdint>
 #include <exception>
+#include <filesystem>
 #include <limits>
 #include <span>
 #include <stdexcept>
@@ -275,6 +277,15 @@ void AetheriaCore::_bind_methods() {
       godot::D_METHOD("new_game", "seed", "region_id"),
       &AetheriaCore::new_game);
   godot::ClassDB::bind_method(
+      godot::D_METHOD("save_game", "slot_path"),
+      &AetheriaCore::save_game);
+  godot::ClassDB::bind_method(
+      godot::D_METHOD("load_game", "slot_path"),
+      &AetheriaCore::load_game);
+  godot::ClassDB::bind_method(
+      godot::D_METHOD("list_saves", "saves_directory"),
+      &AetheriaCore::list_saves);
+  godot::ClassDB::bind_method(
       godot::D_METHOD("get_playable_snapshot"),
       &AetheriaCore::get_playable_snapshot);
   godot::ClassDB::bind_method(
@@ -377,19 +388,101 @@ godot::Dictionary AetheriaCore::new_game(std::int64_t seed,
         "seed 與 region_id 必須是非負整數，region_id 不得超過 uint32");
   }
   try {
-    playable_ = std::make_unique<runtime::PlayableSession>(
+    auto ruleset = std::make_unique<rules::Ruleset>(
+        rules::RulesetLoader::load(AETHERIA_DEFAULT_DATA_DIR));
+    auto store = std::make_unique<zone::InMemoryZoneStore>(*ruleset);
+    auto playable = std::make_unique<runtime::PlayableSession>(
         static_cast<std::uint64_t>(seed),
-        static_cast<std::uint32_t>(region_id), AETHERIA_DEFAULT_DATA_DIR);
+        static_cast<std::uint32_t>(region_id), AETHERIA_DEFAULT_DATA_DIR,
+        *store);
+    playable_ruleset_ = std::move(ruleset);
+    playable_store_ = std::move(store);
+    playable_ = std::move(playable);
     godot::Dictionary result;
     result["ok"] = true;
     result["revision"] = static_cast<std::int64_t>(playable_->revision());
     return result;
   } catch (const std::exception &exception) {
     playable_.reset();
+    playable_store_.reset();
+    playable_ruleset_.reset();
     const godot::String message{exception.what()};
     godot::UtilityFunctions::push_error(message);
     return error_result(message);
   }
+}
+
+godot::Dictionary AetheriaCore::save_game(const godot::String &slot_path) {
+  if (!playable_) {
+    return error_result("尚未開始新遊戲");
+  }
+  const std::filesystem::path path{slot_path.utf8().get_data()};
+  if (!path.is_absolute()) {
+    return error_result("存檔槽必須使用絕對路徑");
+  }
+  try {
+    zone::FileZoneStore destination{path, playable_->ruleset()};
+    playable_->save_game(destination);
+    godot::Dictionary result;
+    result["ok"] = true;
+    result["path"] = slot_path;
+    return result;
+  } catch (const std::exception &exception) {
+    return error_result(godot::String::utf8(exception.what()));
+  }
+}
+
+godot::Dictionary AetheriaCore::load_game(const godot::String &slot_path) {
+  const std::filesystem::path path{slot_path.utf8().get_data()};
+  if (!path.is_absolute()) {
+    return error_result("讀檔槽必須使用絕對路徑");
+  }
+  try {
+    auto ruleset = std::make_unique<rules::Ruleset>(
+        rules::RulesetLoader::load(AETHERIA_DEFAULT_DATA_DIR));
+    auto store = std::make_unique<zone::FileZoneStore>(path, *ruleset);
+    auto playable = runtime::PlayableSession::load(AETHERIA_DEFAULT_DATA_DIR,
+                                                    *store);
+    playable_.reset();
+    playable_store_.reset();
+    playable_ruleset_.reset();
+    playable_ruleset_ = std::move(ruleset);
+    playable_store_ = std::move(store);
+    playable_ = std::move(playable);
+    godot::Dictionary result;
+    result["ok"] = true;
+    result["revision"] = static_cast<std::int64_t>(playable_->revision());
+    return result;
+  } catch (const std::exception &exception) {
+    return error_result(godot::String::utf8(exception.what()));
+  }
+}
+
+godot::PackedStringArray
+AetheriaCore::list_saves(const godot::String &saves_directory) const {
+  godot::PackedStringArray result;
+  const std::filesystem::path root{saves_directory.utf8().get_data()};
+  if (!root.is_absolute()) {
+    return result;
+  }
+  std::error_code error;
+  if (!std::filesystem::is_directory(root, error) || error) {
+    return result;
+  }
+  std::vector<std::string> names;
+  for (std::filesystem::directory_iterator iterator{root, error}, end;
+       iterator != end && !error; iterator.increment(error)) {
+    if (iterator->is_directory(error) && !error &&
+        std::filesystem::is_regular_file(iterator->path() / "manifest.bin", error) &&
+        !error) {
+      names.push_back(iterator->path().filename().string());
+    }
+  }
+  std::ranges::sort(names);
+  for (const auto &name : names) {
+    result.push_back(godot::String::utf8(name.c_str()));
+  }
+  return result;
 }
 
 godot::Dictionary AetheriaCore::get_playable_snapshot() const {

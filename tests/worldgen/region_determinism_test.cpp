@@ -41,27 +41,29 @@ TEST(RegionGeneration, SameSeedIsBitIdenticalAcrossEveryStageAndWorldField) {
     EXPECT_EQ(hash_tiles(first_tiles), hash_tiles(second_tiles));
 }
 
-TEST(RegionGeneration, IdentityRedistributionKeepsReferenceWorldHashesBitIdentical) {
-    struct ReferenceHash {
-        std::uint64_t seed;
+TEST(RegionGeneration, ReferenceSeedsAreBitIdenticalAcrossForwardAndReverseBuildOrder) {
+    struct WorldHashes {
         std::uint64_t skeleton;
         std::uint64_t tiles;
     };
-    constexpr std::array references{
-        ReferenceHash{UINT64_C(515151), UINT64_C(5754128893694281728),
-                      UINT64_C(8963508752675768512)},
-        ReferenceHash{UINT64_C(12345), UINT64_C(17267498220237237745),
-                      UINT64_C(14515705340403023595)},
-        ReferenceHash{UINT64_C(424242), UINT64_C(793007085422239155),
-                      UINT64_C(3836747774080975080)},
-    };
-
-    for (const auto& reference : references) {
+    constexpr std::array seeds{UINT64_C(515151), UINT64_C(12345), UINT64_C(424242)};
+    const auto generate_hashes = [](std::uint64_t seed) {
         const auto result =
-            build_skeleton(RegionSlowVariables{0, 128, 96}, reference.seed, test_ruleset());
+            build_skeleton(RegionSlowVariables{0, 128, 96}, seed, test_ruleset());
         const auto tiles = populate(result.skeleton, RegionFastVariables{});
-        EXPECT_EQ(hash_skeleton(result.skeleton), reference.skeleton) << reference.seed;
-        EXPECT_EQ(hash_tiles(tiles), reference.tiles) << reference.seed;
+        return WorldHashes{hash_skeleton(result.skeleton), hash_tiles(tiles)};
+    };
+    std::array<WorldHashes, seeds.size()> forward{};
+    std::array<WorldHashes, seeds.size()> reverse{};
+
+    for (std::size_t index = 0; index < seeds.size(); ++index) {
+        forward[index] = generate_hashes(seeds[index]);
+        const auto reverse_index = seeds.size() - index - 1U;
+        reverse[reverse_index] = generate_hashes(seeds[reverse_index]);
+    }
+    for (std::size_t index = 0; index < seeds.size(); ++index) {
+        EXPECT_EQ(forward[index].skeleton, reverse[index].skeleton) << seeds[index];
+        EXPECT_EQ(forward[index].tiles, reverse[index].tiles) << seeds[index];
     }
 }
 

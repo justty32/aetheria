@@ -2,6 +2,8 @@
 
 #include "core/zone/save_manifest_io.h"
 
+#include <algorithm>
+#include <charconv>
 #include <cstdio>
 #include <stdexcept>
 #include <string>
@@ -80,6 +82,54 @@ bool FileZoneStore::erase(ZoneKey key) {
                                  error.message()};
     }
     return removed;
+}
+
+std::vector<ZoneKey> FileZoneStore::stored_keys() const {
+    std::vector<ZoneKey> result;
+    std::error_code error;
+    if (!std::filesystem::exists(slot_directory_, error)) {
+        if (error) {
+            throw std::runtime_error{"無法檢查存檔目錄：" + error.message()};
+        }
+        return result;
+    }
+    for (std::filesystem::recursive_directory_iterator iterator{slot_directory_, error}, end;
+         iterator != end; iterator.increment(error)) {
+        if (error) {
+            throw std::runtime_error{"無法掃描存檔目錄：" + error.message()};
+        }
+        if (!iterator->is_regular_file() || iterator->path().extension() != ".bin" ||
+            iterator->path().filename() == "manifest.bin") {
+            continue;
+        }
+        if (iterator->path().filename() == "root.bin") {
+            result.push_back(kRootZone);
+            continue;
+        }
+        const auto stem = iterator->path().stem().string();
+        std::uint64_t raw{};
+        const auto [end_pointer, parse_error] =
+            std::from_chars(stem.data(), stem.data() + stem.size(), raw, 16);
+        if (stem.size() != 16U || parse_error != std::errc{} ||
+            end_pointer != stem.data() + stem.size()) {
+            throw std::runtime_error{"無法從 zone 檔名解析 ZoneKey：" +
+                                     iterator->path().string()};
+        }
+        const ZoneKey key{raw};
+        if (path_for(key).lexically_normal() != iterator->path().lexically_normal()) {
+            throw std::runtime_error{"zone 檔不在 ZoneKey 推導出的 canonical 路徑：" +
+                                     iterator->path().string()};
+        }
+        result.push_back(key);
+    }
+    if (error) {
+        throw std::runtime_error{"無法掃描存檔目錄：" + error.message()};
+    }
+    std::ranges::sort(result);
+    if (std::ranges::adjacent_find(result) != result.end()) {
+        throw std::runtime_error{"存檔目錄含重複 ZoneKey"};
+    }
+    return result;
 }
 
 std::filesystem::path FileZoneStore::path_for(ZoneKey key) const {

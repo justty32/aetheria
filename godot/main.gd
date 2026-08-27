@@ -20,6 +20,7 @@ var _view: Control
 var _map: TextureRect
 var _seed_edit: LineEdit
 var _region_edit: LineEdit
+var _slot_edit: LineEdit
 var _title: Label
 var _status: Label
 var _message: Label
@@ -35,6 +36,7 @@ var _last_message := "三層入口在左側；每一層都可親自去或交給�
 var _mode := ""
 var _screenshot_path := ""
 var _expect_invalid_accepted := false
+var _slot_name := "quicksave"
 
 
 func _ready() -> void:
@@ -94,6 +96,16 @@ func _build_view() -> void:
 	_region_edit.custom_minimum_size.x = 60
 	inputs.add_child(_region_edit)
 	inputs.add_child(_button("開新遊戲", _new_game))
+	var save_inputs := HBoxContainer.new()
+	sidebar.add_child(save_inputs)
+	save_inputs.add_child(_label("存檔槽"))
+	_slot_edit = LineEdit.new()
+	_slot_edit.text = _slot_name
+	_slot_edit.custom_minimum_size.x = 180
+	_slot_edit.text_changed.connect(func(value: String) -> void: _slot_name = value)
+	save_inputs.add_child(_slot_edit)
+	save_inputs.add_child(_button("存檔", _save_game))
+	save_inputs.add_child(_button("讀檔", _load_game))
 	_status = _label("")
 	_status.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	sidebar.add_child(_status)
@@ -222,6 +234,50 @@ func _new_game() -> void:
 		return
 	_selected_unit_id = 0
 	_last_message = "新遊戲完成。可從 Region 親自進 Site，或交給系統。"
+	_rebuild_for_residence()
+
+
+func _save_root() -> String:
+	return ProjectSettings.globalize_path("user://saves")
+
+
+func _slot_path() -> String:
+	var name := _slot_edit.text.strip_edges()
+	if name.is_empty() or not name.is_valid_filename() or name == "." or name == "..":
+		return ""
+	_slot_name = name
+	return _save_root().path_join(name)
+
+
+func _save_game() -> void:
+	var path := _slot_path()
+	if path.is_empty():
+		_last_message = "錯誤：存檔槽名不可為空，也不可含路徑字元。"
+		_message.text = _last_message
+		return
+	DirAccess.make_dir_recursive_absolute(_save_root())
+	var result: Dictionary = _core.save_game(path)
+	if result.has("error"):
+		_last_message = "存檔失敗：%s" % result["error"]
+	else:
+		var saves: PackedStringArray = _core.list_saves(_save_root())
+		_last_message = "存檔成功：%s（現有槽：%s）" % [_slot_name, ", ".join(saves)]
+	_refresh()
+
+
+func _load_game() -> void:
+	var path := _slot_path()
+	if path.is_empty():
+		_last_message = "錯誤：存檔槽名不可為空，也不可含路徑字元。"
+		_message.text = _last_message
+		return
+	var result: Dictionary = _core.load_game(path)
+	if result.has("error"):
+		_last_message = "讀檔失敗：%s" % result["error"]
+		_message.text = _last_message
+		return
+	_selected_unit_id = 0
+	_last_message = "讀檔成功：%s。世界狀態已由磁碟冷讀重建。" % _slot_name
 	_rebuild_for_residence()
 
 
