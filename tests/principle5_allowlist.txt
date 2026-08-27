@@ -1,0 +1,59 @@
+# Format: core-relative header::EnumName | why this is a mechanism, or what debt remains.
+
+[mechanism]
+core/ai/include/aetheria/ai/faction_ai.h::FactionAiLod | 勢力 AI 的計算精度層級是固定 LOD 機制。
+core/ai/include/aetheria/ai/faction_ai.h::BattleAssessment | 戰力評估回傳的是固定判定結果，不是內容身分。
+core/ai/include/aetheria/diplomacy/peace.h::PeaceTerms | 和談結算列的是核心可執行操作，不是可新增的內容物。
+core/local/dungeon.h::DungeonDepthSource | 深度來源只選擇固定深度演算法，不代表地城內容身分。
+core/local/local_combat.h::LocalCombatSide | A／B 是二方戰鬥運算的固定席位。
+core/local/local_combat.h::LayerCombatState | 交戰、撤退、追擊等值是戰鬥狀態機節點。
+core/local/local_combat.h::LocalMoraleEvent | 士氣事件是觸發固定狀態轉移的戰鬥訊號。
+core/local/local_movement.h::ExplorationStepResult | 探索步進回傳的是導航判定狀態。
+core/local/local_navigation.h::DoorState | 開、關、鎖定是門的執行期狀態。
+core/local/local_path.h::LocalPathStatus | 尋路成功、粗略、失敗等值是演算法結果狀態。
+core/local/local_path.h::LocalPathInteraction | 開門與否是路徑步驟的固定操作指令。
+core/narrative/narrative_event.h::ArgumentKind | 文字與 i18n key 是敘事參數的固定解讀模式。
+core/rules/combat.h::Outcome | 繼續、潰退、脫離等值是戰鬥終局狀態。
+core/rules/dungeon_rules.h::TrapCheckAttribute | 機關檢定只路由到核心既有屬性運算。
+core/rules/dungeon_rules.h::TrapDisarmMethod | 拆除方式選擇的是固定解法機制。
+core/rules/power_sources.h::PowerSourceKind | 魔法、信仰、血統是三條固定力量取得機制。
+core/rules/power_sources.h::SpellScale | Region／Site／Local 是法術作用的固定地圖層級。
+core/rules/rule_tables.h::SiteFillZone | 此值只選擇 Site 填充演算法的固定分區桶。
+core/rules/rule_tables.h::SiteQuotaDriver | 人口或發展度是配額公式的固定驅動方式。
+core/rules/rule_tables.h::UndergroundKind | 此值選擇 Local 地下層的固定生成路線。
+core/rules/rule_tables.h::WorldConnectionType | 此值選擇世界通道解析 portal 的固定演算法。
+core/runtime/playable_session.h::PlayableBattleChoice | 親自指揮或自動結算是玩家戰鬥流程選擇。
+core/runtime/playable_session.h::PlayableResidence | 玩家所在的 Region／Site／Local／Dungeon 是固定空間層級。
+core/runtime/playable_session.h::PlayableEventKind | 此值是 session 對 UI 的封閉事件協定標籤。
+core/script/script_engine.h::HookKind | 條件、效果、敘事與勝利檢查是腳本引擎固定掛點。
+core/script/script_engine.h::Outcome | 進行中、勝利、失敗是腳本勝負狀態。
+core/serialize/zone_codec.h::ZoneDecodeMode | 現行或舊 fixture 是 codec 的固定執行模式。
+core/site/site_build_loop.h::SiteMigrationObjectKind | 此值是遷移結果 variant 的固定標籤。
+core/site/site_combat.h::CohortFormation | 隊形是方陣戰鬥的固定戰術狀態。
+core/site/site_combat.h::CohortFacing | 東西南北是格網上的固定朝向。
+core/site/site_combat.h::ContactArc | 正面、側翼、後方是接觸幾何的固定分類。
+core/site/site_projection.h::SiteZoning | 開放、住宅、商業是目前投影與填充的固定空間狀態。
+core/site/site_projection.h::BuildingState | 運作、閒置、荒廢、毀壞是建築生命週期狀態。
+core/site/site_projection.h::ProceduralBuildingDamage | 完整、瓦礫、焚毀是程序建築的損壞狀態。
+core/spatial/boundary_profile.h::BoundarySide | 四邊是方格拓樸的固定方向。
+core/world/combat_scaling.h::CombatLayer | Region／Site／Local 是戰鬥縮放的固定地圖層級。
+core/world/named_fate.h::FateOutcome | 傷亡與流離等值是具名命運結算結果。
+core/world/named_fate.h::FateNarrativeKind | 此值是命運敘事輸出紀錄的固定標籤。
+core/world/named_fate.h::FateResolutionPath | 現場或補算是命運解析的固定執行路徑。
+core/world/region_movement.h::TurnStage | 玩家、AI、季節與收尾是回合狀態機階段。
+core/world/region_tiles.h::SettlementTier | 無、村、鎮、城是聚落成長的固定有序位階。
+core/world/significance.h::Significance | 此值是 observer 驅動計算精度的固定門檻層級。
+core/worldgen/region_relief_stages.h::PlateBoundaryType | 聚合、張裂、錯動是板塊演算法的固定關係。
+core/zone/lod_level.h::LodLevel | Full／Reduced／Dormant 是 zone 的固定 LOD 狀態。
+core/zone/zone_key.h::ZoneLevel | Root／Region／Site／Local 是 ZoneKey 編碼的固定拓樸層級。
+
+[debt]
+core/ai/include/aetheria/ai/faction_ai.h::FactionGoal | AI 目標是內容，必須改為資料定義的目標 id。
+core/ai/include/aetheria/ai/faction_ai.h::FactionActionKind | AI 動作是內容，必須改為資料定義的動作 id。
+core/local/local_tiles.h::OverlayId | 道路、植被、家具等覆蓋物是內容，必須改為資料定義的覆蓋物 id。
+core/narrative/emergent_quest.h::EmergentQuestKind | 任務種類是內容，必須改為資料定義的任務 id。
+core/rules/building_mapping_rules.h::PersistentBuildingType | 建築種類是內容，必須改為資料定義的建築 id。
+core/rules/dungeon_rules.h::DungeonArchetype | 地城原型是內容，必須改為資料定義的原型 id。
+core/rules/dungeon_rules.h::TrapKind | 機關種類是內容，必須改為資料定義的機關 id。
+core/rules/rule_tables.h::LocalRoomKind | 房間種類是內容，必須改為資料定義的房間 id。
+core/site/site_combat.h::CohortRole | 兵種是內容，必須改為資料定義的單位 id。

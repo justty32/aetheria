@@ -252,3 +252,12 @@ target_sources(aetheria_tests PRIVATE
 target_sources(aetheria_tests PRIVATE
     tests/site/site_building_mapping_test.cpp
 )
+
+# M10.0a：原則五「種類是資料，不是 enum」的結構守門。
+add_test(
+    NAME principle5.ContentKindsAreData
+    COMMAND python3 "${PROJECT_SOURCE_DIR}/tools/check_principle5.py"
+        --project-root "${PROJECT_SOURCE_DIR}"
+        --core "${PROJECT_SOURCE_DIR}/core"
+        --allowlist "${PROJECT_SOURCE_DIR}/tests/principle5_allowlist.txt"
+)
