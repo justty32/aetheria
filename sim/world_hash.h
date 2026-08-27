@@ -19,5 +19,6 @@ struct WorldStateHashReport {
 world_state_hash(const std::filesystem::path& slot_directory);
 
 int run_world_hash(const std::filesystem::path& slot_directory);
+int run_replay(const std::filesystem::path& slot_directory);
 
 }  // namespace aetheria::sim

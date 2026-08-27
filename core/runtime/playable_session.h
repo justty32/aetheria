@@ -32,6 +32,8 @@ class FileZoneStore;
 
 namespace aetheria::runtime {
 
+class TurnCommit;
+
 enum class PlayableBattleChoice : std::uint8_t { CommandSite, AutoRegion };
 
 enum class PlayableResidence : std::uint8_t { Region, Site, Local, Dungeon };
@@ -153,6 +155,7 @@ public:
 
     PlayableSession(const PlayableSession&) = delete;
     PlayableSession& operator=(const PlayableSession&) = delete;
+    ~PlayableSession();
 
     void issue_move(world::StableId unit, world::RegionXY target);
     [[nodiscard]] PlayableAdvanceReport advance_xun();
@@ -215,11 +218,17 @@ public:
                    std::string_view character_name);
     [[nodiscard]] CharacterState export_character_state() const;
     void import_character_state(const CharacterState& state);
+    // sim replay 使用空的 session，從指定世界槽的 journal 重放全部玩家輸入。
+    void replay_history_from(const std::filesystem::path& slot_directory);
+    [[nodiscard]] std::uint64_t history_head_hash() const noexcept;
+    [[nodiscard]] std::uint64_t history_head_seq() const noexcept;
+    void set_interrupt_after_journal_for_testing(bool enabled);
     [[nodiscard]] const world::WorldDiplomacyState& diplomacy() const noexcept {
         return *diplomacy_;
     }
 
 private:
+    friend class TurnCommit;
     struct LoadTag {};
     PlayableSession(LoadTag, std::filesystem::path slot_directory,
                     zone::ZoneStore& store);
@@ -229,6 +238,9 @@ private:
     [[nodiscard]] const world::ArmyState& army(world::StableId unit) const;
     void append_event(PlayableEventKind kind, world::RegionXY tile = {},
                       std::int64_t value_a = 0, std::int64_t value_b = 0);
+    void record_command(std::string_view kind, std::string payload = {});
+    void perform_enter_site();
+    void perform_leave_site();
     void detect_encounter();
     void initialize_scenario();
     void initialize_loaded_scenario();
@@ -257,6 +269,7 @@ private:
     zone::ZoneStore& store_;
     world::RegionTurnPipeline turn_pipeline_;
     std::unique_ptr<zone::ZoneManager> manager_;
+    std::unique_ptr<TurnCommit> turn_commit_;
     world::WorldDiplomacyState* diplomacy_{};
     zone::Zone* region_{};
     zone::Zone* battle_site_{};
@@ -268,8 +281,11 @@ private:
     std::vector<PlayableEvent> events_;
     std::uint64_t next_event_id_{1};
     std::uint64_t revision_{1};
-    world::StableId player_army_id_{1001};
-    world::StableId enemy_army_id_{2001};
+    world::StableId player_army_id_{};
+    world::StableId enemy_army_id_{};
+    std::optional<std::uint64_t> preferred_named_uid_;
+    std::uint64_t current_command_seq_{};
+    bool replaying_history_{};
     world::RegionXY player_start_{61, 48};
     world::RegionXY enemy_start_{65, 48};
     world::RegionXY battle_tile_{63, 48};

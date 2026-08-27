@@ -23,7 +23,8 @@
 | `CMakeLists.txt`、`vcpkg.json` | 專案組態與依賴；來源清單在 `cmake/targets_*.cmake` |
 | `cmake/` | target 清單、Godot 工具鏈與 CTest 檢查 |
 | `core/` | 純 C++ 玩法核心，**不得依賴 godot-cpp** |
-| `core/runtime/` | 跨 zone API；`playable_session.*` 編排三層駐留，`session_persistence.*` 編排世界存讀，`character_save.*` 是獨立角色 codec／列舉入口，`save_raws.*` 管存檔基底 TOML 的不可變複製／雜湊／路徑 |
+| `core/history/` | payload 無關的 append-only `history_log.*`、雜湊鏈驗證與重放介面 |
+| `core/runtime/` | 跨 zone API；`playable_session.*` 編排三層駐留，`turn_commit.*` 解讀玩家命令並協調 journal-first 結算／恢復，`session_persistence.*` 編排世界存讀，`character_save.*` 是獨立角色 codec／列舉入口，`save_raws.*` 管存檔基底 TOML 的不可變複製／雜湊／路徑 |
 | `core/site/`、`core/local/`、`core/spatial/` | L1→L2、L2→L3 與共用邊界／切分／歸約 |
 | `bridge/` | `AetheriaCore` GDExtension；批次快照／M8 命令與世界槽／角色檔存讀列舉；唯一依賴 godot-cpp |
 | `godot/` | `main.gd` UI；只顯示快照並轉發輸入 |
@@ -96,7 +97,7 @@
 | 目錄 | 內容 |
 |---|---|
 | `support/` | 跨目錄共用的 ruleset fixture 與固定暖機、min-of-N 效能量測 helper |
-| `runtime/` | 三層進退、上層回寫、親自／代管校準、session 磁碟冷存冷讀／pending 拒存、獨立角色檔雙角色／世界身分／門共享，以及世界槽自帶 raws 的隔離／竄改拒絕 |
+| `runtime/` | 三層進退、上層回寫、親自／代管校準、session 磁碟冷存冷讀／pending 拒存、歷史鏈／崩潰恢復／重放／uid／亂數軌跡、獨立角色檔雙角色／世界身分／門共享，以及世界槽自帶 raws 的隔離／竄改拒絕 |
 | `narrative/` | 五種湧現任務、運糧／清剿歸約、命運模板與事件 feed |
 | `site/` | Site 投影隔離、展開、持久建築、存檔／世界雜湊、效能 |
 | `sim/` | 世界級正規化雜湊的跨歷史、磁碟列舉、負向控制與錯誤路徑測試 |
@@ -109,5 +110,5 @@
 ## `sim/`
 
 `main.cpp` 只接 CLI11。子命令：`gen_commands.*`（Region）、`terrain_metrics.*`（地形量測）、`local_viewer.*`／
-`site_viewer.*`（分層 PNG）、`world_hash.*`（只掃 canonical zone 檔，跳過 `chars/`）。輸出：`debug_canvas.*`（RGB PNG）、
+`site_viewer.*`（分層 PNG）、`world_hash.*`（只掃 canonical zone 檔，跳過 `chars/`，並提供 `replay <slot>`）。輸出：`debug_canvas.*`（RGB PNG）、
 `stage_dump.*`／`pgm_writer.*`（階段 PGM）。**stdout 有 CTest 比對，不要順手改。**

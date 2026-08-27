@@ -34,6 +34,10 @@ void save_session(zone::ZoneStore& active_store, zone::ZoneStore& destination,
     }
 
     auto manifest = destination.manifest().value_or(zone::SaveManifest{});
+    if (active_store.manifest().has_value()) {
+        manifest.next_detached_id = active_store.manifest()->next_detached_id;
+        manifest.next_entity_uid = active_store.manifest()->next_entity_uid;
+    }
     manifest.world_seed = world_seed;
     manifest.raws_hash = raws_hash;
     manifest.now = now;

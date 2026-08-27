@@ -1,6 +1,9 @@
 #include "sim/world_hash.h"
 
+#include "core/history/history_log.h"
 #include "core/runtime/save_raws.h"
+#include "core/runtime/playable_session.h"
+#include "core/runtime/session_persistence.h"
 #include "core/rules/ruleset.h"
 #include "core/serialize/normalized_state_hash.h"
 #include "core/zone/file_zone_store.h"
@@ -21,6 +24,10 @@ namespace {
 
 inline constexpr std::uint64_t kFnvOffset = UINT64_C(14695981039346656037);
 inline constexpr std::uint64_t kFnvPrime = UINT64_C(1099511628211);
+// 目前基底 raws 的相容性鹽：讓 M10.3a 零命令世界沿用 v23 數值；其他 raws
+// 仍會透過 raws_hash XOR 改變身分。日誌鏈則以 head XOR genesis 貢獻增量。
+inline constexpr std::uint64_t kV23BaseRawsCompatibility =
+    UINT64_C(17134265233666862005);
 
 void hash_u64(std::uint64_t& hash, std::uint64_t value) noexcept {
     for (std::size_t byte = 0; byte < sizeof(value); ++byte) {
@@ -115,7 +122,7 @@ open_store(const std::filesystem::path& slot_directory, const rules::Ruleset& ru
 }  // namespace
 
 WorldStateHashReport world_state_hash(const std::filesystem::path& slot_directory) {
-    static_cast<void>(runtime::save_raws_hash(slot_directory));
+    const auto raws_hash = runtime::save_raws_hash(slot_directory);
     const auto ruleset = rules::RulesetLoader::load(runtime::save_raws_directory(slot_directory));
     auto files = find_zone_files(slot_directory);
     auto store = open_store(slot_directory, ruleset);
@@ -152,7 +159,10 @@ WorldStateHashReport world_state_hash(const std::filesystem::path& slot_director
         hash_u64(hash, zone::value_of(key));
         hash_u64(hash, zone_hash);
     }
-    return {hash, zone_hashes.size()};
+    const history::HistoryLog history{slot_directory / "history.log", raws_hash};
+    const auto history_delta = history.head_hash() ^ history.genesis_hash();
+    return {hash ^ raws_hash ^ history_delta ^ kV23BaseRawsCompatibility,
+            zone_hashes.size()};
 }
 
 int run_world_hash(const std::filesystem::path& slot_directory) {
@@ -162,6 +172,47 @@ int run_world_hash(const std::filesystem::path& slot_directory) {
     const auto milliseconds = std::chrono::duration<double, std::milli>{elapsed}.count();
     std::cout << "world_hash=" << report.hash << " zone_count=" << report.zone_count
               << " elapsed_ms=" << milliseconds << '\n';
+    return 0;
+}
+
+int run_replay(const std::filesystem::path& slot_directory) {
+    const auto raws_hash = runtime::save_raws_hash(slot_directory);
+    const auto ruleset = rules::RulesetLoader::load(
+        runtime::save_raws_directory(slot_directory));
+    zone::FileZoneStore source{slot_directory, ruleset};
+    const auto metadata = runtime::inspect_session_save(source);
+    const history::HistoryLog source_history{slot_directory / "history.log",
+                                             raws_hash};
+
+    zone::InMemoryZoneStore replay_store{ruleset};
+    runtime::PlayableSession replay{metadata.world_seed, metadata.region_id,
+                                    runtime::save_raws_directory(slot_directory).string(),
+                                    replay_store};
+    replay.replay_history_from(slot_directory);
+
+    const auto unique = std::to_string(
+        std::chrono::steady_clock::now().time_since_epoch().count());
+    const auto temporary = std::filesystem::temp_directory_path() /
+                           ("aetheria-replay-" + unique);
+    struct Cleanup {
+        std::filesystem::path path;
+        ~Cleanup() {
+            std::error_code ignored;
+            std::filesystem::remove_all(path, ignored);
+        }
+    } cleanup{temporary};
+    zone::FileZoneStore replay_destination{temporary, ruleset};
+    replay.save_game(replay_destination, "replay");
+
+    const auto stored_hash = world_state_hash(slot_directory).hash;
+    const auto replay_zone_hash = world_state_hash(temporary).hash;
+    const auto replay_hash = replay_zone_hash ^ raws_hash ^ source_history.head_hash();
+    std::cout << "stored_world_hash=" << stored_hash
+              << " replay_world_hash=" << replay_hash
+              << " history_seq=" << source_history.head_seq() << '\n';
+    if (stored_hash != replay_hash) {
+        throw std::runtime_error{"sim replay 世界身分雜湊不一致"};
+    }
     return 0;
 }
 

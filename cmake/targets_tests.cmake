@@ -249,6 +249,7 @@ target_sources(aetheria_tests PRIVATE
     tests/runtime/character_save_test.cpp
     tests/runtime/save_raws_test.cpp
     tests/runtime/session_persistence_test.cpp
+    tests/runtime/history_log_test.cpp
 )
 
 # M8.3 追加區：正式建築型別映射、Region 權重與冷載入驗收。
