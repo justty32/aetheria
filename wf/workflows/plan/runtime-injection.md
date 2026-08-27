@@ -32,7 +32,10 @@
    崩潰恢復走 journal-first（先落日誌＋commit marker，再套用；啟動時補放未套用尾巴）。
    結算掛在回合尾端的**新結算協調器**上（`queue_*` 有 `in_tick_` 防衛
    `zone_manager.cpp:189-201`，不能直接從 TurnEnd 呼叫——通道要自己接，不是現成的）。
-   **世界身分雜湊**明定為：zone 正規化雜湊 ⊕ raws 雜湊 ⊕ 日誌鏈頭。
+   **世界身分雜湊**明定為 zone 正規化雜湊、raws 雜湊、日誌鏈頭三分量的**定序
+   FNV-1a 鏈合成**（⚠ 不可用 XOR——XOR 允許分量互相抵消；2026-08-27 波 2 實測
+   codex 就提出過「拿 raws_hash 種 genesis 讓兩項抵消」的湊數形狀）；
+   空日誌的鏈頭＝固定常數 0，**永不從世界資料播種**；驗證工具三分量分開印，各自可稽核。
    M9 判準改寫成「**同 seed＋同日誌**重放兩次相同」。
 4. **角色檔很小。** 量過玩家態只有 **6 個成員**（`player_army_id_`、`residence_`、`local_z_`、
    `local_player_x/y_`、`accepted_quest_id_`，`playable_session.h:245-260`），
