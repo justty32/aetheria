@@ -37,12 +37,16 @@
 
 ## M10.3b def 注入（`RulesetPatcher`）
 
-- **變因**：Ruleset 獲得「回合尾端追加」能力，第一種可注入內容＝地形 def。
+- **變因**：Ruleset 獲得「回合尾端追加」能力，**通道通用於全部 def 型別**
+  （[裁定#9](runtime-injection-decisions.md)「所有東西」）；地形是驗收範例
+  （它的最小包最刁鑽），不是唯一支援的型別。
 - 範圍：
   1. **前置：裸指標 id 化**——`PowerSourceState::definition`／`RootDeityState::definition`
      存 `const Def*`（`power_sources.h:49,199`），vector 增長即懸空；改存 id、用時查。
      並審計「span 跨回合持有」，立規矩寫進 conventions；
-  2. `RulesetPatcher` friend：只可追加，不可刪改；字串索引同步更新；
+  2. `RulesetPatcher` friend：只可追加，不可刪改；字串索引同步更新。
+     **通用設計**：日誌 def 條目存「目標資料檔＋TOML 片段」，套用＝把片段餵給
+     **既有載入器**的對應區段——不為任何型別寫專屬 patch 碼，載入器認得的就能注入；
   3. **影子驗證**：批次先從「基底 raws＋日誌＋本批」重建一份影子 Ruleset，
      整批過了才對現役追加（Ruleset 不可複製 `ruleset.h:38-41`，重建就是複製的替代；
      載入是毫秒級，成本可接受）——不得半套用，失敗＝整批拒收＋記失敗事件；
@@ -50,7 +54,8 @@
      載入失敗，`ruleset_load_site.cpp:75-119`；荒野生成查不到 mapping 直接 throw）
      ＋選配 `TerrainRule`（要參與 worldgen 才需要）——寫進注入 schema，缺件在影子驗證擋下。
 - **Done when**：測試 API 於第 N 旬注入一種地形（完整最小包）→回合尾端生效→
-  存／讀／重放三者雜湊一致；缺 mapping 的注入被整批拒收且世界不變；
+  存／讀／重放三者雜湊一致；**全型別迴圈測試**：現有每一類 def 各注入一筆最小合法
+  片段，全部通過同一條驗收（一類都不特判）；缺 mapping 的注入被整批拒收且世界不變；
   注入後 `PowerProfile` 等持有狀態照常運作（指標 id 化的負向控制）。
 
 ## M10.4 勢力可增長（首個端到端注入，origin＝開拓）

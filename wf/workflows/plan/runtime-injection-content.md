@@ -80,7 +80,9 @@
 
 ### M10.8 端到端整合驗收
 
-- 照總覽的**完成判準**六條逐條驗，全部一次過；並量測 root 級結構
+- 照總覽的**完成判準**六條逐條驗（含[裁定#9](runtime-injection-decisions.md)的
+  **全型別矩陣**：此時型別數已含兵種／建築／AI 目標動作／文化／物品，比 M10.3b
+  的迴圈測試更寬），全部一次過；並量測 root 級結構
   （勢力表、日誌）的大小寫進回報（[裁定#5](runtime-injection-decisions.md)：只量不修）。
 - 順手更新：KNOWN-TRAPS 清掉已解的四條（不會存檔、加勢力弄壞存檔、remap 不驗內容、
   FIFO 死代碼）；[milestones.md](../../../design/milestones.md) 補 M10 列。
