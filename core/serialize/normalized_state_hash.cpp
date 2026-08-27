@@ -4,6 +4,7 @@
 
 #include "core/site/site_build_loop.h"
 #include "core/site/site_lifecycle.h"
+#include "core/world/army_state.h"
 #include "core/world/region_movement.h"
 #include "core/world/named_fate.h"
 
@@ -527,6 +528,7 @@ std::uint64_t normalized_state_hash(const zone::Zone& zone, const rules::Ruleset
     require_stable_ids<world::RegionPosition>(zone);
     require_stable_ids<world::MovementPoints>(zone);
     require_stable_ids<world::RegionMoveCommand>(zone);
+    require_stable_ids<world::ArmyState>(zone);
     require_stable_ids<runtime::LocalPosition>(zone);
     std::vector<std::pair<std::uint64_t, entt::entity>> entities;
     for (const auto entity : zone.reg.view<const world::StableId>()) {
@@ -569,6 +571,13 @@ std::uint64_t normalized_state_hash(const zone::Zone& zone, const rules::Ruleset
             hash_scalar(hash, command->target.x);
             hash_scalar(hash, command->target.y);
             hash_scalar(hash, static_cast<std::uint8_t>(command->collected));
+        }
+        const auto* army = zone.reg.try_get<const world::ArmyState>(entity);
+        hash_scalar(hash, static_cast<std::uint8_t>(army != nullptr));
+        if (army != nullptr) {
+            hash_scalar(hash, army->faction);
+            hash_scalar(hash, army->power);
+            hash_scalar(hash, static_cast<std::uint8_t>(army->player_controlled));
         }
     }
     return hash;

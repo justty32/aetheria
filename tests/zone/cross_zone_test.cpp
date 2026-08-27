@@ -89,10 +89,21 @@ public:
     }
     void save(const Zone&) override {}
     [[nodiscard]] bool erase(ZoneKey) override { return false; }
+    [[nodiscard]] std::vector<ZoneKey> stored_keys() const override {
+        return {prepared_};
+    }
+    [[nodiscard]] const std::optional<aetheria::zone::SaveManifest>&
+    manifest() const noexcept override {
+        return manifest_;
+    }
+    void write_manifest(const aetheria::zone::SaveManifest& manifest) override {
+        manifest_ = manifest;
+    }
 
 private:
     ZoneKey prepared_;
     std::uint16_t marker_{};
+    std::optional<aetheria::zone::SaveManifest> manifest_;
 };
 
 [[nodiscard]] entt::entity add_actor(Zone& zone, std::uint64_t uid,

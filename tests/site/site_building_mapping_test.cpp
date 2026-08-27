@@ -119,8 +119,9 @@ TEST(SiteBuildingMapping, HouseAndSettlementHallHaveDifferentObservableRegionEff
     EXPECT_NE(house_development_after - house_development_before,
               hall_development_after - hall_development_before);
 
-    aetheria::runtime::PlayableSession playable{515151, 51,
-                                                AETHERIA_SOURCE_DIR "/data"};
+    aetheria::zone::InMemoryZoneStore playable_store{test_ruleset()};
+    aetheria::runtime::PlayableSession playable{
+        515151, 51, AETHERIA_SOURCE_DIR "/data", playable_store};
     const auto runtime_before = playable.coverage_summary();
     playable.enter_site();
     playable.build_city();
@@ -145,7 +146,7 @@ TEST(SiteBuildingMapping, HouseAndSettlementHallHaveDifferentObservableRegionEff
 }
 
 TEST(SiteBuildingMapping, ColdFileLoadDerivesTheSameTypeAndWeightFromDefinitionId) {
-    static_assert(aetheria::serialize::kSaveFormatVersion == 21);
+    static_assert(aetheria::serialize::kSaveFormatVersion == 22);
     auto fixture = build_fixture();
     aetheria::site::start_construction(fixture.site, "city.house", {10, 10},
                                        test_ruleset());
