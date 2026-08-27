@@ -40,9 +40,10 @@
 - `kSaveFormatVersion` **只有整合輪可以動**，每波至多 +1（波內所有格式變更打包成一次 bump）。
 - 並行線要改格式：改在自己 worktree、**不改版本號**、在回報信裡列出「我動了格式的哪裡」，
   整合輪彙總後統一定版。
-- 預期軌跡：波1 → v22（raws＋角色檔；角色檔另有**獨立的 `kCharacterFormatVersion`**）、
-  波2 → v23（歷史日誌＋勢力表）、波3 → v24（建築字串 id＋兵種＋goal codec）、
-  波4 → **v25 確定**（AllComponents 必動）。
+- 預期軌跡：波0 → v22（**M10.0c 獨佔**：部隊態收進 registry 必動 `AllComponents`，
+  0a/0b 完全不碰格式，無撞號風險）、波1 → v23（raws＋角色檔；角色檔另有
+  **獨立的 `kCharacterFormatVersion`**）、波2 → v24（歷史日誌＋勢力表）、
+  波3 → v25（建築字串 id＋兵種＋goal codec）、波4 → **v26 確定**（AllComponents 再動）。
 - ⚠ R5a/R5c 同時往 `ruleset.{h,cpp}` 尾端追加：整合輪解衝突照 OPS-NOTES 的
   「被切開的括號」坑處理（宣告區直接串接、定義區要補 `}`）。
 
