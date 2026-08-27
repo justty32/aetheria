@@ -65,6 +65,18 @@ find_zone_files(const std::filesystem::path& slot_directory) {
             throw std::runtime_error{"無法掃描存檔目錄：" + iterator->path().string() + "：" +
                                      error.message()};
         }
+        const auto relative = iterator->path().lexically_relative(slot_directory);
+        if (!relative.empty() && *relative.begin() == "chars") {
+            if (iterator->is_directory(error) && !error) {
+                iterator.disable_recursion_pending();
+            }
+            if (error) {
+                throw std::runtime_error{"無法檢查存檔項目：" +
+                                         iterator->path().string() + "：" +
+                                         error.message()};
+            }
+            continue;
+        }
         const bool regular = iterator->is_regular_file(error);
         if (error) {
             throw std::runtime_error{"無法檢查存檔項目：" + iterator->path().string() + "：" +

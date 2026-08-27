@@ -4,6 +4,7 @@
 
 #include "core/site/site_build_loop.h"
 #include "core/site/site_lifecycle.h"
+#include "core/local/local_navigation.h"
 #include "core/world/army_state.h"
 #include "core/world/region_movement.h"
 #include "core/world/named_fate.h"
@@ -267,6 +268,29 @@ void hash_site_observations(std::uint64_t& hash,
     }
 }
 
+void hash_local_doors(std::uint64_t& hash, const zone::Zone& zone) {
+    const auto states = zone.reg.view<const local::LocalDoorState>();
+    if (states.size() > 1U ||
+        (!states.empty() && zone::level_of(zone.key) != zone::ZoneLevel::Local)) {
+        throw std::runtime_error{"正規化雜湊遇到無效 LocalDoorState"};
+    }
+    hash_scalar(hash, static_cast<std::uint64_t>(states.size()));
+    if (states.empty()) {
+        return;
+    }
+    const auto& opened =
+        states.get<const local::LocalDoorState>(*states.begin()).opened;
+    hash_scalar(hash, static_cast<std::uint64_t>(opened.size()));
+    for (const auto& edge : opened) {
+        hash_scalar(hash, zone::value_of(edge.first.zone));
+        hash_scalar(hash, edge.first.tile.x);
+        hash_scalar(hash, edge.first.tile.y);
+        hash_scalar(hash, zone::value_of(edge.second.zone));
+        hash_scalar(hash, edge.second.tile.x);
+        hash_scalar(hash, edge.second.tile.y);
+    }
+}
+
 [[nodiscard]] std::string_view treaty_id(const rules::Ruleset& ruleset,
                                          rules::TreatyDefId id) {
     const auto* definition = ruleset.treaty(id);
@@ -525,6 +549,7 @@ std::uint64_t normalized_state_hash(const zone::Zone& zone, const rules::Ruleset
 
     hash_city_build_state(hash, zone, ruleset);
     hash_named_fate_ledger(hash, zone);
+    hash_local_doors(hash, zone);
     require_stable_ids<world::RegionPosition>(zone);
     require_stable_ids<world::MovementPoints>(zone);
     require_stable_ids<world::RegionMoveCommand>(zone);

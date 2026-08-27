@@ -86,7 +86,7 @@ TEST(SessionPersistence, ColdFileStoreLoadPreservesPlayableWorldSnapshotAndHash)
         {
             aetheria::zone::FileZoneStore destination{directory.path(),
                                                       test_ruleset()};
-            session->save_game(destination);
+            session->save_game(destination, "default");
         }
         hash_before =
             aetheria::sim::world_state_hash(directory.path()).hash;
@@ -94,10 +94,10 @@ TEST(SessionPersistence, ColdFileStoreLoadPreservesPlayableWorldSnapshotAndHash)
     }
 
     aetheria::zone::FileZoneStore cold_store{directory.path(), test_ruleset()};
-    auto loaded = PlayableSession::load(directory.path(), cold_store);
+    auto loaded = PlayableSession::load(directory.path(), cold_store, "default");
     ASSERT_TRUE(before.has_value());
     EXPECT_EQ(snapshot(*loaded), *before);
-    loaded->save_game(cold_store);
+    loaded->save_game(cold_store, "default");
     const auto hash_after =
         aetheria::sim::world_state_hash(directory.path()).hash;
     EXPECT_EQ(hash_after, hash_before);
@@ -115,7 +115,7 @@ TEST(SessionPersistence, RejectsSaveWhileEncounterIsPending) {
 
     aetheria::zone::FileZoneStore destination{directory.path(), test_ruleset()};
     try {
-        session.save_game(destination);
+        session.save_game(destination, "default");
         FAIL() << "pending encounter save should have been rejected";
     } catch (const std::logic_error& error) {
         const std::string message{error.what()};

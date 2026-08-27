@@ -65,7 +65,7 @@ struct LoadedWorld {
               aetheria::rules::RulesetLoader::load(
                   aetheria::runtime::save_raws_directory(slot)))},
           store{std::make_unique<aetheria::zone::FileZoneStore>(slot, *ruleset)},
-          session{PlayableSession::load(slot, *store)} {}
+          session{PlayableSession::load(slot, *store, "default")} {}
 
     std::unique_ptr<aetheria::rules::Ruleset> ruleset;
     std::unique_ptr<aetheria::zone::FileZoneStore> store;
@@ -130,7 +130,7 @@ TEST(SaveRaws, OldWorldIsolatedFromGlobalDataAndTamperingRejected) {
         aetheria::zone::InMemoryZoneStore active_store{*ruleset};
         PlayableSession session{UINT64_C(515151), 51, private_data.string(), active_store};
         aetheria::zone::FileZoneStore destination{old_slot, *ruleset};
-        session.save_game(destination);
+        session.save_game(destination, "default");
     }
 
     const auto old_raws = aetheria::runtime::save_raws_directory(old_slot);
@@ -245,7 +245,7 @@ rough_ground = "ground.stone"
         aetheria::zone::InMemoryZoneStore active_store{*ruleset};
         PlayableSession session{UINT64_C(515151), 51, private_data.string(), active_store};
         aetheria::zone::FileZoneStore destination{new_slot, *ruleset};
-        session.save_game(destination);
+        session.save_game(destination, "default");
     }
     const auto new_world = observe(new_slot);
     const auto old_world = observe(old_slot);

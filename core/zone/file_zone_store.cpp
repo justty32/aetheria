@@ -104,6 +104,13 @@ std::vector<ZoneKey> FileZoneStore::stored_keys() const {
         if (error) {
             throw std::runtime_error{"無法掃描存檔目錄：" + error.message()};
         }
+        const auto relative = iterator->path().lexically_relative(slot_directory_);
+        if (!relative.empty() && *relative.begin() == "chars") {
+            if (iterator->is_directory()) {
+                iterator.disable_recursion_pending();
+            }
+            continue;
+        }
         if (!iterator->is_regular_file() || iterator->path().extension() != ".bin" ||
             iterator->path().filename() == "manifest.bin") {
             continue;

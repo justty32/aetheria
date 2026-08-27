@@ -19,7 +19,7 @@ Local 是 L2→L3 的純 C++ 生成與展開層；Godot 不持有其中狀態。
 
 | 檔案 | 職責 |
 |---|---|
-| `core/local/local_navigation.*` | 跨 Local zone 格位址、規範化邊位址與可注入門狀態 |
+| `core/local/local_navigation.*` | 跨 Local zone 格位址、規範化邊位址與可注入門查詢；`LocalDoorState` 是 registry 上持久化的已開門 edge 集合 |
 | `core/local/local_fov.*` | 整數 DDA 逐格 FOV；只以 `peek_edge` 判斷牆／門遮蔽 |
 | `core/local/local_movement.*` | 四鄰接探索步判定；區分開門、上鎖、牆與未知邊界 |
 | `core/local/local_path.h` | 邊感知整數 A*；未載入目標才退化到 Site 粗路徑 |

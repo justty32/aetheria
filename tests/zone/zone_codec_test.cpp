@@ -33,10 +33,10 @@ using aetheria::zone::kRootZone;
 using aetheria::zone::value_of;
 using aetheria::zone::ZoneMeta;
 
-static_assert(AllComponents::size == 10);
+static_assert(AllComponents::size == 11);
 static_assert(std::same_as<entt::type_list_element_t<0, AllComponents>, ZoneMeta>);
-static_assert(std::same_as<entt::type_list_element_t<9, AllComponents>,
-                           aetheria::world::ArmyState>);
+static_assert(std::same_as<entt::type_list_element_t<10, AllComponents>,
+                           aetheria::local::LocalDoorState>);
 
 [[nodiscard]] std::string read_file(const std::filesystem::path& path) {
     std::ifstream stream{path, std::ios::binary | std::ios::ate};
