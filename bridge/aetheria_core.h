@@ -37,11 +37,16 @@ public:
   [[nodiscard]] godot::Array poll_events() const;
   // 建立新的 core 可玩 session；外部整數先在 bridge 驗證。
   [[nodiscard]] godot::Dictionary new_game(std::int64_t seed,
-                                           std::int64_t region_id);
-  [[nodiscard]] godot::Dictionary save_game(const godot::String &slot_path);
-  [[nodiscard]] godot::Dictionary load_game(const godot::String &slot_path);
+                                           std::int64_t region_id,
+                                           const godot::String &data_path);
+  [[nodiscard]] godot::Dictionary save_game(const godot::String &slot_path,
+                                             const godot::String &character_name);
+  [[nodiscard]] godot::Dictionary load_game(const godot::String &slot_path,
+                                             const godot::String &character_name);
   [[nodiscard]] godot::PackedStringArray
   list_saves(const godot::String &saves_directory) const;
+  [[nodiscard]] godot::PackedStringArray
+  list_characters(const godot::String &slot_path) const;
   // 一次打包整個 Region、部隊、事件與戰報；不存在逐格 getter。
   [[nodiscard]] godot::Dictionary get_playable_snapshot() const;
   // 送移動意圖；合法性仍由 core RegionTurnPipeline 裁決。

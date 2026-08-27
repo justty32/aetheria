@@ -1,6 +1,8 @@
 // playable_session.cpp：最小可玩情境的權威 core 編排。
 
 #include "core/runtime/playable_session.h"
+#include "core/runtime/character_save.h"
+#include "core/runtime/save_raws.h"
 #include "core/runtime/session_persistence.h"
 
 #include "core/local/dungeon.h"
@@ -17,6 +19,7 @@
 #include "core/world/faction_ai.h"
 #include "core/worldgen/region_generator.h"
 #include "core/worldgen/region_seed.h"
+#include "core/zone/file_zone_store.h"
 
 #include <aetheria/runtime/cross_zone.h>
 
@@ -34,6 +37,12 @@
 
 namespace aetheria::runtime {
 namespace {
+
+[[nodiscard]] rules::Ruleset
+load_saved_ruleset(const std::filesystem::path& slot_directory) {
+    static_cast<void>(save_raws_hash(slot_directory));
+    return rules::RulesetLoader::load(save_raws_directory(slot_directory));
+}
 
 [[nodiscard]] rules::CombatModifiers neutral_modifiers(
     const rules::CombatRules& rules) noexcept {
@@ -89,10 +98,49 @@ void install_coverage_dungeon_entrance(site::SiteLayers& layers,
     layers.procedural.zoning[site_index(entrance)] = site::SiteZoning::Open;
 }
 
-[[nodiscard]] local::DoorStateQuery door_query(bool open) {
-    return [open](const local::LocalEdgeAddress&) {
-        return open ? local::DoorState::Open : local::DoorState::Closed;
+[[nodiscard]] local::DoorStateQuery door_query(const zone::Zone& local_zone) {
+    const auto states = local_zone.reg.view<const local::LocalDoorState>();
+    if (states.size() > 1U) {
+        throw std::logic_error{"Local zone 含多個 LocalDoorState"};
+    }
+    const local::LocalDoorState* state =
+        states.empty() ? nullptr
+                       : &states.get<const local::LocalDoorState>(*states.begin());
+    return [state](const local::LocalEdgeAddress& edge) {
+        return state != nullptr && state->opened.contains(edge)
+                   ? local::DoorState::Open
+                   : local::DoorState::Closed;
     };
+}
+
+[[nodiscard]] std::string_view residence_id(PlayableResidence residence) {
+    switch (residence) {
+    case PlayableResidence::Region:
+        return "region";
+    case PlayableResidence::Site:
+        return "site";
+    case PlayableResidence::Local:
+        return "local";
+    case PlayableResidence::Dungeon:
+        return "dungeon";
+    }
+    throw std::logic_error{"未知的角色駐留層"};
+}
+
+[[nodiscard]] PlayableResidence parse_residence(std::string_view id) {
+    if (id == "region") {
+        return PlayableResidence::Region;
+    }
+    if (id == "site") {
+        return PlayableResidence::Site;
+    }
+    if (id == "local") {
+        return PlayableResidence::Local;
+    }
+    if (id == "dungeon") {
+        return PlayableResidence::Dungeon;
+    }
+    throw std::runtime_error{"角色檔 residence_id 不支援：" + std::string{id}};
 }
 
 } // namespace
@@ -100,7 +148,8 @@ void install_coverage_dungeon_entrance(site::SiteLayers& layers,
 PlayableSession::PlayableSession(std::uint64_t seed, std::uint32_t region_id,
                                  std::string data_directory, zone::ZoneStore& store)
     : seed_{seed}, region_id_{region_id},
-      ruleset_{rules::RulesetLoader::load(data_directory)}, store_{store},
+      base_raws_directory_{std::move(data_directory)},
+      ruleset_{rules::RulesetLoader::load(base_raws_directory_)}, store_{store},
       turn_pipeline_{ruleset_, store_} {
     if (store_.manifest().has_value() || !store_.stored_keys().empty()) {
         throw std::logic_error{"new_game 需要空的 ZoneStore"};
@@ -113,10 +162,15 @@ PlayableSession::PlayableSession(std::uint64_t seed, std::uint32_t region_id,
     initialize_diplomacy();
 }
 
-PlayableSession::PlayableSession(LoadTag, std::string data_directory,
+PlayableSession::PlayableSession(LoadTag, std::filesystem::path slot_directory,
                                  zone::ZoneStore& store)
-    : ruleset_{rules::RulesetLoader::load(data_directory)}, store_{store},
+    : base_raws_directory_{save_raws_directory(slot_directory)},
+      ruleset_{load_saved_ruleset(slot_directory)}, store_{store},
       turn_pipeline_{ruleset_, store_} {
+    if (!store_.manifest().has_value() || store_.manifest()->raws_hash == 0) {
+        throw std::runtime_error{"存檔 manifest 缺少 v23 raws 內容雜湊"};
+    }
+    require_save_raws_hash(slot_directory, store_.manifest()->raws_hash);
     const auto metadata = inspect_session_save(store_);
     seed_ = metadata.world_seed;
     region_id_ = metadata.region_id;
@@ -132,9 +186,18 @@ PlayableSession::PlayableSession(LoadTag, std::string data_directory,
 }
 
 std::unique_ptr<PlayableSession>
-PlayableSession::load(std::string data_directory, zone::ZoneStore& store) {
-    return std::unique_ptr<PlayableSession>{
-        new PlayableSession{LoadTag{}, std::move(data_directory), store}};
+PlayableSession::load(std::filesystem::path slot_directory, zone::ZoneStore& store,
+                      std::string_view character_name) {
+    auto result = std::unique_ptr<PlayableSession>{
+        new PlayableSession{LoadTag{}, slot_directory, store}};
+    if (!store.manifest().has_value()) {
+        throw std::runtime_error{"載入角色前世界存檔缺少 manifest"};
+    }
+    const auto& manifest = *store.manifest();
+    result->import_character_state(read_character_save(
+        character_save_path(slot_directory, character_name),
+        {manifest.world_seed, manifest.raws_hash}));
+    return result;
 }
 
 void PlayableSession::initialize_scenario() {
@@ -460,7 +523,8 @@ void PlayableSession::initialize_diplomacy() {
         if (loaded.diplomacy.has_value()) {
             throw std::logic_error{"新遊戲 root 已有外交狀態"};
         }
-        loaded.diplomacy.emplace(3, seed_, ruleset_);
+        loaded.diplomacy.emplace(
+            ruleset_.civilization_rules().factions.faction_count, seed_, ruleset_);
         diplomacy_ = &*loaded.diplomacy;
     });
     if (!initialized || diplomacy_ == nullptr) {
@@ -469,8 +533,12 @@ void PlayableSession::initialize_diplomacy() {
     diplomacy_->set_faction_truth(world::FactionId{1}, 120'000, 80'000);
     diplomacy_->set_faction_truth(world::FactionId{2}, 48'000, 42'000);
     diplomacy_->set_faction_truth(world::FactionId{3}, 60'000, 70'000);
-    for (std::uint16_t observer = 1; observer <= 3; ++observer) {
-        for (std::uint16_t target = 1; target <= 3; ++target) {
+    const auto faction_count = ruleset_.civilization_rules().factions.faction_count;
+    for (std::uint16_t faction = 4; faction <= faction_count; ++faction) {
+        diplomacy_->set_faction_truth(world::FactionId{faction}, 0, 0);
+    }
+    for (std::uint16_t observer = 1; observer <= faction_count; ++observer) {
+        for (std::uint16_t target = 1; target <= faction_count; ++target) {
             if (observer != target) {
                 diplomacy_->observe_faction(world::FactionId{observer},
                                             world::FactionId{target}, 0,
@@ -660,26 +728,49 @@ void PlayableSession::leave_local() {
 }
 
 void PlayableSession::open_door_and_move() {
-    if (residence_ != PlayableResidence::Local || local_z_ != 0 ||
-        local_door_open_) {
+    if (residence_ != PlayableResidence::Local || local_z_ != 0) {
         throw std::logic_error{"開門示範只接受尚未開門的 Local 地表"};
     }
     runtime::CrossZoneRuntime runtime{*manager_};
     const local::LocalLocation position{
         coverage_local_key_, {local_player_x_, local_player_y_}};
-    const auto closed = local::assess_exploration_step(
-        runtime, ruleset_, position, spatial::BoundarySide::East,
-        door_query(false));
-    if (closed != local::ExplorationStepResult::MustOpenDoor) {
-        throw std::logic_error{"Local 門在關閉狀態未要求開門"};
+    const auto edge = local::local_edge_address(position, spatial::BoundarySide::East);
+    const auto handle = manager_->get(coverage_local_key_);
+    if (!edge.has_value() || !handle.has_value()) {
+        throw std::logic_error{"開門示範找不到 Local 門 edge 或 zone"};
     }
-    local_door_open_ = true;
-    const auto opened = local::assess_exploration_step(
-        runtime, ruleset_, position, spatial::BoundarySide::East,
-        door_query(true));
-    if (opened != local::ExplorationStepResult::Allowed) {
-        local_door_open_ = false;
-        throw std::logic_error{"Local 開門後仍不能移動"};
+    const bool borrowed = manager_->with(*handle, [&](zone::Zone& loaded) {
+        const auto closed = local::assess_exploration_step(
+            runtime, ruleset_, position, spatial::BoundarySide::East,
+            door_query(loaded));
+        if (closed != local::ExplorationStepResult::MustOpenDoor) {
+            throw std::logic_error{"Local 門不是可開啟的關閉狀態"};
+        }
+        auto states = loaded.reg.view<local::LocalDoorState>();
+        if (states.size() > 1U) {
+            throw std::logic_error{"Local zone 含多個 LocalDoorState"};
+        }
+        local::LocalDoorState* state{};
+        if (states.empty()) {
+            const auto placeholders = loaded.reg.view<zone::ZoneMeta>();
+            if (placeholders.size() != 1U) {
+                throw std::logic_error{"Local zone 缺少唯一 ZoneMeta"};
+            }
+            state = &loaded.reg.emplace<local::LocalDoorState>(*placeholders.begin());
+        } else {
+            state = &states.get<local::LocalDoorState>(*states.begin());
+        }
+        state->opened.insert(*edge);
+        const auto opened = local::assess_exploration_step(
+            runtime, ruleset_, position, spatial::BoundarySide::East,
+            door_query(loaded));
+        if (opened != local::ExplorationStepResult::Allowed) {
+            state->opened.erase(*edge);
+            throw std::logic_error{"Local 開門後仍不能移動"};
+        }
+    });
+    if (!borrowed) {
+        throw std::logic_error{"開門示範借不到 Local zone"};
     }
     ++local_player_x_;
     ++revision_;
@@ -1298,12 +1389,20 @@ std::optional<PlayableGridView> PlayableSession::local_view() const {
                             local_player_x_, local_player_y_};
     std::vector<std::uint8_t> visible(local::kLocalTileCount,
                                       local_z_ == 0 ? UINT8_C(0) : UINT8_C(1));
+    local::DoorStateQuery doors;
+    const bool has_door_state =
+        manager_->with(*handle, [&](const zone::Zone& loaded) {
+            doors = door_query(loaded);
+        });
+    if (!has_door_state) {
+        return std::nullopt;
+    }
     if (local_z_ == 0) {
         runtime::CrossZoneRuntime runtime{*manager_};
         const auto fov = local::calculate_fov(
             runtime, ruleset_,
             {coverage_local_key_, {local_player_x_, local_player_y_}}, {12, 12},
-            door_query(local_door_open_));
+            doors);
         for (const auto& location : fov.visible) {
             if (location.zone == coverage_local_key_) {
                 visible[local_index(location.tile)] = UINT8_C(1);
@@ -1333,7 +1432,10 @@ std::optional<PlayableGridView> PlayableSession::local_view() const {
     }
     if (local_z_ == 0) {
         result.cells[local_index({local_player_x_, local_player_y_})] = UINT8_C(5);
-        if (!local_door_open_) {
+        const auto door = local::local_edge_address(
+            {coverage_local_key_, {31, 32}}, spatial::BoundarySide::East);
+        if (!door.has_value() ||
+            local::query_door_state(doors, *door) != local::DoorState::Open) {
             result.cells[local_index({32, 32})] = UINT8_C(6);
         }
     }
@@ -1344,11 +1446,97 @@ time::Tick PlayableSession::now() const {
     return world::turn_clock(*region_).now;
 }
 
-void PlayableSession::save_game(zone::ZoneStore& destination) {
+CharacterState PlayableSession::export_character_state() const {
+    return {player_army_id_, std::string{residence_id(residence_)}, local_z_,
+            local_player_x_, local_player_y_, accepted_quest_id_};
+}
+
+void PlayableSession::import_character_state(const CharacterState& state) {
+    const auto residence = parse_residence(state.residence_id);
+    if (state.local_player_x >= local::kLocalWidth ||
+        state.local_player_y >= local::kLocalHeight) {
+        throw std::runtime_error{"角色檔 Local 座標超出 64x64 範圍"};
+    }
+    if ((residence == PlayableResidence::Dungeon && state.local_z >= 0) ||
+        (residence != PlayableResidence::Dungeon && state.local_z != 0)) {
+        throw std::runtime_error{"角色檔 residence_id 與 local_z 不一致"};
+    }
+    const auto army_handle = std::ranges::find(armies_, state.player_army_id,
+                                               &PlayableArmy::id);
+    if (army_handle == armies_.end() ||
+        !army(state.player_army_id).player_controlled) {
+        throw std::runtime_error{"角色檔 player_army_id 在世界 registry 中不存在或非玩家部隊：" +
+                                 std::to_string(state.player_army_id.uid)};
+    }
+    if (state.accepted_quest_id.has_value() &&
+        std::ranges::none_of(quests_, [&](const auto& quest) {
+            return quest.id == *state.accepted_quest_id;
+        })) {
+        throw std::runtime_error{"角色檔 accepted_quest_id 已無法由世界態重建：" +
+                                 std::to_string(*state.accepted_quest_id)};
+    }
+
+    if (residence != PlayableResidence::Region) {
+        const auto site_handle = acquire_coverage_site();
+        auto& region_tiles =
+            std::get<zone::RegionPayload>(region_->payload).layers.at(0);
+        const bool entered = manager_->with(site_handle, [&](zone::Zone& loaded) {
+            site::enter_full_site(loaded, region_tiles, coverage_tile_);
+        });
+        if (!entered) {
+            throw std::runtime_error{"角色駐留層還原時無法進入 Site"};
+        }
+        if (residence == PlayableResidence::Local ||
+            residence == PlayableResidence::Dungeon) {
+            const auto local_handle = acquire_coverage_local();
+            if (residence == PlayableResidence::Dungeon) {
+                bool floor_exists{};
+                static_cast<void>(manager_->with(
+                    local_handle, [&](const zone::Zone& loaded) {
+                        floor_exists = std::get<zone::LocalPayload>(loaded.payload)
+                                           .layers.contains(state.local_z);
+                    }));
+                if (!floor_exists) {
+                    throw std::runtime_error{"角色檔 local_z 對應的地城層不存在"};
+                }
+            }
+        }
+    }
+
+    player_army_id_ = state.player_army_id;
+    residence_ = residence;
+    local_z_ = state.local_z;
+    local_player_x_ = state.local_player_x;
+    local_player_y_ = state.local_player_y;
+    accepted_quest_id_ = state.accepted_quest_id;
+}
+
+void PlayableSession::save_game(zone::FileZoneStore& destination,
+                                std::string_view character_name) {
     if (encounter_tile_.has_value()) {
         throw std::logic_error{"遭遇尚未處理：只能在回合尾端、無 pending 遭遇時存檔"};
     }
-    save_session(store_, destination, *manager_, seed_, now());
+    const auto character_path =
+        character_save_path(destination.slot_directory(), character_name);
+    const auto source_hash = raws_directory_hash(base_raws_directory_);
+    const auto destination_raws = save_raws_directory(destination.slot_directory());
+    std::error_code error;
+    const bool destination_has_raws = std::filesystem::exists(destination_raws, error);
+    if (error) {
+        throw std::runtime_error{"無法檢查目的存檔 raws：" + error.message()};
+    }
+    std::uint64_t destination_hash{};
+    if (!destination_has_raws) {
+        destination_hash = copy_save_raws(base_raws_directory_, destination.slot_directory());
+    } else {
+        destination_hash = save_raws_hash(destination.slot_directory());
+    }
+    if (source_hash != destination_hash) {
+        throw std::runtime_error{"目的存檔 raws 與目前世界的基底 raws 不符，拒絕改寫"};
+    }
+    save_session(store_, destination, *manager_, seed_, destination_hash, now());
+    write_character_save(character_path, {seed_, destination_hash},
+                         export_character_state());
 }
 
 } // namespace aetheria::runtime

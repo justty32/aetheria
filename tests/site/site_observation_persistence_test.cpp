@@ -107,7 +107,7 @@ void save_world_root(FileZoneStore& store) {
 }
 
 TEST(SiteObservationPersistence, V16SiteIsRejectedInsteadOfLoadingNewFieldsAsDefaults) {
-    static_assert(aetheria::serialize::kSaveFormatVersion == 22);
+    static_assert(aetheria::serialize::kSaveFormatVersion == 23);
     const auto legacy = encode_v16_site_zone(test_ruleset());
     try {
         static_cast<void>(decode_zone(legacy, test_ruleset()));
@@ -117,7 +117,7 @@ TEST(SiteObservationPersistence, V16SiteIsRejectedInsteadOfLoadingNewFieldsAsDef
         const std::string message{error.what()};
         EXPECT_NE(message.find("zone format_version"), std::string::npos);
         EXPECT_NE(message.find("檔內=16"), std::string::npos);
-        EXPECT_NE(message.find("預期=22"), std::string::npos);
+        EXPECT_NE(message.find("預期=23"), std::string::npos);
         std::cout << "site_v16_rejected error=\"" << message << "\"\n";
     }
 
@@ -129,25 +129,26 @@ TEST(SiteObservationPersistence, V16SiteIsRejectedInsteadOfLoadingNewFieldsAsDef
     EXPECT_FALSE(persistent.order.has_value());
     EXPECT_TRUE(persistent.named_npcs.empty());
     EXPECT_TRUE(persistent.dungeons.empty());
-    std::cout << "site_v22_defaults accepted=1 order_present=0 named_npcs=0 "
+    std::cout << "site_v23_defaults accepted=1 order_present=0 named_npcs=0 "
                  "dungeons=0\n";
 }
 
 TEST(SiteObservationPersistence, EveryObservationFieldChangesWorldHashIndependently) {
     TemporaryDirectory directory;
+    const auto raws_hash = aetheria::tests::prepare_test_save_raws(directory.path());
     FileZoneStore store{directory.path(), test_ruleset()};
     save_world_root(store);
     auto site = observation_site();
     store.save(*site);
-    store.write_manifest(SaveManifest{});
+    store.write_manifest(SaveManifest{.raws_hash = raws_hash});
 
-    const auto baseline = aetheria::sim::world_state_hash(directory.path(), test_ruleset()).hash;
+    const auto baseline = aetheria::sim::world_state_hash(directory.path()).hash;
     auto& persistent = std::get<aetheria::zone::SitePayload>(site->payload).layers.persistent;
     const auto changed_hash = [&](std::string_view name, auto&& change, auto&& restore) {
         change();
         store.save(*site);
         const auto changed =
-            aetheria::sim::world_state_hash(directory.path(), test_ruleset()).hash;
+            aetheria::sim::world_state_hash(directory.path()).hash;
         EXPECT_NE(baseline, changed) << name;
         std::cout << "observation_hash field=" << name << " before=" << baseline
                   << " after=" << changed << '\n';
@@ -178,9 +179,9 @@ TEST(SiteObservationPersistence, EveryObservationFieldChangesWorldHashIndependen
         [&] { persistent.dungeons.front().depth = 3; }));
 
     store.save(*site);
-    const auto replay = aetheria::sim::world_state_hash(directory.path(), test_ruleset()).hash;
+    const auto replay = aetheria::sim::world_state_hash(directory.path()).hash;
     EXPECT_EQ(replay, baseline);
-    EXPECT_EQ(aetheria::sim::world_state_hash(directory.path(), test_ruleset()).hash, replay);
+    EXPECT_EQ(aetheria::sim::world_state_hash(directory.path()).hash, replay);
     std::cout << "observation_hash deterministic=" << replay << " repeated=1\n";
 }
 

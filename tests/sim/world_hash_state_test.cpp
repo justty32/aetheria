@@ -34,8 +34,8 @@ TEST(WorldStateHash, DifferentConstructionHistoriesMatchWhileSavedBytesDiffer) {
         EXPECT_FALSE(manager.get(key).has_value());
     }
 
-    const auto forward = world_state_hash(forward_directory.path(), test_ruleset());
-    const auto reverse = world_state_hash(reverse_directory.path(), test_ruleset());
+    const auto forward = world_state_hash(forward_directory.path());
+    const auto reverse = world_state_hash(reverse_directory.path());
     const auto [forward_bytes_hash, forward_bytes] =
         saved_zone_bytes_evidence(forward_directory.path());
     const auto [reverse_bytes_hash, reverse_bytes] =
@@ -54,7 +54,7 @@ TEST(WorldStateHash, DifferentConstructionHistoriesMatchWhileSavedBytesDiffer) {
 TEST(WorldStateHash, ComponentChangesHashButRuntimeStateDoesNot) {
     TemporaryDirectory directory;
     create_world_hash_save(directory.path());
-    const auto original = world_state_hash(directory.path(), test_ruleset());
+    const auto original = world_state_hash(directory.path());
     FileZoneStore store{directory.path(), test_ruleset()};
     const auto key = kWorldHashRegionKeys.front();
     const auto before_runtime_bytes = aetheria::tests::read_binary(store.path_for(key));
@@ -66,7 +66,7 @@ TEST(WorldStateHash, ComponentChangesHashButRuntimeStateDoesNot) {
     auto& surface = std::get<aetheria::zone::RegionPayload>(runtime_only->payload).layers.at(0);
     surface.site.at(0).lod = LodLevel::Full;
     store.save(*runtime_only);
-    const auto runtime_hash = world_state_hash(directory.path(), test_ruleset());
+    const auto runtime_hash = world_state_hash(directory.path());
     EXPECT_EQ(aetheria::tests::read_binary(store.path_for(key)), before_runtime_bytes);
 
     auto component_changed = store.load(key);
@@ -81,7 +81,7 @@ TEST(WorldStateHash, ComponentChangesHashButRuntimeStateDoesNot) {
     }
     ASSERT_TRUE(changed);
     store.save(*component_changed);
-    const auto component_hash = world_state_hash(directory.path(), test_ruleset());
+    const auto component_hash = world_state_hash(directory.path());
 
     std::cout << "negative_control original_hash=" << original.hash
               << " runtime_hash=" << runtime_hash.hash << " component_hash=" << component_hash.hash
@@ -93,7 +93,7 @@ TEST(WorldStateHash, ComponentChangesHashButRuntimeStateDoesNot) {
 TEST(WorldStateHash, RegionDefenseAndDamageBothChangeHash) {
     TemporaryDirectory directory;
     create_world_hash_save(directory.path());
-    const auto original = world_state_hash(directory.path(), test_ruleset());
+    const auto original = world_state_hash(directory.path());
     FileZoneStore store{directory.path(), test_ruleset()};
     const auto key = kWorldHashRegionKeys.front();
 
@@ -103,7 +103,7 @@ TEST(WorldStateHash, RegionDefenseAndDamageBothChangeHash) {
         std::get<aetheria::zone::RegionPayload>(defense_changed->payload).layers.at(0);
     defense_tiles.defense[0] = 80;
     store.save(*defense_changed);
-    const auto defense_hash = world_state_hash(directory.path(), test_ruleset());
+    const auto defense_hash = world_state_hash(directory.path());
 
     auto damage_changed = store.load(key);
     ASSERT_NE(damage_changed, nullptr);
@@ -112,7 +112,7 @@ TEST(WorldStateHash, RegionDefenseAndDamageBothChangeHash) {
     damage_tiles.defense[0] = 0;
     damage_tiles.damage[0] = 40;
     store.save(*damage_changed);
-    const auto damage_hash = world_state_hash(directory.path(), test_ruleset());
+    const auto damage_hash = world_state_hash(directory.path());
 
     EXPECT_NE(original.hash, defense_hash.hash);
     EXPECT_NE(original.hash, damage_hash.hash);

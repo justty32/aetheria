@@ -8,6 +8,7 @@
 
 #include <cereal/archives/portable_binary.hpp>
 #include <cereal/types/string.hpp>
+#include <cereal/types/set.hpp>
 #include <cereal/types/tuple.hpp>
 #include <cereal/types/vector.hpp>
 
@@ -106,6 +107,11 @@ std::string encode_zone(const zone::Zone& value, const rules::Ruleset& ruleset) 
         if (!local::valid_dungeon_persistent_state(local_payload->dungeon)) {
             throw std::runtime_error{"zone LocalPayload 含無效地城持久層"};
         }
+    }
+    const auto door_states = value.reg.view<const local::LocalDoorState>();
+    if (door_states.size() > 1U ||
+        (!door_states.empty() && zone::level_of(value.key) != zone::ZoneLevel::Local)) {
+        throw std::runtime_error{"LocalDoorState 只能是 Local zone 的單例 component"};
     }
     std::ostringstream stream{std::ios::binary};
     {

@@ -11,6 +11,7 @@
 #include <cstdint>
 #include <functional>
 #include <optional>
+#include <set>
 
 namespace aetheria::local {
 
@@ -18,6 +19,10 @@ namespace aetheria::local {
 struct LocalLocation {
   zone::ZoneKey zone{};
   LocalXY tile{};
+
+  template <typename Archive> void serialize(Archive &archive) {
+    archive(zone, tile.x, tile.y);
+  }
 
   constexpr auto operator<=>(const LocalLocation &) const noexcept = default;
 };
@@ -28,6 +33,20 @@ struct LocalEdgeAddress {
   LocalLocation second{};
 
   constexpr auto operator<=>(const LocalEdgeAddress &) const noexcept = default;
+
+  template <typename Archive> void serialize(Archive &archive) {
+    archive(first, second);
+  }
+};
+
+// LocalDoorState 是 Local registry 的世界態單例 component。
+// 集合只記已開啟的 canonical edge；未列出的門一律視為關閉。
+struct LocalDoorState {
+  std::set<LocalEdgeAddress> opened;
+
+  template <typename Archive> void serialize(Archive &archive) { archive(opened); }
+
+  bool operator==(const LocalDoorState &) const = default;
 };
 
 enum class DoorState : std::uint8_t {

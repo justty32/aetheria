@@ -39,6 +39,7 @@ constexpr RegionXY kCoordinate{4, 7};
 }
 
 void save_materialization(const std::filesystem::path& directory, BuildingState state) {
+    const auto raws_hash = aetheria::tests::prepare_test_save_raws(directory);
     aetheria::zone::FileZoneStore store{directory, test_ruleset()};
     store.save(aetheria::zone::Zone{aetheria::zone::kRootZone});
     auto region = sample_region();
@@ -48,7 +49,8 @@ void save_materialization(const std::filesystem::path& directory, BuildingState 
     ASSERT_EQ(persistent.buildings.size(), 1U);
     persistent.buildings.front().state = state;
     store.save(site);
-    store.write_manifest(aetheria::zone::SaveManifest{.world_seed = kWorldSeed});
+    store.write_manifest(aetheria::zone::SaveManifest{
+        .world_seed = kWorldSeed, .raws_hash = raws_hash});
 }
 
 TEST(SiteMaterialize, WorldHashMatchesTwiceAndChangesWithBuildingState) {
@@ -59,9 +61,9 @@ TEST(SiteMaterialize, WorldHashMatchesTwiceAndChangesWithBuildingState) {
     save_materialization(second_directory.path(), BuildingState::Active);
     save_materialization(changed_directory.path(), BuildingState::Idle);
 
-    const auto first = aetheria::sim::world_state_hash(first_directory.path(), test_ruleset());
-    const auto second = aetheria::sim::world_state_hash(second_directory.path(), test_ruleset());
-    const auto changed = aetheria::sim::world_state_hash(changed_directory.path(), test_ruleset());
+    const auto first = aetheria::sim::world_state_hash(first_directory.path());
+    const auto second = aetheria::sim::world_state_hash(second_directory.path());
+    const auto changed = aetheria::sim::world_state_hash(changed_directory.path());
 
     std::cout << "site_materialize_first world_hash=" << first.hash << '\n'
               << "site_materialize_second world_hash=" << second.hash << '\n'

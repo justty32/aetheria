@@ -26,7 +26,7 @@ using aetheria::zone::FileZoneStore;
 
 void expect_error_contains(const std::filesystem::path& directory, std::string_view expected) {
     try {
-        static_cast<void>(world_state_hash(directory, test_ruleset()));
+        static_cast<void>(world_state_hash(directory));
         FAIL() << "world_state_hash should throw";
     } catch (const std::runtime_error& error) {
         EXPECT_NE(std::string{error.what()}.find(expected), std::string::npos) << error.what();

@@ -26,6 +26,7 @@ struct SaveManifest {
     std::uint64_t world_seed{};
     worldgen::GenerationParameterHashes generation_parameters{
         worldgen::generation_parameter_hashes()};
+    std::uint64_t raws_hash{};
     time::Tick now{};
 
     constexpr bool operator==(const SaveManifest&) const noexcept = default;

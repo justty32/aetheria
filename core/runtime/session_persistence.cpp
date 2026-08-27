@@ -13,7 +13,7 @@ namespace aetheria::runtime {
 
 void save_session(zone::ZoneStore& active_store, zone::ZoneStore& destination,
                   zone::ZoneManager& manager, std::uint64_t world_seed,
-                  time::Tick now) {
+                  std::uint64_t raws_hash, time::Tick now) {
     manager.save_all();
     const auto source_keys = active_store.stored_keys();
     if (&active_store != &destination) {
@@ -35,6 +35,7 @@ void save_session(zone::ZoneStore& active_store, zone::ZoneStore& destination,
 
     auto manifest = destination.manifest().value_or(zone::SaveManifest{});
     manifest.world_seed = world_seed;
+    manifest.raws_hash = raws_hash;
     manifest.now = now;
     destination.write_manifest(manifest);
 }

@@ -9,6 +9,7 @@
 
 #include <cereal/archives/portable_binary.hpp>
 #include <cereal/types/string.hpp>
+#include <cereal/types/set.hpp>
 #include <cereal/types/tuple.hpp>
 #include <cereal/types/vector.hpp>
 
@@ -222,6 +223,11 @@ std::unique_ptr<zone::Zone> decode_zone(std::string_view bytes, const rules::Rul
          !world::valid_named_fate_ledger(
              fate_ledgers.get<const world::NamedFateLedger>(*fate_ledgers.begin())))) {
         throw std::runtime_error{"zone 含無效 NamedFateLedger"};
+    }
+    const auto door_states = value->reg.view<const local::LocalDoorState>();
+    if (door_states.size() > 1U ||
+        (!door_states.empty() && zone::level_of(value->key) != zone::ZoneLevel::Local)) {
+        throw std::runtime_error{"LocalDoorState 只能是 Local zone 的單例 component"};
     }
     if (stream.peek() != std::char_traits<char>::eof()) {
         throw std::runtime_error{"zone 檔含未解析的尾端資料"};

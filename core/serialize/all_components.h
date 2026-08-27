@@ -7,8 +7,10 @@
 #include "core/site/site_projection.h"
 #include "core/site/site_build_loop.h"
 #include "core/site/site_lifecycle.h"
+#include "core/local/local_navigation.h"
 
 #include <entt/core/type_traits.hpp>
+#include <cereal/types/set.hpp>
 
 namespace aetheria::serialize {
 
@@ -20,11 +22,13 @@ using AllComponentsV15 =
                     world::RegionMoveCommand, world::TurnClock, site::CityBuildState,
                     site::SiteDigest>;
 
-// v22 在尾端加入部隊權威狀態；既有 component 順序不變。
+// v22 在尾端加入部隊權威狀態；v23 波 1 再加入 Local 門狀態。
+// 既有 component 順序不變。
 using AllComponents =
     entt::type_list<zone::ZoneMeta, world::StableId, world::RegionPosition, world::MovementPoints,
                     world::RegionMoveCommand, world::TurnClock, site::CityBuildState,
-                    site::SiteDigest, world::NamedFateLedger, world::ArmyState>;
+                    site::SiteDigest, world::NamedFateLedger, world::ArmyState,
+                    local::LocalDoorState>;
 
 // SavedSiteLayers 是 Site 存檔可見的資料層白名單。
 // 程序層與易失層刻意不在清單中。

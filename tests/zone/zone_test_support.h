@@ -3,6 +3,7 @@
 // tests/zone 底下多個測試檔共用的 fixture／helper：暫存目錄、填充過的 Zone、實體計數。
 
 #include "core/time/tick.h"
+#include "core/runtime/save_raws.h"
 #include "core/world/region_tiles.h"
 #include "core/zone/lod_level.h"
 #include "core/zone/zone.h"
@@ -55,6 +56,16 @@ private:
 [[nodiscard]] inline std::size_t entity_count(const zone::Zone& zone) {
     const auto* entities = zone.reg.storage<entt::entity>();
     return entities == nullptr ? 0 : entities->free_list();
+}
+
+[[nodiscard]] inline std::uint64_t prepare_test_save_raws(
+    const std::filesystem::path& slot_directory) {
+    const auto raws = runtime::save_raws_directory(slot_directory);
+    if (!std::filesystem::exists(raws)) {
+        return runtime::copy_save_raws(
+            std::filesystem::path{AETHERIA_SOURCE_DIR} / "data", slot_directory);
+    }
+    return runtime::save_raws_hash(slot_directory);
 }
 
 [[nodiscard]] inline zone::Zone populated_zone(zone::ZoneKey key) {

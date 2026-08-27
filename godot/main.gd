@@ -14,6 +14,14 @@ const EVENT_NAMES := [
 const AI_ACTIONS := ["發展", "備戰", "擴張", "宣戰", "提議同盟", "進貢", "統計推進"]
 const OUTCOMES := ["戰鬥持續", "我軍潰散", "敵軍潰散", "雙方脫離"]
 const FATE_OUTCOMES := ["安然無恙", "負傷", "財產損失", "流離失所", "陣亡"]
+const RAW_FILES := [
+	"attributes.toml", "biomes.toml", "civilization.toml", "combat.toml",
+	"damage.toml", "diplomacy.toml", "dungeon.toml", "edges.toml",
+	"feature.toml", "ground.toml", "local_buildings.toml", "movement.toml",
+	"power.toml", "power_sources.toml", "relief.toml", "site_build.toml",
+	"site_city.toml", "site_projection.toml", "site_wild.toml", "terrain.toml",
+	"world_graph.toml", "world_observations.toml",
+]
 
 var _core: AetheriaCore
 var _view: Control
@@ -21,6 +29,7 @@ var _map: TextureRect
 var _seed_edit: LineEdit
 var _region_edit: LineEdit
 var _slot_edit: LineEdit
+var _character_edit: LineEdit
 var _title: Label
 var _status: Label
 var _message: Label
@@ -37,6 +46,7 @@ var _mode := ""
 var _screenshot_path := ""
 var _expect_invalid_accepted := false
 var _slot_name := "quicksave"
+var _character_name := "A"
 
 
 func _ready() -> void:
@@ -104,8 +114,16 @@ func _build_view() -> void:
 	_slot_edit.custom_minimum_size.x = 180
 	_slot_edit.text_changed.connect(func(value: String) -> void: _slot_name = value)
 	save_inputs.add_child(_slot_edit)
-	save_inputs.add_child(_button("存檔", _save_game))
-	save_inputs.add_child(_button("讀檔", _load_game))
+	var character_inputs := HBoxContainer.new()
+	sidebar.add_child(character_inputs)
+	character_inputs.add_child(_label("角色名"))
+	_character_edit = LineEdit.new()
+	_character_edit.text = _character_name
+	_character_edit.custom_minimum_size.x = 180
+	_character_edit.text_changed.connect(func(value: String) -> void: _character_name = value)
+	character_inputs.add_child(_character_edit)
+	character_inputs.add_child(_button("存檔", _save_game))
+	character_inputs.add_child(_button("讀檔", _load_game))
 	_status = _label("")
 	_status.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	sidebar.add_child(_status)
@@ -227,7 +245,13 @@ func _new_game() -> void:
 		_last_message = "錯誤：Seed 與 Region 必須是整數。"
 		_message.text = _last_message
 		return
-	var result: Dictionary = _core.new_game(_seed_edit.text.to_int(), _region_edit.text.to_int())
+	var data_path := _materialize_packaged_data()
+	if data_path.is_empty():
+		_last_message = "錯誤：無法準備 exported build 內附的基準 data。"
+		_message.text = _last_message
+		return
+	var result: Dictionary = _core.new_game(
+		_seed_edit.text.to_int(), _region_edit.text.to_int(), data_path)
 	if result.has("error"):
 		_last_message = "錯誤：%s" % result["error"]
 		_message.text = _last_message
@@ -235,6 +259,25 @@ func _new_game() -> void:
 	_selected_unit_id = 0
 	_last_message = "新遊戲完成。可從 Region 親自進 Site，或交給系統。"
 	_rebuild_for_residence()
+
+
+func _materialize_packaged_data() -> String:
+	# res:// 可能位於 exported PCK，C++ filesystem 無法直接讀；先逐位元組
+	# materialize 到 user://，再把絕對路徑跨 bridge 傳入。
+	var destination := ProjectSettings.globalize_path("user://packaged-data")
+	if DirAccess.make_dir_recursive_absolute(destination) != OK:
+		return ""
+	for file_name in RAW_FILES:
+		var source := "res://data/" + file_name
+		if not FileAccess.file_exists(source):
+			return ""
+		var bytes := FileAccess.get_file_as_bytes(source)
+		var output := FileAccess.open(destination.path_join(file_name), FileAccess.WRITE)
+		if output == null:
+			return ""
+		output.store_buffer(bytes)
+		output.close()
+	return destination
 
 
 func _save_root() -> String:
@@ -251,33 +294,38 @@ func _slot_path() -> String:
 
 func _save_game() -> void:
 	var path := _slot_path()
-	if path.is_empty():
-		_last_message = "錯誤：存檔槽名不可為空，也不可含路徑字元。"
+	var character := _character_edit.text.strip_edges()
+	if path.is_empty() or character.is_empty() or not character.is_valid_filename() or character == "." or character == "..":
+		_last_message = "錯誤：存檔槽名與角色名皆須為不含路徑字元的非空名稱。"
 		_message.text = _last_message
 		return
+	_character_name = character
 	DirAccess.make_dir_recursive_absolute(_save_root())
-	var result: Dictionary = _core.save_game(path)
+	var result: Dictionary = _core.save_game(path, character)
 	if result.has("error"):
 		_last_message = "存檔失敗：%s" % result["error"]
 	else:
 		var saves: PackedStringArray = _core.list_saves(_save_root())
-		_last_message = "存檔成功：%s（現有槽：%s）" % [_slot_name, ", ".join(saves)]
+		var characters: PackedStringArray = _core.list_characters(path)
+		_last_message = "存檔成功：%s / %s（角色：%s；現有槽：%s）" % [_slot_name, character, ", ".join(characters), ", ".join(saves)]
 	_refresh()
 
 
 func _load_game() -> void:
 	var path := _slot_path()
-	if path.is_empty():
-		_last_message = "錯誤：存檔槽名不可為空，也不可含路徑字元。"
+	var character := _character_edit.text.strip_edges()
+	if path.is_empty() or character.is_empty() or not character.is_valid_filename() or character == "." or character == "..":
+		_last_message = "錯誤：存檔槽名與角色名皆須為不含路徑字元的非空名稱。"
 		_message.text = _last_message
 		return
-	var result: Dictionary = _core.load_game(path)
+	_character_name = character
+	var result: Dictionary = _core.load_game(path, character)
 	if result.has("error"):
 		_last_message = "讀檔失敗：%s" % result["error"]
 		_message.text = _last_message
 		return
 	_selected_unit_id = 0
-	_last_message = "讀檔成功：%s。世界狀態已由磁碟冷讀重建。" % _slot_name
+	_last_message = "讀檔成功：%s / %s。世界與角色狀態已由磁碟冷讀重建。" % [_slot_name, character]
 	_rebuild_for_residence()
 
 

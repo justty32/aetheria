@@ -5,6 +5,7 @@
 
 #include "core/rules/combat.h"
 #include "core/rules/ruleset.h"
+#include "core/runtime/character_save.h"
 #include "core/narrative/emergent_quest.h"
 #include "core/site/site_projection.h"
 #include "core/time/tick.h"
@@ -18,11 +19,16 @@
 #include "core/zone/zone_manager.h"
 
 #include <cstdint>
+#include <filesystem>
 #include <memory>
 #include <optional>
 #include <string>
 #include <string_view>
 #include <vector>
+
+namespace aetheria::zone {
+class FileZoneStore;
+}
 
 namespace aetheria::runtime {
 
@@ -142,7 +148,8 @@ public:
                     std::string data_directory, zone::ZoneStore& store);
 
     [[nodiscard]] static std::unique_ptr<PlayableSession>
-    load(std::string data_directory, zone::ZoneStore& store);
+    load(std::filesystem::path slot_directory, zone::ZoneStore& store,
+         std::string_view character_name);
 
     PlayableSession(const PlayableSession&) = delete;
     PlayableSession& operator=(const PlayableSession&) = delete;
@@ -204,14 +211,18 @@ public:
     [[nodiscard]] world::RegionXY coverage_tile() const noexcept {
         return coverage_tile_;
     }
-    void save_game(zone::ZoneStore& destination);
+    void save_game(zone::FileZoneStore& destination,
+                   std::string_view character_name);
+    [[nodiscard]] CharacterState export_character_state() const;
+    void import_character_state(const CharacterState& state);
     [[nodiscard]] const world::WorldDiplomacyState& diplomacy() const noexcept {
         return *diplomacy_;
     }
 
 private:
     struct LoadTag {};
-    PlayableSession(LoadTag, std::string data_directory, zone::ZoneStore& store);
+    PlayableSession(LoadTag, std::filesystem::path slot_directory,
+                    zone::ZoneStore& store);
     [[nodiscard]] world::RegionPosition& position_of(world::StableId unit);
     [[nodiscard]] const world::RegionPosition& position_of(world::StableId unit) const;
     [[nodiscard]] world::ArmyState& army(world::StableId unit);
@@ -241,6 +252,7 @@ private:
 
     std::uint64_t seed_{};
     std::uint32_t region_id_{};
+    std::filesystem::path base_raws_directory_;
     rules::Ruleset ruleset_;
     zone::ZoneStore& store_;
     world::RegionTurnPipeline turn_pipeline_;
@@ -269,7 +281,6 @@ private:
     std::int8_t local_z_{};
     std::uint16_t local_player_x_{31};
     std::uint16_t local_player_y_{32};
-    bool local_door_open_{};
     std::vector<narrative::EmergentQuest> quests_;
     std::optional<std::uint64_t> accepted_quest_id_;
     std::uint16_t dungeon_density_before_{};

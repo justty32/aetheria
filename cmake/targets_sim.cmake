@@ -42,6 +42,7 @@ add_test(
     COMMAND "${CMAKE_COMMAND}"
         -DSIM=$<TARGET_FILE:aetheria_sim>
         -DTEST_DIR=${CMAKE_BINARY_DIR}/sim-world-hash-test
+        -DSOURCE_DATA_DIR=${PROJECT_SOURCE_DIR}/data
         -P "${PROJECT_SOURCE_DIR}/cmake/check_sim_world_hash.cmake"
 )
 add_test(

@@ -96,7 +96,7 @@ std::string encode_manifest(const SaveManifest& manifest) {
     archive(manifest.format_version, manifest.next_detached_id, manifest.next_entity_uid,
             manifest.dims.region_width, manifest.dims.region_height, manifest.dims.site_width,
             manifest.dims.site_height, manifest.world_seed, manifest.generation_parameters.groups,
-            now);
+            manifest.raws_hash, now);
     if (!stream) {
         throw std::runtime_error{"manifest 序列化失敗"};
     }
@@ -111,7 +111,7 @@ SaveManifest decode_manifest(std::string_view bytes) {
     archive(manifest.format_version, manifest.next_detached_id, manifest.next_entity_uid,
             manifest.dims.region_width, manifest.dims.region_height, manifest.dims.site_width,
             manifest.dims.site_height, manifest.world_seed, manifest.generation_parameters.groups,
-            now);
+            manifest.raws_hash, now);
     manifest.now = time::Tick{now};
     if (stream.peek() != std::char_traits<char>::eof()) {
         throw std::runtime_error{"manifest 含未解析的尾端資料"};

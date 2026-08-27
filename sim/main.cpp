@@ -1,4 +1,5 @@
 #include "core/api/version.h"
+#include "core/runtime/save_raws.h"
 #include "core/rules/ruleset.h"
 #include "core/serialize/zone_codec.h"
 #include "core/site/site_materialize.h"
@@ -14,6 +15,7 @@
 #include <algorithm>
 #include <array>
 #include <cstdint>
+#include <filesystem>
 #include <iostream>
 #include <stdexcept>
 #include <string>
@@ -91,7 +93,26 @@ int main(int argc, char** argv) {
     verify_world_hash->add_option("save_dir", world_hash_directory, "存檔槽目錄")->required();
     CLI11_PARSE(app, argc, argv);
 
-    const auto ruleset = aetheria::rules::RulesetLoader::load(data_directory);
+    if (*verify_world_hash) {
+        return aetheria::sim::run_world_hash(world_hash_directory);
+    }
+
+    std::filesystem::path rules_directory{data_directory};
+    if (!save_directory.empty() && !*gen) {
+        const std::filesystem::path slot_directory{save_directory};
+        std::error_code error;
+        const bool has_manifest =
+            std::filesystem::exists(slot_directory / "manifest.bin", error);
+        if (error) {
+            throw std::runtime_error{"無法檢查存檔 manifest：" + error.message()};
+        }
+        if (!has_manifest) {
+            static_cast<void>(
+                aetheria::runtime::copy_save_raws(rules_directory, slot_directory));
+        }
+        rules_directory = aetheria::runtime::save_raws_directory(slot_directory);
+    }
+    const auto ruleset = aetheria::rules::RulesetLoader::load(rules_directory);
 
     if (*gen_region) {
         return aetheria::sim::run_gen_region(ruleset, generation_seed, generation_region_id,
@@ -112,10 +133,6 @@ int main(int argc, char** argv) {
     if (*gen_verify) {
         return aetheria::sim::run_gen_verify(ruleset, generation_seed, verify_iterations);
     }
-    if (*verify_world_hash) {
-        return aetheria::sim::run_world_hash(world_hash_directory, ruleset);
-    }
-
     std::cout << "Aetheria core " << aetheria::core_version() << '\n';
     const std::array ticks{std::int64_t{0}, std::int64_t{864'000}, requested_tick};
     for (const auto raw_tick : ticks) {
@@ -170,6 +187,7 @@ int main(int argc, char** argv) {
         if (file_store != nullptr) {
             auto manifest = file_store->manifest().value_or(aetheria::zone::SaveManifest{});
             manifest.world_seed = UINT64_C(0xA37E12A);
+            manifest.raws_hash = aetheria::runtime::save_raws_hash(save_directory);
             manifest.now = aetheria::time::Tick{requested_tick};
             file_store->write_manifest(manifest);
         }

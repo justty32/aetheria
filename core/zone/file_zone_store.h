@@ -25,6 +25,9 @@ public:
 
     [[nodiscard]] std::filesystem::path path_for(ZoneKey key) const;
     [[nodiscard]] std::filesystem::path manifest_path() const;
+    [[nodiscard]] const std::filesystem::path& slot_directory() const noexcept {
+        return slot_directory_;
+    }
     [[nodiscard]] const std::optional<SaveManifest>& manifest() const noexcept override {
         return manifest_;
     }

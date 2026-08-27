@@ -73,6 +73,7 @@ inline void write_binary(const std::filesystem::path& path, std::string_view byt
 
 inline void create_world_hash_save(const std::filesystem::path& directory,
                                    bool reverse_history = false) {
+    const auto raws_hash = prepare_test_save_raws(directory);
     zone::FileZoneStore store{directory, test_ruleset()};
     const zone::Zone root{zone::kRootZone};
     store.save(root);
@@ -86,7 +87,7 @@ inline void create_world_hash_save(const std::filesystem::path& directory,
             store.save(*world_hash_region(key, false));
         }
     }
-    store.write_manifest(zone::SaveManifest{});
+    store.write_manifest(zone::SaveManifest{.raws_hash = raws_hash});
 }
 
 [[nodiscard]] inline std::pair<std::uint64_t, std::size_t>
