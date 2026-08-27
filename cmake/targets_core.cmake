@@ -200,6 +200,7 @@ target_sources(aetheria_core PRIVATE
 # M8.1 追加區：純 C++ 可玩情境門面，只編排既有玩法，不依賴 Godot。
 target_sources(aetheria_core PRIVATE
     core/runtime/playable_session.cpp
+    core/runtime/session_persistence.cpp
 )
 
 # M8.0 追加區：Lua 只跑低頻掛勾，世界寫入經受限 Context 事件化提交。

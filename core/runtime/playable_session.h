@@ -9,6 +9,7 @@
 #include "core/site/site_projection.h"
 #include "core/time/tick.h"
 #include "core/world/combat_scaling.h"
+#include "core/world/army_state.h"
 #include "core/world/diplomacy.h"
 #include "core/world/named_fate.h"
 #include "core/world/region_movement.h"
@@ -62,9 +63,7 @@ struct PlayableEvent {
 
 struct PlayableArmy {
     world::StableId id;
-    world::FactionId faction{};
-    std::int32_t power{};
-    bool player_controlled{};
+    entt::entity entity{entt::null};
 };
 
 struct PlayableArmyView {
@@ -140,7 +139,10 @@ struct PlayableCoverageSummary {
 class PlayableSession {
 public:
     PlayableSession(std::uint64_t seed, std::uint32_t region_id,
-                    std::string data_directory);
+                    std::string data_directory, zone::ZoneStore& store);
+
+    [[nodiscard]] static std::unique_ptr<PlayableSession>
+    load(std::string data_directory, zone::ZoneStore& store);
 
     PlayableSession(const PlayableSession&) = delete;
     PlayableSession& operator=(const PlayableSession&) = delete;
@@ -202,23 +204,33 @@ public:
     [[nodiscard]] world::RegionXY coverage_tile() const noexcept {
         return coverage_tile_;
     }
+    void save_game(zone::ZoneStore& destination);
+    [[nodiscard]] const world::WorldDiplomacyState& diplomacy() const noexcept {
+        return *diplomacy_;
+    }
 
 private:
+    struct LoadTag {};
+    PlayableSession(LoadTag, std::string data_directory, zone::ZoneStore& store);
     [[nodiscard]] world::RegionPosition& position_of(world::StableId unit);
     [[nodiscard]] const world::RegionPosition& position_of(world::StableId unit) const;
-    [[nodiscard]] PlayableArmy& army(world::StableId unit);
-    [[nodiscard]] const PlayableArmy& army(world::StableId unit) const;
+    [[nodiscard]] world::ArmyState& army(world::StableId unit);
+    [[nodiscard]] const world::ArmyState& army(world::StableId unit) const;
     void append_event(PlayableEventKind kind, world::RegionXY tile = {},
                       std::int64_t value_a = 0, std::int64_t value_b = 0);
     void detect_encounter();
     void initialize_scenario();
+    void initialize_loaded_scenario();
     void initialize_diplomacy();
     void initialize_coverage_site();
     [[nodiscard]] zone::ZoneHandle acquire_coverage_site();
     [[nodiscard]] zone::ZoneHandle acquire_coverage_local();
     [[nodiscard]] std::unique_ptr<zone::Zone>
-    materialize_coverage_zone(zone::ZoneKey key,
-                              std::unique_ptr<zone::Zone> persistent);
+    materialize_session_zone(zone::ZoneKey key,
+                             std::unique_ptr<zone::Zone> persistent);
+    void bind_loaded_zone(zone::ZoneHandle handle, zone::Zone*& destination,
+                          std::string_view description);
+    void rebuild_army_handles();
     void perform_city_build(bool managed);
     void perform_bandit_suppression(bool managed);
     void perform_dungeon_clear(bool managed);
@@ -230,12 +242,14 @@ private:
     std::uint64_t seed_{};
     std::uint32_t region_id_{};
     rules::Ruleset ruleset_;
-    zone::InMemoryZoneStore store_;
+    zone::ZoneStore& store_;
     world::RegionTurnPipeline turn_pipeline_;
-    world::WorldDiplomacyState diplomacy_;
-    std::unique_ptr<zone::Zone> region_;
-    std::optional<zone::Zone> battle_site_;
-    std::unique_ptr<zone::ZoneManager> coverage_manager_;
+    std::unique_ptr<zone::ZoneManager> manager_;
+    world::WorldDiplomacyState* diplomacy_{};
+    zone::Zone* region_{};
+    zone::Zone* battle_site_{};
+    zone::ZoneKey region_key_{};
+    zone::ZoneKey battle_site_key_{};
     std::vector<PlayableArmy> armies_;
     std::optional<world::RegionXY> encounter_tile_;
     std::optional<PlayableBattleReport> battle_report_;

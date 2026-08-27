@@ -23,7 +23,7 @@
 | `CMakeLists.txt`、`vcpkg.json` | 專案組態與依賴；來源清單在 `cmake/targets_*.cmake` |
 | `cmake/` | target 清單、Godot 工具鏈與 CTest 檢查 |
 | `core/` | 純 C++ 玩法核心，**不得依賴 godot-cpp** |
-| `core/runtime/` | 跨 zone API；`playable_session.*` 編排 M8 三層駐留與權威回寫 |
+| `core/runtime/` | 跨 zone API；`playable_session.*` 編排三層駐留，`session_persistence.*` 編排世界存讀 |
 | `core/site/`、`core/local/`、`core/spatial/` | L1→L2、L2→L3 與共用邊界／切分／歸約 |
 | `bridge/` | `AetheriaCore` GDExtension；批次快照／M8 命令；唯一依賴 godot-cpp |
 | `godot/` | `main.gd` UI；只顯示快照並轉發輸入 |
@@ -65,16 +65,18 @@
 
 ### `core/serialize` — zone 位元流
 
-`zone_codec.h` 入口：預設只解現行版，v14/v15 需 fixture mode；
+`zone_codec.h` 入口：現行格式 v22，預設只解現行版，v14/v15 需 fixture mode；
 `zone_{encode,decode}.cpp` codec；`zone_region_portals.h` portal；`zone_diplomacy_codec.*`
 處理 root 外交／情報／AI 與 def id 重映射；`zone_codec_detail.h` 共用檢查；
-`registry_codec.h`、`all_components.h` 是 EnTT snapshot（**新 component 只加尾端**）；
+`registry_codec.h`、`all_components.h` 是 EnTT snapshot（**新 component 只加尾端**），
+`world/army_state.h` 是 Region 部隊的 faction／power／玩家控制權威 component；
 `normalized_state_hash.*` 是跨歷史正規化 hash。
 
 ### `core/zone` — 生命週期與存檔
 
 `zone_key.h`、`zone.h`、`lod_level.h`；`zone_store.*` 共用契約與記憶體版；
-`file_zone_store.*` 磁碟版；`save_manifest_io.*` I/O／zstd／manifest；`zone_manager.*` 管生命週期與取得／重展開 callback。
+`file_zone_store.*` 磁碟版；`save_manifest.h` 是 store 共用 manifest schema，
+`save_manifest_io.*` 負責磁碟 I/O／zstd／manifest codec；`zone_manager.*` 管生命週期與取得／重展開 callback。
 
 ### `core/world` — L1 Region 執行期
 
@@ -93,7 +95,7 @@
 | 目錄 | 內容 |
 |---|---|
 | `support/` | 跨目錄共用的 ruleset fixture 與固定暖機、min-of-N 效能量測 helper |
-| `runtime/` | M8 三層進退、上層回寫、重進持久性與親自／代管校準 |
+| `runtime/` | 三層進退、上層回寫、親自／代管校準，以及 session 磁碟冷存冷讀／pending 拒存 |
 | `narrative/` | 五種湧現任務、運糧／清剿歸約、命運模板與事件 feed |
 | `site/` | Site 投影隔離、展開、持久建築、存檔／世界雜湊、效能 |
 | `sim/` | 世界級正規化雜湊的跨歷史、磁碟列舉、負向控制與錯誤路徑測試 |

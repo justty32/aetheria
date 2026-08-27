@@ -1,11 +1,14 @@
 #pragma once
 
 #include "core/rules/ruleset.h"
+#include "core/zone/save_manifest.h"
 #include "core/zone/zone.h"
 
 #include <map>
 #include <memory>
+#include <optional>
 #include <string>
+#include <vector>
 
 namespace aetheria::zone {
 
@@ -20,6 +23,9 @@ public:
     [[nodiscard]] virtual std::unique_ptr<Zone> load(ZoneKey key) const = 0;
     virtual void save(const Zone& zone) = 0;
     [[nodiscard]] virtual bool erase(ZoneKey key) = 0;
+    [[nodiscard]] virtual std::vector<ZoneKey> stored_keys() const = 0;
+    [[nodiscard]] virtual const std::optional<SaveManifest>& manifest() const noexcept = 0;
+    virtual void write_manifest(const SaveManifest& manifest) = 0;
 };
 
 // InMemoryZoneStore 是測試與工具使用的單槽快照替身。
@@ -33,10 +39,16 @@ public:
     [[nodiscard]] std::unique_ptr<Zone> load(ZoneKey key) const override;
     void save(const Zone& zone) override;
     [[nodiscard]] bool erase(ZoneKey key) override;
+    [[nodiscard]] std::vector<ZoneKey> stored_keys() const override;
+    [[nodiscard]] const std::optional<SaveManifest>& manifest() const noexcept override {
+        return manifest_;
+    }
+    void write_manifest(const SaveManifest& manifest) override;
 
 private:
     const rules::Ruleset& ruleset_;
     std::map<ZoneKey, std::string> snapshots_;
+    std::optional<SaveManifest> manifest_;
 };
 
 }  // namespace aetheria::zone

@@ -11,12 +11,16 @@ namespace {
 using aetheria::runtime::PlayableResidence;
 using aetheria::runtime::PlayableSession;
 
-[[nodiscard]] PlayableSession session() {
-    return PlayableSession{515151, 51, AETHERIA_SOURCE_DIR "/data"};
-}
+struct SessionFixture {
+    aetheria::rules::Ruleset ruleset{
+        aetheria::rules::RulesetLoader::load(AETHERIA_SOURCE_DIR "/data")};
+    aetheria::zone::InMemoryZoneStore store{ruleset};
+    PlayableSession value{515151, 51, AETHERIA_SOURCE_DIR "/data", store};
+};
 
 TEST(PlayableCoverage, ThreeLayersReturnAndWriteAuthoritativeParentValues) {
-    auto value = session();
+    SessionFixture fixture;
+    auto& value = fixture.value;
     const auto initial = value.coverage_summary();
     EXPECT_EQ(initial.residence, PlayableResidence::Region);
     EXPECT_EQ(initial.development, 1U);
@@ -96,7 +100,8 @@ TEST(PlayableCoverage, ThreeLayersReturnAndWriteAuthoritativeParentValues) {
 }
 
 TEST(PlayableCoverage, ManualAndManagedCityExpectationMatchesAtOneHundred) {
-    auto value = session();
+    SessionFixture fixture;
+    auto& value = fixture.value;
     value.measure_city_management(100);
     const auto measured = value.coverage_summary();
     EXPECT_EQ(measured.calibration_n, 100U);

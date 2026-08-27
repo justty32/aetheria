@@ -107,7 +107,7 @@ void save_world_root(FileZoneStore& store) {
 }
 
 TEST(SiteObservationPersistence, V16SiteIsRejectedInsteadOfLoadingNewFieldsAsDefaults) {
-    static_assert(aetheria::serialize::kSaveFormatVersion == 21);
+    static_assert(aetheria::serialize::kSaveFormatVersion == 22);
     const auto legacy = encode_v16_site_zone(test_ruleset());
     try {
         static_cast<void>(decode_zone(legacy, test_ruleset()));
@@ -117,7 +117,7 @@ TEST(SiteObservationPersistence, V16SiteIsRejectedInsteadOfLoadingNewFieldsAsDef
         const std::string message{error.what()};
         EXPECT_NE(message.find("zone format_version"), std::string::npos);
         EXPECT_NE(message.find("檔內=16"), std::string::npos);
-        EXPECT_NE(message.find("預期=21"), std::string::npos);
+        EXPECT_NE(message.find("預期=22"), std::string::npos);
         std::cout << "site_v16_rejected error=\"" << message << "\"\n";
     }
 
@@ -129,7 +129,7 @@ TEST(SiteObservationPersistence, V16SiteIsRejectedInsteadOfLoadingNewFieldsAsDef
     EXPECT_FALSE(persistent.order.has_value());
     EXPECT_TRUE(persistent.named_npcs.empty());
     EXPECT_TRUE(persistent.dungeons.empty());
-    std::cout << "site_v21_defaults accepted=1 order_present=0 named_npcs=0 "
+    std::cout << "site_v22_defaults accepted=1 order_present=0 named_npcs=0 "
                  "dungeons=0\n";
 }
 

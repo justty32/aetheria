@@ -1,6 +1,7 @@
 // playable_session.cpp：最小可玩情境的權威 core 編排。
 
 #include "core/runtime/playable_session.h"
+#include "core/runtime/session_persistence.h"
 
 #include "core/local/dungeon.h"
 #include "core/local/local_fov.h"
@@ -97,12 +98,43 @@ void install_coverage_dungeon_entrance(site::SiteLayers& layers,
 } // namespace
 
 PlayableSession::PlayableSession(std::uint64_t seed, std::uint32_t region_id,
-                                 std::string data_directory)
+                                 std::string data_directory, zone::ZoneStore& store)
     : seed_{seed}, region_id_{region_id},
-      ruleset_{rules::RulesetLoader::load(data_directory)}, store_{ruleset_},
-      turn_pipeline_{ruleset_, store_}, diplomacy_{3, seed, ruleset_} {
+      ruleset_{rules::RulesetLoader::load(data_directory)}, store_{store},
+      turn_pipeline_{ruleset_, store_} {
+    if (store_.manifest().has_value() || !store_.stored_keys().empty()) {
+        throw std::logic_error{"new_game 需要空的 ZoneStore"};
+    }
+    manager_ = std::make_unique<zone::ZoneManager>(
+        store_, [this](zone::ZoneKey key, std::unique_ptr<zone::Zone> persistent) {
+            return materialize_session_zone(key, std::move(persistent));
+        });
     initialize_scenario();
     initialize_diplomacy();
+}
+
+PlayableSession::PlayableSession(LoadTag, std::string data_directory,
+                                 zone::ZoneStore& store)
+    : ruleset_{rules::RulesetLoader::load(data_directory)}, store_{store},
+      turn_pipeline_{ruleset_, store_} {
+    const auto metadata = inspect_session_save(store_);
+    seed_ = metadata.world_seed;
+    region_id_ = metadata.region_id;
+    region_key_ = metadata.region_key;
+    manager_ = std::make_unique<zone::ZoneManager>(
+        store_, [this](zone::ZoneKey key, std::unique_ptr<zone::Zone> persistent) {
+            return materialize_session_zone(key, std::move(persistent));
+        });
+    initialize_loaded_scenario();
+    if (now() != metadata.now) {
+        throw std::runtime_error{"manifest now 與 Region TurnClock 不一致"};
+    }
+}
+
+std::unique_ptr<PlayableSession>
+PlayableSession::load(std::string data_directory, zone::ZoneStore& store) {
+    return std::unique_ptr<PlayableSession>{
+        new PlayableSession{LoadTag{}, std::move(data_directory), store}};
 }
 
 void PlayableSession::initialize_scenario() {
@@ -139,32 +171,41 @@ void PlayableSession::initialize_scenario() {
     generated.settlement[generated.index_of(coverage_tile_)] =
         world::SettlementTier::Town;
 
-    const auto key = zone::child_key(zone::kRootZone, region_id_, 0);
-    region_ = std::make_unique<zone::Zone>(key);
-    std::get<zone::RegionPayload>(region_->payload).layers.emplace(
+    region_key_ = zone::child_key(zone::kRootZone, region_id_, 0);
+    auto region = std::make_unique<zone::Zone>(region_key_);
+    std::get<zone::RegionPayload>(region->payload).layers.emplace(
         0, std::move(generated));
-    const auto placeholder = *region_->reg.view<zone::ZoneMeta>().begin();
-    region_->reg.emplace<world::TurnClock>(placeholder, time::Tick{0});
+    const auto placeholder = *region->reg.view<zone::ZoneMeta>().begin();
+    region->reg.emplace<world::TurnClock>(placeholder, time::Tick{0});
+    region->pinned = true;
+    region_ = region.get();
+    static_cast<void>(manager_->adopt(std::move(region)));
 
     auto& region_tiles = std::get<zone::RegionPayload>(region_->payload).layers.at(0);
-    battle_site_.emplace(site::materialize_site_zone(
+    auto battle_site = std::make_unique<zone::Zone>(site::materialize_site_zone(
         region_tiles, battle_tile_, seed_, region_id_, ruleset_));
-    site::reduce_live_site_xun(region_tiles, battle_tile_, *battle_site_, ruleset_);
+    battle_site_key_ = battle_site->key;
+    site::reduce_live_site_xun(region_tiles, battle_tile_, *battle_site, ruleset_);
+    battle_site->pinned = true;
+    battle_site_ = battle_site.get();
+    static_cast<void>(manager_->adopt(std::move(battle_site)));
 
-    const auto create_army = [&](PlayableArmy army_value, world::RegionXY position,
-                                 world::RegionXY target) {
+    const auto create_army = [&](world::StableId id, world::ArmyState state,
+                                 world::RegionXY position, world::RegionXY target) {
         const auto entity = region_->reg.create();
-        region_->reg.emplace<world::StableId>(entity, army_value.id);
+        region_->reg.emplace<world::StableId>(entity, id);
         region_->reg.emplace<world::RegionPosition>(entity, 0, position);
         region_->reg.emplace<world::MovementPoints>(entity, 0, 4);
-        armies_.push_back(army_value);
-        if (!army_value.player_controlled) {
-            turn_pipeline_.issue_move(*region_, army_value.id, target);
+        region_->reg.emplace<world::ArmyState>(entity, state);
+        region_->uid_index.emplace(id.uid, entity);
+        armies_.push_back({id, entity});
+        if (!state.player_controlled) {
+            turn_pipeline_.issue_move(*region_, id, target);
         }
     };
-    create_army({player_army_id_, world::FactionId{1}, 120'000, true},
+    create_army(player_army_id_, {world::FactionId{1}, 120'000, true},
                 player_start_, enemy_start_);
-    create_army({enemy_army_id_, world::FactionId{2}, 48'000, false},
+    create_army(enemy_army_id_, {world::FactionId{2}, 48'000, false},
                 enemy_start_, player_start_);
     append_event(PlayableEventKind::NewGame, player_start_, region_id_, seed_);
     initialize_coverage_site();
@@ -197,25 +238,30 @@ void PlayableSession::initialize_coverage_site() {
         }));
     dungeon_density_after_ = dungeon_density_before_;
 
-    coverage_manager_ = std::make_unique<zone::ZoneManager>(
-        store_, [this](zone::ZoneKey key, std::unique_ptr<zone::Zone> persistent) {
-            return materialize_coverage_zone(key, std::move(persistent));
-        });
-    const auto handle = coverage_manager_->adopt(
+    const auto handle = manager_->adopt(
         std::make_unique<zone::Zone>(std::move(coverage)));
-    const bool borrowed = coverage_manager_->with(handle, [&](zone::Zone& loaded) {
+    const bool borrowed = manager_->with(handle, [&](zone::Zone& loaded) {
         refresh_quests(loaded);
     });
     if (!borrowed) {
         throw std::logic_error{"覆蓋情境 Site 接管後無法借用"};
     }
-    site::unload_site_zone(*coverage_manager_, handle, region_tiles, coverage_tile_, seed_,
+    site::unload_site_zone(*manager_, handle, region_tiles, coverage_tile_, seed_,
                            region_id_, now(), ruleset_);
 }
 
-std::unique_ptr<zone::Zone> PlayableSession::materialize_coverage_zone(
+std::unique_ptr<zone::Zone> PlayableSession::materialize_session_zone(
     zone::ZoneKey key, std::unique_ptr<zone::Zone> persistent) {
     auto& region_tiles = std::get<zone::RegionPayload>(region_->payload).layers.at(0);
+    if (key == battle_site_key_) {
+        if (persistent == nullptr) {
+            return std::make_unique<zone::Zone>(site::materialize_site_zone(
+                region_tiles, battle_tile_, seed_, region_id_, ruleset_));
+        }
+        return std::make_unique<zone::Zone>(site::rematerialize_site_zone(
+            std::move(*persistent), region_tiles, battle_tile_, seed_, region_id_,
+            now(), ruleset_));
+    }
     if (key == coverage_site_key_) {
         if (persistent == nullptr) {
             auto result = std::make_unique<zone::Zone>(site::materialize_site_zone(
@@ -238,11 +284,11 @@ std::unique_ptr<zone::Zone> PlayableSession::materialize_coverage_zone(
     }
 
     std::optional<zone::Zone> generated;
-    const auto site_handle = coverage_manager_->get(coverage_site_key_);
+    const auto site_handle = manager_->get(coverage_site_key_);
     if (!site_handle.has_value()) {
         throw std::logic_error{"具現化 Local 前必須先載入父 Site"};
     }
-    const bool borrowed = coverage_manager_->with(*site_handle, [&](const zone::Zone& parent) {
+    const bool borrowed = manager_->with(*site_handle, [&](const zone::Zone& parent) {
         const auto& parent_layer =
             std::get<zone::SitePayload>(parent.payload).layers.procedural;
         const auto feature = region_tiles.feature[region_tiles.index_of(coverage_tile_)];
@@ -278,8 +324,102 @@ std::unique_ptr<zone::Zone> PlayableSession::materialize_coverage_zone(
     return persistent;
 }
 
+void PlayableSession::bind_loaded_zone(zone::ZoneHandle handle,
+                                       zone::Zone*& destination,
+                                       std::string_view description) {
+    const bool borrowed = manager_->with(handle, [&](zone::Zone& loaded) {
+        loaded.pinned = true;
+        destination = &loaded;
+    });
+    if (!borrowed || destination == nullptr) {
+        throw std::runtime_error{"無法綁定已載入 zone：" + std::string{description}};
+    }
+}
+
+void PlayableSession::rebuild_army_handles() {
+    armies_.clear();
+    bool found_player{};
+    for (const auto entity :
+         region_->reg.view<const world::StableId, const world::ArmyState,
+                           const world::RegionPosition>()) {
+        const auto id = region_->reg.get<const world::StableId>(entity);
+        const auto& state = region_->reg.get<const world::ArmyState>(entity);
+        armies_.push_back({id, entity});
+        if (state.player_controlled) {
+            if (found_player) {
+                throw std::runtime_error{"存檔含多個玩家控制部隊"};
+            }
+            player_army_id_ = id;
+            found_player = true;
+        } else if (id == world::StableId{2001}) {
+            enemy_army_id_ = id;
+        }
+    }
+    std::ranges::sort(armies_, {}, [](const PlayableArmy& army) {
+        return army.id.uid;
+    });
+    if (armies_.empty() || !found_player ||
+        std::ranges::none_of(armies_, [&](const auto& army_handle) {
+            return army_handle.id == player_army_id_;
+        }) ||
+        std::ranges::none_of(armies_, [&](const auto& army_handle) {
+            return army_handle.id == enemy_army_id_;
+        })) {
+        throw std::runtime_error{"存檔缺少可玩情境所需的玩家或敵方部隊"};
+    }
+}
+
+void PlayableSession::initialize_loaded_scenario() {
+    battle_site_key_ = zone::child_key(region_key_, battle_tile_.x, battle_tile_.y);
+    coverage_site_key_ =
+        zone::child_key(region_key_, coverage_tile_.x, coverage_tile_.y);
+    coverage_local_key_ = zone::child_key(coverage_site_key_, local_entrance_.x,
+                                          local_entrance_.y);
+    for (const auto [key, description] :
+         std::array{std::pair{region_key_, std::string_view{"Region"}},
+                    std::pair{battle_site_key_, std::string_view{"戰鬥 Site"}},
+                    std::pair{coverage_site_key_, std::string_view{"覆蓋 Site"}}}) {
+        if (!store_.contains(key)) {
+            throw std::runtime_error{"存檔缺少必要 zone：" + std::string{description}};
+        }
+    }
+
+    bind_loaded_zone(manager_->require(region_key_), region_, "Region");
+    const auto battle = manager_->acquire(battle_site_key_);
+    if (!battle.has_value()) {
+        throw std::runtime_error{"無法從存檔重展開戰鬥 Site"};
+    }
+    bind_loaded_zone(*battle, battle_site_, "戰鬥 Site");
+
+    const auto root = manager_->get(zone::kRootZone);
+    const bool root_bound = root.has_value() && manager_->with(*root, [&](zone::Zone& loaded) {
+        if (loaded.diplomacy.has_value()) {
+            diplomacy_ = &*loaded.diplomacy;
+        }
+    });
+    if (!root_bound || diplomacy_ == nullptr) {
+        throw std::runtime_error{"存檔 root 缺少外交狀態"};
+    }
+    rebuild_army_handles();
+
+    const auto coverage = manager_->acquire(coverage_site_key_);
+    if (!coverage.has_value()) {
+        throw std::runtime_error{"無法從存檔重展開覆蓋 Site"};
+    }
+    const bool refreshed = manager_->with(*coverage, [&](zone::Zone& loaded) {
+        refresh_quests(loaded);
+    });
+    if (!refreshed) {
+        throw std::runtime_error{"冷讀後無法重算湧現任務"};
+    }
+    auto& region_tiles = std::get<zone::RegionPayload>(region_->payload).layers.at(0);
+    site::unload_site_zone(*manager_, *coverage, region_tiles, coverage_tile_, seed_,
+                           region_id_, now(), ruleset_);
+    append_event(PlayableEventKind::NewGame, player_start_, region_id_, seed_);
+}
+
 zone::ZoneHandle PlayableSession::acquire_coverage_site() {
-    const auto acquired = coverage_manager_->acquire(coverage_site_key_);
+    const auto acquired = manager_->acquire(coverage_site_key_);
     if (!acquired.has_value()) {
         throw std::runtime_error{"ZoneManager::acquire 未能重展開覆蓋 Site"};
     }
@@ -288,7 +428,7 @@ zone::ZoneHandle PlayableSession::acquire_coverage_site() {
 
 zone::ZoneHandle PlayableSession::acquire_coverage_local() {
     static_cast<void>(acquire_coverage_site());
-    const auto acquired = coverage_manager_->acquire(coverage_local_key_);
+    const auto acquired = manager_->acquire(coverage_local_key_);
     if (!acquired.has_value()) {
         throw std::runtime_error{"ZoneManager::acquire 未能重展開覆蓋 Local"};
     }
@@ -312,19 +452,33 @@ void PlayableSession::refresh_quests(zone::Zone& site_zone) {
 }
 
 void PlayableSession::initialize_diplomacy() {
-    diplomacy_.set_faction_truth(world::FactionId{1}, 120'000, 80'000);
-    diplomacy_.set_faction_truth(world::FactionId{2}, 48'000, 42'000);
-    diplomacy_.set_faction_truth(world::FactionId{3}, 60'000, 70'000);
+    const auto root = manager_->get(zone::kRootZone);
+    if (!root.has_value()) {
+        throw std::logic_error{"ZoneManager 缺少既有 root"};
+    }
+    const bool initialized = manager_->with(*root, [&](zone::Zone& loaded) {
+        if (loaded.diplomacy.has_value()) {
+            throw std::logic_error{"新遊戲 root 已有外交狀態"};
+        }
+        loaded.diplomacy.emplace(3, seed_, ruleset_);
+        diplomacy_ = &*loaded.diplomacy;
+    });
+    if (!initialized || diplomacy_ == nullptr) {
+        throw std::logic_error{"無法在 ZoneManager root 建立外交狀態"};
+    }
+    diplomacy_->set_faction_truth(world::FactionId{1}, 120'000, 80'000);
+    diplomacy_->set_faction_truth(world::FactionId{2}, 48'000, 42'000);
+    diplomacy_->set_faction_truth(world::FactionId{3}, 60'000, 70'000);
     for (std::uint16_t observer = 1; observer <= 3; ++observer) {
         for (std::uint16_t target = 1; target <= 3; ++target) {
             if (observer != target) {
-                diplomacy_.observe_faction(world::FactionId{observer},
-                                           world::FactionId{target}, 0,
-                                           time::Tick{0}, 4);
+                diplomacy_->observe_faction(world::FactionId{observer},
+                                            world::FactionId{target}, 0,
+                                            time::Tick{0}, 4);
             }
         }
     }
-    world::set_managed_faction_goal(diplomacy_, world::FactionId{2},
+    world::set_managed_faction_goal(*diplomacy_, world::FactionId{2},
                                     ai::FactionGoal::Conquer);
 }
 
@@ -334,7 +488,7 @@ void PlayableSession::enter_site() {
     }
     const auto handle = acquire_coverage_site();
     auto& region_tiles = std::get<zone::RegionPayload>(region_->payload).layers.at(0);
-    const bool borrowed = coverage_manager_->with(handle, [&](zone::Zone& loaded) {
+    const bool borrowed = manager_->with(handle, [&](zone::Zone& loaded) {
         site::enter_full_site(loaded, region_tiles, coverage_tile_);
     });
     if (!borrowed) {
@@ -349,18 +503,18 @@ void PlayableSession::leave_site() {
     if (residence_ != PlayableResidence::Site) {
         throw std::logic_error{"只有 Site 駐留可返回 Region"};
     }
-    const auto handle = coverage_manager_->get(coverage_site_key_);
+    const auto handle = manager_->get(coverage_site_key_);
     if (!handle.has_value()) {
         throw std::logic_error{"返回 Region 時 Site 未載入"};
     }
     auto& region_tiles = std::get<zone::RegionPayload>(region_->payload).layers.at(0);
-    const bool borrowed = coverage_manager_->with(*handle, [&](zone::Zone& loaded) {
+    const bool borrowed = manager_->with(*handle, [&](zone::Zone& loaded) {
         refresh_quests(loaded);
     });
     if (!borrowed) {
         throw std::logic_error{"返回 Region 前無法讀取 Site"};
     }
-    site::unload_site_zone(*coverage_manager_, *handle, region_tiles, coverage_tile_, seed_,
+    site::unload_site_zone(*manager_, *handle, region_tiles, coverage_tile_, seed_,
                            region_id_, now(), ruleset_);
     residence_ = PlayableResidence::Region;
     ++revision_;
@@ -375,7 +529,7 @@ void PlayableSession::perform_city_build(bool managed) {
     const auto handle = acquire_coverage_site();
     auto& region_tiles = std::get<zone::RegionPayload>(region_->payload).layers.at(0);
     site::SiteAdvanceReport report;
-    const bool borrowed = coverage_manager_->with(handle, [&](zone::Zone& loaded) {
+    const bool borrowed = manager_->with(handle, [&](zone::Zone& loaded) {
         site::enter_full_site(loaded, region_tiles, coverage_tile_);
         auto& state = site::city_build_state(loaded);
         if (std::ranges::any_of(state.buildings, [](const auto& building) {
@@ -438,7 +592,7 @@ void PlayableSession::perform_city_build(bool managed) {
         throw std::logic_error{"城建時 Site 未載入"};
     }
     if (managed) {
-        site::unload_site_zone(*coverage_manager_, handle, region_tiles, coverage_tile_, seed_,
+        site::unload_site_zone(*manager_, handle, region_tiles, coverage_tile_, seed_,
                                region_id_, now(), ruleset_);
         append_event(PlayableEventKind::ManagedActivity, coverage_tile_,
                      last_development_before_, last_development_after_);
@@ -483,20 +637,20 @@ void PlayableSession::leave_local() {
     if (residence_ != PlayableResidence::Local) {
         throw std::logic_error{"只有 Local 地表可返回 Site"};
     }
-    const auto site_handle = coverage_manager_->get(coverage_site_key_);
-    const auto local_handle = coverage_manager_->get(coverage_local_key_);
+    const auto site_handle = manager_->get(coverage_site_key_);
+    const auto local_handle = manager_->get(coverage_local_key_);
     if (!site_handle.has_value() || !local_handle.has_value()) {
         throw std::logic_error{"返回 Site 時父子 zone 未同時載入"};
     }
     const std::array handles{*site_handle, *local_handle};
-    const bool borrowed = coverage_manager_->with_many(
+    const bool borrowed = manager_->with_many(
         handles, [&](std::span<zone::Zone* const> zones) {
             auto& site_layers =
                 std::get<zone::SitePayload>(zones[0]->payload).layers;
             static_cast<void>(local::reduce_live_local(site_layers, local_entrance_,
                                                        *zones[1]));
         });
-    if (!borrowed || !coverage_manager_->unload(coverage_local_key_)) {
+    if (!borrowed || !manager_->unload(coverage_local_key_)) {
         throw std::logic_error{"Local 歸約或卸載失敗"};
     }
     residence_ = PlayableResidence::Site;
@@ -510,7 +664,7 @@ void PlayableSession::open_door_and_move() {
         local_door_open_) {
         throw std::logic_error{"開門示範只接受尚未開門的 Local 地表"};
     }
-    runtime::CrossZoneRuntime runtime{*coverage_manager_};
+    runtime::CrossZoneRuntime runtime{*manager_};
     const local::LocalLocation position{
         coverage_local_key_, {local_player_x_, local_player_y_}};
     const auto closed = local::assess_exploration_step(
@@ -550,7 +704,7 @@ void PlayableSession::perform_bandit_suppression(bool managed) {
     const auto local_handle = acquire_coverage_local();
     auto& region_tiles = std::get<zone::RegionPayload>(region_->payload).layers.at(0);
     const std::array handles{site_handle, local_handle};
-    const bool borrowed = coverage_manager_->with_many(
+    const bool borrowed = manager_->with_many(
         handles, [&](std::span<zone::Zone* const> zones) {
             const auto report = narrative::complete_bandit_suppression(
                 *quest, region_tiles, *zones[0], ruleset_);
@@ -562,7 +716,7 @@ void PlayableSession::perform_bandit_suppression(bool managed) {
         throw std::logic_error{"清剿時 Site/Local 未同時載入"};
     }
     if (managed) {
-        if (!coverage_manager_->unload(coverage_local_key_)) {
+        if (!manager_->unload(coverage_local_key_)) {
             throw std::logic_error{"代管清剿後 Local 卸載失敗"};
         }
         append_event(PlayableEventKind::ManagedActivity, coverage_tile_,
@@ -582,9 +736,9 @@ void PlayableSession::enter_dungeon() {
         throw std::logic_error{"只有 Local 駐留可親自下地城"};
     }
     bool has_floor{};
-    const auto handle = coverage_manager_->get(coverage_local_key_);
+    const auto handle = manager_->get(coverage_local_key_);
     if (handle.has_value()) {
-        static_cast<void>(coverage_manager_->with(*handle, [&](const zone::Zone& loaded) {
+        static_cast<void>(manager_->with(*handle, [&](const zone::Zone& loaded) {
             has_floor = std::get<zone::LocalPayload>(loaded.payload).layers.contains(-1);
         }));
     }
@@ -612,9 +766,9 @@ void PlayableSession::descend_dungeon() {
     }
     const auto next = static_cast<std::int8_t>(local_z_ - 1);
     bool exists{};
-    const auto handle = coverage_manager_->get(coverage_local_key_);
+    const auto handle = manager_->get(coverage_local_key_);
     if (handle.has_value()) {
-        static_cast<void>(coverage_manager_->with(*handle, [&](const zone::Zone& loaded) {
+        static_cast<void>(manager_->with(*handle, [&](const zone::Zone& loaded) {
             exists = std::get<zone::LocalPayload>(loaded.payload).layers.contains(next);
         }));
     }
@@ -634,7 +788,7 @@ void PlayableSession::perform_dungeon_clear(bool managed) {
     const auto site_handle = acquire_coverage_site();
     const auto local_handle = acquire_coverage_local();
     const std::array handles{site_handle, local_handle};
-    const bool borrowed = coverage_manager_->with_many(
+    const bool borrowed = manager_->with_many(
         handles, [&](std::span<zone::Zone* const> zones) {
             auto& site_persistent =
                 std::get<zone::SitePayload>(zones[0]->payload).layers.persistent;
@@ -694,7 +848,7 @@ void PlayableSession::sign_peace_treaty() {
     if (!peace.has_value()) {
         throw std::runtime_error{"外交規則缺少 treaty.peace"};
     }
-    const bool exists = std::ranges::any_of(diplomacy_.treaties(), [&](const auto& treaty) {
+    const bool exists = std::ranges::any_of(diplomacy_->treaties(), [&](const auto& treaty) {
         return treaty.def == *peace &&
                ((treaty.parties[0] == world::FactionId{1} &&
                  treaty.parties[1] == world::FactionId{2}) ||
@@ -704,7 +858,7 @@ void PlayableSession::sign_peace_treaty() {
     if (exists) {
         throw std::logic_error{"和平條約已存在"};
     }
-    static_cast<void>(diplomacy_.start_treaty(
+    static_cast<void>(diplomacy_->start_treaty(
         *peace, world::FactionId{1}, world::FactionId{2}, now()));
     ++revision_;
     append_event(PlayableEventKind::TreatySigned, {}, 1, 2);
@@ -754,7 +908,7 @@ void PlayableSession::measure_city_management(std::uint32_t samples) {
     const auto site_handle = acquire_coverage_site();
     auto& region_tiles = std::get<zone::RegionPayload>(region_->payload).layers.at(0);
     std::string site_bytes;
-    const bool borrowed = coverage_manager_->with(site_handle, [&](zone::Zone& loaded) {
+    const bool borrowed = manager_->with(site_handle, [&](zone::Zone& loaded) {
         site::enter_full_site(loaded, region_tiles, coverage_tile_);
         site_bytes = serialize::encode_zone(loaded, ruleset_);
     });
@@ -762,7 +916,7 @@ void PlayableSession::measure_city_management(std::uint32_t samples) {
         throw std::logic_error{"城建期望值量測無法取得 Site"};
     }
     const auto region_bytes = serialize::encode_zone(*region_, ruleset_);
-    site::unload_site_zone(*coverage_manager_, site_handle, region_tiles, coverage_tile_, seed_,
+    site::unload_site_zone(*manager_, site_handle, region_tiles, coverage_tile_, seed_,
                            region_id_, now(), ruleset_);
 
     calibration_n_ = samples;
@@ -805,22 +959,22 @@ PlayableSession::position_of(world::StableId unit) const {
     throw std::invalid_argument{"找不到指定的 Region 部隊"};
 }
 
-PlayableArmy& PlayableSession::army(world::StableId unit) {
+world::ArmyState& PlayableSession::army(world::StableId unit) {
     const auto found =
         std::ranges::find(armies_, unit, &PlayableArmy::id);
     if (found == armies_.end()) {
         throw std::invalid_argument{"找不到指定的部隊資料"};
     }
-    return *found;
+    return region_->reg.get<world::ArmyState>(found->entity);
 }
 
-const PlayableArmy& PlayableSession::army(world::StableId unit) const {
+const world::ArmyState& PlayableSession::army(world::StableId unit) const {
     const auto found =
         std::ranges::find(armies_, unit, &PlayableArmy::id);
     if (found == armies_.end()) {
         throw std::invalid_argument{"找不到指定的部隊資料"};
     }
-    return *found;
+    return region_->reg.get<const world::ArmyState>(found->entity);
 }
 
 void PlayableSession::append_event(PlayableEventKind kind, world::RegionXY tile,
@@ -880,7 +1034,7 @@ PlayableAdvanceReport PlayableSession::advance_xun() {
         [&](time::Tick tick) {
             for (const auto faction : {world::FactionId{2}, world::FactionId{3}}) {
                 const auto ai_report = world::advance_faction_ai_xun(
-                    diplomacy_, faction, {4, 0, true, true, faction == world::FactionId{2}},
+                    *diplomacy_, faction, {4, 0, true, true, faction == world::FactionId{2}},
                     tick, ruleset_);
                 const auto action = action_value(ai_report.decision.command.kind);
                 report.ai_actions.push_back(action);
@@ -1005,8 +1159,9 @@ std::vector<PlayableArmyView> PlayableSession::armies() const {
     std::vector<PlayableArmyView> result;
     result.reserve(armies_.size());
     for (const auto& value : armies_) {
-        result.push_back({value.id, value.faction, position_of(value.id).tile,
-                          value.power, value.player_controlled});
+        const auto& state = region_->reg.get<const world::ArmyState>(value.entity);
+        result.push_back({value.id, state.faction, position_of(value.id).tile,
+                          state.power, state.player_controlled});
     }
     return result;
 }
@@ -1055,15 +1210,15 @@ PlayableCoverageSummary PlayableSession::coverage_summary() const {
             *site::ReductionTable::reduce(std::get<zone::SitePayload>(site_zone.payload).layers)
                  .value<world::PopulationReduction>();
     };
-    if (const auto loaded = coverage_manager_->get(coverage_site_key_)) {
-        static_cast<void>(coverage_manager_->with(*loaded, inspect_site));
+    if (const auto loaded = manager_->get(coverage_site_key_)) {
+        static_cast<void>(manager_->with(*loaded, inspect_site));
     } else if (const auto stored = store_.load(coverage_site_key_)) {
         inspect_site(*stored);
     }
 
     result.dungeon_density_before = dungeon_density_before_;
     result.dungeon_density_after = dungeon_density_after_;
-    result.treaty_count = static_cast<std::uint32_t>(diplomacy_.treaties().size());
+    result.treaty_count = static_cast<std::uint32_t>(diplomacy_->treaties().size());
     result.last_order_before = last_order_before_;
     result.last_order_after = last_order_after_;
     result.last_development_before = last_development_before_;
@@ -1077,13 +1232,13 @@ PlayableCoverageSummary PlayableSession::coverage_summary() const {
 }
 
 std::optional<PlayableGridView> PlayableSession::site_view() const {
-    const auto handle = coverage_manager_->get(coverage_site_key_);
+    const auto handle = manager_->get(coverage_site_key_);
     if (!handle.has_value()) {
         return std::nullopt;
     }
     PlayableGridView result{site::kSiteWidth, site::kSiteHeight, 0,
                             {}, 0, 0};
-    const bool borrowed = coverage_manager_->with(*handle, [&](const zone::Zone& loaded) {
+    const bool borrowed = manager_->with(*handle, [&](const zone::Zone& loaded) {
         const auto& layers = std::get<zone::SitePayload>(loaded.payload).layers;
         const auto tile_count = layers.procedural.skeleton.ground.size();
         result.cells.assign(tile_count, UINT8_C(0));
@@ -1134,7 +1289,7 @@ std::optional<PlayableGridView> PlayableSession::site_view() const {
 }
 
 std::optional<PlayableGridView> PlayableSession::local_view() const {
-    const auto handle = coverage_manager_->get(coverage_local_key_);
+    const auto handle = manager_->get(coverage_local_key_);
     if (!handle.has_value()) {
         return std::nullopt;
     }
@@ -1144,7 +1299,7 @@ std::optional<PlayableGridView> PlayableSession::local_view() const {
     std::vector<std::uint8_t> visible(local::kLocalTileCount,
                                       local_z_ == 0 ? UINT8_C(0) : UINT8_C(1));
     if (local_z_ == 0) {
-        runtime::CrossZoneRuntime runtime{*coverage_manager_};
+        runtime::CrossZoneRuntime runtime{*manager_};
         const auto fov = local::calculate_fov(
             runtime, ruleset_,
             {coverage_local_key_, {local_player_x_, local_player_y_}}, {12, 12},
@@ -1155,7 +1310,7 @@ std::optional<PlayableGridView> PlayableSession::local_view() const {
             }
         }
     }
-    const bool borrowed = coverage_manager_->with(*handle, [&](const zone::Zone& loaded) {
+    const bool borrowed = manager_->with(*handle, [&](const zone::Zone& loaded) {
         const auto& payload = std::get<zone::LocalPayload>(loaded.payload);
         const auto found = payload.layers.find(local_z_);
         if (found == payload.layers.end()) {
@@ -1187,6 +1342,13 @@ std::optional<PlayableGridView> PlayableSession::local_view() const {
 
 time::Tick PlayableSession::now() const {
     return world::turn_clock(*region_).now;
+}
+
+void PlayableSession::save_game(zone::ZoneStore& destination) {
+    if (encounter_tile_.has_value()) {
+        throw std::logic_error{"遭遇尚未處理：只能在回合尾端、無 pending 遭遇時存檔"};
+    }
+    save_session(store_, destination, *manager_, seed_, now());
 }
 
 } // namespace aetheria::runtime
