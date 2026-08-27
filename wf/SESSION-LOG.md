@@ -85,7 +85,17 @@ M9 輪次規劃（**M8.3 先於 M9.0**，因為主線推進條件掛在城建上
 **2026-08-27 調查完現況**（六項全沒實現，且**遊戲根本不會存檔**）→
 **[investigation/runtime-injection-status.md](workflows/investigation/runtime-injection-status.md)**
 （結論與差距）＋ [runtime-injection-assets.md](workflows/investigation/runtime-injection-assets.md)
-（已有的地基與插入點）。**下一步是規劃方案，本輪只調查。**
+（已有的地基與插入點）。
+
+**2026-08-27 規劃完 M10 動工計畫**（新開 plan 工作流）→
+**[plan/runtime-injection.md](workflows/plan/runtime-injection.md)**（總覽：一句話方案、
+輪次地圖 M10.0a～M10.8、完成判準）＋ waves／content（波次細目）＋
+decisions（裁定點）＋ dispatch（並行線與領地、版本號政策）。
+計畫經 **gpt-sol 唯讀審稿**一輪、27 條發現全數吸收（日誌記全部輸入、基底 raws 不可變、
+影子驗證、結算協調器要自己接、裸指標 id 化、faction remap 涵蓋 owner、v25）。
+使用者當日追加三裁定：**原則九「拆得走」**（principles.md）、注入來源＝外部檔案、
+勢力 origin（分裂／成長／開拓）是資料且開拓先做；SQLite 判定不換但留路（裁定#7）。
+**沒有擋路的裁定點了。下一步：開 M10.0a／0b／0c 三份任務書派工（開工前等使用者點頭）。**
 
 **會在未來咬人** → **獨立一檔** [KNOWN-TRAPS.md](KNOWN-TRAPS.md)
 （假通過與驗證、原則五被侵蝕、AI 在地圖上什麼都不做、Region 沒有建築組成輸入）。

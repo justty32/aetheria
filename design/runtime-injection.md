@@ -89,6 +89,10 @@
 
 ⚠ 但**原則五目前只做對一半**——見下。
 
+## ✅ 動工計畫已就緒（2026-08-27）
+
+→ **[plan/runtime-injection.md](../wf/workflows/plan/runtime-injection.md)**（M10，輪次與判準都在那）。
+
 ## ⚠ 現況調查（2026-08-27）：比這份文件寫的還差一步
 
 **遊戲根本不會存檔**——可玩 session 用 `InMemoryZoneStore`，`bridge/` 與 `godot/` 沒有存讀檔。

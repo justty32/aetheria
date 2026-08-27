@@ -55,6 +55,11 @@
   + `flush_commands()`（`core/zone/zone_manager.h:106-108`）語意正確但
   `core/`、`bridge/` 內**沒有任何呼叫端**；`TurnStage::TurnEnd`
   （`core/world/region_turn.cpp:181`）只是一行 `notify`，是空的。
+- 🔴 **named fate 的持久化路徑是斷的**（2026-08-27 量到）：`resolve_encounter` 裡的
+  `NamedFateLedger` 是**函式內區域變數**（`core/runtime/playable_session.cpp:953`），
+  用完即丟、從未 emplace 進任何 zone registry——它在 `AllComponents` 白名單裡、
+  存檔測試也全綠（`tests/world/named_fate_test.cpp:268` 是自己 emplace 的），
+  但**可玩流程產生的具名命運一個位元都不會落地**。M10.6a 排定接上。
 - 🔴 **AI 在地圖上什麼都不做**：`Develop`／`Prepare`／`Expand`／`StatisticalProgress`
   四個動作在 `execute_faction_command` 裡都是 `break;`，只改抽象國力數字。
   **不會派兵、不會建城。**

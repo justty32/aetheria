@@ -17,7 +17,12 @@
 
 **medps 已經走過這一輪並拍板**（`medps/workflows/roadmap/fantasy-civ6.md` 的 D-2）：
 def 全部從 ECS registry 撤出、進入不可變的 `Ruleset`、不進存檔、載入期建 id→下標索引。
-aetheria 直接繼承這個結論。
+
+> ⚠ **「不進存檔」已於 2026-08-26 被可編輯沙盒裁定推翻**
+> （[runtime-injection.md](runtime-injection.md)）：矮人要塞模型要求**世界存檔自帶
+> 它自己的 raws**（TOML 原文複製），def 仍不進 registry、不進位元流——
+> 進存檔的是**資料檔本身**，載入照走同一個 RulesetLoader。
+> medps 的「改平衡可回溯套用到舊存檔」讓位給「舊存檔永遠開得起來」。
 
 ## 形狀
 
@@ -43,8 +48,11 @@ private:
 };
 ```
 
-- **`Ruleset` 載入後不可變。** 只有載入器是 friend，其餘一律 `const&`。
-  不可變讓它能安全地被所有 zone 共享、被多執行緒讀。
+- **`Ruleset` 載入後只可追加、只在回合尾端**（2026-08-27 隨可編輯沙盒裁定修訂，
+  原為「不可變」）。不可刪、不可改既有 def——下標＝載入順序，追加不失效任何快取。
+  追加的唯一入口是 `RulesetPatcher` friend，只在回合尾端的注入結算被呼叫；
+  其餘一律 `const&`，回合中依然是安全共享、多執行緒可讀。
+  見 [runtime-injection.md](runtime-injection.md)。
 - **下標即 id。** `TerrainId` 是 `enum class TerrainId : uint16_t {}`（強型別，防混用），
   數值就是 `terrains_` 的下標，存取是一次陣列定址。
 - **載入期一律 fail-fast。** 檔案打不開、格式壞、缺區段、id 重複、`move_cost < 1`——全部 throw，
