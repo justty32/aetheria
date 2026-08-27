@@ -104,7 +104,13 @@ SQLite 判定不換但留路（裁定#7）。
 關係斷言、遊戲會存讀檔（root 掛外交、`ArmyState` 落 registry、`session_persistence`
 獨立模組、bridge/godot 入口）。三線驗收都經調度者親手重跑負向控制。
 另完成三份呈現層調查（美術管線／godot 端／bridge 覆蓋，見 investigation 清單）。
-**下一步：波 1 單線串行——M10.1 世界檔自帶 raws（v22→23）→ M10.2 角色檔。**
+**2026-08-27 波 1 完成併入 main**（v23＋角色檔 v1，423/423 綠）：M10.1 世界檔自帶
+不可變 raws（改全域 data/ 不再影響舊存檔——「加勢力弄壞存檔」的 KNOWN-TRAPS 已死；
+`world_state_hash` 從型別上拿不到外部 Ruleset）＋ M10.2 角色檔（六欄、獨立
+`kCharacterFormatVersion`、綁 world_seed＋raws_hash 任一不符拒開；`local_door_open_`
+確認為偽裝玩家態的世界態，落成 Local zone 的 `LocalDoorState` component）。
+兩輪負向控制均經調度者親手獨立重跑。
+**下一步：波 2 單線串行——M10.3a 歷史日誌＋結算協調器（M10 的樞紐輪）→ M10.3b → M10.4。**
 
 **會在未來咬人** → **獨立一檔** [KNOWN-TRAPS.md](KNOWN-TRAPS.md)
 （假通過與驗證、原則五被侵蝕、AI 在地圖上什麼都不做、Region 沒有建築組成輸入）。
