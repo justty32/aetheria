@@ -1,6 +1,6 @@
 # OPS-NOTES — 操作心得（派工、限流、通訊）
 
-← [SESSION-LOG.md](SESSION-LOG.md)｜[AGENTS.md](../AGENTS.md)
+← [SESSION-LOG.md](SESSION-LOG.md)｜[AGENTS.md](../AGENTS.md)｜**團隊角色與節奏 → [TEAM.md](TEAM.md)**
 
 > 與**進度**無關、但**每次派工都會用到**的東西。
 > 這裡的每一條都是踩過才寫下來的，不是推測。
