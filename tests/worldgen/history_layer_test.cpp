@@ -22,6 +22,7 @@ using aetheria::worldgen::RegionBuildResult;
 using aetheria::worldgen::RegionSlowVariables;
 
 [[nodiscard]] std::uint64_t hash_edges(const std::vector<EdgeId>& edges) {
+    // FNV-1a 64-bit offset basis: an algorithm constant, not a golden output hash.
     auto hash = UINT64_C(14695981039346656037);
     for (const auto edge : edges) {
         auto value = aetheria::rules::value_of(edge);
@@ -35,6 +36,7 @@ using aetheria::worldgen::RegionSlowVariables;
 }
 
 [[nodiscard]] std::uint64_t hash_survivors(const std::vector<std::uint8_t>& survivors) {
+    // FNV-1a 64-bit offset basis: an algorithm constant, not a golden output hash.
     auto hash = UINT64_C(14695981039346656037);
     for (const auto value : survivors) {
         hash ^= value;

@@ -54,20 +54,26 @@ using aetheria::zone::ZoneMeta;
 
 TEST(FileZoneStore, RoundTripPreservesCanonicalBitsAndEntityCount) {
     TemporaryDirectory directory;
-    FileZoneStore store{directory.path(), test_ruleset()};
     const auto key = child_key(kRootZone, UINT16_C(0xA3F2), 0);
     auto source = populated_zone(key);
     const auto before_hash = persistent_state_hash(source, test_ruleset());
     const auto before_entities = entity_count(source);
 
-    store.save(source);
-    const auto compressed = read_file(store.path_for(key));
-    EXPECT_NE(ZSTD_getFrameContentSize(compressed.data(), compressed.size()),
-              ZSTD_CONTENTSIZE_ERROR);
-    const auto loaded = store.load(key);
+    {
+        FileZoneStore store{directory.path(), test_ruleset()};
+        store.save(aetheria::zone::Zone{kRootZone});
+        store.save(source);
+        store.write_manifest(aetheria::zone::SaveManifest{});
+        const auto compressed = read_file(store.path_for(key));
+        EXPECT_NE(ZSTD_getFrameContentSize(compressed.data(), compressed.size()),
+                  ZSTD_CONTENTSIZE_ERROR);
+    }
+    FileZoneStore reopened_store{directory.path(), test_ruleset()};
+    const auto loaded = reopened_store.load(key);
 
     ASSERT_NE(loaded, nullptr);
-    EXPECT_EQ(persistent_state_hash(*loaded, test_ruleset()), before_hash);
+    const auto cold_loaded_hash = persistent_state_hash(*loaded, test_ruleset());
+    EXPECT_EQ(cold_loaded_hash, before_hash);
     EXPECT_EQ(encode_zone(*loaded, test_ruleset()), encode_zone(source, test_ruleset()));
     EXPECT_EQ(entity_count(*loaded), before_entities);
     EXPECT_EQ(loaded->reg.view<const ZoneMeta>().size(), 2U);

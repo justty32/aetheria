@@ -8,6 +8,7 @@ namespace aetheria::tests {
 
 [[nodiscard]] inline std::uint64_t hash_boundary_profile(
     const spatial::BoundaryProfile& profile) noexcept {
+    // FNV-1a 64-bit offset basis: an algorithm constant, not a golden output hash.
     auto hash = UINT64_C(14695981039346656037);
     const auto add_byte = [&](std::uint8_t value) {
         hash ^= value;

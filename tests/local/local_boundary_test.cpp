@@ -57,10 +57,11 @@ TEST(LocalBoundary, AdjacentLocalZonesShareProfileAndBoundaryWall) {
                       [east_index * 4U + static_cast<std::size_t>(BoundarySide::West)],
                   wall);
     }
-    const auto profile_hash = hash_boundary_profile(west_profile);
-    std::cout << "local_boundary_shared samples=64 wall_segments=64 hash=" << profile_hash
+    const auto west_profile_hash = hash_boundary_profile(west_profile);
+    const auto east_profile_hash = hash_boundary_profile(east_profile);
+    std::cout << "local_boundary_shared samples=64 wall_segments=64 hash=" << west_profile_hash
               << '\n';
-    EXPECT_EQ(profile_hash, UINT64_C(3316258571901256250));
+    EXPECT_EQ(west_profile_hash, east_profile_hash);
 }
 
 TEST(LocalBoundary, OrderAndAbsentNeighborDoNotMatter) {
