@@ -1,6 +1,9 @@
 #include "sim/world_hash.h"
 
+#include "core/history/history_log.h"
 #include "core/runtime/save_raws.h"
+#include "core/runtime/playable_session.h"
+#include "core/runtime/session_persistence.h"
 #include "core/rules/ruleset.h"
 #include "core/serialize/normalized_state_hash.h"
 #include "core/zone/file_zone_store.h"
@@ -114,8 +117,18 @@ open_store(const std::filesystem::path& slot_directory, const rules::Ruleset& ru
 
 }  // namespace
 
+std::uint64_t compose_world_identity(std::uint64_t zone_hash,
+                                     std::uint64_t raws_hash,
+                                     std::uint64_t history_head_hash) noexcept {
+    auto hash = kFnvOffset;
+    hash_u64(hash, zone_hash);
+    hash_u64(hash, raws_hash);
+    hash_u64(hash, history_head_hash);
+    return hash;
+}
+
 WorldStateHashReport world_state_hash(const std::filesystem::path& slot_directory) {
-    static_cast<void>(runtime::save_raws_hash(slot_directory));
+    const auto raws_hash = runtime::save_raws_hash(slot_directory);
     const auto ruleset = rules::RulesetLoader::load(runtime::save_raws_directory(slot_directory));
     auto files = find_zone_files(slot_directory);
     auto store = open_store(slot_directory, ruleset);
@@ -146,13 +159,21 @@ WorldStateHashReport world_state_hash(const std::filesystem::path& slot_director
         }
     }
 
-    auto hash = kFnvOffset;
-    hash_u64(hash, static_cast<std::uint64_t>(zone_hashes.size()));
-    for (const auto& [key, zone_hash] : zone_hashes) {
-        hash_u64(hash, zone::value_of(key));
-        hash_u64(hash, zone_hash);
+    auto zone_hash = kFnvOffset;
+    hash_u64(zone_hash, static_cast<std::uint64_t>(zone_hashes.size()));
+    for (const auto& [key, component_hash] : zone_hashes) {
+        hash_u64(zone_hash, zone::value_of(key));
+        hash_u64(zone_hash, component_hash);
     }
-    return {hash, zone_hashes.size()};
+    const history::HistoryLog history{slot_directory / "history.log"};
+    return {
+        .hash = compose_world_identity(zone_hash, raws_hash, history.head_hash()),
+        .zone_count = zone_hashes.size(),
+        .zone_hash = zone_hash,
+        .raws_hash = raws_hash,
+        .history_head_hash = history.head_hash(),
+        .history_head_seq = history.head_seq(),
+    };
 }
 
 int run_world_hash(const std::filesystem::path& slot_directory) {
@@ -160,8 +181,68 @@ int run_world_hash(const std::filesystem::path& slot_directory) {
     const auto report = world_state_hash(slot_directory);
     const auto elapsed = std::chrono::steady_clock::now() - start;
     const auto milliseconds = std::chrono::duration<double, std::milli>{elapsed}.count();
-    std::cout << "world_hash=" << report.hash << " zone_count=" << report.zone_count
-              << " elapsed_ms=" << milliseconds << '\n';
+    std::cout << "zone_hash=" << report.zone_hash
+              << " zone_count=" << report.zone_count << '\n'
+              << "raws_hash=" << report.raws_hash << '\n'
+              << "history_head_hash=" << report.history_head_hash
+              << " history_seq=" << report.history_head_seq << '\n'
+              << "world_hash=" << report.hash << " elapsed_ms=" << milliseconds
+              << '\n';
+    return 0;
+}
+
+int run_replay(const std::filesystem::path& slot_directory) {
+    const auto ruleset = rules::RulesetLoader::load(
+        runtime::save_raws_directory(slot_directory));
+    zone::FileZoneStore source{slot_directory, ruleset};
+    const auto metadata = runtime::inspect_session_save(source);
+    const history::HistoryLog source_history{slot_directory / "history.log"};
+
+    zone::InMemoryZoneStore replay_store{ruleset};
+    runtime::PlayableSession replay{metadata.world_seed, metadata.region_id,
+                                    runtime::save_raws_directory(slot_directory).string(),
+                                    replay_store};
+    replay.replay_history_from(slot_directory);
+
+    const auto unique = std::to_string(
+        std::chrono::steady_clock::now().time_since_epoch().count());
+    const auto temporary = std::filesystem::temp_directory_path() /
+                           ("aetheria-replay-" + unique);
+    struct Cleanup {
+        std::filesystem::path path;
+        ~Cleanup() {
+            std::error_code ignored;
+            std::filesystem::remove_all(path, ignored);
+        }
+    } cleanup{temporary};
+    zone::FileZoneStore replay_destination{temporary, ruleset};
+    replay.save_game(replay_destination, "replay");
+
+    const auto stored = world_state_hash(slot_directory);
+    const auto replayed = world_state_hash(temporary);
+    const auto replay_hash = compose_world_identity(
+        replayed.zone_hash, replayed.raws_hash, source_history.head_hash());
+    std::cout << "stored_zone_hash=" << stored.zone_hash
+              << " replay_zone_hash=" << replayed.zone_hash << '\n'
+              << "stored_raws_hash=" << stored.raws_hash
+              << " replay_raws_hash=" << replayed.raws_hash << '\n'
+              << "stored_head_hash=" << stored.history_head_hash
+              << " replay_head_hash=" << source_history.head_hash() << '\n'
+              << "stored_world_hash=" << stored.hash
+              << " replay_world_hash=" << replay_hash
+              << " history_seq=" << source_history.head_seq() << '\n';
+    if (stored.zone_hash != replayed.zone_hash) {
+        throw std::runtime_error{"sim replay zone 分量不一致"};
+    }
+    if (stored.raws_hash != replayed.raws_hash) {
+        throw std::runtime_error{"sim replay raws 分量不一致"};
+    }
+    if (stored.history_head_hash != source_history.head_hash()) {
+        throw std::runtime_error{"sim replay history head 分量不一致"};
+    }
+    if (stored.hash != replay_hash) {
+        throw std::runtime_error{"sim replay 世界身分合成值不一致"};
+    }
     return 0;
 }
 

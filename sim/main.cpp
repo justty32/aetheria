@@ -48,6 +48,7 @@ int main(int argc, char** argv) {
     std::int16_t biome_moisture_bias{};
     std::string dump_stages;
     std::string world_hash_directory;
+    std::string replay_directory;
     std::uint32_t verify_iterations{100};
     std::string viewer_site_seed{"0x5A17"};
     std::string viewer_zoning{"residential"};
@@ -91,10 +92,15 @@ int main(int argc, char** argv) {
     auto* verify_world_hash =
         verify->add_subcommand("world-hash", "計算跨 zone 正規化世界狀態雜湊");
     verify_world_hash->add_option("save_dir", world_hash_directory, "存檔槽目錄")->required();
+    auto* replay = app.add_subcommand("replay", "從基底 raws 與歷史日誌重建世界");
+    replay->add_option("save_dir", replay_directory, "存檔槽目錄")->required();
     CLI11_PARSE(app, argc, argv);
 
     if (*verify_world_hash) {
         return aetheria::sim::run_world_hash(world_hash_directory);
+    }
+    if (*replay) {
+        return aetheria::sim::run_replay(replay_directory);
     }
 
     std::filesystem::path rules_directory{data_directory};

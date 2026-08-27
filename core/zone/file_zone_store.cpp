@@ -187,4 +187,8 @@ void FileZoneStore::write_manifest(const SaveManifest& manifest) {
     manifest_ = manifest;
 }
 
+SaveManifest& FileZoneStore::allocator_manifest() {
+    return manifest_.has_value() ? *manifest_ : manifest_.emplace();
+}
+
 }  // namespace aetheria::zone

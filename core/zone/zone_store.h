@@ -26,6 +26,19 @@ public:
     [[nodiscard]] virtual std::vector<ZoneKey> stored_keys() const = 0;
     [[nodiscard]] virtual const std::optional<SaveManifest>& manifest() const noexcept = 0;
     virtual void write_manifest(const SaveManifest& manifest) = 0;
+
+    // 世界級 uid 只由 manifest 的兩個持久 watermark 配發。preferred 供基底 raws
+    // 宣告的既有固定身分；一樣會推進 watermark 並拒絕重複／倒退。
+    [[nodiscard]] std::uint64_t allocate_detached_id();
+    [[nodiscard]] std::uint64_t
+    allocate_entity_uid(std::optional<std::uint64_t> preferred = std::nullopt);
+    void observe_entity_uid(std::uint64_t uid);
+
+protected:
+    [[nodiscard]] virtual SaveManifest& allocator_manifest();
+
+private:
+    std::optional<SaveManifest> fallback_allocator_manifest_;
 };
 
 // InMemoryZoneStore 是測試與工具使用的單槽快照替身。
@@ -44,6 +57,9 @@ public:
         return manifest_;
     }
     void write_manifest(const SaveManifest& manifest) override;
+
+protected:
+    [[nodiscard]] SaveManifest& allocator_manifest() override;
 
 private:
     const rules::Ruleset& ruleset_;

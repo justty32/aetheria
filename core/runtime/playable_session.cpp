@@ -4,6 +4,7 @@
 #include "core/runtime/character_save.h"
 #include "core/runtime/save_raws.h"
 #include "core/runtime/session_persistence.h"
+#include "core/runtime/turn_commit.h"
 
 #include "core/local/dungeon.h"
 #include "core/local/local_fov.h"
@@ -25,6 +26,7 @@
 
 #include <algorithm>
 #include <array>
+#include <bit>
 #include <cmath>
 #include <cstdint>
 #include <functional>
@@ -35,8 +37,55 @@
 #include <string_view>
 #include <utility>
 
+#include <toml++/toml.hpp>
+
 namespace aetheria::runtime {
 namespace {
+
+struct PlayableUidConfig {
+    std::optional<std::uint64_t> player_army;
+    std::optional<std::uint64_t> enemy_army;
+    std::optional<std::uint64_t> named_commander;
+};
+
+[[nodiscard]] PlayableUidConfig
+load_playable_uids(const std::filesystem::path& raws_directory) {
+    const auto document = toml::parse_file((raws_directory / "civilization.toml").string());
+    const auto* table = document["playable_session_uids"].as_table();
+    if (table == nullptr) {
+        return {};
+    }
+    const auto player = (*table)["player_army"].value<std::uint64_t>();
+    const auto enemy = (*table)["enemy_army"].value<std::uint64_t>();
+    const auto named = (*table)["named_commander"].value<std::uint64_t>();
+    if (!player.has_value() || !enemy.has_value() || !named.has_value()) {
+        throw std::runtime_error{"playable_session_uids 必須完整宣告三個 uid"};
+    }
+    return {player, enemy, named};
+}
+
+[[nodiscard]] constexpr std::uint64_t mix_random_input(std::uint64_t value) noexcept {
+    value = (value ^ (value >> 30U)) * UINT64_C(0xBF58476D1CE4E5B9);
+    value = (value ^ (value >> 27U)) * UINT64_C(0x94D049BB133111EB);
+    return value ^ (value >> 31U);
+}
+
+[[nodiscard]] std::uint64_t combat_random_seed(std::uint64_t seed,
+                                               time::Tick tick,
+                                               std::uint64_t seq) noexcept {
+    auto value = seed ^ std::rotl(static_cast<std::uint64_t>(
+                                      static_cast<std::int64_t>(tick)),
+                                  21) ^
+                 std::rotl(seq, 43);
+    return mix_random_input(value);
+}
+
+[[nodiscard]] std::string move_payload(world::StableId unit,
+                                       world::RegionXY target) {
+    return "unit = " + std::to_string(unit.uid) + "\ntarget_x = " +
+           std::to_string(target.x) + "\ntarget_y = " +
+           std::to_string(target.y) + "\n";
+}
 
 [[nodiscard]] rules::Ruleset
 load_saved_ruleset(const std::filesystem::path& slot_directory) {
@@ -154,6 +203,18 @@ PlayableSession::PlayableSession(std::uint64_t seed, std::uint32_t region_id,
     if (store_.manifest().has_value() || !store_.stored_keys().empty()) {
         throw std::logic_error{"new_game 需要空的 ZoneStore"};
     }
+    const auto uid_config = load_playable_uids(base_raws_directory_);
+    if (!uid_config.player_army.has_value() || !uid_config.enemy_army.has_value() ||
+        !uid_config.named_commander.has_value()) {
+        throw std::runtime_error{"新世界基底 raws 缺少 playable_session_uids"};
+    }
+    player_army_id_ = world::StableId{
+        store_.allocate_entity_uid(uid_config.player_army)};
+    enemy_army_id_ = world::StableId{
+        store_.allocate_entity_uid(uid_config.enemy_army)};
+    named_commander_uid_ =
+        store_.allocate_entity_uid(uid_config.named_commander);
+    turn_commit_ = std::make_unique<TurnCommit>();
     manager_ = std::make_unique<zone::ZoneManager>(
         store_, [this](zone::ZoneKey key, std::unique_ptr<zone::Zone> persistent) {
             return materialize_session_zone(key, std::move(persistent));
@@ -171,6 +232,12 @@ PlayableSession::PlayableSession(LoadTag, std::filesystem::path slot_directory,
         throw std::runtime_error{"存檔 manifest 缺少 v23 raws 內容雜湊"};
     }
     require_save_raws_hash(slot_directory, store_.manifest()->raws_hash);
+    const auto named_uid = load_playable_uids(base_raws_directory_).named_commander;
+    if (!named_uid.has_value()) {
+        throw std::runtime_error{"存檔基底 raws 缺少 named_commander uid"};
+    }
+    named_commander_uid_ = *named_uid;
+    turn_commit_ = std::make_unique<TurnCommit>(slot_directory);
     const auto metadata = inspect_session_save(store_);
     seed_ = metadata.world_seed;
     region_id_ = metadata.region_id;
@@ -185,17 +252,41 @@ PlayableSession::PlayableSession(LoadTag, std::filesystem::path slot_directory,
     }
 }
 
+PlayableSession::~PlayableSession() = default;
+
 std::unique_ptr<PlayableSession>
 PlayableSession::load(std::filesystem::path slot_directory, zone::ZoneStore& store,
                       std::string_view character_name) {
-    auto result = std::unique_ptr<PlayableSession>{
-        new PlayableSession{LoadTag{}, slot_directory, store}};
     if (!store.manifest().has_value()) {
         throw std::runtime_error{"載入角色前世界存檔缺少 manifest"};
     }
-    const auto& manifest = *store.manifest();
+    const auto manifest = *store.manifest();
+    const auto character_path =
+        character_save_path(slot_directory, character_name);
+    TurnCommit recovery{slot_directory};
+    if (recovery.recovery_needed()) {
+        const auto metadata = inspect_session_save(store);
+        const auto recovery_ruleset = load_saved_ruleset(slot_directory);
+        zone::InMemoryZoneStore rebuilt_store{recovery_ruleset};
+        PlayableSession rebuilt{
+            metadata.world_seed, metadata.region_id,
+            save_raws_directory(slot_directory).string(), rebuilt_store};
+        recovery.replay_all(rebuilt);
+        recovery.commit_world(
+            rebuilt_store, store, *rebuilt.manager_, metadata.world_seed,
+            manifest.raws_hash, rebuilt.now(), [&] {
+                write_character_save(
+                    character_path,
+                    {metadata.world_seed, manifest.raws_hash},
+                    rebuilt.export_character_state());
+            });
+    }
+
+    auto result = std::unique_ptr<PlayableSession>{
+        new PlayableSession{LoadTag{}, slot_directory, store}};
+    result->character_save_path_ = character_path;
     result->import_character_state(read_character_save(
-        character_save_path(slot_directory, character_name),
+        character_path,
         {manifest.world_seed, manifest.raws_hash}));
     return result;
 }
@@ -402,11 +493,13 @@ void PlayableSession::bind_loaded_zone(zone::ZoneHandle handle,
 void PlayableSession::rebuild_army_handles() {
     armies_.clear();
     bool found_player{};
+    std::optional<world::StableId> found_enemy;
     for (const auto entity :
          region_->reg.view<const world::StableId, const world::ArmyState,
                            const world::RegionPosition>()) {
         const auto id = region_->reg.get<const world::StableId>(entity);
         const auto& state = region_->reg.get<const world::ArmyState>(entity);
+        store_.observe_entity_uid(id.uid);
         armies_.push_back({id, entity});
         if (state.player_controlled) {
             if (found_player) {
@@ -414,9 +507,15 @@ void PlayableSession::rebuild_army_handles() {
             }
             player_army_id_ = id;
             found_player = true;
-        } else if (id == world::StableId{2001}) {
-            enemy_army_id_ = id;
+        } else {
+            if (found_enemy.has_value()) {
+                throw std::runtime_error{"存檔含多個非玩家可玩情境部隊"};
+            }
+            found_enemy = id;
         }
+    }
+    if (found_enemy.has_value()) {
+        enemy_army_id_ = *found_enemy;
     }
     std::ranges::sort(armies_, {}, [](const PlayableArmy& army) {
         return army.id.uid;
@@ -551,6 +650,11 @@ void PlayableSession::initialize_diplomacy() {
 }
 
 void PlayableSession::enter_site() {
+    record_command("enter_site_manual");
+    perform_enter_site();
+}
+
+void PlayableSession::perform_enter_site() {
     if (residence_ != PlayableResidence::Region) {
         throw std::logic_error{"只有 Region 駐留可親自進入 Site"};
     }
@@ -568,6 +672,11 @@ void PlayableSession::enter_site() {
 }
 
 void PlayableSession::leave_site() {
+    record_command("leave_site");
+    perform_leave_site();
+}
+
+void PlayableSession::perform_leave_site() {
     if (residence_ != PlayableResidence::Site) {
         throw std::logic_error{"只有 Site 駐留可返回 Region"};
     }
@@ -670,11 +779,18 @@ void PlayableSession::perform_city_build(bool managed) {
                  last_development_before_, last_development_after_);
 }
 
-void PlayableSession::build_city() { perform_city_build(false); }
+void PlayableSession::build_city() {
+    record_command("build_city");
+    perform_city_build(false);
+}
 
-void PlayableSession::manage_city() { perform_city_build(true); }
+void PlayableSession::manage_city() {
+    record_command("enter_site_auto");
+    perform_city_build(true);
+}
 
 void PlayableSession::accept_bandit_quest() {
+    record_command("accept_bandit");
     if (residence_ != PlayableResidence::Site) {
         throw std::logic_error{"必須在 Site 接受清剿任務"};
     }
@@ -690,6 +806,7 @@ void PlayableSession::accept_bandit_quest() {
 }
 
 void PlayableSession::enter_local() {
+    record_command("enter_local_manual");
     if (residence_ != PlayableResidence::Site) {
         throw std::logic_error{"只有 Site 駐留可親自進入 Local"};
     }
@@ -702,6 +819,7 @@ void PlayableSession::enter_local() {
 }
 
 void PlayableSession::leave_local() {
+    record_command("leave_local");
     if (residence_ != PlayableResidence::Local) {
         throw std::logic_error{"只有 Local 地表可返回 Site"};
     }
@@ -728,6 +846,7 @@ void PlayableSession::leave_local() {
 }
 
 void PlayableSession::open_door_and_move() {
+    record_command("open_door");
     if (residence_ != PlayableResidence::Local || local_z_ != 0) {
         throw std::logic_error{"開門示範只接受尚未開門的 Local 地表"};
     }
@@ -818,11 +937,18 @@ void PlayableSession::perform_bandit_suppression(bool managed) {
                  last_order_before_, last_order_after_);
 }
 
-void PlayableSession::suppress_bandits() { perform_bandit_suppression(false); }
+void PlayableSession::suppress_bandits() {
+    record_command("suppress_bandits");
+    perform_bandit_suppression(false);
+}
 
-void PlayableSession::manage_local() { perform_bandit_suppression(true); }
+void PlayableSession::manage_local() {
+    record_command("enter_local_auto");
+    perform_bandit_suppression(true);
+}
 
 void PlayableSession::enter_dungeon() {
+    record_command("enter_dungeon_manual");
     if (residence_ != PlayableResidence::Local) {
         throw std::logic_error{"只有 Local 駐留可親自下地城"};
     }
@@ -843,6 +969,7 @@ void PlayableSession::enter_dungeon() {
 }
 
 void PlayableSession::leave_dungeon() {
+    record_command("leave_dungeon");
     if (residence_ != PlayableResidence::Dungeon) {
         throw std::logic_error{"目前不在地城"};
     }
@@ -852,6 +979,7 @@ void PlayableSession::leave_dungeon() {
 }
 
 void PlayableSession::descend_dungeon() {
+    record_command("descend_dungeon");
     if (residence_ != PlayableResidence::Dungeon) {
         throw std::logic_error{"只有地城駐留可往下層"};
     }
@@ -899,7 +1027,7 @@ void PlayableSession::perform_dungeon_clear(bool managed) {
                 }));
             if (!dungeon.floors.empty() && !dungeon.floors.front().traps.empty()) {
                 static_cast<void>(local::trigger_trap(
-                    dungeon.floors.front().traps.front(), 1001, false,
+                    dungeon.floors.front().traps.front(), player_army_id_.uid, false,
                     local_persistent, ruleset_));
             }
             local::claim_all_treasure(dungeon, local_persistent);
@@ -927,11 +1055,18 @@ void PlayableSession::perform_dungeon_clear(bool managed) {
     }
 }
 
-void PlayableSession::clear_dungeon() { perform_dungeon_clear(false); }
+void PlayableSession::clear_dungeon() {
+    record_command("clear_dungeon");
+    perform_dungeon_clear(false);
+}
 
-void PlayableSession::manage_dungeon() { perform_dungeon_clear(true); }
+void PlayableSession::manage_dungeon() {
+    record_command("enter_dungeon_auto");
+    perform_dungeon_clear(true);
+}
 
 void PlayableSession::sign_peace_treaty() {
+    record_command("sign_treaty");
     if (residence_ != PlayableResidence::Region) {
         throw std::logic_error{"外交條約只能在 Region 操作"};
     }
@@ -956,13 +1091,14 @@ void PlayableSession::sign_peace_treaty() {
 }
 
 void PlayableSession::measure_site_roundtrips() {
+    record_command("measure_roundtrips");
     if (residence_ != PlayableResidence::Region) {
         throw std::logic_error{"Site 往返量測必須從 Region 開始"};
     }
     roundtrip_hashes_.clear();
     for (std::uint32_t index = 0; index < 3U; ++index) {
-        enter_site();
-        leave_site();
+        perform_enter_site();
+        perform_leave_site();
         roundtrip_hashes_.push_back(
             serialize::normalized_state_hash(*region_, ruleset_));
     }
@@ -993,6 +1129,8 @@ std::uint64_t PlayableSession::run_city_economy_sample(
 }
 
 void PlayableSession::measure_city_management(std::uint32_t samples) {
+    record_command("measure_calibration",
+                   "samples = " + std::to_string(samples) + "\n");
     if (residence_ != PlayableResidence::Region || samples == 0U) {
         throw std::logic_error{"城建期望值量測要求 Region 駐留與正樣本數"};
     }
@@ -1074,8 +1212,32 @@ void PlayableSession::append_event(PlayableEventKind kind, world::RegionXY tile,
     events_.push_back({next_event_id_++, kind, tile, value_a, value_b});
 }
 
+void PlayableSession::record_command(std::string_view kind, std::string payload) {
+    if (replaying_history_) {
+        return;
+    }
+    std::string context = "context_residence = \"" +
+                          std::string{residence_id(residence_)} +
+                          "\"\ncontext_local_z = " + std::to_string(local_z_) +
+                          "\ncontext_player_x = " +
+                          std::to_string(local_player_x_) +
+                          "\ncontext_player_y = " +
+                          std::to_string(local_player_y_) +
+                          "\ncontext_player_army = " +
+                          std::to_string(player_army_id_.uid) +
+                          "\ncontext_has_accepted_quest = " +
+                          (accepted_quest_id_.has_value() ? std::string{"1"}
+                                                          : std::string{"0"}) +
+                          "\ncontext_accepted_quest = " +
+                          std::to_string(accepted_quest_id_.value_or(0U)) +
+                          "\n";
+    context += payload;
+    current_command_seq_ = turn_commit_->record(now(), kind, context).seq;
+}
+
 void PlayableSession::issue_move(world::StableId unit,
                                  world::RegionXY target) {
+    record_command("issue_move", move_payload(unit, target));
     if (encounter_tile_) {
         throw std::logic_error{"遭遇尚未處理，不能發布移動命令"};
     }
@@ -1103,6 +1265,7 @@ void PlayableSession::detect_encounter() {
 }
 
 PlayableAdvanceReport PlayableSession::advance_xun() {
+    record_command("advance_xun");
     if (encounter_tile_) {
         throw std::logic_error{"遭遇尚未處理，不能推進下一旬"};
     }
@@ -1134,6 +1297,20 @@ PlayableAdvanceReport PlayableSession::advance_xun() {
                              action);
             }
         });
+    if (!replaying_history_ && !encounter_tile_.has_value() &&
+        turn_commit_->history().bound()) {
+        if (!character_save_path_.has_value()) {
+            throw std::logic_error{"已綁定世界槽但缺少目前角色檔路徑"};
+        }
+        const auto raws_hash = raws_directory_hash(base_raws_directory_);
+        turn_commit_->commit_world(store_, store_, *manager_, seed_,
+                                   raws_hash, now(), [&] {
+                                       write_character_save(
+                                           *character_save_path_,
+                                           {seed_, raws_hash},
+                                           export_character_state());
+                                   });
+    }
     const auto player_after = position_of(player_army_id_).tile;
     const auto enemy_after = position_of(enemy_army_id_).tile;
     append_event(PlayableEventKind::XunAdvanced, player_after,
@@ -1154,6 +1331,10 @@ PlayableAdvanceReport PlayableSession::advance_xun() {
 
 const PlayableBattleReport&
 PlayableSession::resolve_encounter(PlayableBattleChoice choice) {
+    record_command("resolve_encounter",
+                   choice == PlayableBattleChoice::CommandSite
+                       ? "choice = \"manual\"\n"
+                       : "choice = \"auto\"\n");
     if (!encounter_tile_) {
         throw std::logic_error{"目前沒有可處理的遭遇"};
     }
@@ -1172,8 +1353,9 @@ PlayableSession::resolve_encounter(PlayableBattleChoice choice) {
                            ? world::CombatLayer::Site
                            : world::CombatLayer::Region;
     world::CombatExecutionCounters counters;
+    const auto random_seed = combat_random_seed(seed_, now(), current_command_seq_);
     const auto layer_result = world::resolve_scaled_combat(
-        input, combat_rules, layer, next_event_id_, seed_ + revision_, {}, {},
+        input, combat_rules, layer, current_command_seq_, random_seed, {}, {},
         &counters);
     const auto before = tile_state(*encounter_tile_);
     player.power = std::max(0, player.power - layer_result.loss_a);
@@ -1197,7 +1379,7 @@ PlayableSession::resolve_encounter(PlayableBattleChoice choice) {
 
     world::NamedFateLedger ledger;
     ledger.members.push_back({
-        .entity_uid = 9001,
+        .entity_uid = named_commander_uid_,
         .cohort_id = enemy_army_id_.uid,
         .name_key = "守軍隊長艾琳",
         .significance = world::Significance::Site,
@@ -1207,7 +1389,7 @@ PlayableSession::resolve_encounter(PlayableBattleChoice choice) {
     });
     const auto stage_one = world::FateResolver::apply_stage_one(
         region_tiles, *encounter_tile_,
-        {.event_id = next_event_id_,
+        {.event_id = current_command_seq_,
          .cohort_id = enemy_army_id_.uid,
          .site_key = zone::value_of(battle_site_->key),
          .base_loss_basis_points = loss_basis_points(layer_result.loss_b,
@@ -1511,6 +1693,32 @@ void PlayableSession::import_character_state(const CharacterState& state) {
     accepted_quest_id_ = state.accepted_quest_id;
 }
 
+void PlayableSession::replay_history_from(
+    const std::filesystem::path& slot_directory) {
+    const auto source_raws_hash = save_raws_hash(slot_directory);
+    if (source_raws_hash != raws_directory_hash(base_raws_directory_)) {
+        throw std::runtime_error{"replay 的基底 raws 與 session 不同"};
+    }
+    TurnCommit source{slot_directory};
+    source.replay_all(*this);
+}
+
+std::uint64_t PlayableSession::history_head_hash() const noexcept {
+    return turn_commit_->history().head_hash();
+}
+
+std::uint64_t PlayableSession::history_head_seq() const noexcept {
+    return turn_commit_->history().head_seq();
+}
+
+void PlayableSession::set_interrupt_after_journal_for_testing(bool enabled) {
+    turn_commit_->set_interrupt_after_journal_for_testing(enabled);
+}
+
+void PlayableSession::set_interrupt_after_save_for_testing(bool enabled) {
+    turn_commit_->set_interrupt_after_save_for_testing(enabled);
+}
+
 void PlayableSession::save_game(zone::FileZoneStore& destination,
                                 std::string_view character_name) {
     if (encounter_tile_.has_value()) {
@@ -1534,9 +1742,15 @@ void PlayableSession::save_game(zone::FileZoneStore& destination,
     if (source_hash != destination_hash) {
         throw std::runtime_error{"目的存檔 raws 與目前世界的基底 raws 不符，拒絕改寫"};
     }
-    save_session(store_, destination, *manager_, seed_, destination_hash, now());
-    write_character_save(character_path, {seed_, destination_hash},
-                         export_character_state());
+    character_save_path_ = character_path;
+    turn_commit_->attach(destination.slot_directory());
+    turn_commit_->commit_world(store_, destination, *manager_, seed_,
+                               destination_hash, now(), [&] {
+                                   write_character_save(
+                                       character_path,
+                                       {seed_, destination_hash},
+                                       export_character_state());
+                               });
 }
 
 } // namespace aetheria::runtime

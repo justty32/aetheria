@@ -228,3 +228,9 @@ target_compile_definitions(aetheria_core PRIVATE
 target_sources(aetheria_core PRIVATE
     core/rules/building_mapping_rules.cpp
 )
+
+# M10.3a：payload 無關歷史鏈與世界級 journal-first commit point。
+target_sources(aetheria_core PRIVATE
+    core/history/history_log.cpp
+    core/runtime/turn_commit.cpp
+)

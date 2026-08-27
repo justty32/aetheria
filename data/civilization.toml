@@ -138,3 +138,9 @@ faction_count = 3
 # 128 格寬的標準 Region：半幅 64 格 × 最低陸地成本 4。
 governance_max_cost = 256
 influence_season = 1
+
+# 可玩情境的既有世界身分；由 manifest allocator claim，程式碼不再寫死 uid。
+[playable_session_uids]
+player_army = 1001
+enemy_army = 2001
+named_commander = 9001

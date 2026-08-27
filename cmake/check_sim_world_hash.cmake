@@ -22,9 +22,6 @@ string(REPLACE
     "id = \"terrain.swamp\"\nname_key = \"terrain.swamp.name\"\nmove_cost = 3"
     "id = \"terrain.swamp\"\nname_key = \"terrain.swamp.name\"\nmove_cost = 9"
     changed_terrain_toml "${terrain_toml}")
-if(changed_terrain_toml STREQUAL terrain_toml)
-    message(FATAL_ERROR "未改到 private terrain.swamp move_cost")
-endif()
 file(WRITE "${PRIVATE_DATA}/terrain.toml" "${changed_terrain_toml}")
 execute_process(
     COMMAND "${SIM}" --tick 62208000 --data-dir "${PRIVATE_DATA}" --save-dir "${NEW_SLOT}"
@@ -54,10 +51,39 @@ if(NOT new_hash_result EQUAL 0)
     message(FATAL_ERROR "新槽 verify world-hash 失敗：${new_hash_error}")
 endif()
 foreach(hash_output IN ITEMS "${old_hash_output}" "${new_hash_output}")
-    if(NOT hash_output MATCHES "world_hash=[0-9]+ zone_count=4 elapsed_ms=[0-9.]+")
+    if(NOT hash_output MATCHES "zone_hash=[0-9]+ zone_count=4" OR
+       NOT hash_output MATCHES "raws_hash=[0-9]+" OR
+       NOT hash_output MATCHES "history_head_hash=[0-9]+ history_seq=0" OR
+       NOT hash_output MATCHES "world_hash=[0-9]+ elapsed_ms=[0-9.]+")
         message(FATAL_ERROR "verify world-hash 輸出格式不符：${hash_output}")
     endif()
 endforeach()
+
+foreach(prefix IN ITEMS old new)
+    set(hash_output "${${prefix}_hash_output}")
+    foreach(component IN ITEMS zone raws history_head world)
+        string(REGEX MATCH "${component}_hash=([0-9]+)" component_match
+                     "${hash_output}")
+        if(NOT component_match)
+            message(FATAL_ERROR
+                "無法解析 ${prefix} ${component}_hash：${hash_output}")
+        endif()
+        set("${prefix}_${component}_hash" "${CMAKE_MATCH_1}")
+    endforeach()
+endforeach()
+
+string(CONCAT component_report
+    "old={zone=${old_zone_hash}, raws=${old_raws_hash}, head=${old_history_head_hash}, world=${old_world_hash}}; "
+    "new={zone=${new_zone_hash}, raws=${new_raws_hash}, head=${new_history_head_hash}, world=${new_world_hash}}")
+if("${old_raws_hash}" STREQUAL "${new_raws_hash}")
+    message(FATAL_ERROR "terrain move_cost 擾動未改變 raws_hash：${component_report}")
+endif()
+if("${old_world_hash}" STREQUAL "${new_world_hash}")
+    message(FATAL_ERROR "terrain move_cost 擾動未改變 world_hash：${component_report}")
+endif()
+if(NOT "${old_zone_hash}" STREQUAL "${new_zone_hash}")
+    message(FATAL_ERROR "terrain move_cost 擾動意外改變 zone_hash：${component_report}")
+endif()
 
 if(NOT EXISTS "${OLD_SLOT}/raws/terrain.toml" OR
    NOT EXISTS "${NEW_SLOT}/raws/terrain.toml")

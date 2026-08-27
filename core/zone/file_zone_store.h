@@ -33,6 +33,9 @@ public:
     }
     void write_manifest(const SaveManifest& manifest) override;
 
+protected:
+    [[nodiscard]] SaveManifest& allocator_manifest() override;
+
 private:
     std::filesystem::path slot_directory_;
     const rules::Ruleset& ruleset_;
