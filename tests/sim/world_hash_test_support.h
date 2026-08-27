@@ -92,6 +92,7 @@ inline void create_world_hash_save(const std::filesystem::path& directory,
 [[nodiscard]] inline std::pair<std::uint64_t, std::size_t>
 saved_zone_bytes_evidence(const std::filesystem::path& directory) {
     zone::FileZoneStore store{directory, test_ruleset()};
+    // FNV-1a 64-bit offset basis: an algorithm constant, not a golden output hash.
     auto hash = UINT64_C(14695981039346656037);
     std::size_t byte_count{};
     for (const auto key : kWorldHashRegionKeys) {

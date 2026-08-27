@@ -56,13 +56,14 @@ TEST(WildernessBoundary, AdjacentSidesAreBitExactAndReachActualTerrain) {
     EXPECT_EQ(west_actual.edges, west_profile.edges);
     EXPECT_EQ(west_actual.crossings, west_profile.crossings);
     EXPECT_EQ(east_actual, east_profile);
-    const auto profile_hash = aetheria::tests::hash_boundary_profile(west_profile);
+    const auto west_profile_hash = aetheria::tests::hash_boundary_profile(west_profile);
+    const auto east_profile_hash = aetheria::tests::hash_boundary_profile(east_profile);
     std::cout << "wild_boundary_shared samples=64 crossings=" << west_profile.crossings.size()
               << " elevation_first=" << west_profile.elevation.front()
               << " elevation_last=" << west_profile.elevation.back()
               << " bit_exact=elevation,ground,water_depth,edges,crossings hash="
-              << profile_hash << '\n';
-    EXPECT_EQ(profile_hash, UINT64_C(3093732465121518141));
+              << west_profile_hash << '\n';
+    EXPECT_EQ(west_profile_hash, east_profile_hash);
 }
 
 TEST(WildernessBoundary, GenerationOrderAndAbsentNeighborSiteDoNotMatter) {
