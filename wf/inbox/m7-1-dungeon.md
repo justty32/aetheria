@@ -2,7 +2,7 @@
 
 **寄件人**：Opus 5 規劃者
 **收件人**：**gpt-sol 實作者**
-**必讀設計**：[`dungeon.md`](../../design/dungeon.md)、[`localgen.md`](../../design/localgen.md) 路線 C
+**必讀設計**：[`dungeon.md`](../../design/rules/dungeon.md)、[`localgen.md`](../../design/generation/localgen.md) 路線 C
 **必讀協定**：[`CODEX-PROTOCOL.md`](../CODEX-PROTOCOL.md)
 **基準**：M6 收線後的 main
 **⚠ 不要碰 `core/rules/magic*`、`faith*`、`race*`、`data/magic.toml` 等（M7.0 在並行）。**

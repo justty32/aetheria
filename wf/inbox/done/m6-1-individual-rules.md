@@ -2,8 +2,8 @@
 
 **寄件人**：Opus 5 規劃者
 **收件人**：**gpt-sol 實作者**
-**必讀設計**：[`rules-individual.md`](../../design/rules-individual.md)、
-[`definitions.md`](../../design/definitions.md)（種類一律不寫死 enum）
+**必讀設計**：[`rules-individual.md`](../../../design/rules/rules-individual.md)、
+[`definitions.md`](../../../design/rules/definitions.md)（種類一律不寫死 enum）
 **基準**：M5 收線後的 main（272/272）
 **三路並行**：M6.0 做力量體系、M6.2 做外交關係模型。
 **⚠ 不要碰 `core/rules/power.*`、`data/power.toml`、`core/world/diplomacy.*`、

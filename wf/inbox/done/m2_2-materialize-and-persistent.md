@@ -3,8 +3,8 @@
 **寄件人**：Opus 5 規劃者
 **收件人**：**gpt-sol 實作者**
 **回信地址**：`~/repo/game_dev/aetheria/wf/inbox/`
-**必讀設計**：[`interface-lifecycle.md`](../../design/interface-lifecycle.md) 的 LOD 狀態機、
-[`interface-world-mid.md`](../../design/interface-world-mid.md) 的三層資料
+**必讀設計**：[`interface-lifecycle.md`](../../../design/simulation/interface-lifecycle.md) 的 LOD 狀態機、
+[`interface-world-mid.md`](../../../design/simulation/interface-world-mid.md) 的三層資料
 **基準**：`06d7e83`
 
 ---

@@ -12,10 +12,10 @@
   世界級正規化雜湊已在 M2.0 落地（`aetheria_sim verify world-hash`）。
 - ⚠ **`load` ≠ `rematerialize`**：`load` 只解碼持久層，程序層是空的。
   拿它當重新展開，往返測試**照樣通過**——寫進
-  [interface-lifecycle.md](../design/interface-lifecycle.md)。
+  [interface-lifecycle.md](../design/simulation/interface-lifecycle.md)。
 - ⚠ **假通過的三個陷阱**（沒冷載入／值停在預設／只比頭尾），加上最隱蔽的
   **空的層必然通過**。M2.3 三條都踩過邊。寫進
-  [interface-verification.md](../design/interface-verification.md)。
+  [interface-verification.md](../design/simulation/interface-verification.md)。
 - ⚠⚠ **最值得記的一條：三層期望一致只守 `|誤差|<5%` 是不夠的。**
   實測注入 **Site 系統性 +3% → 全綠**，+10% 才紅。
   **3% 的同向偏差正是玩家學得會、而測試看不見的那種。**
@@ -33,7 +33,7 @@
   **AI 目標與動作**都是寫死的列舉子。
   **417 個測試全綠也擋不住**——因為原則五只是文件裡的一句話。
   → **動任何一行之前，先把原則五做成一條 ctest 檢查。**
-  完整盤點見 [runtime-injection.md](../design/runtime-injection.md)。
+  完整盤點見 [runtime-injection.md](../design/rules/runtime-injection.md)。
 - 🔴 **有設計、沒里程碑的文件等於沒有。**
   `rules-extensibility.md` 寫得很完整，但 M0～M9 沒有任何一個判準涉及它，
   所以十輪做下來它一次都沒被實作。
@@ -87,7 +87,7 @@
 - ⚠ 「戰鬥位階」與「聚合提升重要性」共用 significance 等級表但升級規則不同。
   見 `power-tiers.md` 末段。
 - ⚠ **熱重載 ≠ 執行期注入**：前者保證不動世界狀態，後者要動。
-  混為一談了九個里程碑，見 [runtime-injection.md](../design/runtime-injection.md)。
+  混為一談了九個里程碑，見 [runtime-injection.md](../design/rules/runtime-injection.md)。
 
 ## 已解決但值得留著的
 

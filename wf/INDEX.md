@@ -21,7 +21,7 @@ aetheria/
   .claude/   commands（如 /wf-tick）
 ```
 
-> M0 可編譯骨架已建立；建置與驗證見 [design/build.md](../design/build.md) 與
+> M0 可編譯骨架已建立；建置與驗證見 [design/architecture/build.md](../design/architecture/build.md) 與
 > [testing](workflows/testing.md)。目前尚無玩法邏輯。
 
 ### 主體

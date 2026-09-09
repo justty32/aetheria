@@ -12,10 +12,10 @@
 
 | 場合 | 中介者 | 文件 |
 |---|---|---|
-| 兩個相鄰 Site 的邊界要對齊 | **邊與角**（更低維） | [edge-consistency.md](edge-consistency.md) |
-| Site 的狀態要影響世界 | **Region**（更高層） | [interface-world-mid.md](interface-world-mid.md) |
-| Site A 要影響 Site B | **Region**，透過事件 | [events.md](events.md) |
-| 上層要決定下層的具體樣貌 | **邊界條件**（`BoundaryProfile` ／ 事件投放點） | [event-scaling.md](event-scaling.md) |
+| 兩個相鄰 Site 的邊界要對齊 | **邊與角**（更低維） | [edge-consistency.md](generation/edge-consistency.md) |
+| Site 的狀態要影響世界 | **Region**（更高層） | [interface-world-mid.md](simulation/interface-world-mid.md) |
+| Site A 要影響 Site B | **Region**，透過事件 | [events.md](simulation/events.md) |
+| 上層要決定下層的具體樣貌 | **邊界條件**（`BoundaryProfile` ／ 事件投放點） | [event-scaling.md](simulation/event-scaling.md) |
 
 好處永遠是同一組：**順序無關、缺席無關、重生成無關**。
 物件 B 可以根本不在記憶體裡，互動照樣成立。
@@ -38,7 +38,7 @@
 1. **不算兩次。** 低層在算的那一份，高層就不自己算
    （`has_live_site` 跳過 Region 公式；主場層以外的事件面孔只讀不寫）。
 2. **守恆。** 個體的例外必須從統計的配額中扣抵
-   （見 [significance-fate.md](significance-fate.md)）。
+   （見 [significance-fate.md](simulation/significance-fate.md)）。
 3. **校準。** 高低兩層的公式對同一輸入必須算出約略相同的期望值，
    誤差有界且**無偏**。這是一條自動化測試，不是口號。
 
@@ -53,8 +53,8 @@
 | **易失層** | 當下的位置、HP、動畫狀態 | 不存 | 由持久層 + 規則重建 |
 
 程序層與易失層佔資料量的 99%，卻一位元都不必存。
-這條同時作用在地圖（[interface-world-mid.md](interface-world-mid.md)）
-與事件（[event-scaling.md](event-scaling.md)）上。
+這條同時作用在地圖（[interface-world-mid.md](simulation/interface-world-mid.md)）
+與事件（[event-scaling.md](simulation/event-scaling.md)）上。
 
 ## 原則四：骨架只依賴慢變數
 
@@ -72,7 +72,7 @@
 > 執行期以強型別下標存取。**
 
 `enum class TerrainId : uint16_t {}` 是合法的（強型別防混用），
-但**枚舉子一個都不准列**。詳見 [definitions.md](definitions.md)。
+但**枚舉子一個都不准列**。詳見 [definitions.md](rules/definitions.md)。
 
 ## 原則六：LOD 由 observer 單一驅動
 
@@ -82,9 +82,9 @@
 
 | 軸 | 決定什麼 | 文件 |
 |---|---|---|
-| **空間** Observer | 哪些**地方**要載入、用什麼解析度 | [observer.md](observer.md) |
-| **實體** Significance | 哪些**實體**要個別計算、要不要有名字 | [significance.md](significance.md) |
-| **事件** Event scaling | 哪些**事情**要展開成細節、在哪一層推進 | [events.md](events.md) |
+| **空間** Observer | 哪些**地方**要載入、用什麼解析度 | [observer.md](simulation/observer.md) |
+| **實體** Significance | 哪些**實體**要個別計算、要不要有名字 | [significance.md](simulation/significance.md) |
+| **事件** Event scaling | 哪些**事情**要展開成細節、在哪一層推進 | [events.md](simulation/events.md) |
 
 單一入口讓它可測、可預測、可在回合結算的固定時點批次執行。
 **這不只是最佳化——它同時是玩法**：玩家親自趕到戰場，
@@ -111,9 +111,9 @@ LOD 升降、zone 逐出、事件升降格、zone 的建立與銷毀，
 
 它撐起的是整個測試策略：沒有決定論，上面七條原則的驗證測試全部失效。
 
-具體規矩散在 [tech-stack.md](tech-stack.md)（RNG、容器順序、浮點）、
-[gen-pipeline.md](gen-pipeline.md)（階段子種子、量化點）、
-[rules-extensibility.md](rules-extensibility.md)（Lua 的六條鐵律）。
+具體規矩散在 [tech-stack.md](architecture/tech-stack.md)（RNG、容器順序、浮點）、
+[gen-pipeline.md](generation/gen-pipeline.md)（階段子種子、量化點）、
+[rules-extensibility.md](rules/rules-extensibility.md)（Lua 的六條鐵律）。
 
 ## 原則九：程式碼資產要拆得走（2026-08-27 使用者裁定）
 

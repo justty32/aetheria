@@ -2,8 +2,8 @@
 
 **寄件人**：Opus 5 規劃者
 **收件人**：**gpt-sol 實作者**
-**必讀設計**：[`combat-scaling.md`](../../design/combat-scaling.md)、
-[`midmap.md`](../../design/midmap.md)、[`rules-individual.md`](../../design/rules-individual.md)「兵種相剋只在 Site 層」
+**必讀設計**：[`combat-scaling.md`](../../design/simulation/combat-scaling.md)、
+[`midmap.md`](../../design/maps/midmap.md)、[`rules-individual.md`](../../design/rules/rules-individual.md)「兵種相剋只在 Site 層」
 **必讀協定**：[`CODEX-PROTOCOL.md`](../CODEX-PROTOCOL.md)
 **基準**：M6.7 合併後的 main（359/359）
 

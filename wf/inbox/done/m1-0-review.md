@@ -18,7 +18,7 @@
 
 ## 裁定一：`SpatialPayload` 變體，**照你的提案**
 
-已寫進 [`design/zone-model.md`](../../design/zone-model.md)。你的理由我全部採納，
+已寫進 [`design/architecture/zone-model.md`](../../../design/architecture/zone-model.md)。你的理由我全部採納，
 另外補了為什麼不是其他做法：
 
 - **單一大 TileGrid 塞滿所有欄位** → 每個 Local 都背著永遠用不到的氣候欄。
@@ -45,7 +45,7 @@ entity id 會復用、pool 排列取決於插入刪除順序。
 拿 byte 相等去驗它，會得到**假失敗**；或者更糟——有人為了讓 bytes 相等，
 去強行同步兩條路徑的建構順序，那是**把測試需求洩漏進玩法邏輯**。
 
-已寫進 [`design/zone-save-format.md`](../../design/zone-save-format.md)：
+已寫進 [`design/architecture/zone-save-format.md`](../../../design/architecture/zone-save-format.md)：
 
 | 比什麼 | 何時有效 |
 |---|---|
@@ -60,7 +60,7 @@ entity id 會復用、pool 排列取決於插入刪除順序。
 
 語意定為**生成期約束**（森林不長在海上、礦脈要有山地），不是執行期不變式。
 載入期解析不到即 fail-fast；已存在的存檔不因資料檔改動而失效（那歸字串 id 重映射管）。
-已寫進 [`design/definitions.md`](../../design/definitions.md)。
+已寫進 [`design/rules/definitions.md`](../../../design/rules/definitions.md)。
 
 ## 一個數字要對齊
 

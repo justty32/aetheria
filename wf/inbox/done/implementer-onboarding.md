@@ -24,7 +24,7 @@
 | 2 | [`design/README.md`](../../../design/README.md) | 索引 + 導讀主線 |
 | 3 | [`design/principles.md`](../../../design/principles.md) | **八條原則。這份最重要** |
 | 4 | [`design/outline.md`](../../../design/outline.md) | 全局常數：三層命名、尺度、時間、曆法 |
-| 5 | [`design/tech-stack.md`](../../../design/tech-stack.md)、[`design/cpp-conventions.md`](../../../design/cpp-conventions.md) | 三層架構、C++23 約定、vcpkg |
+| 5 | [`design/architecture/tech-stack.md`](../../../design/architecture/tech-stack.md)、[`design/architecture/cpp-conventions.md`](../../../design/architecture/cpp-conventions.md) | 三層架構、C++23 約定、vcpkg |
 | 6 | 你的任務書點名的那幾份 | 按需 |
 
 其餘的等真的要碰那塊時再讀。文件之間互相連結，順著走就行。
@@ -40,13 +40,13 @@
 看到 `enum class Terrain { Grass, Desert }` 就是錯的。
 地形、河流、道路、建築、單位、事件的種類全部是**資料檔裡的 def + 強型別下標**。
 `enum class TerrainId : uint16_t {}` 合法（防混用），但**枚舉子一個都不准列**。
-見 [`design/definitions.md`](../../../design/definitions.md)。
+見 [`design/rules/definitions.md`](../../../design/rules/definitions.md)。
 
 **3. 決定論不可妥協。**
 同一個 seed + 同一串命令 = 同一個結果，跨平台、跨編譯器。
 不用 `random_device`、不讀時鐘、不依賴 `unordered_map` 迭代順序、
 遊戲狀態不用浮點數。整個測試策略建立在這條上。
-見 [`design/tech-stack.md`](../../../design/tech-stack.md) 的決定論一節。
+見 [`design/architecture/tech-stack.md`](../../../design/architecture/tech-stack.md) 的決定論一節。
 
 ## 文件規約（你也要遵守）
 
@@ -90,7 +90,7 @@
 
 - **`~/repo/game_dev/medps` 是同一構想的前一輪**，有可跑的 `gcore/`（EnTT + cereal + zone）、
   Godot GDExtension 設定與 26 項測試。aetheria 的多項決策直接繼承自它——
-  遇到「這要怎麼寫」先去那邊看有沒有現成的。見 [`design/medps-relation.md`](../../../design/medps-relation.md)。
+  遇到「這要怎麼寫」先去那邊看有沒有現成的。見 [`design/architecture/medps-relation.md`](../../../design/architecture/medps-relation.md)。
 - **`~/repo/game_dev/my-rpg-frontend`** 有可直接抄的 Godot + GDExtension 專案佈局
   （`gdext/CMakeLists.txt`、`bin/*.gdextension`）。
 - **`~/repo/game_dev/my_godot_assists`** 有多個現成的 Godot 元件（世界地圖分層、相機、

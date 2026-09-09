@@ -5,7 +5,7 @@
 > **派工的心得在 [OPS-NOTES](OPS-NOTES.md)，驗收的心得在這裡。**
 > 每一條都是踩過才寫下來的。
 > 這一份講的是**我怎麼被一份看起來無懈可擊的回報騙過去**——
-> 遊戲本身的驗證原則在 [verification-detection-power.md](../design/verification-detection-power.md)，
+> 遊戲本身的驗證原則在 [verification-detection-power.md](../design/simulation/verification-detection-power.md)，
 > 那是設計；這裡是操作。
 
 ## ⚠ 唯一不能省的一步：自己重跑關鍵的負向控制
@@ -72,7 +72,7 @@ M8-INT-7 我寫「合併後 ctest 必須 ≥ 420」，那個數字是我拍腦�
   M8.3 問存檔形狀時，它自己的假設裡就寫了「載入驗證 `definition_id` 與 mapped type 一致」——
   那個驗證就是自白：映射是 Ruleset 的**規則資料**，不是世界狀態，
   存進去等於製造第二個真相來源，再寫一個檢查替它買保險。**導出資料不進存檔。**
-- **「存在 ≠ 同義」**，是 [zone-save-history.md](../design/zone-save-history.md)
+- **「存在 ≠ 同義」**，是 [zone-save-history.md](../design/architecture/zone-save-history.md)
   「缺席 ≠ 中性」的兄弟。M8.2 的權宜做法真的往世界裡放了假 `SettlementHall` 實體；
   拆掉之後，同一個實體在舊檔裡可能是真領主廳、也可能是住宅的冒充品，**光看存檔分不出來**。
   這種時候升存檔版本號是為了讓舊檔 **fail-fast**，而不是為了新欄位。

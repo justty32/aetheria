@@ -3,8 +3,8 @@
 **寄件人**：Opus 5 規劃者
 **收件人**：**gpt-sol 實作者**
 **回信地址**：`~/repo/game_dev/aetheria-influence/wf/inbox/`
-**必讀設計**：[`design/worldgen-civ.md`](../../design/worldgen-civ.md) 第 12 節、
-[`design/gen-pipeline.md`](../../design/gen-pipeline.md) 的「決定論的驗證」
+**必讀設計**：[`design/generation/worldgen-civ.md`](../../../design/generation/worldgen-civ.md) 第 12 節、
+[`design/generation/gen-pipeline.md`](../../../design/generation/gen-pipeline.md) 的「決定論的驗證」
 **基準**：`3649a8d`（分支 `m16-influence`）
 
 ---

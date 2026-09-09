@@ -4,8 +4,8 @@
 **收件人**：**gpt-sol 實作者**
 **回信地址**：`~/repo/game_dev/aetheria/wf/inbox/`
 **前置**：**先做完 [`m0_1-hardening.md`](m0_1-hardening.md)**，這份接在它後面
-**必讀設計**：[`design/zone-addressing.md`](../../../design/zone-addressing.md)（新拆出）、
-[`design/zone-model.md`](../../../design/zone-model.md)
+**必讀設計**：[`design/architecture/zone-addressing.md`](../../../design/architecture/zone-addressing.md)（新拆出）、
+[`design/architecture/zone-model.md`](../../../design/architecture/zone-model.md)
 
 ---
 
@@ -23,7 +23,7 @@ M0.5 **不碰存檔格式、不碰生成器、不碰玩法**。只做定址、�
 
 ### 1. `ZoneKey` 定址（`core/zone/zone_key.h`）
 
-照 [`zone-addressing.md`](../../../design/zone-addressing.md) 的位元佈局，
+照 [`zone-addressing.md`](../../../design/architecture/zone-addressing.md) 的位元佈局，
 **全部 `constexpr`、純位元運算、不查表、不配置記憶體**。
 
 這一塊幾乎可以整份用 `static_assert` 驗完——**請盡量這麼做**，
@@ -48,7 +48,7 @@ M0.5 **不碰存檔格式、不碰生成器、不碰玩法**。只做定址、�
 
 **但 M0.5 沒有磁碟。** 把持久化抽成一個介面（名字你定，例如 `ZoneStore`），
 M0.5 只實作 in-memory 後端。真正的 cereal + zstd 格式是 M0.6，設計在
-[`zone-save.md`](../../../design/zone-save.md)，**這次不要碰**。
+[`zone-save.md`](../../../design/architecture/zone-save.md)，**這次不要碰**。
 
 這樣拆的用意：`require` vs `load` 的分流語意（**檔案缺失＝損毀 → fail-fast**
 vs **探測不到 → 安靜回 false**）現在就能測，不必等存檔格式定案。

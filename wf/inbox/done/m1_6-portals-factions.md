@@ -3,8 +3,8 @@
 **寄件人**：Opus 5 規劃者
 **收件人**：**gpt-sol 實作者**
 **回信地址**：`~/repo/game_dev/aetheria/wf/inbox/`
-**必讀設計**：[`design/worldgen-civ.md`](../../design/worldgen-civ.md) 第 11～12 節、
-[`design/worldmap.md`](../../design/worldmap.md) 的「世界圖」與「尋路」
+**必讀設計**：[`design/generation/worldgen-civ.md`](../../../design/generation/worldgen-civ.md) 第 11～12 節、
+[`design/maps/worldmap.md`](../../../design/maps/worldmap.md) 的「世界圖」與「尋路」
 **基準**：`main`（`m16-influence` 已 merge 進來，100/100 綠）
 
 ---

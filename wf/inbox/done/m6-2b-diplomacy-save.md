@@ -2,8 +2,8 @@
 
 **寄件人**：Opus 5 規劃者
 **收件人**：**gpt-sol 實作者**
-**必讀設計**：[`zone-save-format.md`](../../design/zone-save-format.md)、
-[`interface-verification.md`](../../design/interface-verification.md)
+**必讀設計**：[`zone-save-format.md`](../../../design/architecture/zone-save-format.md)、
+[`interface-verification.md`](../../../design/simulation/interface-verification.md)
 **基準**：M6.2 合併後的 main（298/298）
 **三路並行**：M6.3 做 Region 戰鬥公式、M6.6 做湧現任務與敘事呈現。
 **⚠ 不要碰 `core/rules/combat*`、`core/quest*`、`godot/`、`bridge/`、

@@ -4,8 +4,8 @@
 **收件人**：**gpt-sol 實作者**
 **必讀協定**：[`CODEX-PROTOCOL.md`](../CODEX-PROTOCOL.md)
 **工作分支**：`m9-0-wt`（新 worktree，基準 = M8-INT-7 合併後的 main）
-**設計依據**：[narrative.md](../../design/narrative.md)、[milestones.md](../../design/milestones.md)
-的 M9 兩條判準、[zone-save-history.md](../../design/zone-save-history.md)
+**設計依據**：[narrative.md](../../design/rules/narrative.md)、[milestones.md](../../design/milestones.md)
+的 M9 兩條判準、[zone-save-history.md](../../design/architecture/zone-save-history.md)
 
 ---
 
@@ -40,7 +40,7 @@ M8.0 的**鐵律 4** 是每次掛勾新建 `_ENV`、存檔不含 Lua state
 （OPS-NOTES 記過：沒劃清楚，一晚撞了兩次版本號。）
 若同期還有別輪在跑，它們一律不准動這個常數。
 
-⚠ **缺席 ≠ 中性**（[zone-save-history.md](../../design/zone-save-history.md)）：
+⚠ **缺席 ≠ 中性**（[zone-save-history.md](../../design/architecture/zone-save-history.md)）：
 舊存檔沒有主線欄位時，**不要當成「階段 0」默默吃下去**，照既有慣例 fail-fast。
 
 ## 驗收（每一條都要在回報裡附數字）
@@ -63,7 +63,7 @@ M8.0 的**鐵律 4** 是每次掛勾新建 `_ENV`、存檔不含 Lua state
 | 2 | 讓某一個階段的推進條件永遠為真（跳過中間階段） | 「各階段命中次數不得有 0」或雜湊比對 |
 | 3 | victory 掛勾回傳固定 `Outcome` | 通關判定測試 |
 
-⚠ **無效注入不算通過**（[verification-detection-power.md](../../design/verification-detection-power.md)）：
+⚠ **無效注入不算通過**（[verification-detection-power.md](../../design/simulation/verification-detection-power.md)）：
 若某條注入下來全綠，**如實寫進回報說這條測不到**，不要換一個更容易紅的注入來充數。
 
 ## 不要做的事

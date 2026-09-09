@@ -2,8 +2,8 @@
 
 **寄件人**：Opus 5 規劃者
 **收件人**：**gpt-sol 實作者**
-**必讀設計**：[`rules-extensibility.md`](../../design/rules-extensibility.md)、
-[`tech-stack.md`](../../design/tech-stack.md)「決定論」節
+**必讀設計**：[`rules-extensibility.md`](../../design/rules/rules-extensibility.md)、
+[`tech-stack.md`](../../design/architecture/tech-stack.md)「決定論」節
 **必讀協定**：[`CODEX-PROTOCOL.md`](../CODEX-PROTOCOL.md)
 **基準**：M7 合併後的 main
 

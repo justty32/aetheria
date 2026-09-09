@@ -3,8 +3,8 @@
 **寄件人**：Opus 5 規劃者
 **收件人**：**gpt-sol 實作者**
 **回信地址**：`~/repo/game_dev/aetheria/wf/inbox/`
-**必讀設計**：[`interface-world-mid.md`](../../design/interface-world-mid.md)、
-[`interface-lifecycle.md`](../../design/interface-lifecycle.md)、
+**必讀設計**：[`interface-world-mid.md`](../../../design/simulation/interface-world-mid.md)、
+[`interface-lifecycle.md`](../../../design/simulation/interface-lifecycle.md)、
 [`principles.md`](../../design/principles.md) 原則七
 **基準**：`171beb1`
 **與 M5.0 並行**：另一個 worktree 在做 `core/local/`。**這輪不要新增檔案**
@@ -19,8 +19,8 @@
 > `SiteTurnPipeline` 目前一次只推進一個 `L_FULL` Site。M5 的世界時鐘／串流協調器
 > 必須**批次推進多個 Site**，且**保證旬界只結算 Region 一次**。
 
-M5 會讓這件事從「未來風險」變成「立刻爆炸」——[`lowmap-streaming.md`](../../design/lowmap-streaming.md)
-的串流是 **3×3 全載**，而 [`interface-lifecycle.md`](../../design/interface-lifecycle.md) 明寫
+M5 會讓這件事從「未來風險」變成「立刻爆炸」——[`lowmap-streaming.md`](../../../design/maps/lowmap-streaming.md)
+的串流是 **3×3 全載**，而 [`interface-lifecycle.md`](../../../design/simulation/interface-lifecycle.md) 明寫
 **「同時可以有很多個 `L_FULL` 的 Site」**。所以 M5.0 之前先把這條修掉。
 
 ### 缺陷的確切形狀

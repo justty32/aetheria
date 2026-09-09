@@ -43,7 +43,7 @@ aetheria/
 | `aetheria_bridge` | 共享庫 | core + godot-cpp | 產出 `.so` 給 Godot 載入 |
 
 **`aetheria_core` 那條是最重要的驗收點。** 用 CMake 的 target 可見性擋死，
-不要只靠約定——這是 [`design/tech-stack.md`](../../../design/tech-stack.md) 鐵律一的機械化落實。
+不要只靠約定——這是 [`design/architecture/tech-stack.md`](../../../design/architecture/tech-stack.md) 鐵律一的機械化落實。
 
 ## 最小內容（真的很少）
 
@@ -82,7 +82,7 @@ gtest, cli11
 ```
 
 其餘（entt、tomlplusplus、lua、sol2、zstd、spdlog、benchmark）**等真的用到再加**。
-清單見 [`design/cpp-conventions.md`](../../../design/cpp-conventions.md)。
+清單見 [`design/architecture/cpp-conventions.md`](../../../design/architecture/cpp-conventions.md)。
 
 **godot-cpp 不走 vcpkg**——它必須跟 Godot 版本綁死，用 submodule 或固定版本原始碼樹。
 
@@ -102,7 +102,7 @@ godot-cpp 預設 C++17。要跟 core 一致就得用相同標準與相同 ABI �
 
 ### 風險二：C++26
 
-`design/cpp-conventions.md` 說「C++23 基線，工具鏈支援時可用 C++26」。
+`design/architecture/cpp-conventions.md` 說「C++23 基線，工具鏈支援時可用 C++26」。
 **M0 一律用 C++23**，別碰 26——先讓基線跑起來。
 
 ### 風險三：Godot 版本
@@ -123,7 +123,7 @@ GDExtension 設定，先去看它們用的是什麼版本。
 - [ ] `aetheria_core` 的 CMake target 上**確實沒有** godot-cpp 的 include 路徑
       （請貼出你怎麼驗證的——例如 `cmake --graphviz` 或編譯命令的 `-I` 清單）
 - [ ] `vcpkg.json` 鎖了 baseline，**乾淨機器上 clone 後能重現建置**（至少論證這點）
-- [ ] 寫一份 `design/build.md`（≤ 8 KB，繁體中文）記錄實際的建置步驟與踩到的坑
+- [ ] 寫一份 `design/architecture/build.md`（≤ 8 KB，繁體中文）記錄實際的建置步驟與踩到的坑
 
 最後一項別省。下一個接手的人（包括我）需要它。
 
@@ -133,7 +133,7 @@ M0 的範圍控制很重要，**以下一律不做**：
 
 | 不做 | 為什麼 |
 |---|---|
-| `Zone`／`ZoneManager` | 留給 M0.5，設計在 [`design/zone-model.md`](../../../design/zone-model.md) |
+| `Zone`／`ZoneManager` | 留給 M0.5，設計在 [`design/architecture/zone-model.md`](../../../design/architecture/zone-model.md) |
 | 任何生成器 | 留給 M1 |
 | EnTT、cereal、Lua、TOML 的接入 | 等有東西要用它們的時候 |
 | 任何玩法邏輯 | M0 不碰玩法 |

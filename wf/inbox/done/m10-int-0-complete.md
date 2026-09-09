@@ -23,7 +23,7 @@ DONE — M10 波 0 三線已整合，v22 定版與 420 項測試全綠
 
 ## 建置與測試
 
-首次 configure 因本機 Godot 4.7.2 與專案固定 4.7.1 不符；依 `design/build.md` 的 fallback，
+首次 configure 因本機 Godot 4.7.2 與專案固定 4.7.1 不符；依 `design/architecture/build.md` 的 fallback，
 並沿用已驗收 0c 的設定，以 `-DAETHERIA_GODOT_BIN=/usr/bin/false` 使用 godot-cpp 內建 4.7 API。
 此 worktree 亦先初始化既定 submodule gitlink `d7b6162…`；兩者都沒有修改 repo 內容。
 

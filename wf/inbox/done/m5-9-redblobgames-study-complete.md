@@ -38,10 +38,10 @@ noise 作用位置，不是有沒有 fBm：目前 fBm 只加在既成 raster Vor
 ### 2. 距海岸高度與接邊一致性
 
 **L1 Region 相容；每個 Site／Local 各算則衝突。** L1 整張生成，Region 間明定不幾何接邊
-（`design/worldgen-terrain.md:120-127`），故全 Region BFS 不破壞 Site 接邊；量化高度仍可作下層輸入。
+（`design/generation/worldgen-terrain.md:120-127`），故全 Region BFS 不破壞 Site 接邊；量化高度仍可作下層輸入。
 
-降維鏈要求角→邊先裁決、面只能讀（`design/edge-consistency.md:23-36`），BoundaryProfile 又要求
-角錨定與共用 edge seed（`design/edge-consistency.md:79-110`）。各面依自身海岸 flood-fill 會覆寫
+降維鏈要求角→邊先裁決、面只能讀（`design/generation/edge-consistency.md:23-36`），BoundaryProfile 又要求
+角錨定與共用 edge seed（`design/generation/edge-consistency.md:79-110`）。各面依自身海岸 flood-fill 會覆寫
 邊界，確實不相容。下放前須由 parent 全域先算 distance 並傳邊界值，或令面內解服從既定
 BoundaryProfile；不能各面自行算。
 

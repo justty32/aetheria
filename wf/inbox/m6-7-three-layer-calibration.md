@@ -2,9 +2,9 @@
 
 **寄件人**：Opus 5 規劃者
 **收件人**：**gpt-sol 實作者**
-**必讀設計**：[`event-scaling.md`](../../design/event-scaling.md)、
-[`combat-scaling.md`](../../design/combat-scaling.md)、
-[`combat-formula.md`](../../design/combat-formula.md)「校準」節
+**必讀設計**：[`event-scaling.md`](../../design/simulation/event-scaling.md)、
+[`combat-scaling.md`](../../design/simulation/combat-scaling.md)、
+[`combat-formula.md`](../../design/rules/combat-formula.md)「校準」節
 **基準**：M6.3／M6.4／M6.5 合併後的 main
 **⚠ 這是 M6 的收線輪，也是整個縮放機制唯一真正困難的地方。**
 
@@ -65,7 +65,7 @@ M6.3 量出的劍聖區間是 **N=125／M=522**（區間 397），成立。
 但我自己注入驗證時發現：**把 `p` 從 1.3 改成 1.0（純線性），那條區間測試照樣全綠。**
 
 也就是說**區間是崩潰閾值與追擊損失產生的，不是 `R^p` 的非線性產生的**，
-而 `p` 是 [`combat-formula.md`](../../design/combat-formula.md) 明說
+而 `p` 是 [`combat-formula.md`](../../design/rules/combat-formula.md) 明說
 「校準時要動的就是這一個數字」的那個參數——**它現在沒有任何測試會因為它錯了而變紅。**
 
 ⚠ 這輪是校準輪，`p` 就是你要調的東西，所以**必須先補上一條對 `p` 敏感的測試**：

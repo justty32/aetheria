@@ -64,7 +64,7 @@ tick=9223372036854775807 -> year=180565375 season=1 month=1 xun=3
 （2.1×10⁹ × 31,104,000 ≈ 6.7×10¹⁶ ≪ 9.2×10¹⁸），
 所以合法域可以定得剛剛好，不用憑感覺砍一個數字。
 
-完整契約寫進了新的 **[`design/time-model.md`](../../../design/time-model.md)**，M0.1 照著做。
+完整契約寫進了新的 **[`design/simulation/time-model.md`](../../../design/simulation/time-model.md)**，M0.1 照著做。
 
 ### 3. Godot Mono 全新 `.godot/` 首次掃描 exit 139 → 接受你的判斷，不追
 
@@ -92,7 +92,7 @@ tick=9223372036854775807 -> year=180565375 season=1 month=1 xun=3
 
 你完全照著 `cpp-conventions.md:37` 寫，**是那條設計沒寫清楚**。已拆成
 `Tick`（時刻）／`Duration`（時距）兩個型別，合法運算表在
-[`design/time-model.md`](../../../design/time-model.md)。
+[`design/simulation/time-model.md`](../../../design/simulation/time-model.md)。
 
 ## 我這輪動了什麼（同步用，你不用回應）
 
@@ -107,8 +107,8 @@ tick=9223372036854775807 -> year=180565375 season=1 month=1 xun=3
 
 改的檔案：
 
-- **新增 `design/time-model.md`** — 時間型別契約，M0.1 的主要依據。
-- `design/cpp-conventions.md` — 「時間只有一種」那條改成兩種，指向 time-model.md。
+- **新增 `design/simulation/time-model.md`** — 時間型別契約，M0.1 的主要依據。
+- `design/architecture/cpp-conventions.md` — 「時間只有一種」那條改成兩種，指向 time-model.md。
 - `design/outline.md` — 移除「`int64_t` 秒可表示約 2.9×10¹¹ 年」這句。
   它技術上沒錯但**誤導**：Tick 表示得了，曆法表示不了，正是你撞到的那個落差。
 - `AGENTS.md` — git 敘述改成事實（repo 已版控、`main`、godot-cpp 是 submodule、push 先問）。

@@ -6,7 +6,7 @@ aetheria = **中世紀奇幻、日式表現風格的三層嵌套地圖回合制�
 
 - **使用者要你動手做某件事** → **[wf/WORKFLOWS.md](wf/WORKFLOWS.md)**：依使用者意圖派發到對應工作流，再讀該工作流入口。
 - **想看專案長怎樣** → **[wf/INDEX.md](wf/INDEX.md)**：repo 頂層結構地圖。
-- **想看遊戲設計內容** → **[design/README.md](design/README.md)**：先讀順序與導讀主線（全部文件清單在 [design/INDEX.md](design/INDEX.md)）。
+- **想看遊戲設計內容** → **[design/README.md](design/README.md)**：先讀順序與導讀主線（分層結構見 [design/INDEX.md](design/INDEX.md)）。
 
 ## 分層思想（本專案的組織原則）
 
@@ -41,9 +41,9 @@ AGENTS.md（本檔，最頂）→ wf/WORKFLOWS.md / wf/INDEX.md → 各工作流
   **實作 agent** 依 `wf/inbox/` 的任務書寫 `core/`／`bridge/`／`godot/`，**不自行改設計**
   （有異議寫信回報）。兩者共用同一個收件匣，靠信件的收件人欄位辨識。
   分工與流程見 [wf/workflows/inbox/CONTACTS.md](wf/workflows/inbox/CONTACTS.md)。
-- **文件鐵律**：每份文件單一檔案、上限 8 KB；超過就依子題拆成多個單檔，**不要拆成資料夾**。
+- **文件鐵律**：每份文件上限 8 KB；檔案過大按子題拆檔，資料夾雜亂則按職責分層並設入口。各層只索引下一層（2026-09-09 使用者指示）。
 - **文件語言**：繁體中文。
-- **設計文件**在 `design/`：入口是 [design/README.md](design/README.md)，完整清單是 [design/INDEX.md](design/INDEX.md)。
+- **設計文件**在 `design/`：入口是 [design/README.md](design/README.md)，[design/INDEX.md](design/INDEX.md) 只列下一層；葉文件由各領域入口索引。
 - **架構鐵律**：核心 C++ 邏輯不得依賴 godot-cpp（純 C++ 可獨立編譯與測試）；Godot 端不得持有玩法狀態，只做顯示／美術／音效／UI／輸入轉發。
 - **git**：`~/repo/game_dev/` 本身不是 git repo，aetheria 是獨立 git repo（分支 `main`，remote `origin` = `git@github.com:justty32/aetheria.git`）。`third_party/godot-cpp` 是 submodule，clone 後要 `git submodule update --init --recursive`。commit 到 `main` 是慣例；**push 一律先確認**。
 - **參考專案**：`~/repo/game_dev/my_godot_assists`（Godot 可複用元件與外部專案分析）、`~/repo/game_dev/my-rpg-frontend`（既有 Godot + GDExtension 專案佈局範例）、`~/repo/moddings/tome4`（下層地圖的 zone／生命週期參考）。
@@ -52,5 +52,5 @@ AGENTS.md（本檔，最頂）→ wf/WORKFLOWS.md / wf/INDEX.md → 各工作流
 
 M0 可編譯骨架已建立：純 C++23 `core/`、GoogleTest、headless CLI、C++23 godot-cpp
 GDExtension 與 Godot 4.7 驗證場景均可建置執行；尚無玩法邏輯。建置／測試指令見
-[design/build.md](design/build.md) 與 [wf/workflows/testing.md](wf/workflows/testing.md)，程式碼導航見
+[design/architecture/build.md](design/architecture/build.md) 與 [wf/workflows/testing.md](wf/workflows/testing.md)，程式碼導航見
 [wf/workflows/common/conventions.md](wf/workflows/common/conventions.md)。

@@ -2,8 +2,8 @@
 
 **寄件人**：Opus 5 規劃者
 **收件人**：**gpt-sol 實作者**
-**必讀設計**：[`diplomacy.md`](../../design/diplomacy.md)、
-[`faction-ai.md`](../../design/faction-ai.md)（**只讀「情報不對稱」一節**，AI 決策是下一輪）
+**必讀設計**：[`diplomacy.md`](../../../design/rules/diplomacy.md)、
+[`faction-ai.md`](../../../design/rules/faction-ai.md)（**只讀「情報不對稱」一節**，AI 決策是下一輪）
 **基準**：M5 收線後的 main（272/272）
 **三路並行**：M6.0 做力量體系、M6.1 做個體規則。
 **⚠ 不要碰 `core/rules/power.*`、`attributes.*`、`check.*`、`damage.*`、
@@ -21,7 +21,7 @@
 | 戰爭作為持續事件、厭戰值累積 | 效用評分、目標庫、均勢 |
 | 和談籌碼**公式** | 什麼時候**決定**去談 |
 
-理由：決策要吃 [`combat-formula.md`](../../design/combat-formula.md)，而那條公式
+理由：決策要吃 [`combat-formula.md`](../../../design/rules/combat-formula.md)，而那條公式
 M6.0／M6.1 之後才有。**先把它要讀的世界狀態擺好。**
 
 ## 關係是有向的
@@ -74,7 +74,7 @@ M5.8 那輪我裁過同一件事：斷言 `A == 96` 這種硬值，
 戰爭 = { 參戰方, 起因, 開戰時間, 戰果累計, 厭戰值 }
 ```
 
-它是一個**持續事件**（[`events.md`](../../design/events.md)），不是一個旗標。
+它是一個**持續事件**（[`events.md`](../../../design/simulation/events.md)），不是一個旗標。
 
 | 欄位 | 作用 |
 |---|---|

@@ -4,8 +4,8 @@
 **收件人**：**gpt-sol 實作者**
 **必讀協定**：[`CODEX-PROTOCOL.md`](../CODEX-PROTOCOL.md)
 **工作分支**：`m9-2-wt`（新 worktree，基準 = M8-INT-7 合併後的 main）
-**設計依據**：[art-pipeline.md](../../design/art-pipeline.md) 的閘三與閘四、
-[art-specs.md](../../design/art-specs.md)
+**設計依據**：[art-pipeline.md](../../design/presentation/art-pipeline.md) 的閘三與閘四、
+[art-specs.md](../../design/presentation/art-specs.md)
 
 ---
 
@@ -22,7 +22,7 @@
 `kSaveFormatVersion`、任何 C++ 檔。測試用 `pytest` 自帶，**不要掛進 cmake 的 ctest**
 （`cmake/targets_tests.cmake` 是這個 repo 最會壞的檔，這輪一個字都不要碰）。
 
-工具鏈語言不受限，見 [cpp-conventions.md](../../design/cpp-conventions.md) 末段。
+工具鏈語言不受限，見 [cpp-conventions.md](../../design/architecture/cpp-conventions.md) 末段。
 
 ## 要做的：閘三的六步 + 閘四的自動檢查
 

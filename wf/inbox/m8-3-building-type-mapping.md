@@ -4,8 +4,8 @@
 **收件人**：**gpt-sol 實作者**
 **必讀協定**：[`CODEX-PROTOCOL.md`](../CODEX-PROTOCOL.md)
 **工作分支**：`m8-3-wt`（新 worktree，基準 = M8-INT-7 合併後的 main）
-**設計依據**：[interface-world-mid.md](../../design/interface-world-mid.md) 的投影／歸約與歸約量表、
-[interface-double-count.md](../../design/interface-double-count.md)
+**設計依據**：[interface-world-mid.md](../../design/simulation/interface-world-mid.md) 的投影／歸約與歸約量表、
+[interface-double-count.md](../../design/simulation/interface-double-count.md)
 
 ---
 
@@ -21,7 +21,7 @@
 這不是「數值偏一點」，是**一種建築被當成另一種**。
 `interface-world-mid.md` 的歸約量表要求每個上報量有明確來源；
 一個假冒的 marker 讓來源說不清，而且它**不會有任何測試變紅**——
-這正是 [verification-detection-power.md](../../design/verification-detection-power.md)
+這正是 [verification-detection-power.md](../../design/simulation/verification-detection-power.md)
 說的那種假通過。
 
 ⚠ 而且它會咬到 M9.0：主線的推進條件要掛在城建上，映射錯了主線的數字也跟著錯。
@@ -42,7 +42,7 @@
 映射要進存檔，所以 `kSaveFormatVersion` **20 → 21，只有這一路能動**。
 M9.0 之後才輪到 22。（OPS-NOTES 記過：沒劃清楚，一晚撞了兩次版本號。）
 
-⚠ **缺席 ≠ 中性**（[zone-save-history.md](../../design/zone-save-history.md)）：
+⚠ **缺席 ≠ 中性**（[zone-save-history.md](../../design/architecture/zone-save-history.md)）：
 舊存檔沒有映射欄位時**不要默默當成住宅**，照既有慣例 fail-fast。
 
 ## 順手一件（跨區，只有你能做）
@@ -59,7 +59,7 @@ M9.0 之後才輪到 22。（OPS-NOTES 記過：沒劃清楚，一晚撞了兩�
 | **住宅與領主廳的 Region 效果不同** | 各蓋一棟，附兩者對 Development 與人口的**前後數字**，且**必須不同** |
 | **marker 已死** | 全 repo grep 不到那個權宜 marker，附 grep 結果 |
 | **移除後住宅不再帶人口** | 附移除前／移除後的人口數字 |
-| **不重複計算** | 依 [interface-double-count.md](../../design/interface-double-count.md)，附一次事件升級與歸約同時發生的比對 |
+| **不重複計算** | 依 [interface-double-count.md](../../design/simulation/interface-double-count.md)，附一次事件升級與歸約同時發生的比對 |
 | M8.2 的迴圈沒壞 | M8.2 那條「Site 蓋住宅 → Region 建設 1→2」照樣通，附數字（值可以變，鏈路不能斷） |
 | 存檔往返 | 冷載入（新行程）後映射與權重逐項相等 |
 | ctest | 全綠，附 N 與新增數 |

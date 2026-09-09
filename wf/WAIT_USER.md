@@ -15,7 +15,7 @@
 管線我派得出去，**素材不行**——它需要你的生成模型與品味判斷。
 
 - ⚠ **色盤的實際色值（48～64 色）＋ 10～20 張參考圖組**。
-  [art-pipeline.md](../design/art-pipeline.md) 說這是「閘一的第一件事」、
+  [art-pipeline.md](../design/presentation/art-pipeline.md) 說這是「閘一的第一件事」、
   「七百張圖的地基」，而且**它明講第 1 步不要急**。
   M9.2 的管線把色盤做成**輸入檔**（附確定性生成的佔位色盤），所以它不擋工程——
   但真色盤沒定之前，任何素材都不該開始生成，否則整批要重做。
@@ -28,7 +28,7 @@
 
 - ⚠ **M9 要不要碰 observer mark？** M6.6 實作者判定湧現任務
   「比殺 10 隻狼好，但只有半步意義，不算有靈魂」，診斷是缺 **mark**、歷史因果、
-  具名後果。但 mark／[unique-objects.md](../design/unique-objects.md) 是你裁定**擱置**的，
+  具名後果。但 mark／[unique-objects.md](../design/simulation/unique-objects.md) 是你裁定**擱置**的，
   [milestones.md](../design/milestones.md) 寫著「要做之前先問」。
   **不解除擱置的話，「湧現任務有靈魂」這條要留到 M9 之後。**
 

@@ -35,7 +35,7 @@
 被我撤回的只有**前提**：我原本說「上古與現代高度重疊是缺陷、要讓它們分家」——
 那是錯的。羅馬、雅典、大馬士革都在同一個點上住了幾千年，因為選址的理由是**地形的性質**，
 而地形不變。現代城市蓋在上古遺址上**就是世界本來的樣子**，不要去修它。
-理由已寫進 [`design/worldgen-history.md`](../../design/worldgen-history.md)。
+理由已寫進 [`design/generation/worldgen-history.md`](../../../design/generation/worldgen-history.md)。
 
 ## M1.6-prep：通過
 

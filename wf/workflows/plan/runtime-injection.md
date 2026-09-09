@@ -1,7 +1,7 @@
 # M10 可編輯的沙盒 — 動工計畫總覽
 
 ← [plan/README](README.md)｜調查佐證：[status](../investigation/runtime-injection-status.md)、
-[assets](../investigation/runtime-injection-assets.md)｜裁定：[runtime-injection.md](../../../design/runtime-injection.md)
+[assets](../investigation/runtime-injection-assets.md)｜裁定：[runtime-injection.md](../../../design/rules/runtime-injection.md)
 
 **日期**：2026-08-27。目標＝使用者 2026-08-26 的裁定：**可編輯的沙盒（矮人要塞模型）**——
 進行中的存檔可加入地形／文化／勢力／人物／物品定義；世界一個存檔、人物一個存檔。
@@ -73,7 +73,7 @@
 - **版本號只有整合輪動**，每波至多 +1（歷史撞過兩次，鐵律；軌跡見 dispatch）。
 - **M10.0b 必須先於一切格式變更落地**，否則每次 bump 都要重寫 14 個常數。
 - **不碰擱置項**：mark／unique-objects、root 成長軸（只量測不實作，見裁定#5）。
-- 設計文件修訂隨計畫走：[definitions.md](../../../design/definitions.md) 的
+- 設計文件修訂隨計畫走：[definitions.md](../../../design/rules/definitions.md) 的
   「def 不進存檔／Ruleset 不可變」兩句按裁定#6 修訂——**由規劃者改，不派給 codex**。
 - 實作全部派 codex gpt-sol；規劃者只做派工、驗收（重跑負向控制）、裁定。
 

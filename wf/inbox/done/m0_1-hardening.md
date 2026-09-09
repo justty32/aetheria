@@ -22,7 +22,7 @@ M0 有三個東西「看起來有做，實際擋不住」：核心隔離守衛�
 
 ### 1. `Tick` 拆成 `Tick` / `Duration`
 
-依 **[`design/time-model.md`](../../../design/time-model.md)**（新文件，先整份讀完）。
+依 **[`design/simulation/time-model.md`](../../../design/simulation/time-model.md)**（新文件，先整份讀完）。
 
 要點：兩者都是 `int64_t` 秒但語意不同；只實作那份合法運算表列出的運算；
 **`Tick + Tick`、`Tick * n` 必須無法編譯**；stride 常數全部變成 `Duration`
@@ -70,19 +70,19 @@ dump 出來的 `extension_api.json` 不驗版本。同一個 godot-cpp commit
   「本機 Godot 是 X，專案期望 Y」。
 - Godot 執行檔路徑改成可由 cache 變數覆寫（例如 `AETHERIA_GODOT_BIN`），
   不要只靠 `find_program` 的順序。
-- 期望版本寫進 `design/build.md`。
+- 期望版本寫進 `design/architecture/build.md`。
 
 **注意**：不要讓「沒裝 Godot」變成硬錯誤。`aetheria_sim` 必須在沒有 Godot 的環境編得起來，
 那是 M0 已經驗過的性質，別弄壞。
 
 ### 5. 把文件裡還不成立的話改成成立的
 
-- `design/build.md:71` 與 `third_party/README.md`：submodule gitlink **現在真的登記了**
+- `design/architecture/build.md:71` 與 `third_party/README.md`：submodule gitlink **現在真的登記了**
   （`ab38ce1`），把「提交前應該…」的未來式改成陳述句。
-- `design/build.md` 的可重現性一節：現在可以做**真正的** clean clone 驗證了
+- `design/architecture/build.md` 的可重現性一節：現在可以做**真正的** clean clone 驗證了
   （`git clone` 到別的目錄 → `git submodule update --init --recursive` → 重跑建置）。
   **做一次，貼結果。** 這是 M0 唯一沒真正驗到的一條。
-- `design/build.md` 補一列決定：`gl_compatibility` renderer（你 M0 選的，我同意，但當時沒申報）。
+- `design/architecture/build.md` 補一列決定：`gl_compatibility` renderer（你 M0 選的，我同意，但當時沒申報）。
 
 ## Done when
 
@@ -97,7 +97,7 @@ dump 出來的 `extension_api.json` 不驗版本。同一個 godot-cpp commit
 - [ ] 本機 Godot 版本與期望不符時 configure 失敗；沒裝 Godot 時 `aetheria_sim` 仍編得起來
 - [ ] **真正的 clean clone 建置驗證**（貼指令與結果）
 - [ ] 四個 target 仍然零警告、CTest 全綠
-- [ ] `design/build.md`、`third_party/README.md` 沒有還不成立的陳述
+- [ ] `design/architecture/build.md`、`third_party/README.md` 沒有還不成立的陳述
 - [ ] 自己 commit 到 `main`（**不要 push**）
 
 ## 不要做的事

@@ -12,7 +12,7 @@
 |---|---|---|
 | **三層地圖** | L1 Region / L2 Site / L3 Local | [outline.md](outline.md) |
 | **三層資料** | 程序層 / 持久層 / 易失層 | [principles.md](principles.md) 原則三 |
-| **三層程式碼架構** | `core/` / `bridge/` / `godot/` | [tech-stack.md](tech-stack.md) |
+| **三層程式碼架構** | `core/` / `bridge/` / `godot/` | [tech-stack.md](architecture/tech-stack.md) |
 
 「完整三層資料」≠「完整三層地圖」。看到裸的「三層」要回頭確認它指哪個。
 
@@ -32,14 +32,14 @@
 
 | 型別 | 是什麼 | 範圍 |
 |---|---|---|
-| `ZoneKey` | **zone 的位址**。座標推導，見 [zone-addressing.md](zone-addressing.md) | uint64 |
+| `ZoneKey` | **zone 的位址**。座標推導，見 [zone-addressing.md](architecture/zone-addressing.md) | uint64 |
 | `RegionXY` | Region 內的格位 | 128×96 |
 | `SiteXY` | Site 內的格位 | 64×64 |
 | `LocalXY` | Local 內的格位 | 64×64 |
 | `EntityId` | **zone 內**的實體。實質是 `entt::entity`，強型別包裝 | per-registry |
 | `EntityRef` | **跨 zone** 的弱引用 `{ZoneKey, uid}`，解引用可失敗 | 全域 |
 | `FactionId` | 勢力 | — |
-| `*DefId`（`TerrainId`、`EdgeId`…） | **資料檔定義的下標**，枚舉子一個都不列 | 見 [definitions.md](definitions.md) |
+| `*DefId`（`TerrainId`、`EdgeId`…） | **資料檔定義的下標**，枚舉子一個都不列 | 見 [definitions.md](rules/definitions.md) |
 
 **沒有 `SiteId` 這個型別。** 早期文件用過，已作廢——
 Site 的身分就是它的 `ZoneKey`，由 Region 座標推導而得，不另外配發。
@@ -49,7 +49,7 @@ Site 的身分就是它的 `ZoneKey`，由 Region 座標推導而得，不另外
 
 ## LOD 等級
 
-四級，**三層地圖共用同一組名稱**（見 [observer.md](observer.md)）：
+四級，**三層地圖共用同一組名稱**（見 [observer.md](simulation/observer.md)）：
 
 | 等級 | 意思 |
 |---|---|
@@ -65,7 +65,7 @@ Site 的身分就是它的 `ZoneKey`，由 Region 座標推導而得，不另外
 | 名稱 | 是什麼 |
 |---|---|
 | `SiteDigest` / `LocalDigest` | zone 卸載時壓縮成的持久層摘要。**同一個機制的兩個實例**，欄位相同、尺寸不同 |
-| `StatusDigest` | 獨特物件的簡要狀態快照，見 [unique-objects.md](unique-objects.md) |
+| `StatusDigest` | 獨特物件的簡要狀態快照，見 [unique-objects.md](simulation/unique-objects.md) |
 
 前兩者實作上應該是同一個模板，`Site`／`Local` 只是名字。
 若實作時發現欄位真的分歧，回報給規劃者更新設計。
@@ -84,7 +84,7 @@ Site 的身分就是它的 `ZoneKey`，由 Region 座標推導而得，不另外
 
 ## 變數的快與慢
 
-見 [interface-world-mid.md](interface-world-mid.md)：
+見 [interface-world-mid.md](simulation/interface-world-mid.md)：
 
 | | 慢變數 | 快變數 |
 |---|---|---|
@@ -97,9 +97,9 @@ Site 的身分就是它的 `ZoneKey`，由 Region 座標推導而得，不另外
 
 | 軸 | 決定什麼 | 文件 |
 |---|---|---|
-| **Observer**（空間） | 哪些**地方**要載入、多細 | [observer.md](observer.md) |
-| **Significance**（實體） | 哪些**實體**要個別算、要不要有名字 | [significance.md](significance.md) |
-| **Event scaling**（事件） | 哪些**事情**要展開、在哪一層推進 | [events.md](events.md) |
+| **Observer**（空間） | 哪些**地方**要載入、多細 | [observer.md](simulation/observer.md) |
+| **Significance**（實體） | 哪些**實體**要個別算、要不要有名字 | [significance.md](simulation/significance.md) |
+| **Event scaling**（事件） | 哪些**事情**要展開、在哪一層推進 | [events.md](simulation/events.md) |
 
 早期文件可能寫「兩條軸」，那是事件縮放引入前的舊說法，以本表為準。
 
@@ -110,7 +110,7 @@ Site 的身分就是它的 `ZoneKey`，由 Region 座標推導而得，不另外
 | **根 observer** | **只有一個：玩家** |
 | **子觀察點** | 從根分出去、掛在事件／物件／地點上的。可再分孫 |
 | **場強 score** | `max over observers of (strength − travel_cost)`，決定 LOD |
-| **駐留層** | **玩家自己**選擇站在哪一層操作，見 [player-residence.md](player-residence.md)。與場強正交 |
+| **駐留層** | **玩家自己**選擇站在哪一層操作，見 [player-residence.md](maps/player-residence.md)。與場強正交 |
 | `pinned` | 永不降級、不受預算約束 |
 
 早期文件可能把 observer 寫成「多個平行來源」，那是修正前的舊說法——
@@ -125,7 +125,7 @@ Site 的身分就是它的 `ZoneKey`，由 Region 座標推導而得，不另外
 | **significance**（被個別計算的資格） | 可因**聚合**提升——一千個流民聚成流民團就升級 |
 | **power tier**（戰鬥位階） | **不因人多提升**——十個騎士組隊，位階仍是 2 |
 
-這是目前最容易寫混的一處，見 [power-tiers.md](power-tiers.md) 末段。
+這是目前最容易寫混的一處，見 [power-tiers.md](rules/power-tiers.md) 末段。
 
 ## 待補
 

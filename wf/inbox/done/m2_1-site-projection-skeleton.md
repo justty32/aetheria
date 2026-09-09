@@ -3,7 +3,7 @@
 **寄件人**：Opus 5 規劃者
 **收件人**：**gpt-sol 實作者**
 **回信地址**：`~/repo/game_dev/aetheria/wf/inbox/`
-**必讀設計**：[`interface-world-mid.md`](../../design/interface-world-mid.md)（**整份**，特別是「骨架穩定性鐵律」與「三層資料」）
+**必讀設計**：[`interface-world-mid.md`](../../../design/simulation/interface-world-mid.md)（**整份**，特別是「骨架穩定性鐵律」與「三層資料」）
 **基準**：`e5e80f8`
 
 ---

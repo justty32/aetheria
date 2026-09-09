@@ -1,47 +1,30 @@
-# 設計文件索引
+# 設計文件入口
 
-**每份文件單一檔案、上限 8 KB**；超過就依子題拆成多個單檔，不要拆成資料夾。繁體中文。
+本層只管設計全局與導引；子題進所屬資料夾，不再平鋪。每份文件上限 8 KB、繁體中文；資料夾變雜時依職責分層，每層 README 兼索引或另設 INDEX。
 
-## 先讀（依序）
+## 先讀
 
-1. [outline.md](outline.md) — 全局常數：三層命名、尺度、時間、曆法
-2. [principles.md](principles.md) — **八條原則。其餘文件都只是它們的展開**
-3. [glossary.md](glossary.md) — 術語表。**用詞衝突以此為準**（注意「三層」有三個意思）
-4. [medps-relation.md](medps-relation.md) — medps 是同一構想的前一輪，動基礎設施前必讀
+1. [outline.md](outline.md)：全局常數與遊戲定位。
+2. [principles.md](principles.md)：貫穿全案的原則。
+3. [glossary.md](glossary.md)：術語仲裁。
+4. [INDEX.md](INDEX.md)：選下一層領域入口。
 
-## 導讀主線
+## 要往哪裡走
 
-| 想知道 | 順著讀 |
+| 想知道 | 下一層入口 |
 |---|---|
-| 遊戲長什麼樣 | `outline` → `worldmap` → `midmap` → `lowmap` |
-| 程式怎麼分 | `tech-stack` → `cpp-conventions` → `zone-model` → `zone-addressing` → `definitions` |
-| 最難的地方 | `interface-world-mid` → `interface-lifecycle`（對應 M2、M4） |
-| 世界怎麼在有限算力下活著 | `observer` → `significance` → `events` |
-| 世界怎麼長出來 | `gen-pipeline` → `edge-consistency` → 各層生成器 |
-| 玩起來什麼感覺 | `player-residence` → `combat-scaling` |
+| 最新活世界規格 | [spec/](spec/README.md)：狀態、依賴、各領域草案 |
+| 三層地圖怎麼玩 | [maps/](maps/README.md) |
+| 核心、zone、存檔與建置 | [architecture/](architecture/README.md)；改基礎設施前先讀該層 medps 繼承說明 |
+| 時間、LOD、交接與事件 | [simulation/](simulation/README.md) |
+| 世界與地圖怎麼生成 | [generation/](generation/README.md) |
+| 戰鬥、外交、內容與追加 | [rules/](rules/README.md) |
+| 美術、素材與音景 | [presentation/](presentation/README.md) |
+| 里程碑與歷史規劃狀態 | [milestones.md](milestones.md) |
 
-## 全部文件
+## 寫文件
 
-**獨立一檔** → [INDEX.md](INDEX.md)。分類完整清單在那裡。
-
-## 尚未規劃
-
-**設計面的主要項目已全部涵蓋。** 剩下的都是刻意擱置，或本質上屬於實作／內容製作：
-
-| 主題 | 狀態 |
-|---|---|
-| mark 與獨特物件的細節 | 使用者裁定**先擱置**，等縮放機制穩定後回頭定 |
-| root 的成長軸 | 使用者裁定**先擱置**（過早優化） |
-| 同層近距離事件的快速路徑 | 已知缺口，刻意留到實作撞到再補（[lowmap-streaming.md](lowmap-streaming.md) 末段） |
-| **所有數值** | 各文件的「待細化」幾乎都是數值。要靠**實作 + 校準 + 實測**決定 |
-| 內容製作 | 神話、法術清單、建築表、任務庫……屬內容，不屬設計 |
-
-**已進入實作。** M0 骨架已落地（見 [build.md](build.md)）；
-在辦的任務書在 `../wf/inbox/`，辦完的在 `../wf/inbox/done/`。
-
-## 寫文件的規約
-
-- 每份文件開頭寫清楚上層是誰、負責回答什麼問題，並指向 `principles.md` 與 `glossary.md`。
-- 定死的常數只寫在一個地方（多半是 `outline.md`），其餘引用而不複述。
-- 尚未決定的寫進末尾「待細化」，不要假裝已經決定。
-- 引用外部專案的結論附**檔案路徑（可附行號）**，不要憑印象。
+- 葉文件指向本層入口，並引用原則／術語；橫向依賴可直接連結，不複製規則正文。
+- 全局常數只在大綱維護，其他文件引用，不重複定值。
+- 未定事項明標草案／待裁定；搬移不代表批准，文件完整不代表實作完成。
+- 外部研究附實際來源及證據界限；每層只列下一層的文件／資料夾。

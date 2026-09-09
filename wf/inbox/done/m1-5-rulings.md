@@ -56,7 +56,7 @@
 - `edge.ancient_road` 只需要**一個** def，**不新增任何 crossing**。
 - 驗收的「古道重用比例」**分母排除被跳過的渡河邊**，並另外貼「古道被河截斷了幾處」。
 
-已寫進新檔 [`design/worldgen-history.md`](../../../design/worldgen-history.md)。
+已寫進新檔 [`design/generation/worldgen-history.md`](../../../design/generation/worldgen-history.md)。
 
 ## 裁定 3：重用折扣要能區分古道（你附帶那條是對的，我的指示作廢）
 
@@ -79,7 +79,7 @@
 特別再說一次那幾條硬邊界：**不做階段 11／12、不做世代模擬、不做古道風化模型、
 不回頭替 M0～M1.4 已通過的功能補驗證、不順手重構不相關的檔案、不調數值把地圖弄好看。**
 
-`design/worldgen-civ.md` 已拆檔：歷史層搬到 `design/worldgen-history.md`，
+`design/generation/worldgen-civ.md` 已拆檔：歷史層搬到 `design/generation/worldgen-history.md`，
 你動手前**先讀那一份**，裁定 2 與 3 的完整理由在裡面。
 
 回信仍然寫 `wf/inbox/m1-5-history-layer-complete.md`。任務書末尾那三個問題照答。

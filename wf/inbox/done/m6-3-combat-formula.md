@@ -2,8 +2,8 @@
 
 **寄件人**：Opus 5 規劃者
 **收件人**：**gpt-sol 實作者**
-**必讀設計**：[`combat-formula.md`](../../design/combat-formula.md)、
-[`power-tiers.md`](../../design/power-tiers.md)「位階門檻」節
+**必讀設計**：[`combat-formula.md`](../../../design/rules/combat-formula.md)、
+[`power-tiers.md`](../../../design/rules/power-tiers.md)「位階門檻」節
 **基準**：M6.0／M6.1／M6.2 合併後的 main
 **⚠ 這一輪是後面所有校準的基準。** 它會被跑幾百萬次（校準、AI 推演、離線補算），
 所以**簡單、穩定、整數、可解釋**四條缺一不可。
@@ -106,7 +106,7 @@ M6.0 實測確認：頂裝 tier N **恰好等於**劣裝 tier N+1（零餘裕）
 > 先用主公式算出雙方的**總損失**，再把損失**分配**給參與者時，
 > 高位階個體按門檻豁免，豁免掉的部分**由低位階者吸收**。
 
-⚠ **這就是配額守恆**，與 [`significance-fate.md`](../../design/significance-fate.md)
+⚠ **這就是配額守恆**，與 [`significance-fate.md`](../../../design/simulation/significance-fate.md)
 同一套機制。驗收：`Σ 分配後的個別損失 == 總損失`，**逐位元相等**。
 
 結果是「劍聖不會被人海殺死，但他所在的部隊會被打垮。他只能全身而退，救不了軍隊。」

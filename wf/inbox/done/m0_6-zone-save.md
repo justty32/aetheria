@@ -3,8 +3,8 @@
 **寄件人**：Opus 5 規劃者
 **收件人**：**gpt-sol 實作者**
 **回信地址**：`~/repo/game_dev/aetheria/wf/inbox/`
-**必讀設計**：[`design/zone-save.md`](../../../design/zone-save.md)（整份）、
-[`design/zone-model.md`](../../../design/zone-model.md) 的「存取：作用域借用」
+**必讀設計**：[`design/architecture/zone-save.md`](../../../design/architecture/zone-save.md)（整份）、
+[`design/architecture/zone-model.md`](../../../design/architecture/zone-model.md) 的「存取：作用域借用」
 **基準**：`b1c824f`（M0.5.1 已通過審閱）
 
 ---

@@ -12,7 +12,7 @@
 - `core/time/`、`core/api/`：強型別 Tick、360 天曆雙向換算、core 版本。
 - `tests/time/`、`sim/`：兩個 GoogleTest 與 CLI11 headless 探針。
 - `bridge/`、`godot/`：`AetheriaCore` Node、兩個方法、GDExtension 註冊與驗證場景。
-- `design/build.md`：實際建置、固定點、驗證與踩坑；並同步 README、testing、conventions code map、
+- `design/architecture/build.md`：實際建置、固定點、驗證與踩坑；並同步 README、testing、conventions code map、
   repo index 與 open-only 活狀態。
 
 ## Done when 核對
@@ -25,7 +25,7 @@
 - [x] core target 沒有 godot-cpp include／link；CMake configure 另有 fail-fast 檢查。
 - [x] `vcpkg.json` 固定 baseline；godot-cpp 固定 commit 且 CMake 核對 HEAD。因本次變更依指示
   不 commit，尚無含 M0 的 commit 可做實際 clean clone；已完成相依鏈論證，commit 後仍需補實測。
-- [x] `design/build.md` 已寫，4,300 bytes 內，繁體中文。
+- [x] `design/architecture/build.md` 已寫，4,300 bytes 內，繁體中文。
 
 ## godot-cpp C++23 實況
 

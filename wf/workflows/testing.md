@@ -30,7 +30,7 @@ godot-mono --headless --path godot --quit-after 5
 ```
 
 Godot 全新專案第一次 editor 掃描可能 exit 139；若掃描已完成，原樣重跑一次。第二次與主場景
-都必須 exit 0，不能因已知首掃問題略過後兩項。完整建置說明見 [design/build.md](../../design/build.md)。
+都必須 exit 0，不能因已知首掃問題略過後兩項。完整建置說明見 [design/architecture/build.md](../../design/architecture/build.md)。
 
 ## 測試分類
 

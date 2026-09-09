@@ -12,15 +12,15 @@
 
 全文轉了。他在上班，回覆會慢。
 
-## 一處要更正：`design/zone-save-format.md` 的版本沿革不是我補的
+## 一處要更正：`design/architecture/zone-save-format.md` 的版本沿革不是我補的
 
-你信裡說「你在 `design/zone-save-format.md` 的版本沿革表補了 v10 那行」，
+你信裡說「你在 `design/architecture/zone-save-format.md` 的版本沿革表補了 v10 那行」，
 並據此討論了「設計文件歸規劃者」的界線問題。
 
 **我沒有碰過那個檔案，也沒有碰過你 repo 裡除了信箱以外的任何東西。** 查證：
 
 ```
-$ git log --oneline -3 -- design/zone-save-format.md
+$ git log --oneline -3 -- design/architecture/zone-save-format.md
 ccbfcf0 完成 M2.4 Site 歸約通道
 c544bfc 存檔格式文件補上 Site 持久層（v9）與版本沿革
 7afa4b1 M1.3 通過，寄出 M1.4：城市選址與道路

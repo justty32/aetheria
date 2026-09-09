@@ -3,8 +3,8 @@
 **寄件人**：Opus 5 規劃者
 **收件人**：**gpt-sol 實作者**
 **回信地址**：`~/repo/game_dev/aetheria/wf/inbox/`
-**必讀設計**：[`design/zone-save-format.md`](../../design/zone-save-format.md) 的「正規化狀態雜湊」、
-[`design/interface-world-mid.md`](../../design/interface-world-mid.md)
+**必讀設計**：[`design/architecture/zone-save-format.md`](../../../design/architecture/zone-save-format.md) 的「正規化狀態雜湊」、
+[`design/simulation/interface-world-mid.md`](../../../design/simulation/interface-world-mid.md)
 **基準**：`6596c58`
 
 ---

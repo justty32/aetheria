@@ -42,7 +42,7 @@ R3 先做 append-only；截斷重放若要做，是 M10 之後的獨立輪。
 
 ## 6. 計畫直接採用的解讀（已被你 2026-08-26 的裁定涵蓋，不再問）
 
-- **[definitions.md](../../../design/definitions.md) 的「def 不進存檔」作廢**——
+- **[definitions.md](../../../design/rules/definitions.md) 的「def 不進存檔」作廢**——
   DF 模型（存檔自帶 raws）正是它的反面。計畫會修訂該文件並留下改判理由。
 - **Ruleset「載入後不可變」改成「載入後只可追加、只在回合尾端」**——
   不可刪、不可改既有 def（下標穩定性與快取都靠這條保住）。

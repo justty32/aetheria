@@ -4,7 +4,7 @@
 
 ## 波 3 原則五補課（R5a‖R5c 並行，R5b 排整合輪）
 
-打掉 vs 補的裁定照 [type-data-audit.md](../../../design/type-data-audit.md)；
+打掉 vs 補的裁定照 [type-data-audit.md](../../../design/rules/type-data-audit.md)；
 每清一項，從 M10.0a 白名單的「待清償」段刪一列。
 
 ### M10.5a 兵種資料化（打掉重做）

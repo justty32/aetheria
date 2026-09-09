@@ -43,4 +43,5 @@
 
 | 計畫 | 題目 | 日期 |
 |---|---|---|
+| [living-world/](living-world/README.md) | 三層活世界：框架、系統藍圖與中層細則（只做規劃） | 2026-09-09 |
 | [runtime-injection.md](runtime-injection.md) | 可編輯的沙盒（M10）：存檔自帶 raws、世界／角色分檔、注入即歷史 | 2026-08-27 |

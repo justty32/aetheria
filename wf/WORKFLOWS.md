@@ -16,11 +16,11 @@
 | 「**記 / 查踩坑**」 | **gotchas** | [workflows/common/gotchas.md](workflows/common/gotchas.md) |
 | 「**看看現在狀況**」「**這個功能有做嗎 / 差距在哪**」「解讀外部系統 / 可行性」 | **investigation** | [workflows/investigation/README.md](workflows/investigation/README.md) |
 | 「**開始規劃**」「把方案展開成動工計畫 / 拆輪次排依賴」 | **plan** | [workflows/plan/README.md](workflows/plan/README.md) |
+| 「規劃 spec」「把 roadmap 展開成規則／設計方案」 | **spec** | [workflows/spec.md](workflows/spec.md) |
 
 碰原始碼的工作流共用 [common/conventions](workflows/common/conventions.md)（程式碼慣例 + code map）。
 
 > 以下是常見**開發類**工作流菜單，**需要哪個才加哪列**（入口檔在第一次用到時才建，從單檔開始長——見 [DEV-GUIDE](DEV-GUIDE.md) 四級成長軌跡）：
-> - **spec**（把一個 idea 討論成設計方案）
 > - **idea**（記一個奇思妙想，不確定要不要做）
 > - **roadmap**（記一件確定會做、不確定何時的事）
 > - **tooling**（外部工具設定 / env var / 依賴）

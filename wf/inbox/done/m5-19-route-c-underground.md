@@ -2,8 +2,8 @@
 
 **寄件人**：Opus 5 規劃者
 **收件人**：**gpt-sol 實作者**
-**必讀設計**：[`localgen.md`](../../design/localgen.md) 路線 C、
-[`lowmap.md`](../../design/lowmap.md) 垂直層
+**必讀設計**：[`localgen.md`](../../../design/generation/localgen.md) 路線 C、
+[`lowmap.md`](../../../design/maps/lowmap.md) 垂直層
 **與 M5.20 並行**（那邊做 Local 尋路）。
 **不要碰 `core/local/local_path.*`、`local_fov.*`、`local_reduction.*`。**
 
@@ -17,7 +17,7 @@
 |---|---|
 | **礦坑** | 從入口沿礦脈方向掘進，分支遞減 |
 | **地城** | 房間 + 走廊 |
-| **遺跡** | 路線 A 生成後**拆掉 60～80%**，複用 [`sitegen-wild.md`](../../design/sitegen-wild.md) 的廢墟作法 |
+| **遺跡** | 路線 A 生成後**拆掉 60～80%**，複用 [`sitegen-wild.md`](../../../design/generation/sitegen-wild.md) 的廢墟作法 |
 
 ⚠ **深度由 Site 的 `structure` 與劇情決定，不是每個入口都通往十層地城。**
 
@@ -28,7 +28,7 @@ M5.2 已經做了 z=−1/0/+1 的垂直層，**沿用，不要另立機制**。
 ## 不要做
 
 地城**玩法**（機關、寶藏、深度曲線、`cleared` 防刷、光照壓力）——
-[`dungeon.md`](../../design/dungeon.md) 有骨架但 `outline.md` 明列為**未規劃**。
+[`dungeon.md`](../../../design/rules/dungeon.md) 有骨架但 `outline.md` 明列為**未規劃**。
 **這輪只做生成。** 撞到玩法問題記進回報，不要自己定形狀。
 
 ## 驗收

@@ -2,8 +2,8 @@
 
 **寄件人**：Opus 5 規劃者
 **收件人**：**gpt-sol 實作者**
-**必讀設計**：[`tech-stack.md`](../../design/tech-stack.md)「跨語言邊界契約」、
-[`milestones.md`](../../design/milestones.md) 的 M8 判準、[`worldmap.md`](../../design/worldmap.md) 回合流程
+**必讀設計**：[`tech-stack.md`](../../design/architecture/tech-stack.md)「跨語言邊界契約」、
+[`milestones.md`](../../design/milestones.md) 的 M8 判準、[`worldmap.md`](../../design/maps/worldmap.md) 回合流程
 **必讀協定**：[`CODEX-PROTOCOL.md`](../CODEX-PROTOCOL.md)
 **基準**：M7 合併後的 main
 
@@ -40,7 +40,7 @@ core 很厚，但它不是一個能玩的東西——**而且每多做一輪 cor
 6. 世界真的變了（該格 owner／人口／治安）
 ```
 
-⚠ 第 4 步的兩條路徑**必須都通**——那是 [`player-residence.md`](../../design/player-residence.md)
+⚠ 第 4 步的兩條路徑**必須都通**——那是 [`player-residence.md`](../../design/maps/player-residence.md)
 的核心，也是 M6.7／M7.2 校準的意義所在（兩條路一樣划算）。
 
 ## 跨語言邊界的三條規則，一條都不准破

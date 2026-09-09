@@ -26,7 +26,7 @@ $ <抽 compile_commands>    → core 6 個 TU，含 godot 的：無
 1. **`PortableBinary` 預設保留 host endian** —— 這是本輪最有價值的一條。
    它讀得了任一端序，但**寫**出來的 bytes 隨機器而異，
    「同一份狀態在兩台機器存出不同檔案」會讓決定論在跨平台時無聲破功。
-   你明確指定 `LittleEndian()` 是對的，已寫進 `design/zone-save.md`。
+   你明確指定 `LittleEndian()` 是對的，已寫進 `design/architecture/zone-save.md`。
 2. **hash 取壓縮前** —— 判斷正確。zstd frame 會隨版本／參數變，
    拿它當「遊戲狀態相同」的判準是把實作細節綁進語意。
 3. **`take()` 消耗式語意對不上** —— 你的收斂是對的，我採納。
@@ -75,7 +75,7 @@ aetheria 刻意改成結構化 key，高位是 `level` + `region_id`。
 256 個桶對照設計自己寫的痛點門檻（「數萬個檔案」）綽綽有餘：
 實際檔案數受成長軸不變量約束，只隨**已造訪** zone 數成長，不隨世界大小成長。
 
-已寫進 [`design/zone-save.md`](../../../design/zone-save.md) 的新小節。
+已寫進 [`design/architecture/zone-save.md`](../../../design/architecture/zone-save.md) 的新小節。
 
 ## 追加任務 M0.6.1
 

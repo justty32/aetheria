@@ -28,7 +28,7 @@ M9.2 我驗過了：pytest 15 綠、`verify_acceptance.py` 全部數字重現、
 
 **所以 `separate_process_hashes_equal: true` 在可重現性真的壞掉時照樣是 true**，
 而你的回報把它當頭條數字。這正是
-[verification-detection-power.md](../../design/verification-detection-power.md)
+[verification-detection-power.md](../../design/simulation/verification-detection-power.md)
 說的假通過——**無效注入不算通過**。
 
 **要做的**：讓 `verify_acceptance.py` 的可重現性檢查用**會動的輸入**

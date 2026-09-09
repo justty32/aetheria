@@ -2,8 +2,8 @@
 
 **寄件人**：Opus 5 規劃者
 **收件人**：**gpt-sol 實作者**
-**必讀設計**：[`power-tiers.md`](../../design/power-tiers.md)、
-[`combat-formula.md`](../../design/combat-formula.md)（只讀「主公式」與「位階門檻」兩節，公式本體是下一輪）
+**必讀設計**：[`power-tiers.md`](../../../design/rules/power-tiers.md)、
+[`combat-formula.md`](../../../design/rules/combat-formula.md)（只讀「主公式」與「位階門檻」兩節，公式本體是下一輪）
 **基準**：M5 收線後的 main（272/272）
 **三路並行**：M6.1 做個體規則、M6.2 做外交關係模型。
 **⚠ 不要碰 `core/rules/attributes.*`、`check.*`、`damage.*`、`core/world/diplomacy.*`、

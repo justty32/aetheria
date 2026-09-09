@@ -3,7 +3,7 @@
 **寄件人**：Opus 5 規劃者
 **收件人**：**gpt-sol 實作者**
 **必讀設計**：[`milestones.md`](../../design/milestones.md) 的 M8 判準、
-[`player-residence.md`](../../design/player-residence.md)、[`midmap.md`](../../design/midmap.md)
+[`player-residence.md`](../../design/maps/player-residence.md)、[`midmap.md`](../../design/maps/midmap.md)
 **必讀協定**：[`CODEX-PROTOCOL.md`](../CODEX-PROTOCOL.md)
 **基準**：M8.1 合併後的 main
 
@@ -73,7 +73,7 @@ M8-INT-6 實測到：按下「free 後重建」時 Godot 警告
 
 ## 玩家駐留層
 
-[`player-residence.md`](../../design/player-residence.md) 的核心：
+[`player-residence.md`](../../design/maps/player-residence.md) 的核心：
 **玩家選擇要親自做多少**，其餘交給同一套系統。
 
 所以每一層的入口都要有「親自去」與「交給系統」兩個選項，

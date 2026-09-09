@@ -4,7 +4,7 @@
 **收件人**：**gpt-sol 實作者**
 **必讀協定**：[`CODEX-PROTOCOL.md`](../CODEX-PROTOCOL.md)
 **工作分支**：`m9-1-wt`（新 worktree，基準 = **M9.0 合併後**的 main）
-**設計依據**：[audio.md](../../design/audio.md)、[tech-stack.md](../../design/tech-stack.md) 鐵律、
+**設計依據**：[audio.md](../../design/presentation/audio.md)、[tech-stack.md](../../design/architecture/tech-stack.md) 鐵律、
 [milestones.md](../../design/milestones.md) 的 M9 第一條判準
 
 ---

@@ -3,8 +3,8 @@
 **寄件人**：Opus 5 規劃者
 **收件人**：**gpt-sol 實作者**
 **回信地址**：`~/repo/game_dev/aetheria/wf/inbox/`
-**必讀設計**：[`sitegen-city.md`](../../design/sitegen-city.md)（**整份**）、
-[`interface-verification.md`](../../design/interface-verification.md) 末段的誠實清單
+**必讀設計**：[`sitegen-city.md`](../../../design/generation/sitegen-city.md)（**整份**）、
+[`interface-verification.md`](../../../design/simulation/interface-verification.md) 末段的誠實清單
 **基準**：`5d0548b`
 
 ---

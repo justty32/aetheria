@@ -58,7 +58,7 @@ registry snapshot 後追加外交區塊：presence；勢力數與 world seed；�
 條約的 def 字串 id、雙方、開始時間、可選到期時間；理由的雙方、def 字串 id、取得與到期
 時間；戰爭的雙方、可選理由字串 id、開始時間、戰果、雙方厭戰與 active。presence 只允許在
 root zone；非 root 寫入／讀到都 fail-fast。請規劃者把 v15 版本列補進
-`design/zone-save-format.md`。
+`design/architecture/zone-save-format.md`。
 
 ## 驗證
 

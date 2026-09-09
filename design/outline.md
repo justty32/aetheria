@@ -16,13 +16,13 @@ Godot 4 只負責顯示／美術／音效／UI，**全部玩法邏輯由 C++ GDE
 | 世界規則骨架 | DnD / 上古卷軸 | 屬性—檢定—抗性的可計算規則；種族、陣營、學派 |
 | 大地圖玩法 | 文明系列 | 格子、資源、城市、科技、外交、回合推進 |
 | **大地圖↔戰術的銜接** | **Age of Wonders** | 4X 大地圖與獨立戰術戰場的兩層結構；奇幻種族；英雄單位帶隊 |
-| **駐留層與旅行** | **騎馬與砍殺** | 大地圖行軍、遇敵可選擇親自下場或讓系統算、隊伍即部隊 → [player-residence.md](player-residence.md) |
+| **駐留層與旅行** | **騎馬與砍殺** | 大地圖行軍、遇敵可選擇親自下場或讓系統算、隊伍即部隊 → [player-residence.md](maps/player-residence.md) |
 | 中層戰術 | 英雄無敵 / SRPG / Total War | 格子戰棋、部隊編成、地形加成；方陣機動（但回合制）|
 | 世界觀規模 | 魔戒 / 魔獸世界 | 多個大陸構成一個世界，各有文明與歷史 |
 | 下層與生命週期 | ToME4（`~/repo/moddings/tome4`） | zone／level 的持久化與載入卸載模型 |
 
 `~/repo/game_dev/medps` 的參考作品（太閣立志傳、三國志）同樣適用——
-它是同一構想的前一輪（見 [medps-relation.md](medps-relation.md)）。
+它是同一構想的前一輪（見 [medps-relation.md](architecture/medps-relation.md)）。
 但**一律以 aetheria 這邊的設計為準**：借玩法感覺，不借它的結構決定，
 除非那條決定已明確列進繼承清單。
 
@@ -61,11 +61,11 @@ Godot 4 只負責顯示／美術／音效／UI，**全部玩法邏輯由 C++ GDE
 | L3 Local | 平時（探索） | 1 分鐘 | 60 |
 | L3 Local | **戰鬥** | 6 秒 | 6 |
 
-全部互為整除，換算不會有餘數。型別契約與合法域見 [time-model.md](time-model.md)。
+全部互為整除，換算不會有餘數。型別契約與合法域見 [time-model.md](simulation/time-model.md)。
 
 戰鬥 stride 較短是**推演出來的**，不是憑感覺：一小時的 Site 回合裡，
 保持陣型的部隊能走 12 格，一兩回合就穿過整個戰場，機動完全失去意義。
-完整推演見 [combat-scaling.md](combat-scaling.md)。6 秒是 DnD 的 round，
+完整推演見 [combat-scaling.md](simulation/combat-scaling.md)。6 秒是 DnD 的 round，
 也就是「一個人做一個動作」的自然尺度。
 
 玩家在 Site 裡耗掉的時間，Region 就實實在在地過了。
@@ -87,7 +87,7 @@ Godot 4 只負責顯示／美術／音效／UI，**全部玩法邏輯由 C++ GDE
 2. **Godot 端不持有玩法狀態。** 場景與節點只是當下狀態的一張畫；關掉重畫必須一模一樣。
 3. **跨語言邊界只走命令與事件。** GDScript 送命令進去，C++ 吐事件流出來，不做逐格逐幀的雙向呼叫。
 
-展開見 [tech-stack.md](tech-stack.md)。
+展開見 [tech-stack.md](architecture/tech-stack.md)。
 
 ## 八條原則
 
@@ -110,7 +110,7 @@ Godot 4 只負責顯示／美術／音效／UI，**全部玩法邏輯由 C++ GDE
 已涵蓋：原則、**三層地圖玩法（L1／L2／L3）**、L1↔L2 界面與生命週期、L3 串流、
 三條 LOD 軸、玩家駐留層、事件與縮放、力量體系與戰鬥公式、定義系統、
 zone 模型與存檔、程序生成七份，以及
-[medps-relation.md](medps-relation.md)（**已拍板：獨立但逐條繼承**）。
+[medps-relation.md](architecture/medps-relation.md)（**已拍板：獨立但逐條繼承**）。
 
 **三層都規劃完了。** L2↔L3 完全複用 L1↔L2 的機制（投影／歸約／LOD／接邊），
 沒有引入任何新機制——這是抽象通用性的第一個正面證據，
@@ -120,10 +120,10 @@ zone 模型與存檔、程序生成七份，以及
 
 | 主題 | 為什麼還沒做 |
 |---|---|
-| 戰鬥規則細節 | DnD-like 屬性與檢定、兵種相剋、魔法／信仰／種族的展開。骨架已在 [power-tiers.md](power-tiers.md)、[combat-formula.md](combat-formula.md) |
+| 戰鬥規則細節 | DnD-like 屬性與檢定、兵種相剋、魔法／信仰／種族的展開。骨架已在 [power-tiers.md](rules/power-tiers.md)、[combat-formula.md](rules/combat-formula.md) |
 | 勢力 AI 與外交 | Region 級模擬的主要驅動力 |
 | 地城玩法 | 結構已定（負 z 層），但機關、寶藏、深度曲線未規劃 |
-| **mark 與獨特物件** | 使用者裁定**先擱置**，骨架已記在 [unique-objects.md](unique-objects.md) |
+| **mark 與獨特物件** | 使用者裁定**先擱置**，骨架已記在 [unique-objects.md](simulation/unique-objects.md) |
 | root 的成長軸 | 使用者裁定**先擱置**（過早優化），痛了再說 |
 | **美術資源工作流** | 使用者將以 AI 生成為主；需先定 tile 規格、圖集切分、風格錨定與命名規約 |
 | 音效與 BGM | 依場景分層 |

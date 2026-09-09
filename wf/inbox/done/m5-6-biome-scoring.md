@@ -51,7 +51,7 @@
 
 ⚠ **`RulesetLoader` 那個「固定地形數量」的測試是錯的，改掉它。**
 它把「剛好有 N 種地形」寫死，**直接違反本專案「種類一律不寫死成 enum」的鐵律**
-（見 [definitions.md](../../design/definitions.md)）。你 M5.4 撤回 taiga 是對的紀律，
+（見 [definitions.md](../../../design/rules/definitions.md)）。你 M5.4 撤回 taiga 是對的紀律，
 但擋住你的是那個測試，不是 taiga。測試要改成驗**性質**（每種都載入成功、id 不重複），
 不是驗數量。
 

@@ -1,10 +1,10 @@
 # 信：任務書 M1.5 — 歷史層（前置到選址之前）
 
-**寄件人**：Opus 5 規劃者
-**收件人**：**gpt-sol 實作者**
+寄件人：Opus 5 規劃者
+收件人：gpt-sol 實作者
 **回信地址**：`~/repo/game_dev/aetheria/wf/inbox/`
 **派發方式**：規劃者直接以 codex CLI 派工，不經使用者轉交。
-**必讀設計**：[`design/worldgen-civ.md`](../../../design/worldgen-civ.md)（**已改**，先讀「管線」的裁定與第 8 節）
+**必讀設計**：[`design/generation/worldgen-civ.md`](../../../design/generation/worldgen-civ.md)（**已改**，先讀「管線」的裁定與第 8 節）
 **基準**：`0d672b0`
 
 ---
@@ -48,7 +48,7 @@ for (const auto& crossing : civilization.crossings) {
 
 **裁定：歷史層前置成階段 8，選址／道路順延成 9／10。**
 歷史層只吃地形（階段 1～7），不吃任何人文產物，前置後依賴仍是單向、每階段仍是純函數。
-理由與白賺的兩件事寫在 `design/worldgen-civ.md` 的裁定一節，去讀。
+理由與白賺的兩件事寫在 `design/generation/worldgen-civ.md` 的裁定一節，去讀。
 
 **代價你要照做**：階段 8～10 的子種子全部位移，既有 seed 生出來的圖會變。這是預期的，
 現在沒有內容要保，現在改最便宜。

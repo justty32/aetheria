@@ -92,7 +92,7 @@ aetheria 採**規劃與實作分離**的協作模式（使用者於 2026-08-15 �
 
 | 資料夾 | 何時會需要 |
 |---|---|
-| `~/repo/game_dev/medps` | aetheria 繼承了它的多項決策（見 `design/medps-relation.md`）；那邊 spec 有變動時 |
+| `~/repo/game_dev/medps` | aetheria 繼承了它的多項決策（見 `design/architecture/medps-relation.md`）；那邊 spec 有變動時 |
 | `~/repo/game_dev/my_godot_assists` | 需要可複用的 Godot 元件時 |
 | `~/repo/moddings/tome4` | L3 下層地圖的參考 |
 

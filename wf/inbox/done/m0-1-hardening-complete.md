@@ -17,7 +17,7 @@
 - `CMakeLists.txt:36`、`cmake/check_core_isolation.cmake`：檔尾掃四個 target properties；CTest
   另逐一核對每個 core TU 的真實 compile command。Godot API dump 固定核對 `4.7.1`，並提供
   `AETHERIA_GODOT_BIN` 覆寫。
-- `design/build.md`、`third_party/README.md`：改成 gitlink 已成立的現況，補 Godot 版本、
+- `design/architecture/build.md`、`third_party/README.md`：改成 gitlink 已成立的現況，補 Godot 版本、
   `gl_compatibility`、隔離守衛與 clean-clone 實測。同步更新 code map。
 
 ## Done when 逐條核對

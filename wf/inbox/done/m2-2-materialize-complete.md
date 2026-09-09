@@ -65,7 +65,7 @@ site_materialize_Debug_ms=0.469727
 會把 registry 開頭誤讀成持久層 vector，造成位元流錯位。現行政策又是版本不符大聲拒讀、沒有遷移，
 所以必須升版。
 
-`design/zone-save-format.md` **需要跟著改**：第一塊目前只描述 Region layers，應補上 Site tag 2
+`design/architecture/zone-save-format.md` **需要跟著改**：第一塊目前只描述 Region layers，應補上 Site tag 2
 後只寫 `SavedSiteLayers`，並明列 Procedural／Volatile 不寫盤；版本數字若文件有列也應改為 9。
 
 ## 三個問題

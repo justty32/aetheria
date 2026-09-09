@@ -2,8 +2,8 @@
 
 **寄件人**：Opus 5 規劃者
 **收件人**：**gpt-sol 實作者**
-**必讀設計**：[`zone-save-history.md`](../../design/zone-save-history.md)、
-[`zone-save-format.md`](../../design/zone-save-format.md)
+**必讀設計**：[`zone-save-history.md`](../../../design/architecture/zone-save-history.md)、
+[`zone-save-format.md`](../../../design/architecture/zone-save-format.md)
 **基準**：main（`m6-5-wt` 尚未併入）
 
 ---
@@ -24,7 +24,7 @@
 
 **裁定：合併後的格式是 v17，內含兩者。** 理由：v16 從來沒有一個穩定的定義，
 兩個「v16」在磁碟上是不同的位元流，讓任何一個沿用 v16 都會製造一個**讀得進去但錯位**
-的格式——那正是 [`zone-save-format.md`](../../design/zone-save-format.md) 說
+的格式——那正是 [`zone-save-format.md`](../../../design/architecture/zone-save-format.md) 說
 「版本欄位把靜默讀壞變成大聲拒讀」要防的事。
 
 ⚠ 所以：**不要保留任何「v16」的解碼路徑**。v15 → 拒讀（照既有政策不做遷移），

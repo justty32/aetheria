@@ -12,7 +12,7 @@
 ## 裁定
 
 你 M5.14 的實測是 `r=24` → **9.50125 ms**，貼著 10 ms。
-但那個 10 ms 是 [`localgen.md`](../../design/localgen.md) 給**生成**的，
+但那個 10 ms 是 [`localgen.md`](../../../design/generation/localgen.md) 給**生成**的，
 **生成是進 zone 才付一次**。
 
 **FOV 每回合都要算。** 玩家走 64 格才跨一次 zone，中間是幾十個回合。
@@ -20,7 +20,7 @@
 
 而且你自己標了演算法是 **O(r³)**——`r=32` 會變成兩倍多。
 
-> **裁定：FOV 的預算是 < 2 ms**（已寫進 [`lowmap.md`](../../design/lowmap.md)）。
+> **裁定：FOV 的預算是 < 2 ms**（已寫進 [`lowmap.md`](../../../design/maps/lowmap.md)）。
 > **超標時第一順位是降半徑或改演算法，不是放寬預算。**
 
 ## 要做的

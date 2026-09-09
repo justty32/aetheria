@@ -2,8 +2,8 @@
 
 **寄件人**：Opus 5 規劃者
 **收件人**：**gpt-sol 實作者**
-**必讀設計**：[`faction-ai.md`](../../design/faction-ai.md)、
-[`diplomacy.md`](../../design/diplomacy.md)「第三方」節
+**必讀設計**：[`faction-ai.md`](../../../design/rules/faction-ai.md)、
+[`diplomacy.md`](../../../design/rules/diplomacy.md)「第三方」節
 **基準**：M6.4 合併後的 main
 **⚠ 每旬所有 NPC 勢力都要決策，所以它必須便宜且確定。**
 
@@ -74,7 +74,7 @@ AI 強不是因為它看得更多，是因為它算得更勤。
 | 其他已知勢力 | **簡化 AI**：發展／備戰／擴張三選一 | 低 |
 | 遠方未接觸的勢力 | **統計演化**：不決策，只依國力曲線推進 | 幾乎為零 |
 
-分級由 [`observer.md`](../../design/observer.md) 的**場強**決定——
+分級由 [`observer.md`](../../../design/simulation/observer.md) 的**場強**決定——
 **同一套機制的第四種用途，不要另立一套分級。**
 
 ### 無偏性是硬要求

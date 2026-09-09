@@ -12,7 +12,8 @@
 
 ## 最新進度
 
-> 🧊 **2026-08-27 專案凍結（預計一至兩個月）**。恢復口令：「繼續 M10 波 2」→
+> **2026-09-09 使用者宣布專案解除凍結，先做完整世界規劃，不開始實作**。
+> 目前方向與文件入口：[三層奇幻活世界 roadmap](workflows/plan/living-world/roadmap-2026-09.md)。舊實作停在 M10.3a。
 > 讀 [波 2 交接](workflows/plan/runtime-injection-wave2-handoff.md)；
 > 建置環境的 configure 配方見 [OPS-NOTES](OPS-NOTES.md)。
 
@@ -22,6 +23,8 @@
 > **in-flight 一定要有記錄**：session 隨時會斷，本檔是唯一交接面。
 
 ### 實作者（gpt-sol）
+
+- 活世界待[裁定](../design/spec/spec-decisions.md)及實作指示；[交接](../design/spec/spec-review-next.md)。
 
 ### 規劃者（Opus 5）
 

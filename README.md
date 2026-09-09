@@ -12,12 +12,12 @@ Godot 4 只負責顯示、美術、音效與 UI；**全部玩法邏輯由 C++ GD
 |---|---|
 | **這遊戲是什麼** | [design/outline.md](design/outline.md) — 三層地圖、尺度、時間、里程碑 |
 | **全部設計文件** | [design/README.md](design/README.md) — 索引 |
-| **程式架構怎麼分** | [design/tech-stack.md](design/tech-stack.md) |
-| **C++ 怎麼寫、用什麼依賴** | [design/cpp-conventions.md](design/cpp-conventions.md) |
-| **怎麼建置與驗證** | [design/build.md](design/build.md) |
-| **最難的技術問題在哪** | [design/interface-world-mid.md](design/interface-world-mid.md) 與 [design/interface-lifecycle.md](design/interface-lifecycle.md) |
-| **世界怎麼在有限算力下活著** | [design/observer.md](design/observer.md)、[design/significance.md](design/significance.md) |
-| **和 medps 是什麼關係** | [design/medps-relation.md](design/medps-relation.md) — **先讀這個再動基礎設施** |
+| **程式架構怎麼分** | [design/architecture/tech-stack.md](design/architecture/tech-stack.md) |
+| **C++ 怎麼寫、用什麼依賴** | [design/architecture/cpp-conventions.md](design/architecture/cpp-conventions.md) |
+| **怎麼建置與驗證** | [design/architecture/build.md](design/architecture/build.md) |
+| **最難的技術問題在哪** | [design/simulation/interface-world-mid.md](design/simulation/interface-world-mid.md) 與 [design/simulation/interface-lifecycle.md](design/simulation/interface-lifecycle.md) |
+| **世界怎麼在有限算力下活著** | [design/simulation/observer.md](design/simulation/observer.md)、[design/simulation/significance.md](design/simulation/significance.md) |
+| **和 medps 是什麼關係** | [design/architecture/medps-relation.md](design/architecture/medps-relation.md) — **先讀這個再動基礎設施** |
 | 動手做某件事（agent） | [AGENTS.md](AGENTS.md) → [wf/WORKFLOWS.md](wf/WORKFLOWS.md) |
 
 ## 三層地圖
@@ -61,7 +61,7 @@ Godot 4 只負責顯示、美術、音效與 UI；**全部玩法邏輯由 C++ GD
 
 | 專案 | 借什麼 |
 |---|---|
-| **`~/repo/game_dev/medps`** | **同一構想的前一輪**。zone 定址與生命週期、def/Ruleset、EnTT + cereal 序列化、worldgen、奇幻文明 6 roadmap 都已落地或已拍板。見 [design/medps-relation.md](design/medps-relation.md) |
+| **`~/repo/game_dev/medps`** | **同一構想的前一輪**。zone 定址與生命週期、def/Ruleset、EnTT + cereal 序列化、worldgen、奇幻文明 6 roadmap 都已落地或已拍板。見 [design/architecture/medps-relation.md](design/architecture/medps-relation.md) |
 | `~/repo/game_dev/my_godot_assists` | 可複用的 Godot 元件：世界地圖分層、相機、選取高亮、小地圖、角色 |
 | `~/repo/game_dev/my-rpg-frontend` | 既有的 Godot + GDExtension 專案佈局（CMake、`.gdextension`） |
 | `~/repo/moddings/tome4` | L3 下層地圖的 zone 持久化與生命週期模型 |

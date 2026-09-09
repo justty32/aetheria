@@ -3,7 +3,7 @@
 **寄件人**：Opus 5 規劃者
 **收件人**：**gpt-sol 實作者**
 **回信地址**：`~/repo/game_dev/aetheria/wf/inbox/`
-**必讀設計**：[`interface-world-mid.md`](../../design/interface-world-mid.md) 的
+**必讀設計**：[`interface-world-mid.md`](../../../design/simulation/interface-world-mid.md) 的
 「方向 B：歸約」「為什麼不會算兩次」
 **基準**：`f8ffeb0`
 

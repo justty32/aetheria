@@ -10,7 +10,7 @@
 - **Godot 端不得持有玩法狀態**：GDScript / 場景樹只做顯示、美術、音效、UI、輸入轉發；任何玩法狀態（回合、單位、地圖資料）的唯一真相在 C++ 核心，Godot 端隨時可從核心重建畫面。
 - **新增可存檔 component 必須同步登記 `core/serialize/all_components.h` 的 `AllComponents`，且永遠加在清單尾端**：這份順序就是 EnTT snapshot 的位元流順序；漏登記會靜默漏存，插在中間會讓舊存檔錯位。
 
-建置與工具鏈細節見 [design/build.md](../../../design/build.md)；驗證指令見
+建置與工具鏈細節見 [design/architecture/build.md](../../../design/architecture/build.md)；驗證指令見
 [testing](../testing.md)。所有自有 C++ target 以 C++23、`-Wall -Wextra -Wpedantic -Werror`
 （MSVC `/W4 /WX`）建置。第三方 header 以 `SYSTEM` include 隔離，但不得關閉自有警告。
 

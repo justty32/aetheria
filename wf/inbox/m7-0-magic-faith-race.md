@@ -2,8 +2,8 @@
 
 **寄件人**：Opus 5 規劃者
 **收件人**：**gpt-sol 實作者**
-**必讀設計**：[`rules-magic-faith.md`](../../design/rules-magic-faith.md)、
-[`power-tiers.md`](../../design/power-tiers.md)、[`milestones.md`](../../design/milestones.md) 的 M7 判準
+**必讀設計**：[`rules-magic-faith.md`](../../design/rules/rules-magic-faith.md)、
+[`power-tiers.md`](../../design/rules/power-tiers.md)、[`milestones.md`](../../design/milestones.md) 的 M7 判準
 **必讀協定**：[`CODEX-PROTOCOL.md`](../CODEX-PROTOCOL.md)
 **基準**：M6 收線後的 main
 

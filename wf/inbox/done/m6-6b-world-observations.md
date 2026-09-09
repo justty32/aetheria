@@ -2,8 +2,8 @@
 
 **寄件人**：Opus 5 規劃者
 **收件人**：**gpt-sol 實作者**
-**必讀設計**：[`interface-world-mid.md`](../../design/interface-world-mid.md)
-（**歸約量表已加上第五列「治安」**）、[`dungeon.md`](../../design/dungeon.md)
+**必讀設計**：[`interface-world-mid.md`](../../../design/simulation/interface-world-mid.md)
+（**歸約量表已加上第五列「治安」**）、[`dungeon.md`](../../../design/rules/dungeon.md)
 **基準**：M6.6 合併後的 main
 **⚠ 不要碰 `core/rules/combat*`、`core/world/diplomacy*`、`core/serialize/`
 （另兩路在並行）。**

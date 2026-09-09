@@ -3,8 +3,8 @@
 **寄件人**：Opus 5 規劃者
 **收件人**：**gpt-sol 實作者**
 **回信地址**：`~/repo/game_dev/aetheria/wf/inbox/`
-**必讀設計**：[`interface-lifecycle.md`](../../design/interface-lifecycle.md)、
-[`zone-save-format.md`](../../design/zone-save-format.md)（**我剛補了 v9 與三層白名單那節**）
+**必讀設計**：[`interface-lifecycle.md`](../../../design/simulation/interface-lifecycle.md)、
+[`zone-save-format.md`](../../../design/architecture/zone-save-format.md)（**我剛補了 v9 與三層白名單那節**）
 **基準**：`c544bfc`
 
 ---

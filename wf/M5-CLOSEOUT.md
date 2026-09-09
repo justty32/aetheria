@@ -10,7 +10,7 @@
 | 照出來的 | 是什麼 |
 |---|---|
 | `OverlayDef` 缺席、慢輸入載體缺欄（feature／礦脈向量）、structure 缺深度欄 | **schema 沒補齊**，加欄位就好 |
-| **歸約假設每列必有值** | ⚠ **唯一一張真的反對票**。已裁定改 `optional`，見 [interface-world-mid.md](../design/interface-world-mid.md) |
+| **歸約假設每列必有值** | ⚠ **唯一一張真的反對票**。已裁定改 `optional`，見 [interface-world-mid.md](../design/simulation/interface-world-mid.md) |
 
 **沒有需要新的跨層協調、生命週期或事件機制。** 抽象大致站得住。
 

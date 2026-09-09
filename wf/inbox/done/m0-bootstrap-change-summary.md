@@ -56,7 +56,7 @@ core 沒有 include 或 link 任何 Godot／godot-cpp；編譯命令只有 repo 
 
 | 檔案 | 改了什麼 |
 |---|---|
-| `design/build.md` | 新增繁中 M0 建置手冊：實際版本、指令、產物、驗證、可重現性與四個踩坑。 |
+| `design/architecture/build.md` | 新增繁中 M0 建置手冊：實際版本、指令、產物、驗證、可重現性與四個踩坑。 |
 | `design/README.md` | 把 `build.md` 加進設計索引。 |
 | `README.md` | 現況從「只有規劃」改成「M0 骨架已落地」；補建置入口與新目錄。 |
 | `AGENTS.md` | 專案現況改成 M0 已建立；build/test 連到實際工作流。 |

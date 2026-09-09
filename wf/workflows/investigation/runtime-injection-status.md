@@ -1,7 +1,7 @@
 # 執行期注入現況：存檔進行中加入內容，做了沒
 
 ← [investigation/README](README.md)｜**已有的地基** [runtime-injection-assets.md](runtime-injection-assets.md)
-｜設計裁定 [runtime-injection.md](../../../design/runtime-injection.md)｜[KNOWN-TRAPS](../../KNOWN-TRAPS.md)
+｜設計裁定 [runtime-injection.md](../../../design/rules/runtime-injection.md)｜[KNOWN-TRAPS](../../KNOWN-TRAPS.md)
 
 **日期**：2026-08-27　**性質**：只調查現況與差距，**不提解決方案**（方案交給下一棒）。
 
@@ -15,7 +15,7 @@
 
 ## 結論
 
-**六項全都沒有實現。而且比 [runtime-injection.md](../../../design/runtime-injection.md) 記的還差一步：
+**六項全都沒有實現。而且比 [runtime-injection.md](../../../design/rules/runtime-injection.md) 記的還差一步：
 現在的遊戲根本不會存檔。**
 
 - 可玩 session 用的是 `zone::InMemoryZoneStore`（`core/runtime/playable_session.h:233`），
@@ -39,7 +39,7 @@
 - **沒有存檔功能（前置缺口）**：要談「在存檔中添加」，得先讓遊戲能存能讀。
 - **`Ruleset` 不可變、且明文不進存檔**：拷貝/賦值 `= delete`、建構子 private、只有
   `RulesetLoader` 是 friend（`core/rules/ruleset.h:33-41,152-154`），公開介面全 const，
-  **沒有任何 add/insert/register**。[definitions.md](../../../design/definitions.md) 裁定
+  **沒有任何 add/insert/register**。[definitions.md](../../../design/rules/definitions.md) 裁定
   「def 不進 registry、不進存檔」——**與矮人要塞模型直接衝突**，
   要動的是設計裁定，不只是補程式碼。
 - **勢力數是硬邊界，而且會反咬舊存檔**：`[factions].faction_count` 從 TOML 讀入，
@@ -60,7 +60,7 @@
   這類 worldgen 常數，`Ruleset` 只持有單一份 `civilization_rules_`（`core/rules/ruleset.h:113,175`）。
 - **物品是零**：全庫無 `ItemDef`／`ItemId`／inventory。最接近的 `FurnitureDef` 是
   Local 場景生成密度規則。傳奇物品的來源
-  [unique-objects.md](../../../design/unique-objects.md) 是使用者裁定**擱置**的。
+  [unique-objects.md](../../../design/simulation/unique-objects.md) 是使用者裁定**擱置**的。
 - **角色那塊存檔完全不存在**：駐留層、觀察點座標、接下的任務、玩家部隊 id 全是
   `PlayableSession` 的記憶體成員（`playable_session.h:245,250,254-260`），
   不在 `AllComponents`（`core/serialize/all_components.h:22-24`）也不在 manifest。
@@ -78,7 +78,7 @@
 ## 牽扯到的部份
 
 - **存檔版本**：`kSaveFormatVersion = 21`（`core/serialize/zone_codec.h:13`）。政策是
-  **版本不符 fail-fast、不寫遷移**（[zone-save-history.md](../../../design/zone-save-history.md)），
+  **版本不符 fail-fast、不寫遷移**（[zone-save-history.md](../../../design/architecture/zone-save-history.md)），
   且歷史上撞過兩次版本號 → 這件事至少要**獨佔一次版本號**。
 - **測試**：引用世界雜湊的檔案**實數 21 個**；`tests/` 內寫死的 64-bit 常數**實數 14 個**
   （`region_determinism_test.cpp` 占 6 個；其中如 `14695981039346656037` 是 FNV offset basis

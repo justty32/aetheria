@@ -2,9 +2,9 @@
 
 **寄件人**：Opus 5 規劃者
 **收件人**：**gpt-sol 實作者**
-**必讀設計**：[`zone-save-format.md`](../../design/zone-save-format.md)、
-[`zone-save-history.md`](../../design/zone-save-history.md)、
-[`verification-detection-power.md`](../../design/verification-detection-power.md)
+**必讀設計**：[`zone-save-format.md`](../../../design/architecture/zone-save-format.md)、
+[`zone-save-history.md`](../../../design/architecture/zone-save-history.md)、
+[`verification-detection-power.md`](../../../design/simulation/verification-detection-power.md)
 **基準**：M6.6b 合併後的 main（333/333）
 **⚠ 不要碰 `core/ai/`（M6.5 在並行）。**
 
@@ -32,7 +32,7 @@ M6.6b 的回報寫著：
 `PersistentDungeon.cleared/depth`）改變了位元流，**必須升版**。
 目前全域已到 v16（M6.4 的 `NamedFateLedger`）。
 
-照 [`zone-save-history.md`](../../design/zone-save-history.md) 的既有政策：
+照 [`zone-save-history.md`](../../../design/architecture/zone-save-history.md) 的既有政策：
 **一律不做遷移**，舊檔大聲拒讀，不要靜默讀壞。
 ⚠ 但**「拒讀」與「讀成預設值」是兩件事**，要有測試分得出來。
 
@@ -41,7 +41,7 @@ M6.6b 的回報寫著：
 **正規化 world hash 是所有往返測試的最終判準。**
 若它算不到某個欄位，那個欄位的存檔漏失**不會讓任何測試變紅**。
 
-這正是 [`verification-detection-power.md`](../../design/verification-detection-power.md)
+這正是 [`verification-detection-power.md`](../../../design/simulation/verification-detection-power.md)
 說的「一個『通過』何時才算通過」——**測試綠燈但偵測不到，等於沒測**。
 
 M6.2b 已經示範過正確做法：它把外交狀態納入正規化雜湊，

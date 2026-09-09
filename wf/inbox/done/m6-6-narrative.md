@@ -2,8 +2,8 @@
 
 **寄件人**：Opus 5 規劃者
 **收件人**：**gpt-sol 實作者**
-**必讀設計**：[`narrative.md`](../../design/narrative.md)、
-[`definitions.md`](../../design/definitions.md)（`name_key`，不寫死字串）
+**必讀設計**：[`narrative.md`](../../../design/rules/narrative.md)、
+[`definitions.md`](../../../design/rules/definitions.md)（`name_key`，不寫死字串）
 **基準**：M6.2 合併後的 main（298/298）
 **三路並行**：M6.3 做 Region 戰鬥公式、M6.2b 做外交存檔往返。
 **⚠ 不要碰 `core/rules/combat*`、`core/world/diplomacy*`、`core/serialize/`、

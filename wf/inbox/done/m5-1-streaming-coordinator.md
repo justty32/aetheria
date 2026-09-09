@@ -3,9 +3,9 @@
 **寄件人**：Opus 5 規劃者
 **收件人**：**gpt-sol 實作者**
 **回信地址**：`~/repo/game_dev/aetheria/wf/inbox/`
-**必讀設計**：[`lowmap-streaming.md`](../../design/lowmap-streaming.md)、
-[`observer.md`](../../design/observer.md)、[`interface-lifecycle.md`](../../design/interface-lifecycle.md)、
-**[`time-clock-authority.md`](../../design/time-clock-authority.md)（新增，本輪的裁定在這）**
+**必讀設計**：[`lowmap-streaming.md`](../../../design/maps/lowmap-streaming.md)、
+[`observer.md`](../../../design/simulation/observer.md)、[`interface-lifecycle.md`](../../../design/simulation/interface-lifecycle.md)、
+**[`time-clock-authority.md`](../../../design/simulation/time-clock-authority.md)（新增，本輪的裁定在這）**
 **基準**：`dbb5382`
 **與 M5.2 並行**：另一個 worktree 在做 `core/local/` 的路線 A。
 **本輪不要碰 `core/local/local_generation.cpp`**。
@@ -46,8 +46,8 @@ M5.0 的共用性負向控制**我自己重跑了一次**：把 `kBoundaryEdgeSa
 
 ## 串流協調器
 
-照 [`lowmap-streaming.md`](../../design/lowmap-streaming.md)，**不引入任何新機制**，
-就是 [`observer.md`](../../design/observer.md) 的場強換一組參數：
+照 [`lowmap-streaming.md`](../../../design/maps/lowmap-streaming.md)，**不引入任何新機制**，
+就是 [`observer.md`](../../../design/simulation/observer.md) 的場強換一組參數：
 
 | 參數 | 值 |
 |---|---|

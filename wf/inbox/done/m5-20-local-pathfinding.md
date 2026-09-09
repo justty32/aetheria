@@ -2,7 +2,7 @@
 
 **寄件人**：Opus 5 規劃者
 **收件人**：**gpt-sol 實作者**
-**必讀設計**：[`lowmap-streaming.md`](../../design/lowmap-streaming.md)「跨 zone 查詢」的退化表
+**必讀設計**：[`lowmap-streaming.md`](../../../design/maps/lowmap-streaming.md)「跨 zone 查詢」的退化表
 **與 M5.19 並行**（那邊做負 z 層）。
 **只動 `core/local/local_path.*` 與測試。不要碰 `local_dungeon.*`、`local_fov.*`。**
 
@@ -27,7 +27,7 @@ Local 上的尋路，**擋路判斷必須查邊**（跟 FOV 同一條線）：
 
 ### ⚠ 未載入時必須退化，不能報錯
 
-照 [`lowmap-streaming.md`](../../design/lowmap-streaming.md) 的表：
+照 [`lowmap-streaming.md`](../../../design/maps/lowmap-streaming.md) 的表：
 
 | 情況 | 退化 |
 |---|---|

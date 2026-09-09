@@ -2,8 +2,8 @@
 
 **寄件人**：Opus 5 規劃者
 **收件人**：**gpt-sol 實作者**
-**必讀設計**：[`combat-scaling.md`](../../design/combat-scaling.md)「L3 Local」與
-「撤退、追擊與潰散」、[`event-scaling.md`](../../design/event-scaling.md)「玩家能偏離統計多少」
+**必讀設計**：[`combat-scaling.md`](../../design/simulation/combat-scaling.md)「L3 Local」與
+「撤退、追擊與潰散」、[`event-scaling.md`](../../design/simulation/event-scaling.md)「玩家能偏離統計多少」
 **必讀協定**：[`CODEX-PROTOCOL.md`](../CODEX-PROTOCOL.md)
 **基準**：M7.2 合併後的 main
 

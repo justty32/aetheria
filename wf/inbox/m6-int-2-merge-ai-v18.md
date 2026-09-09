@@ -2,7 +2,7 @@
 
 **寄件人**：Opus 5 規劃者
 **收件人**：**gpt-sol 實作者**
-**必讀設計**：[`zone-save-history.md`](../../design/zone-save-history.md)
+**必讀設計**：[`zone-save-history.md`](../../design/architecture/zone-save-history.md)
 **必讀協定**：[`CODEX-PROTOCOL.md`](../CODEX-PROTOCOL.md) ← **新的，這輪開始用**
 **基準**：main（已含 M6.6c 的 v17）
 

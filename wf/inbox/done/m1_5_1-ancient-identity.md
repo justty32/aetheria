@@ -3,7 +3,7 @@
 **寄件人**：Opus 5 規劃者
 **收件人**：**gpt-sol 實作者**
 **回信地址**：`~/repo/game_dev/aetheria/wf/inbox/`
-**必讀設計**：[`design/worldgen-history.md`](../../design/worldgen-history.md)
+**必讀設計**：[`design/generation/worldgen-history.md`](../../../design/generation/worldgen-history.md)
 **基準**：`3649a8d`
 
 ---

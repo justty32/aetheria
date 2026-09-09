@@ -4,14 +4,14 @@
 
 ## 問題
 
-使用者原話：「**godot 端現在是什麼？離「一個能玩的遊戲畫面」差多遠？**」
+使用者原話：「godot 端現在是什麼？離「一個能玩的遊戲畫面」差多遠？」
 五條可判定提問：(1) godot/ 盤點；(2) 跑起來看到什麼；(3)
 `player-residence.md`「三層各一套場景＋鏡頭轉場」與 `tech-stack.md` 鐵律守住了嗎；
 (4) M8 判準做到幾成；(5) 更新機制與效能坑。
 
 ## 結論
 
-**godot 端不是遊戲畫面，是一個「core 除錯控制台」**：一個 `Node` 場景、
+godot 端不是遊戲畫面，是一個「core 除錯控制台」：一個 `Node` 場景、
 864 行 GDScript、零美術素材，全部 UI 在 `_ready()` 裡用程式碼堆出來
 （`godot/main.gd:64-157`）。M8 判準「只用滑鼠鍵盤打完一場仗並看到世界改變」
 **功能上做到了、體驗上沒有**——仗打得完、數字會變，但「看到世界因此改變」
@@ -104,8 +104,8 @@ Site／Local／Dungeon 是 64×64（`core/site/site_projection.h:22-23`）的 **
   都得改 `get_playable_snapshot()`（`aetheria_core.cpp:394`）。
 - **判準**：M8（`design/milestones.md:31`）、M9「關掉 core 重開，畫面與音景完全一致」
   （同檔 :33）——後者現在無法測，因為 `_rebuild_view()` 不 free 持有狀態的節點。
-- **設計文件**：`design/player-residence.md`「對顯示層的要求」整節未實作；
-  `design/tech-stack.md`「Godot 端做什麼」列的 TileMapLayer／相機／小地圖／
+- **設計文件**：`design/maps/player-residence.md`「對顯示層的要求」整節未實作；
+  `design/architecture/tech-stack.md`「Godot 端做什麼」列的 TileMapLayer／相機／小地圖／
   對話框／音效 **0 項**。
 - **並行工作**：本報告只看 main 分支；`../aetheria-wt-m10-0c` 正在往 `bridge/`／
   `godot/` 加存讀檔入口，第 6、7 項差距會與它的新入口相撞。

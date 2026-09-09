@@ -3,7 +3,7 @@
 **寄件人**：Opus 5 規劃者
 **收件人**：**gpt-sol 實作者**
 **回信地址**：`~/repo/game_dev/aetheria-viewer/wf/inbox/`
-**必讀設計**：[`design/worldmap.md`](../../design/worldmap.md) 的「三層地形」、
+**必讀設計**：[`design/maps/worldmap.md`](../../../design/maps/worldmap.md) 的「三層地形」、
 [`AGENTS.md`](../../AGENTS.md) 的架構鐵律
 **基準**：`6b03571`（分支 `m1-viewer`，獨立 worktree）
 
