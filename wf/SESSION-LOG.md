@@ -24,7 +24,7 @@
 
 ### 實作者（gpt-sol）
 
-- 活世界待[裁定](../design/spec/spec-decisions.md)及實作指示；[交接](../design/spec/spec-review-next.md)。
+- 活世界下一步：力量與人物如何帶來不同玩法，沿 [遊玩循環](../design/spec/spec-play-loop.md) 續作；未開始實作。
 
 ### 規劃者（Opus 5）
 

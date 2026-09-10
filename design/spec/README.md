@@ -2,14 +2,20 @@
 
 ← [設計入口](../README.md)
 
-這裡收 roadmap 展開後的規則草案，不是實作任務書。先讀 [規格總覽](spec-world.md) 的狀態、依賴與待裁定事項，再進所屬領域。本 README 兼本層索引。
+這裡收 roadmap 展開後的規則草案，不是實作任務書。先讀 [規格總覽](spec-world.md) 的狀態、依賴與待裁定事項，再進所屬領域。本 README 兼本層索引。續作先遵守 [規劃尺度](spec-planning-scope.md)：玩法先行，細節按需。
 
 | 下一層 | 職責 |
 |---|---|
+| [spec-planning-scope.md](spec-planning-scope.md) | 使用者要求的規劃尺度：好玩、簡單、保留彈性 |
+| [spec-play-loop.md](spec-play-loop.md) | 玩家目標、三層參與、回饋與省事方向 |
+| [spec-play-adventure.md](spec-play-adventure.md) | 冒險、旅行、修行與生活的遊玩循環 |
+| [spec-play-command.md](spec-play-command.md) | 地方經營、帶兵與戰後接續的遊玩循環 |
 | [spec-world.md](spec-world.md) | S0–S11 展開順序、完成條件與跨規格協調 |
 | [spec-review-next.md](spec-review-next.md) | S0–S11 全批交接與後續邊界 |
 | [spec-integration.md](spec-integration.md) | 三條跨系統因果鏈推演 |
-| [spec-decisions.md](spec-decisions.md) | D01–D20 待裁定、建議與影響 |
+| [spec-decisions.md](spec-decisions.md) | D01–D20 方向、可選方案與影響 |
+| [spec-foundations-review.md](spec-foundations-review.md) | D01–D05 採用的簡單方向；細則可換 |
+| [spec-foundations-examples.md](spec-foundations-examples.md) | 五題的數字、反例與尚未解決的邊界 |
 | [spec-verification.md](spec-verification.md) | 全批驗證、粗細校準與長局成本 |
 | [common/](common/README.md) | S0–S1 身分交接與時間提交 |
 | [site/](site/README.md) | S2–S4 地方工作、方陣與平戰轉換 |

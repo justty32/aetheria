@@ -10,6 +10,8 @@
 
 **本次只做規劃文件，不開始實作。** 使用者要求先立大框架，再往各系統展開，充分吸收參考，不以小原型限制願景。下列順序與細節是建議稿，不是任務書；舊 M10 的未完需求保留。
 
+2026-09-10：好玩優先，細則不早定死，一般取捨交 agent；續作見 [spec 入口](../../../../design/spec/README.md)。
+
 **Done when（本次規劃）**：完整世界框架、十四個指定參考及 PAS 補充、三層契約、系統細化、依賴、驗收與舊需求去向均有文件。完整世界是目標，示範只用來驗證。
 
 **閱讀順序**：[世界框架與系統樹](world-framework.md) → [三層藍圖](roadmap-three-layers.md) → [模擬契約](world-simulation-contracts.md) → 框架列出的各系統 → [需求與參考對照](roadmap-coverage.md)。[現況盤點](../../investigation/roadmap-baseline-status.md) 用來決定重用與補足，不能反過來縮小願景。
