@@ -24,7 +24,7 @@
 
 ### 實作者（gpt-sol）
 
-- 四塊行為續作：和平互賴、衰退重組，見 [交接](../design/spec/spec-review-next.md)。
+- 四塊行為續作：主動合作、人物關係，見 [交接](../design/spec/spec-review-next.md)。
 
 ### 規劃者（Opus 5）
 
