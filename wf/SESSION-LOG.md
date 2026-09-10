@@ -24,7 +24,7 @@
 
 ### 實作者（gpt-sol）
 
-- 世界規劃續作：原需求範圍逐項核對，見 [交接](../design/spec/spec-review-next.md)。
+- 世界規劃續作：DQ 背景與自主隊伍，見 [交接](../design/spec/spec-review-next.md)。
 
 ### 規劃者（Opus 5）
 

@@ -2,11 +2,12 @@
 
 ← [設計入口](../README.md)
 
-這裡收活世界規則草案，不是實作任務書。**目前先規劃世界與 NPC 自主運作，玩家操作體驗後置。** 先讀 [規劃尺度](spec-planning-scope.md)，再進 [共用流程](common/README.md) 與 [全批總覽](spec-world.md)。本 README 兼本層索引。
+這裡收活世界規則草案，不是實作任務書。**目前先規劃世界與 NPC 自主運作，玩家操作體驗後置。** 先讀 [規劃尺度](spec-planning-scope.md) 與 [世界背景](spec-world-background.md)，再進 [共用流程](common/README.md) 與 [全批總覽](spec-world.md)。本 README 兼本層索引。
 
 | 下一層 | 職責 |
 |---|---|
 | [spec-planning-scope.md](spec-planning-scope.md) | 最新優先序：世界與 NPC 先成立，玩家接入後置 |
+| [spec-world-background.md](spec-world-background.md) | 先以勇者鬥惡龍為背景的世界大樣子與三層情境 |
 | [spec-play-loop.md](spec-play-loop.md) | 後置備考：玩家目標、三層參與、回饋與省事方向 |
 | [spec-play-adventure.md](spec-play-adventure.md) | 後置備考：冒險、旅行、修行與生活的遊玩循環 |
 | [spec-play-command.md](spec-play-command.md) | 後置備考：地方經營、帶兵與戰後接續的遊玩循環 |
