@@ -24,7 +24,7 @@
 
 ### 實作者（gpt-sol）
 
-- 活世界下一步：力量與人物如何帶來不同玩法，沿 [遊玩循環](../design/spec/spec-play-loop.md) 續作；未開始實作。
+- 活世界下一步：進入世界如何找到目標，見 [交接](../design/spec/spec-review-next.md)；未開始實作。
 
 ### 規劃者（Opus 5）
 

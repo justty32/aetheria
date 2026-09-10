@@ -10,6 +10,7 @@
 | [spec-play-loop.md](spec-play-loop.md) | 玩家目標、三層參與、回饋與省事方向 |
 | [spec-play-adventure.md](spec-play-adventure.md) | 冒險、旅行、修行與生活的遊玩循環 |
 | [spec-play-command.md](spec-play-command.md) | 地方經營、帶兵與戰後接續的遊玩循環 |
+| [spec-play-fantasy.md](spec-play-fantasy.md) | 本事、關係與奇幻力量如何帶來不同解法 |
 | [spec-world.md](spec-world.md) | S0–S11 展開順序、完成條件與跨規格協調 |
 | [spec-review-next.md](spec-review-next.md) | S0–S11 全批交接與後續邊界 |
 | [spec-integration.md](spec-integration.md) | 三條跨系統因果鏈推演 |
