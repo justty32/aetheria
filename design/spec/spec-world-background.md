@@ -19,6 +19,10 @@
 
 以上是本案採用的背景草案，不是某一代作品的完整設定表。
 
+魔物從哪裡來、為何住在這裡與平常怎麼活，見 [魔法生物](spec-magical-creatures.md) 及其生活範例。
+
+2026-09-10 追加方向：種族、生物與古代背景多參考 D&D，見 [取材說明](spec-dnd-reference.md)。本案的 [四時代歷史](spec-world-history.md)、[種族來歷](spec-peoples-origins.md) 與 [生物種類](spec-creature-kinds.md) 是可調整草案，保留上述生活氣氛。
+
 ## 放進三層地圖會是什麼樣子
 
 | 層 | 先用的場景與活動 |

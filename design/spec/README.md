@@ -40,6 +40,12 @@
 | [spec-succession.md](spec-succession.md) | S7c 繼承、遺產、交接時各方選擇與組織分合 |
 | [spec-diplomacy.md](spec-diplomacy.md) | S7d 外交、條約、叛亂與和解 |
 | [spec-environment.md](spec-environment.md) | S8a 地理、水文、天氣與改造 |
+| [spec-creature-kinds.md](spec-creature-kinds.md) | 十四類生物候選、分布與跨類身分 |
+| [spec-peoples-origins.md](spec-peoples-origins.md) | 智慧族群的祖先故事、遷徙與今日分布 |
+| [spec-world-history.md](spec-world-history.md) | 神話、黃金、白銀、黑鐵四時代的連續歷史草案 |
+| [spec-dnd-reference.md](spec-dnd-reference.md) | D&D 官方參考、取材方式與本案自訂界線 |
+| [spec-magical-creatures.md](spec-magical-creatures.md) | 魔法生物的起源、地方來歷、生活範圍、習性與三層接續 |
+| [spec-magical-creature-examples.md](spec-magical-creature-examples.md) | 少量生物的生活樣貌與來歷範例，保留可換設定 |
 | [spec-ecology.md](spec-ecology.md) | S8b 生態、農牧林礦與耗竭 |
 | [spec-disasters.md](spec-disasters.md) | S8c 災害、預警、損失與恢復 |
 | [spec-history.md](spec-history.md) | S8d 多年代歷史、聚落與證據 |
