@@ -6,5 +6,6 @@
 
 | 文件 | 內容 |
 |---|---|
-| [spec-information.md](spec-information.md) | S10a 情報、矛盾消息下的行動、保密與更正 |
+| [spec-information.md](spec-information.md) | S10a 情報、主張傳播、保密、更正與保存 |
+| [spec-uncertain-information.md](spec-uncertain-information.md) | 消息未明時的選擇與河谷報告 |
 | [spec-ai.md](spec-ai.md) | S10c 三層目標、派工與自治 |

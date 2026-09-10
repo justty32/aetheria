@@ -8,3 +8,4 @@
 |---|---|
 | [spec-campaigns.md](spec-campaigns.md) | S4b 戰役、軍需、圍城與戰後 |
 | [spec-army-behavior.md](spec-army-behavior.md) | 軍隊按任務、敵情與補給選擇行軍、部署及撤退 |
+| [spec-army-mission-cases.md](spec-army-mission-cases.md) | 河谷軍隊的四種任務 |
