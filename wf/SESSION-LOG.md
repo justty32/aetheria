@@ -24,7 +24,7 @@
 
 ### 實作者（gpt-sol）
 
-- 活世界下一步：進入世界如何找到目標，見 [交接](../design/spec/spec-review-next.md)；未開始實作。
+- 活世界下一步：同世界換人物與續玩體驗，見 [交接](../design/spec/spec-review-next.md)；未開始實作。
 
 ### 規劃者（Opus 5）
 
