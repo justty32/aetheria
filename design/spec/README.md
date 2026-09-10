@@ -42,7 +42,7 @@
 | [spec-environment.md](spec-environment.md) | S8a 地理、水文、天氣與改造 |
 | [spec-creature-kinds.md](spec-creature-kinds.md) | 十四類生物候選、分布與跨類身分 |
 | [spec-peoples-origins.md](spec-peoples-origins.md) | 智慧族群的祖先故事、遷徙與今日分布 |
-| [spec-world-history.md](spec-world-history.md) | 神話、黃金、白銀、黑鐵四時代的連續歷史草案 |
+| [spec-world-history.md](spec-world-history.md) | 部落、城邦、希臘式世界至羅馬式第一帝國的歷史骨架 |
 | [spec-dnd-reference.md](spec-dnd-reference.md) | D&D 官方參考、取材方式與本案自訂界線 |
 | [spec-magical-creatures.md](spec-magical-creatures.md) | 魔法生物的起源、地方來歷、生活範圍、習性與三層接續 |
 | [spec-magical-creature-examples.md](spec-magical-creature-examples.md) | 少量生物的生活樣貌與來歷範例，保留可換設定 |
