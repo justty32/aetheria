@@ -24,7 +24,7 @@
 
 ### 實作者（gpt-sol）
 
-- 四塊行為續作：矛盾消息與行動取捨，見 [交接](../design/spec/spec-review-next.md)。
+- 四塊行為續作：教團變故與地方服務，見 [交接](../design/spec/spec-review-next.md)。
 
 ### 規劃者（Opus 5）
 
