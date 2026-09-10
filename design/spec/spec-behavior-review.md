@@ -19,7 +19,7 @@
 | 災害與恢復 | 當地先按所見搬運、疏散或求援，上級收到消息再救助；恢復要有道路、工具、住所與人力，不把水退當成復原 | [災害](spec-disasters.md)、[整合 A](spec-integration.md) |
 | 合作、競爭與衰退 | 對方和地方都能反提案；訂單、負擔和履約結果影響合作範圍，可能維持、轉業、縮小或組織化反對 | [河谷](common/spec-world-border.md)、[衰退](common/spec-world-growth-decline.md) |
 | 權力更替 | 新任爭取具體支持，地方和軍人可只配合部分，家戶可照常生活；承諾履行與實際調度使交接穩定或形成分歧 | [繼承](spec-succession.md)、[政體](spec-government.md) |
-| 奇幻與野外 | 能力改變真實運輸、供應和分工；林地居民可主動交涉，獸群避險會影響鄰村，後果回到地方與勢力 | [奇幻手段](common/spec-world-magic.md)、[探索](spec-exploration.md)、[生態](spec-ecology.md) |
+| 奇幻與野外 | 能力改變真實運輸、供應和分工；林地居民可主動交涉，獸群避險會影響鄰村，後果回到地方與勢力 | [奇幻手段](common/spec-world-magic.md)、[教團變故](spec-faith.md)、[探索](spec-exploration.md)、[生態](spec-ecology.md) |
 | 長期延續與三層切換 | 目的、安排、下一步分開；沿用已知經歷與未完工作。交接只換負責推進者，不重領人貨或忘掉等待原因 | [AI](spec-ai.md)、[身分交接](common/spec-world-handoff.md)、[時間](common/spec-world-time.md) |
 
 以上確認了典型分支的文件落點與因果內容，不能證明所有情境已覆蓋。尤其多件事同時發生時，還須沿相同人物、資源和時間推演，不能讓每篇各用一份完整資源。
