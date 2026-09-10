@@ -8,6 +8,7 @@
 |---|---|
 | [spec-world-core.md](spec-world-core.md) | 六條核心規則、三層與四塊行為、取捨及正文歸屬 |
 | [spec-planning-scope.md](spec-planning-scope.md) | 最新優先序：世界與 NPC 先成立，玩家接入後置 |
+| [spec-world-reference-patterns.md](spec-world-reference-patterns.md) | gameplots 的取用模式、對應正文與證據界線 |
 | [spec-world-background.md](spec-world-background.md) | 先以勇者鬥惡龍為背景的世界大樣子與三層情境 |
 | [spec-play-loop.md](spec-play-loop.md) | 後置備考：玩家目標、三層參與、回饋與省事方向 |
 | [spec-play-adventure.md](spec-play-adventure.md) | 後置備考：冒險、旅行、修行與生活的遊玩循環 |
@@ -15,6 +16,9 @@
 | [spec-play-fantasy.md](spec-play-fantasy.md) | 後置備考：本事、關係與奇幻力量如何帶來不同解法 |
 | [spec-play-entry.md](spec-play-entry.md) | 後置備考：進入世界、找到目標與可略過的引導 |
 | [spec-world.md](spec-world.md) | S0–S11 展開順序、完成條件與跨規格協調 |
+| [spec-country-patterns.md](spec-country-patterns.md) | 國家因生計、依靠與內部差異而走不同路，成立與終止仍接原世界 |
+| [spec-minor-powers.md](spec-minor-powers.md) | 中小勢力的起家、維持、壯大、分合與退出 |
+| [spec-deity-behavior.md](spec-deity-behavior.md) | 神明自己的目標、知覺、介入、沉默與相互影響 |
 | [spec-faction-behavior.md](spec-faction-behavior.md) | 勢力為何貿易、拓殖、結盟、用兵或收縮，以及何時換方向 |
 | [spec-cooperation.md](spec-cooperation.md) | 主動找對象、提議、回覆、相處及合作經驗如何改變關係 |
 | [spec-review-next.md](spec-review-next.md) | 收斂後接續位置與工作邊界 |
