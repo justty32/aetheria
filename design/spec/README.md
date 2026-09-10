@@ -17,6 +17,7 @@
 | [spec-faction-behavior.md](spec-faction-behavior.md) | 勢力為何貿易、拓殖、結盟、用兵或收縮，以及何時換方向 |
 | [spec-cooperation.md](spec-cooperation.md) | 主動找對象、提議、回覆、相處及合作經驗如何改變關係 |
 | [spec-review-next.md](spec-review-next.md) | S0–S11 全批交接與後續邊界 |
+| [spec-world-review.md](spec-world-review.md) | 按原要求核對整體世界規劃的正文證據與完成界線 |
 | [spec-behavior-review.md](spec-behavior-review.md) | 四塊行為的情境覆蓋、差異檢查與審閱結果 |
 | [spec-integration.md](spec-integration.md) | 三條跨系統因果鏈推演 |
 | [spec-decisions.md](spec-decisions.md) | D01–D20 方向、可選方案與影響 |

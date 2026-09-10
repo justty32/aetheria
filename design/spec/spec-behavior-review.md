@@ -60,4 +60,4 @@
 
 另外確認兩項：家庭原先只有既存關係與出生事件的資料責任，已補 [成家與下一代](people/spec-family-formation.md) 的提議、安排、照護與成長行為；權力空窗則不必保證有人能承諾，已在 [政體](spec-government.md) 補明代理權限不足時的限期未履約與接手出口。
 
-後續真正 open 接在 [交接](spec-review-next.md)；未選的數值、票制與程式 API 不當作本輪行為缺口。
+本輪另以 [古塔情境](common/spec-world-adventure.md) 核對自主組隊、敵方行動與村鎮後續；整體結論與逐要求證據見 [完成審閱](spec-world-review.md)。未選的數值、票制與程式 API 不當作本輪行為缺口；交接狀態見 [交接](spec-review-next.md)。
