@@ -10,5 +10,6 @@
 |---|---|
 | [spec-population.md](spec-population.md) | S5a：人口、人物身分與生命週期 |
 | [spec-households.md](spec-households.md) | S5b：家庭、關係、職涯與承諾 |
+| [spec-family-formation.md](spec-family-formation.md) | 人物如何成家、安排照護，讓下一代逐步自主生活 |
 | [spec-life-health.md](spec-life-health.md) | S5c：需求、健康、照護與日常節奏 |
 | [spec-person-behavior.md](spec-person-behavior.md) | 人物如何把牽掛變成動作，維持、交涉、中斷或放棄 |

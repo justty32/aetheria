@@ -24,7 +24,7 @@
 
 ### 實作者（gpt-sol）
 
-- 四塊行為續作：整體選擇與後果核對，見 [交接](../design/spec/spec-review-next.md)。
+- 四塊行為續作：複合變故與接手核對，見 [交接](../design/spec/spec-review-next.md)。
 
 ### 規劃者（Opus 5）
 
