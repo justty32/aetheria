@@ -38,7 +38,7 @@
 | [spec-powers.md](spec-powers.md) | S9a 力量、修行與超常效果 |
 | [spec-knowledge.md](spec-knowledge.md) | S9b 學習、研究與傳承 |
 | [spec-faith.md](spec-faith.md) | S9c 信仰、誓約、教團與神蹟 |
-| [spec-exploration.md](spec-exploration.md) | S9d 探索、遺跡與發現 |
+| [spec-exploration.md](spec-exploration.md) | S9d 探索、遺跡、林地居民接觸與發現 |
 | [spec-information.md](spec-information.md) | S10a 情報、傳播、保密與更正 |
 | [spec-motives.md](spec-motives.md) | S10b 立場、記憶、文化與關係 |
 | [spec-ai.md](spec-ai.md) | S10c 三層目標、派工與自治 |

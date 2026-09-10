@@ -24,7 +24,7 @@
 
 ### 實作者（gpt-sol）
 
-- 四塊行為續作：野外與聚落互相影響，見 [交接](../design/spec/spec-review-next.md)。
+- 四塊行為續作：整體選擇與後果核對，見 [交接](../design/spec/spec-review-next.md)。
 
 ### 規劃者（Opus 5）
 
