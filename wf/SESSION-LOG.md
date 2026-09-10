@@ -24,7 +24,7 @@
 
 ### 實作者（gpt-sol）
 
-- 四塊行為續作：並行安排與資源取捨，見 [交接](../design/spec/spec-review-next.md)。
+- 四塊行為續作：權力交接與各方選擇，見 [交接](../design/spec/spec-review-next.md)。
 
 ### 規劃者（Opus 5）
 
