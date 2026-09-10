@@ -11,3 +11,5 @@
 | [spec-site-work.md](spec-site-work.md) | S2：地方工作、預約與服務 |
 | [spec-site-battle.md](spec-site-battle.md) | S3：回合制方陣命令 |
 | [spec-site-transition.md](spec-site-transition.md) | S4：同一城市的平戰連續性 |
+| [spec-army-behavior.md](spec-army-behavior.md) | 軍隊按任務、敵情與補給選擇行軍、部署及撤退 |
+| [spec-city-development.md](spec-city-development.md) | 地方各方為何擴建、改用設施、分期或收縮 |
