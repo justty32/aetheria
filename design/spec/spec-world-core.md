@@ -65,7 +65,7 @@
 | 人貨、健康、能力等實際變化 | 各領域原規格 | 決策和故事只引用結果，不另存一份真實狀態 |
 | 例子是否覆蓋原要求 | [完成審閱](spec-world-review.md) 與 [行為核對](spec-behavior-review.md) | 案例作檢查材料，不等於固定劇情或新增必做功能 |
 
-世界特色接 [國家差異](spec-country-patterns.md)、[中小勢力](spec-minor-powers.md) 與 [神明自主](spec-deity-behavior.md)；共用流程另收大災難與紀元變革。它們補行為差異，仍沿上表維護原規則。
+世界特色接 [國家](spec-country-patterns.md)、[中小勢力](spec-minor-powers.md) 與 [神明](spec-deity-behavior.md)；生物與四時代由背景導讀。共用流程收災難、紀元及古獸的跨地推演，仍沿原領域處理。
 
 ## 用既有古塔情境檢查收斂有沒有漏東西
 
