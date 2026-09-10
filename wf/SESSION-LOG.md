@@ -24,6 +24,8 @@
 
 ### 實作者（gpt-sol）
 
+- compact 後開始收斂世界規劃，見 [交接](../design/spec/spec-review-next.md)。
+
 ### 規劃者（Opus 5）
 
 > **完成的不留這裡。** M0～M2.3 的結論都在 git log 與 `design/` 裡；
