@@ -24,7 +24,7 @@
 
 ### 實作者（gpt-sol）
 
-- 四塊行為續作：奇幻手段與各方回應，見 [交接](../design/spec/spec-review-next.md)。
+- 四塊行為續作：長期安排與重議尺度，見 [交接](../design/spec/spec-review-next.md)。
 
 ### 規劃者（Opus 5）
 

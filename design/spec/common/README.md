@@ -14,5 +14,6 @@
 | [spec-world-cases.md](spec-world-cases.md) | 七條純 NPC 情境：日常與變故、追加內容、長期等待 |
 | [spec-world-border.md](spec-world-border.md) | 邊境商路例子：勢力、軍隊、城區與人物選擇如何互相改變 |
 | [spec-world-growth-decline.md](spec-world-growth-decline.md) | 和平投資、移居與學藝，以及衰退、撤軍、協商和重組 |
+| [spec-world-magic.md](spec-world-magic.md) | 奇幻手段如何改變各方選擇、依賴與回應 |
 | [spec-world-handoff.md](spec-world-handoff.md) | S0：身分、責任範圍與交接 |
 | [spec-world-time.md](spec-world-time.md) | S1：時間、效果提交與中斷 |
