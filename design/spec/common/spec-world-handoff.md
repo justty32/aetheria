@@ -1,6 +1,6 @@
 # S0：身分、責任範圍與交接
 
-[本層入口](README.md)｜← [spec 入口](../spec-world.md)｜[原則](../../principles.md)｜[術語](../../glossary.md)
+[本層入口](README.md)｜← [spec 入口](../overview/spec-world.md)｜[原則](../../principles.md)｜[術語](../../glossary.md)
 
 ## 範圍與不變量
 

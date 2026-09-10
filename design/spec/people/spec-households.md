@@ -1,6 +1,6 @@
 # S5b：家庭、關係、職涯與承諾
 
-[本層入口](README.md)｜← [spec 入口](../spec-world.md)｜[原則](../../principles.md)｜[術語](../../glossary.md)
+[本層入口](README.md)｜← [spec 入口](../overview/spec-world.md)｜[原則](../../principles.md)｜[術語](../../glossary.md)
 
 ## 範圍
 

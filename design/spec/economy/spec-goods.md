@@ -1,6 +1,6 @@
 # S6a：物資、物品、製作與保管
 
-[本層入口](README.md)｜← [spec 入口](../spec-world.md)｜[原則](../../principles.md)｜[術語](../../glossary.md)
+[本層入口](README.md)｜← [spec 入口](../overview/spec-world.md)｜[原則](../../principles.md)｜[術語](../../glossary.md)
 
 ## 範圍與目標
 

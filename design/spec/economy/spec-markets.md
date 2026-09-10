@@ -1,6 +1,6 @@
 # S6b：地方市場、支付、信用與履約
 
-[本層入口](README.md)｜← [spec 入口](../spec-world.md)｜[原則](../../principles.md)｜[術語](../../glossary.md)
+[本層入口](README.md)｜← [spec 入口](../overview/spec-world.md)｜[原則](../../principles.md)｜[術語](../../glossary.md)
 
 ## 範圍
 

@@ -1,6 +1,6 @@
 # 地方怎麼接事、派工、執行與回報
 
-[本層入口](README.md)｜[交接](spec-world-handoff.md)｜[時間](spec-world-time.md)｜[地方工作](../site/spec-site-work.md)｜[AI](../spec-ai.md)
+[本層入口](README.md)｜[交接](spec-world-handoff.md)｜[時間](spec-world-time.md)｜[地方工作](../site/spec-site-work.md)｜[AI](spec-ai.md)
 
 ## 範圍
 

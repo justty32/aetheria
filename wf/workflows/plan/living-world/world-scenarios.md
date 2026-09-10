@@ -81,7 +81,7 @@
 
 ## 共同檢查方式
 
-全批 spec 已將本篇一／二／四展開為 [三條因果鏈推演](../../../../design/spec/spec-integration.md)，七案共同對應 [驗證矩陣](../../../../design/spec/spec-verification.md)；均是文件推演，尚未執行遊戲驗證。
+全批 spec 已將本篇一／二／四展開為 [三條因果鏈推演](../../../../design/spec/review/spec-integration.md)，七案共同對應 [驗證矩陣](../../../../design/spec/review/spec-verification.md)；均是文件推演，尚未執行遊戲驗證。
 
 每案保留初始快照、輸入、時間、應改變與不應改變的欄位、允許的近似、玩家可知資訊。先證明正常路徑，再故意重送事件、打斷工作、換角色、破壞引用、調換無關物件順序，確認守門真的會抓錯。
 

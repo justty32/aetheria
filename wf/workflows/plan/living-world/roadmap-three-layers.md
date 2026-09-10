@@ -49,7 +49,7 @@
 
 ## 三層之間怎麼交接
 
-下一層已開始寫 [spec 草案](../../../../design/spec/spec-world.md)：精確責任與時序先行，再接地方工作、方陣命令及平戰連續性；不是實作授權。
+下一層已開始寫 [spec 草案](../../../../design/spec/overview/spec-world.md)：精確責任與時序先行，再接地方工作、方陣命令及平戰連續性；不是實作授權。
 
 ```mermaid
 flowchart TD

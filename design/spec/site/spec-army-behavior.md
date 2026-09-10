@@ -1,6 +1,6 @@
 # 中層軍隊如何判斷與調度
 
-← [本層入口](README.md)｜[戰役與軍需](../spec-campaigns.md)｜[方陣命令](spec-site-battle.md)｜[平戰轉換](spec-site-transition.md)｜[AI](../spec-ai.md)
+← [本層入口](README.md)｜[戰役與軍需](spec-campaigns.md)｜[方陣命令](spec-site-battle.md)｜[平戰轉換](spec-site-transition.md)｜[AI](../common/spec-ai.md)
 
 ## 範圍與完成條件
 
