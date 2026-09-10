@@ -11,6 +11,6 @@
 | [spec-world-operation.md](spec-world-operation.md) | 無人類命令時的完整循環、NPC 情況分類與日後接入使用者 |
 | [spec-world-region-flow.md](spec-world-region-flow.md) | 大地圖環境、組織目標、跨區安排與接收後果 |
 | [spec-world-place-flow.md](spec-world-place-flow.md) | 中層調度、小層人物行動、平戰與中斷接續 |
-| [spec-world-cases.md](spec-world-cases.md) | 五條純 NPC 情境：日常照護、救援失敗、守城恢復、傳承與領袖死亡 |
+| [spec-world-cases.md](spec-world-cases.md) | 七條純 NPC 情境：日常與變故、追加內容、長期等待 |
 | [spec-world-handoff.md](spec-world-handoff.md) | S0：身分、責任範圍與交接 |
 | [spec-world-time.md](spec-world-time.md) | S1：時間、效果提交與中斷 |

@@ -24,7 +24,7 @@
 
 ### 實作者（gpt-sol）
 
-- 下一步驗 NPC 新內容與長期運作；玩家後置，見 [交接](../design/spec/spec-review-next.md)。
+- 下一步查野外與奇幻力量的世界流程；玩家後置，見 [交接](../design/spec/spec-review-next.md)。
 
 ### 規劃者（Opus 5）
 
