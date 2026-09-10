@@ -1,6 +1,6 @@
 # 從部落、城邦走到第一個帝國
 
-← [本層入口](README.md)｜[世界背景](../spec-world-background.md)｜[時代變革](../../common/cases/spec-world-eras.md)｜[生成史](spec-history.md)
+← [本層入口](README.md)｜[世界背景](../spec-world-background.md)｜[時代變革](../../common/cases/eras/spec-world-eras.md)｜[生成史](spec-history.md)
 
 ## 已確認的時代骨架
 

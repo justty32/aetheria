@@ -1,6 +1,6 @@
 # S9b：學習、研究與知識傳承
 
-← [本層入口](README.md)｜[力量](spec-powers.md)｜[工作](../site/spec-site-work.md)｜[物資](../economy/spec-goods.md)
+← [本層入口](README.md)｜[力量](spec-powers.md)｜[工作](../site/city/spec-site-work.md)｜[物資](../economy/spec-goods.md)
 
 ## 範圍
 

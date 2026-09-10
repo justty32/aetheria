@@ -6,21 +6,21 @@
 
 2026-09-10 使用者追加魔法生物種類、起源與生活，以及種族來歷和神話→黃金→白銀→黑鐵四時代，並要求多參考 D&D。使用者隨後明確更正時代對應：神話＝部落、黃金＝城邦、白銀＝希臘式世界，羅馬式第一帝國開啟黑鐵。神話主角為神明、上古神獸、上古神龍、上古泰坦；黃金為巨人、巨龍、巨獸；白銀為精靈、巫師等高層次生物；人類與凡人早已存在，黑鐵才成為主角。此骨架已採用；撤掉原先古代巔峰走向分裂衰退的主線，具體事件和開局年代仍可調整。NPC 優先，背景不變成固定未來劇本。
 
-- [種類總覽](../world/creatures/spec-creature-kinds.md) → [形成與生活](../world/creatures/spec-magical-creatures.md) → [九類生活範例](../world/creatures/spec-magical-creature-examples.md)。
-- [種族來歷](../world/creatures/spec-peoples-origins.md) 與 [四時代歷史](../world/history/spec-world-history.md) 互相接續。
+- [種類總覽](../world/creatures/spec-creature-kinds.md) → [形成與生活](../world/creatures/magical/spec-magical-creatures.md) → [九類生活範例](../world/creatures/magical/spec-magical-creature-examples.md)。
+- [種族來歷](../world/creatures/peoples/spec-peoples-origins.md) 與 [四時代歷史](../world/history/spec-world-history.md) 互相接續。
 - 官方資料與本案自訂的分界見 [D&D 參考](../world/references/spec-dnd-reference.md)。
 
 **Done when：**各類有來源、生活範圍與變故後去向；各族有祖先故事、可考遷徙與今日分布；四時代有前因後果及現在仍起作用的遺產。原有三層、有限知情、同一人貨與保存規則繼續適用；文件與交叉審閱通過。歷史是候選開局背景，不是預定未來。
 
-前批已補國家差異、中小勢力、神明與紀元變革，位置如下。gameplots 的取用與本機路徑見 [參考模式](../world/references/spec-world-reference-patterns.md)。前批完整運作證據見 [審閱](spec-world-review.md)，目前閱讀主線見 [短版](../overview/spec-world-core.md)。
+前批已補國家差異、中小勢力、神明與紀元變革，位置如下。gameplots 的取用與本機路徑見 [參考模式](../world/references/spec-world-reference-patterns.md)。前批完整運作證據見 [審閱](coverage/spec-world-review.md)，目前閱讀主線見 [短版](../overview/spec-world-core.md)。
 
 ## 前批閱讀位置
 
 | 要看什麼 | 正文與核對重點 |
 |---|---|
-| 國家為何不同 | [國家差異](../politics/spec-country-patterns.md)：同一斷路，商路王國、邊境小國、神殿國家與城邦聯盟有不同依靠、方案和後果 |
-| 中小勢力如何活 | [中小勢力](../politics/spec-minor-powers.md)：不占地也能維持，試做、擴張、找靠山、分合與自願退出皆有接續 |
-| 神明自己怎麼選 | [神明自主](../magic/spec-deity-behavior.md)：有限感知、介入或沉默、代理拒絕、神際合作競爭及隕落後的承接 |
+| 國家為何不同 | [國家差異](../politics/factions/spec-country-patterns.md)：同一斷路，商路王國、邊境小國、神殿國家與城邦聯盟有不同依靠、方案和後果 |
+| 中小勢力如何活 | [中小勢力](../politics/factions/spec-minor-powers.md)：不占地也能維持，試做、擴張、找靠山、分合與自願退出皆有接續 |
+| 神明自己怎麼選 | [神明自主](../magic/faith/spec-deity-behavior.md)：有限感知、介入或沉默、代理拒絕、神際合作競爭及隕落後的承接 |
 | 大災難與紀元 | [共用流程](../common/README.md) 的時代變革：危機可避免、部分控制或惡化；新格局從實際行動累積，紀元稱呼不重置世界 |
 
 ## 後續怎麼用
@@ -28,7 +28,7 @@
 - 討論整體方向時用收斂主線；問到某種行為才進所屬領域。
 - 只有典型情境無法接到下一步，或兩篇對同一結果說法衝突時，才補那個缺口；不為湊更多案例持續擴張。
 - 既有案例是不同選擇的推演，不是固定劇本。DQ 是暫定背景，不因此加入固定勇者、必勝故事或所有原作機制。
-- [選項表](../overview/spec-decisions.md) 是比較材料，D01–D05 沿 [簡單方向](../overview/spec-foundations-review.md)。數值、少見例外與具體算法留到需要時；沒有一串必須先請使用者作答的題目。
+- [選項表](../overview/foundations/spec-decisions.md) 是比較材料，D01–D05 沿 [簡單方向](../overview/foundations/spec-foundations-review.md)。數值、少見例外與具體算法留到需要時；沒有一串必須先請使用者作答的題目。
 
 ## 保留的界線
 
@@ -53,7 +53,7 @@
 
 ## 最新整體核對
 
-重讀共用運作、交接、時間、河谷與七情境，並逐項核對勢力、軍隊、城區、人物與家庭正文；原要求在 [完成審閱](spec-world-review.md) 中的證據仍成立。另核對國家、中小勢力、神明、生物、知識、旅行、市場、災害、歷史、內容與玩家決策接入，沒有把典型失敗交回使用者才繼續。
+重讀共用運作、交接、時間、河谷與七情境，並逐項核對勢力、軍隊、城區、人物與家庭正文；原要求在 [完成審閱](coverage/spec-world-review.md) 中的證據仍成立。另核對國家、中小勢力、神明、生物、知識、旅行、市場、災害、歷史、內容與玩家決策接入，沒有把典型失敗交回使用者才繼續。
 
 最新四時代補在 [共用流程](../common/README.md) 的古獸推演：暖泉供應受工程影響，古獸依所知交涉或遷徙，三地按實際效果與消息接續；合作、只談成通行與無人談成都有後果。舊約是否承接逐方判斷，個體與世界不隨時代或視角更換而重置。歷史中的有限傳送改明為本例條件，若採更強能力，允許社會隨之改變。
 

@@ -8,9 +8,6 @@
 
 | 文件／資料夾 | 職責 |
 |---|---|
+| [magical/](magical/README.md) | 魔法生物的來源與生活 |
+| [peoples/](peoples/README.md) | 智慧族群的起源與來歷 |
 | [spec-creature-kinds.md](spec-creature-kinds.md) | 十四類生物候選、分布與跨類身分 |
-| [spec-creature-life.md](spec-creature-life.md) | 棲地與活動範圍、日常及與世界相處 |
-| [spec-magical-creature-examples.md](spec-magical-creature-examples.md) | 少量生物的生活樣貌與來歷範例，保留可換設定 |
-| [spec-magical-creatures.md](spec-magical-creatures.md) | 魔法生物的起源、地方來歷、生活範圍、習性與三層接續 |
-| [spec-peoples-catalog.md](spec-peoples-catalog.md) | 十一類智慧族群的起源說法、遷徙與今日生活 |
-| [spec-peoples-origins.md](spec-peoples-origins.md) | 智慧族群的祖先故事、遷徙與今日分布 |

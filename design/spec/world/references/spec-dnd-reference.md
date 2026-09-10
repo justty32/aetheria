@@ -9,7 +9,7 @@
 | 官方參考 | 取用的重點 | 本案怎麼用 |
 |---|---|---|
 | [2014 Basic Rules：Monsters](https://www.dndbeyond.com/sources/dnd/basic-rules-2014/monsters) | 生物類型涵蓋龍、巨人、精類、元素、造物、不死、異怪及天界／下界生物等 | 用來檢查 [種類](../creatures/spec-creature-kinds.md) 是否只剩常見野獸；具體生態、物種和地方故事另寫 |
-| [2024 Basic Rules：Character Origins](https://www.dndbeyond.com/sources/dnd/br-2024/character-origins) | 種族可有創造神、遷徙與環境影響等來歷；例如矮人的鍛造神起源、精靈的異境經歷 | [種族](../creatures/spec-peoples-origins.md) 分祖先故事、可考遷徙和今日文化，不把神話血統當固定性格 |
+| [2024 Basic Rules：Character Origins](https://www.dndbeyond.com/sources/dnd/br-2024/character-origins) | 種族可有創造神、遷徙與環境影響等來歷；例如矮人的鍛造神起源、精靈的異境經歷 | [種族](../creatures/peoples/spec-peoples-origins.md) 分祖先故事、可考遷徙和今日文化，不把神話血統當固定性格 |
 | [2014 Basic Rules：Planes of Existence](https://www.dndbeyond.com/sources/dnd/basic-rules-2014/appendix-d-the-planes-of-existence) | 凡世之外有不同存在條件的地方；法術與門可以連接它們 | 給外來生物、古代交通與斷路移民一條來路；先只描述會影響本地的環境、通路和代價 |
 
 以上分別取用公開的 2014 與 2024 內容，不聲稱它們是完全一致的一套設定；後續若要移植某條具體規則，再單獨確認版本。

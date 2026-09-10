@@ -4,7 +4,7 @@
 
 ## 範圍與目標
 
-草案，依 [旅行藍圖](../../../wf/workflows/plan/living-world/systems/world-systems-travel.md)、[S0](../common/spec-world-handoff.md)、[S1](../common/spec-world-time.md) 及 [物資](spec-goods.md)。人、軍隊與貨物共用交通約束，不代表它們有相同速度、隱蔽性與通行權。
+草案，依 [旅行藍圖](../../../wf/workflows/plan/living-world/systems/world-systems-travel.md)、[S0](../common/continuity/spec-world-handoff.md)、[S1](../common/continuity/spec-world-time.md) 及 [物資](spec-goods.md)。人、軍隊與貨物共用交通約束，不代表它們有相同速度、隱蔽性與通行權。
 
 **Done when：**同一商隊可規劃、出發、排隊、改道、遭遇、紮營、拆隊及交貨；玩家上下切層不刷新路程、補給或敵人。地城內容與飛行／傳送完整能力留 S9。
 
@@ -34,7 +34,7 @@
 
 ## 路網與運能
 
-**奇幻玩法接點：**已知且可用的暫時渡路、傳送端點或探知路線，可以作為規劃候選，顯示主要條件與有效窗口。提出方案不代表路已存在；建立、供能或施術完成後才依真實通行條件使用。窗口結束或環境改變時，按既有受阻／改道規則接續，不把進度倒帶。見 [不同手段的比較](../player/spec-play-fantasy.md)。
+**奇幻玩法接點：**已知且可用的暫時渡路、傳送端點或探知路線，可以作為規劃候選，顯示主要條件與有效窗口。提出方案不代表路已存在；建立、供能或施術完成後才依真實通行條件使用。窗口結束或環境改變時，按既有受阻／改道規則接續，不把進度倒帶。見 [不同手段的比較](../player/loops/spec-play-fantasy.md)。
 
 路線成本由地形、路況、季節、載重、載具、隊伍能力及安全條件形成。速度瓶頸與容量分開：窄橋可能可快速通過但同時只能過少量貨，不能用單一「移動減速」取代排隊。
 

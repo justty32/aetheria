@@ -1,10 +1,10 @@
 # S7d：外交、條約、叛亂與政治和解
 
-← [本層入口](README.md)｜[規格總覽](../overview/spec-world.md)｜[既有外交](../../rules/diplomacy.md)｜[平戰連續性](../site/spec-site-transition.md)
+← [本層入口](README.md)｜[規格總覽](../overview/spec-world.md)｜[既有外交](../../rules/diplomacy.md)｜[平戰連續性](../site/city/spec-site-transition.md)
 
 ## 範圍與完成條件
 
-草案，沿用有向好感、信任、恐懼、積怨及持續戰爭事件。承接 [政體](spec-government.md)、[繼承](spec-succession.md)、[旅行](../economy/spec-travel.md)。Endless／CK2／太閤的參考與證據邊界由 [政治藍圖](../../../wf/workflows/plan/living-world/systems/world-systems-politics.md) 統一說明。
+草案，沿用有向好感、信任、恐懼、積怨及持續戰爭事件。承接 [政體](institutions/spec-government.md)、[繼承](succession/spec-succession.md)、[旅行](../economy/spec-travel.md)。Endless／CK2／太閤的參考與證據邊界由 [政治藍圖](../../../wf/workflows/plan/living-world/systems/world-systems-politics.md) 統一說明。
 
 **Done when：**使節提出條約、逐條履行、部分違約、換君與分裂仍能追蹤承諾；內部訴求能導向妥協或內戰，和談只處理列明事項。本文不裁定方陣出手序或外交分數公式。
 

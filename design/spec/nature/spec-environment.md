@@ -4,7 +4,7 @@
 
 ## 範圍與完成條件
 
-草案；沿用 [生成契約](../../generation/gen-pipeline.md)、[接邊](../../generation/edge-consistency.md)、[時間](../common/spec-world-time.md)。參考 Endless／Freeciv 的生成分階段與 Veloren 的水文選址線索，證據限度見 [總盤點](../../../wf/workflows/investigation/roadmap-reference-overview-status.md)；以下動態水量帳是本案建議，不聲稱原作已提供。
+草案；沿用 [生成契約](../../generation/gen-pipeline.md)、[接邊](../../generation/edge-consistency.md)、[時間](../common/continuity/spec-world-time.md)。參考 Endless／Freeciv 的生成分階段與 Veloren 的水文選址線索，證據限度見 [總盤點](../../../wf/workflows/investigation/roadmap-reference-overview-status.md)；以下動態水量帳是本案建議，不聲稱原作已提供。
 
 **Done when：**上游取水、築壩與污染能沿同一條流域影響下游；玩家挖渠、離場、再入場不重置水位或地貌。先定守恆和責任，不選流體求解器、河道改道算法或天氣數值。
 

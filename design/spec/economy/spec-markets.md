@@ -4,7 +4,7 @@
 
 ## 範圍
 
-草案，承接 [經濟藍圖](../../../wf/workflows/plan/living-world/systems/world-systems-economy.md)、[物資](spec-goods.md) 與 [家庭職涯](../people/spec-households.md)。市場連接真實供需，貨幣是支付工具，信用是承諾，都不能替代食物與運能。
+草案，承接 [經濟藍圖](../../../wf/workflows/plan/living-world/systems/world-systems-economy.md)、[物資](spec-goods.md) 與 [家庭職涯](../people/family/spec-households.md)。市場連接真實供需，貨幣是支付工具，信用是承諾，都不能替代食物與運能。
 
 **Done when：**現貨交易與遠地交貨可部分履約、逾期、退款或違約；價格訊號不瞬移貨物，死亡／占領不清空債務。價格公式、貨幣制度與破產法仍待定。
 

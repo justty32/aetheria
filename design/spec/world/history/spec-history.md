@@ -4,11 +4,11 @@
 
 ## 範圍與完成條件
 
-草案，將使用者的多年代活世界願景接到 [環境](../../nature/spec-environment.md)、[生態](../../nature/spec-ecology.md)、[災害](../../nature/spec-disasters.md) 及 S7 政治。這是新增規格，不聲稱現況已有多年文明模擬。
+草案，將使用者的多年代活世界願景接到 [環境](../../nature/spec-environment.md)、[生態](../../nature/ecology/spec-ecology.md)、[災害](../../nature/spec-disasters.md) 及 S7 政治。這是新增規格，不聲稱現況已有多年文明模擬。
 
 **Done when：**一座城從建立、成長、被毀到再定居，留下相容的人口、道路、資產、遺址與主張；生成史結束後可由日常模擬接手，不在玩家進廢墟時另造互相矛盾的過去。
 
-開局後的危機如何留下新格局與紀元稱呼，見 [時代變革](../../common/cases/spec-world-eras.md)，不重跑生成史。
+開局後的危機如何留下新格局與紀元稱呼，見 [時代變革](../../common/cases/eras/spec-world-eras.md)，不重跑生成史。
 
 可採用的故事背景見 [四時代歷史](spec-world-history.md)；本篇負責生成與保存規則，背景草案不替換既有模式。
 

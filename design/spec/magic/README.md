@@ -8,7 +8,6 @@
 
 | 文件／資料夾 | 職責 |
 |---|---|
-| [spec-deity-behavior.md](spec-deity-behavior.md) | 神明自己的目標、知覺、介入、沉默與相互影響 |
-| [spec-faith.md](spec-faith.md) | S9c 信仰、誓約、教團變故與神蹟 |
+| [faith/](faith/README.md) | 信仰、教團與神明 |
 | [spec-knowledge.md](spec-knowledge.md) | S9b 學習、研究與傳承 |
 | [spec-powers.md](spec-powers.md) | S9a 力量、修行與超常效果 |

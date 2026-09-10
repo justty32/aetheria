@@ -8,11 +8,7 @@
 
 | 文件／資料夾 | 職責 |
 |---|---|
-| [spec-cooperation-cases.md](spec-cooperation-cases.md) | 日常合作與多重承諾衝突 |
-| [spec-cooperation.md](spec-cooperation.md) | 主動找對象、提議、回覆、相處及合作經驗如何改變關係 |
-| [spec-family-formation.md](spec-family-formation.md) | 人物如何成家、安排照護，讓下一代逐步自主生活 |
-| [spec-households.md](spec-households.md) | S5b：家庭、關係、職涯與承諾 |
-| [spec-life-health.md](spec-life-health.md) | S5c：需求、健康、照護與日常節奏 |
-| [spec-motives.md](spec-motives.md) | S10b 立場、記憶、文化與關係 |
-| [spec-person-behavior.md](spec-person-behavior.md) | 人物如何把牽掛變成動作，維持、交涉、中斷或放棄 |
-| [spec-population.md](spec-population.md) | S5a：人口、人物身分與生命週期 |
+| [behavior/](behavior/README.md) | 人物動機與自主行動 |
+| [cooperation/](cooperation/README.md) | 相處、合作與承諾衝突 |
+| [family/](family/README.md) | 家庭、成家與職涯 |
+| [life/](life/README.md) | 人口、生命與照護 |

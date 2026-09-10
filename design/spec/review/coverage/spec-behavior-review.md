@@ -1,0 +1,51 @@
+# 四塊行為：整體核對
+
+← [本層入口](README.md)｜[規劃尺度](../../overview/spec-planning-scope.md)｜[原驗證要求](../validation/spec-verification.md)
+
+## 查什麼才算有用
+
+2026-09-10 文件審閱。**Done when：**勢力、軍隊、城區與人物在典型情況下有可解釋的選擇，執行後改變其他方處境，收到結果又能繼續決定；發現的衝突回原文件修正。這是規劃核對，不是 AI、存讀檔或效能測試報告。
+
+每條鏈分開看：知道什麼、在意什麼、有哪些可行辦法、真正做了多少、誰受影響、什麼時候再想。只寫「失敗就回報」或「有權者處理」不足以說明行為。
+
+## 已有情境能檢查什麼
+
+| 情況 | 已有行為與後果 | 核對入口 |
+|---|---|---|
+| 日常與成長 | 人物接單、收成、學藝；地方安排工具、人手與服務；勢力維持通路，軍隊輪調。收益也會帶來缺工、維護與家庭取捨 | [和平發展](../../common/cases/everyday/spec-world-growth-decline.md)、[人物](../../people/behavior/spec-person-behavior.md) |
+| 家庭延續 | 人物可提議共同生活，分別安排同住、婚姻、收養或生育；照護改變工作，孩子逐步形成自己的生活，不因婚姻自動出生 | [成家與下一代](../../people/family/spec-family-formation.md)、[人口](../../people/life/spec-population.md) |
+| 短缺與等待 | 各方提出可接受的份額、改期、縮案或另找來源；分到部分仍要檢查關鍵步驟是否可做，未回覆有查問／重議時點 | [合作](../../people/cooperation/spec-cooperation.md)、[AI](../../common/decision/spec-ai.md) |
+| 危險與戰鬥 | 勢力選目的，軍隊選警戒、部署與退路，地方維持可行供應，人物避險、守職或救人；拒令與新情報能讓有權者改案 | [軍隊](../../site/warfare/spec-army-behavior.md)、[方陣](../../site/combat/spec-site-battle.md)、[平戰](../../site/city/spec-site-transition.md) |
+| 災害與恢復 | 當地先按所見搬運、疏散或求援，上級收到消息再救助；恢復要有道路、工具、住所與人力，不把水退當成復原 | [災害](../../nature/spec-disasters.md)、[整合 A](../spec-integration.md) |
+| 合作、競爭與衰退 | 對方和地方都能反提案；訂單、負擔和履約結果影響合作範圍，可能維持、轉業、縮小或組織化反對 | [河谷](../../common/cases/everyday/spec-world-border.md)、[衰退](../../common/cases/everyday/spec-world-growth-decline.md) |
+| 權力更替 | 新任爭取具體支持，地方和軍人可只配合部分，家戶可照常生活；承諾履行與實際調度使交接穩定或形成分歧 | [繼承](../../politics/succession/spec-succession.md)、[政體](../../politics/institutions/spec-government.md) |
+| 奇幻與野外 | 能力改變真實運輸、供應和分工；林地居民可主動交涉，獸群避險會影響鄰村，後果回到地方與勢力 | [奇幻手段](../../common/cases/fantasy/spec-world-magic.md)、[教團變故](../../magic/faith/spec-faith.md)、[探索](../../adventure/spec-exploration.md)、[生態](../../nature/ecology/spec-ecology.md) |
+| 長期延續與三層切換 | 目的、安排、下一步分開；沿用已知經歷與未完工作。交接只換負責推進者，不重領人貨或忘掉等待原因 | [AI](../../common/decision/spec-ai.md)、[身分交接](../../common/continuity/spec-world-handoff.md)、[時間](../../common/continuity/spec-world-time.md) |
+
+以上確認了典型分支的文件落點與因果內容，不能證明所有情境已覆蓋。尤其多件事同時發生時，還須沿相同人物、資源和時間推演，不能讓每篇各用一份完整資源。
+
+## 行為差異怎麼驗
+
+沿已有案例，只改一項真正相關的條件，例如替補是否抵達、車夫是否願意改期、敵情報告是否送達。查看候選、選擇理由與後果有沒有合理變化，而非強制每個人物都改主意；已有替代來源的人可能合理維持原案。
+
+要能抓出以下錯誤：
+
+- 同樣缺倉，不論缺容量還是缺搬運人都固定蓋倉。
+- 不管軍隊原本要護路還是尋戰，都只往最近敵人走。
+- 知情早晚不同，所有人卻同時停止或改變安排。
+- 一次借工具失敗就忘記長期方向；或連續失敗每次都被當成第一次。
+- 談成分期、調兵或改路後，下一輪仍照未修改的原案全額執行。
+
+反例不能只檢查「產物沒有憑空增加」；一個永遠等待的 AI 也可能帳目正確。反過來，合理等待、維持小規模或離開也可以是結果，不要求世界每輪都擴張。
+
+## 同一河城，三件事一起發生
+
+本節移至 [河城多事同時發生的核對](spec-simultaneous-events.md#同一河城三件事一起發生)。
+
+## 這次確認的衝突
+
+原整合 C 曾寫「停火生效禁止後續交戰」，容易被讀成前線瞬間得知；與外交篇允許未接令誤戰、D03 保留晚知情的方向不一致。已在整合 C 改成義務生效與接令行動分開，誤戰回外交規則處理，沒有新增法律制度。
+
+另外確認兩項：家庭原先只有既存關係與出生事件的資料責任，已補 [成家與下一代](../../people/family/spec-family-formation.md) 的提議、安排、照護與成長行為；權力空窗則不必保證有人能承諾，已在 [政體](../../politics/institutions/spec-government.md) 補明代理權限不足時的限期未履約與接手出口。
+
+本輪另以 [古塔情境](../../common/cases/fantasy/spec-world-adventure.md) 核對自主組隊、敵方行動與村鎮後續；整體結論與逐要求證據見 [完成審閱](spec-world-review.md)。未選的數值、票制與程式 API 不當作本輪行為缺口；交接狀態見 [交接](../spec-review-next.md)。

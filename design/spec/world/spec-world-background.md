@@ -19,9 +19,9 @@
 
 以上是本案採用的背景草案，不是某一代作品的完整設定表。
 
-魔物從哪裡來、為何住在這裡與平常怎麼活，見 [魔法生物](creatures/spec-magical-creatures.md) 及其生活範例。
+魔物從哪裡來、為何住在這裡與平常怎麼活，見 [魔法生物](creatures/magical/spec-magical-creatures.md) 及其生活範例。
 
-2026-09-10 追加方向：種族、生物與古代背景多參考 D&D，見 [取材說明](references/spec-dnd-reference.md)。本案的 [四時代歷史](history/spec-world-history.md)、[種族來歷](creatures/spec-peoples-origins.md) 與 [生物種類](creatures/spec-creature-kinds.md) 的具體內容保留彈性與上述生活氣氛。歷史骨架已依使用者更正為部落→城邦→希臘式世界→羅馬式第一帝國；神話由神明、上古神獸、上古神龍、上古泰坦主導，黃金由巨人、巨龍、巨獸主導，白銀以精靈、巫師等為主角，人類與凡人早已存在、黑鐵才接過主舞台。開局位於哪段仍未定。
+2026-09-10 追加方向：種族、生物與古代背景多參考 D&D，見 [取材說明](references/spec-dnd-reference.md)。本案的 [四時代歷史](history/spec-world-history.md)、[種族來歷](creatures/peoples/spec-peoples-origins.md) 與 [生物種類](creatures/spec-creature-kinds.md) 的具體內容保留彈性與上述生活氣氛。歷史骨架已依使用者更正為部落→城邦→希臘式世界→羅馬式第一帝國；神話由神明、上古神獸、上古神龍、上古泰坦主導，黃金由巨人、巨龍、巨獸主導，白銀以精靈、巫師等為主角，人類與凡人早已存在、黑鐵才接過主舞台。開局位於哪段仍未定。
 
 ## 放進三層地圖會是什麼樣子
 

@@ -1,14 +1,14 @@
 # S8c：災害、預警、連鎖損失與恢復
 
-← [本層入口](README.md)｜[規格總覽](../overview/spec-world.md)｜[環境](spec-environment.md)｜[生態](spec-ecology.md)
+← [本層入口](README.md)｜[規格總覽](../overview/spec-world.md)｜[環境](spec-environment.md)｜[生態](ecology/spec-ecology.md)
 
 ## 範圍與完成條件
 
-草案；接 [健康](../people/spec-life-health.md)、[地方工作](../site/spec-site-work.md)、[平戰連續性](../site/spec-site-transition.md)。採危害源、暴露與脆弱條件分開的遊戲模型；不是現實災害預測工具。
+草案；接 [健康](../people/life/spec-life-health.md)、[地方工作](../site/city/spec-site-work.md)、[平戰連續性](../site/city/spec-site-transition.md)。採危害源、暴露與脆弱條件分開的遊戲模型；不是現實災害預測工具。
 
 **Done when：**一場上游洪水能逐步斷路、毀糧、疏散、收容與重建；預警不保證命中，災害結束不消除後果。先立共同契約，非一次定案所有災種。
 
-多地災害如何改變國家、組織與長期生活，見 [時代變革](../common/cases/spec-world-eras.md)；本篇仍負責危害、損失與恢復。
+多地災害如何改變國家、組織與長期生活，見 [時代變革](../common/cases/eras/spec-world-eras.md)；本篇仍負責危害、損失與恢復。
 
 ## 災害與觀測分開
 

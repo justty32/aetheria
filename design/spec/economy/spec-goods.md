@@ -4,7 +4,7 @@
 
 ## 範圍與目標
 
-草案，依 [經濟藍圖](../../../wf/workflows/plan/living-world/systems/world-systems-economy.md)、[S0](../common/spec-world-handoff.md)、[工作](../site/spec-site-work.md)。普通糧食可以批次存在，具體裝備可以個別存在；兩者是一份物資的不同表示，不是兩套庫存。
+草案，依 [經濟藍圖](../../../wf/workflows/plan/living-world/systems/world-systems-economy.md)、[S0](../common/continuity/spec-world-handoff.md)、[工作](../site/city/spec-site-work.md)。普通糧食可以批次存在，具體裝備可以個別存在；兩者是一份物資的不同表示，不是兩套庫存。
 
 **Done when：**材料可拆批、搬運、製作、裝備、損毀與回收，來源與數量可對帳；政治所有權、現實保管與使用授權不混同。不定完整物品庫及魔法創造公式。
 
