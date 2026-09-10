@@ -29,7 +29,7 @@
 | [economy/](economy/README.md) | S6 物資、市場與旅行 |
 | [spec-government.md](spec-government.md) | S7a 政體、組織、職位與委任 |
 | [spec-law.md](spec-law.md) | S7b 法律、財產、徵收與司法 |
-| [spec-succession.md](spec-succession.md) | S7c 繼承、攝政、遺產與組織分合 |
+| [spec-succession.md](spec-succession.md) | S7c 繼承、遺產、交接時各方選擇與組織分合 |
 | [spec-diplomacy.md](spec-diplomacy.md) | S7d 外交、條約、叛亂與和解 |
 | [spec-environment.md](spec-environment.md) | S8a 地理、水文、天氣與改造 |
 | [spec-ecology.md](spec-ecology.md) | S8b 生態、農牧林礦與耗竭 |
