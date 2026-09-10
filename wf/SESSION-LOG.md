@@ -24,7 +24,7 @@
 
 ### 實作者（gpt-sol）
 
-- 四塊行為續作：多勢力與地方互動，見 [交接](../design/spec/spec-review-next.md)。
+- 四塊行為續作：接敵部署與人物回饋，見 [交接](../design/spec/spec-review-next.md)。
 
 ### 規劃者（Opus 5）
 
