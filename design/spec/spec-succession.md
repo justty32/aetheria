@@ -4,7 +4,7 @@
 
 ## 範圍與完成條件
 
-草案；借 [CK2 政治分析](/home/lorkhan/repo/pas/analysis/crusader-kings-2/details/01_succession_and_politics.md) 的候選／分配／後果拆分，不照搬其制度或無國家物件模型。原始逆向證據限制見 [PAS 盤點](../../wf/workflows/investigation/roadmap-reference-pas-status.md)。
+草案；借 既有 CK2 政治分析 的候選／分配／後果拆分，不照搬其制度或無國家物件模型。原始逆向證據限制見 [PAS 盤點](../../wf/workflows/investigation/roadmap-reference-pas-status.md)。
 
 **Done when：**領袖死亡、退位、失能或任期結束後，公職、私產、照護、債務與外交義務各有去向；均分或爭位不自動複製軍隊／國庫。具體繼承法與票制仍待選。
 
