@@ -2,16 +2,16 @@
 
 ← [設計入口](../README.md)
 
-這裡收 roadmap 展開後的規則草案，不是實作任務書。先讀 [規格總覽](spec-world.md) 的狀態、依賴與待裁定事項，再進所屬領域。本 README 兼本層索引。續作先遵守 [規劃尺度](spec-planning-scope.md)：玩法先行，細節按需。
+這裡收活世界規則草案，不是實作任務書。**目前先規劃世界與 NPC 自主運作，玩家操作體驗後置。** 先讀 [規劃尺度](spec-planning-scope.md)，再進 [共用流程](common/README.md) 與 [全批總覽](spec-world.md)。本 README 兼本層索引。
 
 | 下一層 | 職責 |
 |---|---|
-| [spec-planning-scope.md](spec-planning-scope.md) | 使用者要求的規劃尺度：好玩、簡單、保留彈性 |
-| [spec-play-loop.md](spec-play-loop.md) | 玩家目標、三層參與、回饋與省事方向 |
-| [spec-play-adventure.md](spec-play-adventure.md) | 冒險、旅行、修行與生活的遊玩循環 |
-| [spec-play-command.md](spec-play-command.md) | 地方經營、帶兵與戰後接續的遊玩循環 |
-| [spec-play-fantasy.md](spec-play-fantasy.md) | 本事、關係與奇幻力量如何帶來不同解法 |
-| [spec-play-entry.md](spec-play-entry.md) | 進入世界、找到目標與可略過的引導 |
+| [spec-planning-scope.md](spec-planning-scope.md) | 最新優先序：世界與 NPC 先成立，玩家接入後置 |
+| [spec-play-loop.md](spec-play-loop.md) | 後置備考：玩家目標、三層參與、回饋與省事方向 |
+| [spec-play-adventure.md](spec-play-adventure.md) | 後置備考：冒險、旅行、修行與生活的遊玩循環 |
+| [spec-play-command.md](spec-play-command.md) | 後置備考：地方經營、帶兵與戰後接續的遊玩循環 |
+| [spec-play-fantasy.md](spec-play-fantasy.md) | 後置備考：本事、關係與奇幻力量如何帶來不同解法 |
+| [spec-play-entry.md](spec-play-entry.md) | 後置備考：進入世界、找到目標與可略過的引導 |
 | [spec-world.md](spec-world.md) | S0–S11 展開順序、完成條件與跨規格協調 |
 | [spec-review-next.md](spec-review-next.md) | S0–S11 全批交接與後續邊界 |
 | [spec-integration.md](spec-integration.md) | 三條跨系統因果鏈推演 |
@@ -19,7 +19,7 @@
 | [spec-foundations-review.md](spec-foundations-review.md) | D01–D05 採用的簡單方向；細則可換 |
 | [spec-foundations-examples.md](spec-foundations-examples.md) | 五題的數字、反例與尚未解決的邊界 |
 | [spec-verification.md](spec-verification.md) | 全批驗證、粗細校準與長局成本 |
-| [common/](common/README.md) | S0–S1 身分交接與時間提交 |
+| [common/](common/README.md) | 世界整體流程、大中小推進、身分交接與時間 |
 | [site/](site/README.md) | S2–S4 地方工作、方陣與平戰轉換 |
 | [spec-local-combat.md](spec-local-combat.md) | S3b 個體交戰、潛行與救援 |
 | [spec-campaigns.md](spec-campaigns.md) | S4b 戰役、軍需、圍城與戰後 |
