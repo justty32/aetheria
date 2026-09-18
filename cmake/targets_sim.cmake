@@ -51,3 +51,12 @@ add_test(
         -DPROJECT_ROOT=${PROJECT_SOURCE_DIR}
         -P "${PROJECT_SOURCE_DIR}/cmake/check_world_hash_boundary.cmake"
 )
+
+# 拆檔波 split/sersim 追加區
+target_sources(aetheria_sim PRIVATE
+    sim/core_probe.cpp
+    sim/local_viewer_output.cpp
+    sim/local_viewer_paint.cpp
+    sim/site_viewer_paint.cpp
+    sim/world_hash_replay.cpp
+)

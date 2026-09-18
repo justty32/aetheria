@@ -1,4 +1,5 @@
 #include "core/serialize/zone_codec.h"
+#include "core/serialize/zone_decode_detail.h"
 
 #include "core/serialize/all_components.h"
 #include "core/serialize/registry_codec.h"
@@ -23,26 +24,6 @@
 
 namespace aetheria::serialize {
 namespace {
-
-template <typename Id, typename Finder>
-[[nodiscard]] std::vector<Id> build_remap(const std::vector<std::string>& saved_ids,
-                                          Finder&& find, std::string_view kind) {
-    if (saved_ids.size() > static_cast<std::size_t>(std::numeric_limits<std::uint16_t>::max()) +
-                               1U) {
-        throw std::runtime_error{"zone 存檔的 " + std::string{kind} + " id 表超過 uint16 容量"};
-    }
-    std::vector<Id> result;
-    result.reserve(saved_ids.size());
-    for (const auto& string_id : saved_ids) {
-        const auto current = find(string_id);
-        if (!current.has_value()) {
-            throw std::runtime_error{"zone 存檔含目前 Ruleset 不存在的 " + std::string{kind} +
-                                     " id：" + string_id};
-        }
-        result.push_back(*current);
-    }
-    return result;
-}
 
 template <typename Id>
 void remap_ids(std::vector<Id>& values, const std::vector<Id>& remap, std::string_view kind) {
@@ -81,19 +62,8 @@ std::unique_ptr<zone::Zone> decode_zone(std::string_view bytes, const rules::Rul
         if (persistence_flags != detail::kReservedPersistenceFlags) {
             throw std::runtime_error{"zone persistence flags 不支援"};
         }
-        std::vector<std::string> terrain_ids;
-        std::vector<std::string> relief_ids;
-        std::vector<std::string> feature_ids;
-        std::vector<std::string> edge_ids;
-        archive(terrain_ids, relief_ids, feature_ids, edge_ids);
-        const auto terrain_remap = build_remap<rules::TerrainId>(
-            terrain_ids, [&](std::string_view id) { return ruleset.find_terrain(id); }, "terrain");
-        const auto relief_remap = build_remap<rules::ReliefId>(
-            relief_ids, [&](std::string_view id) { return ruleset.find_relief(id); }, "relief");
-        const auto feature_remap = build_remap<rules::FeatureId>(
-            feature_ids, [&](std::string_view id) { return ruleset.find_feature(id); }, "feature");
-        const auto edge_remap = build_remap<rules::EdgeId>(
-            edge_ids, [&](std::string_view id) { return ruleset.find_edge(id); }, "edge");
+        const auto [terrain_remap, relief_remap, feature_remap, edge_remap] =
+            detail::decode_definition_remaps(archive, ruleset);
         std::uint8_t payload_index{};
         archive(payload_index);
         if (payload_index == 2 && version != kSaveFormatVersion) {
@@ -178,57 +148,7 @@ std::unique_ptr<zone::Zone> decode_zone(std::string_view bytes, const rules::Rul
         value = std::make_unique<zone::Zone>(zone::ZoneKey{key}, std::move(payload));
         value->last_saved_tick = time::Tick{saved_tick};
     }
-    value->reg.clear();
-    {
-        cereal::PortableBinaryInputArchive registry_cereal{stream};
-        RegistryInputArchive registry_archive{registry_cereal};
-        if (version == kSaveFormatVersion) {
-            load_registry_snapshot(value->reg, registry_archive, AllComponents{});
-        } else {
-            load_registry_snapshot(value->reg, registry_archive, AllComponentsV15{});
-        }
-    }
-    if (version >= 15) {
-        cereal::PortableBinaryInputArchive diplomacy_archive{stream};
-        value->diplomacy = detail::load_diplomacy(diplomacy_archive, ruleset, version);
-        if (value->diplomacy.has_value() && value->key != zone::kRootZone) {
-            throw std::runtime_error{"外交狀態只能存在 root zone"};
-        }
-    } else {
-        value->diplomacy.reset();
-    }
-    const auto city_states = value->reg.view<const site::CityBuildState>();
-    if (city_states.size() > 1U ||
-        (!city_states.empty() && zone::level_of(value->key) != zone::ZoneLevel::Site) ||
-        (!city_states.empty() &&
-         !site::valid_city_build_state(
-             city_states.get<const site::CityBuildState>(*city_states.begin()), ruleset))) {
-        throw std::runtime_error{"zone 含無效 CityBuildState"};
-    }
-    const auto digests = value->reg.view<const site::SiteDigest>();
-    if (digests.size() > 1U ||
-        (!digests.empty() && zone::level_of(value->key) != zone::ZoneLevel::Site) ||
-        (!digests.empty() && !city_states.empty()) ||
-        (!digests.empty() &&
-         !site::valid_site_digest(digests.get<const site::SiteDigest>(*digests.begin()),
-                                  ruleset))) {
-        throw std::runtime_error{"zone 含無效 SiteDigest"};
-    }
-    const auto fate_ledgers = value->reg.view<const world::NamedFateLedger>();
-    const auto level = zone::level_of(value->key);
-    if (fate_ledgers.size() > 1U ||
-        (!fate_ledgers.empty() && level != zone::ZoneLevel::Region &&
-         level != zone::ZoneLevel::Site) ||
-        (!fate_ledgers.empty() &&
-         !world::valid_named_fate_ledger(
-             fate_ledgers.get<const world::NamedFateLedger>(*fate_ledgers.begin())))) {
-        throw std::runtime_error{"zone 含無效 NamedFateLedger"};
-    }
-    const auto door_states = value->reg.view<const local::LocalDoorState>();
-    if (door_states.size() > 1U ||
-        (!door_states.empty() && zone::level_of(value->key) != zone::ZoneLevel::Local)) {
-        throw std::runtime_error{"LocalDoorState 只能是 Local zone 的單例 component"};
-    }
+    detail::decode_registry(stream, value.get(), ruleset, version);
     if (stream.peek() != std::char_traits<char>::eof()) {
         throw std::runtime_error{"zone 檔含未解析的尾端資料"};
     }

@@ -327,3 +327,16 @@ target_sources(aetheria_core PRIVATE
     core/world/named_fate_sampling.cpp
     core/world/named_fate_validation.cpp
 )
+
+# 拆檔波 split/sersim 追加區
+target_sources(aetheria_core PRIVATE
+    core/serialize/normalized_state_hash_city.cpp
+    core/serialize/normalized_state_hash_diplomacy.cpp
+    core/serialize/normalized_state_hash_fate.cpp
+    core/serialize/normalized_state_hash_payload.cpp
+    core/serialize/normalized_state_hash_units.cpp
+    core/serialize/zone_decode_definitions.cpp
+    core/serialize/zone_decode_registry.cpp
+    core/serialize/zone_diplomacy_decode.cpp
+    core/serialize/zone_encode_validate.cpp
+)
