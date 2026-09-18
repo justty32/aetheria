@@ -4,6 +4,17 @@
 `placeholder_palette.json` 是由固定公式產生的測試資料，**不是專案色盤**；正式使用前必須換成
 使用者核定、同格式的 48～64 色 JSON。
 
+## 程式碼導航
+
+- `art_pipeline.py`：CLI 入口與相容 re-export；`art_pipeline_palette.py` 管色盤、參數與結果型別，
+  `art_pipeline_pixels.py` 管格線／量化／輪廓／接縫，`art_pipeline_lighting.py` 管光源，
+  `art_pipeline_process.py` 編排處理與 PNG 輸出，`art_pipeline_gate.py` 管 manifest 與入庫閘。
+- `verify_acceptance.py`：驗收入口、報告與判定；`verify_acceptance_helpers.py` 提供輸入與 CLI helper，
+  `verify_acceptance_probes.py` 執行正向／故障控制，`verify_acceptance_source.py` 將管線模組展成
+  可獨立執行的注入副本，保留原本逐字替換、唯一目標檢查與隔離執行方式。
+- `tests/`：`test_art_pipeline.py` 管入口與重現性，`test_art_pipeline_pixels.py` 管影像步驟，
+  `test_art_pipeline_gate.py` 管入庫閘；共用 helper 在 `conftest.py`。
+
 ## 安裝與測試
 
 ```sh
