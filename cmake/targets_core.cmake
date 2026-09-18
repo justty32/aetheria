@@ -280,3 +280,24 @@ target_sources(aetheria_core PRIVATE
     core/site/site_reduction_region.cpp
     core/site/site_streaming_transitions.cpp
 )
+
+# 拆檔波 split/local 追加區
+target_sources(aetheria_core PRIVATE
+    core/local/dungeon_generation.cpp
+    core/local/dungeon_interactions.cpp
+    core/local/dungeon_rooms.cpp
+    core/local/dungeon_validation.cpp
+    core/local/local_building_floor_geometry.cpp
+    core/local/local_building_hash.cpp
+    core/local/local_building_validation.cpp
+    core/local/local_combat_navigation.cpp
+    core/local/local_combat_outcome.cpp
+    core/local/local_fov_rays.cpp
+    core/local/local_generation_content.cpp
+    core/local/local_generation_paths.cpp
+    core/local/local_generation_validation.cpp
+    core/local/local_underground_dungeon.cpp
+    core/local/local_underground_hash.cpp
+    core/local/local_underground_mine.cpp
+    core/local/local_underground_ruin.cpp
+)
