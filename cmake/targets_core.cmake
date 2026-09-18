@@ -234,3 +234,19 @@ target_sources(aetheria_core PRIVATE
     core/history/history_log.cpp
     core/runtime/turn_commit.cpp
 )
+
+# 拆檔波 split/site 追加區
+target_sources(aetheria_core PRIVATE
+    core/site/site_build_economy_validation.cpp
+    core/site/site_build_loop_commands.cpp
+    core/site/site_combat_attack.cpp
+    core/site/site_combat_cohorts.cpp
+    core/site/site_fortifications_rings.cpp
+    core/site/site_lifecycle_migration.cpp
+    core/site/site_lifecycle_migration_placement.cpp
+    core/site/site_materialize_restore.cpp
+    core/site/site_materialize_residency.cpp
+    core/site/site_materialize_eviction.cpp
+    core/site/site_reduction_region.cpp
+    core/site/site_streaming_transitions.cpp
+)
