@@ -2,7 +2,7 @@
 #include "core/site/site_projection.h"
 #include "core/site/site_reduction.h"
 #include "core/worldgen/region_seed.h"
-#include "tests/support/ruleset_fixture.h"
+#include "tests/site/site_projection_test_support.h"
 
 #include <concepts>
 #include <cstdint>
@@ -63,17 +63,7 @@ static_assert(!entt::type_list_contains_v<SavedSiteLayers, SiteProceduralLayer>)
 static_assert(!entt::type_list_contains_v<SavedSiteLayers, SiteVolatileLayer>);
 static_assert(!entt::type_list_contains_v<AllComponents, SiteProceduralLayer>);
 
-[[nodiscard]] RegionTiles sample_region_tile() {
-    const auto& ruleset = test_ruleset();
-    RegionTiles tiles{1, 1};
-    tiles.base[0] = *ruleset.find_terrain("terrain.grassland");
-    tiles.relief[0] = *ruleset.find_relief("relief.plain");
-    tiles.feature[0] = *ruleset.find_feature("feature.none");
-    tiles.elevation[0] = 3200;
-    tiles.edges = {*ruleset.find_edge("edge.stream"), *ruleset.find_edge("edge.road"),
-                   *ruleset.find_edge("edge.river"), *ruleset.find_edge("edge.none")};
-    return tiles;
-}
+using aetheria::tests::site_projection_support::sample_region_tile;
 
 [[nodiscard]] std::uint64_t skeleton_hash(const RegionTiles& tiles, std::uint64_t seed) {
     const auto vars = aetheria::site::split_site_vars(tiles, RegionXY{0, 0});
@@ -149,32 +139,6 @@ TEST(SiteProjection, EachRequiredSlowVariableChangesSkeleton) {
     std::cout << "site_slow_control baseline=" << baseline << " base=" << changed_base
               << " relief=" << changed_relief << " elevation=" << changed_elevation
               << " feature=" << changed_feature << " edges=" << changed_edges << '\n';
-}
-
-TEST(SiteProjection, SeedFormulaAndSkeletonAreDeterministic) {
-    constexpr auto world_seed = UINT64_C(20260821);
-    constexpr std::uint32_t region_id = 7;
-    constexpr std::uint16_t x = 17;
-    constexpr std::uint16_t y = 32;
-    const auto expected = aetheria::worldgen::splitmix64(
-        world_seed ^ region_id ^ ((static_cast<std::uint64_t>(y) << 16U) | x));
-    const auto site_seed = aetheria::site::derive_site_seed(world_seed, region_id, x, y);
-    EXPECT_EQ(site_seed, expected);
-
-    const auto vars = aetheria::site::split_site_vars(sample_region_tile(), RegionXY{0, 0});
-    const auto first = aetheria::site::build_site_skeleton(vars.slow, site_seed, test_ruleset());
-    const auto second = aetheria::site::build_site_skeleton(vars.slow, site_seed, test_ruleset());
-    const auto other_seed = aetheria::site::derive_site_seed(world_seed, region_id, x + 1U, y);
-    const auto other = aetheria::site::build_site_skeleton(vars.slow, other_seed, test_ruleset());
-    const auto first_hash = aetheria::site::hash_site_skeleton(first);
-    const auto second_hash = aetheria::site::hash_site_skeleton(second);
-    const auto other_hash = aetheria::site::hash_site_skeleton(other);
-
-    EXPECT_EQ(first, second);
-    EXPECT_EQ(first_hash, second_hash);
-    EXPECT_NE(first_hash, other_hash);
-    std::cout << "site_determinism first=" << first_hash << " repeat=" << second_hash
-              << " other_tile=" << other_hash << '\n';
 }
 
 }  // namespace

@@ -1,0 +1,119 @@
+#include "core/serialize/all_components.h"
+#include "core/serialize/normalized_state_hash.h"
+#include "core/serialize/registry_codec.h"
+#include "core/serialize/zone_codec.h"
+#include "core/serialize/zone_codec_detail.h"
+#include "core/serialize/zone_diplomacy_codec.h"
+#include "core/zone/file_zone_store.h"
+#include "sim/world_hash.h"
+#include "tests/support/ruleset_fixture.h"
+#include "tests/zone/zone_test_support.h"
+
+#include <cereal/archives/portable_binary.hpp>
+#include <cereal/types/string.hpp>
+#include <cereal/types/vector.hpp>
+
+#include <cstdint>
+#include <iostream>
+#include <memory>
+#include <span>
+#include <sstream>
+#include <string>
+#include <string_view>
+#include <vector>
+
+#include <gtest/gtest.h>
+
+namespace {
+
+using aetheria::rules::Ruleset;
+using aetheria::serialize::AllComponents;
+using aetheria::serialize::decode_zone;
+using aetheria::serialize::normalized_state_hash;
+using aetheria::serialize::RegistryOutputArchive;
+using aetheria::serialize::save_registry_snapshot;
+using aetheria::site::BuildingState;
+using aetheria::site::BuildingType;
+using aetheria::site::PersistentBuilding;
+using aetheria::site::PersistentDungeon;
+using aetheria::site::PersistentNamedNpc;
+using aetheria::site::SiteOrderState;
+using aetheria::tests::kSite;
+using aetheria::tests::TemporaryDirectory;
+using aetheria::tests::test_ruleset;
+using aetheria::zone::FileZoneStore;
+using aetheria::zone::SaveManifest;
+using aetheria::zone::Zone;
+
+template <typename Def>
+[[nodiscard]] std::vector<std::string> definition_ids(std::span<const Def> definitions) {
+    std::vector<std::string> result;
+    result.reserve(definitions.size());
+    for (const auto& definition : definitions) {
+        result.push_back(definition.id);
+    }
+    return result;
+}
+
+[[nodiscard]] std::string encode_v16_site_zone(const Ruleset& ruleset) {
+    const Zone site{kSite};
+    std::ostringstream stream{std::ios::binary};
+    {
+        cereal::PortableBinaryOutputArchive archive{
+            stream, cereal::PortableBinaryOutputArchive::Options::LittleEndian()};
+        constexpr std::uint32_t version = 16;
+        const auto key = aetheria::zone::value_of(site.key);
+        const auto tick = static_cast<std::int64_t>(site.last_saved_tick);
+        auto terrains = definition_ids(ruleset.terrains());
+        auto reliefs = definition_ids(ruleset.reliefs());
+        auto features = definition_ids(ruleset.features());
+        auto edges = definition_ids(ruleset.edges());
+        constexpr std::uint8_t payload_index = 2;
+        const std::vector<PersistentBuilding> legacy_buildings{
+            PersistentBuilding{{7, 9}, BuildingType::SettlementHall, BuildingState::Idle, 321}};
+        archive(aetheria::serialize::detail::kZoneMagic, version, key, tick,
+                aetheria::serialize::detail::kReservedPersistenceFlags, terrains, reliefs, features,
+                edges, payload_index, legacy_buildings);
+    }
+    {
+        cereal::PortableBinaryOutputArchive archive{
+            stream, cereal::PortableBinaryOutputArchive::Options::LittleEndian()};
+        RegistryOutputArchive registry_archive{archive};
+        save_registry_snapshot(site.reg, registry_archive, AllComponents{});
+    }
+    {
+        cereal::PortableBinaryOutputArchive archive{
+            stream, cereal::PortableBinaryOutputArchive::Options::LittleEndian()};
+        aetheria::serialize::detail::save_diplomacy(archive, site.diplomacy, ruleset);
+    }
+    return std::move(stream).str();
+}
+
+TEST(SiteObservationPersistence, V16SiteIsRejectedInsteadOfLoadingNewFieldsAsDefaults) {
+    static_assert(aetheria::serialize::kSaveFormatVersion == 23);
+    const auto legacy = encode_v16_site_zone(test_ruleset());
+    try {
+        static_cast<void>(decode_zone(legacy, test_ruleset()));
+        FAIL() << "v16 Site payload should be rejected before its legacy fields "
+                  "are decoded";
+    } catch (const std::runtime_error& error) {
+        const std::string message{error.what()};
+        EXPECT_NE(message.find("zone format_version"), std::string::npos);
+        EXPECT_NE(message.find("檔內=16"), std::string::npos);
+        EXPECT_NE(message.find("預期=23"), std::string::npos);
+        std::cout << "site_v16_rejected error=\"" << message << "\"\n";
+    }
+
+    const Zone defaults{kSite};
+    const auto loaded_defaults = decode_zone(
+        aetheria::serialize::encode_zone(defaults, test_ruleset()), test_ruleset());
+    const auto& persistent =
+        std::get<aetheria::zone::SitePayload>(loaded_defaults->payload).layers.persistent;
+    EXPECT_FALSE(persistent.order.has_value());
+    EXPECT_TRUE(persistent.named_npcs.empty());
+    EXPECT_TRUE(persistent.dungeons.empty());
+    std::cout << "site_v23_defaults accepted=1 order_present=0 named_npcs=0 "
+                 "dungeons=0\n";
+}
+
+}  // namespace
