@@ -31,3 +31,6 @@ godot/data/
 
 # codex 與規劃者的即時通道（不進版控，見 wf/CODEX-PROTOCOL.md）
 .codex-inbox/
+
+# Python bytecode
+__pycache__/
