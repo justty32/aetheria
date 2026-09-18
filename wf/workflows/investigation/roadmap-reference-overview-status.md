@@ -16,12 +16,12 @@
 
 ### Endless：大層的主要底座
 
-已讀 [4X 藍圖](/home/lorkhan/repo/moddings/endless/wf/workflows/investigations/4x-design.md:5) 與四份子題、原作回合／AI／省份分析。可用內容：
+已讀 [4X 藍圖](../../../../../moddings/endless/wf/workflows/investigations/4x-design.md "L5") 與四份子題、原作回合／AI／省份分析。可用內容：
 
 - 定義、狀態、命令、效果、事件與查詢分開；玩家與 AI 同命令入口，改動可追查來源。這是研究綜合出的可移植邊界，並非原作現成 C++ API。
-- [回合經濟](/home/lorkhan/repo/moddings/endless/wf/workflows/investigations/4x-turn-economy.md:15) 把立即、回合末、跨回合後、開放輸入前分開，並提出依賴圖與批次收成；原作流程見 [turn-loop](/home/lorkhan/repo/moddings/endless/wf/workflows/investigations/turn-loop.md:7)。本案採其明確時序的原則，不換掉秒制時鐘。
-- [AI](/home/lorkhan/repo/moddings/endless/wf/workflows/investigations/4x-ai.md:17) 提供感知、目標、候選、資源分配、命令與回饋；適合補上本案 AI 真正對世界行動的接線。
-- [資料與世界](/home/lorkhan/repo/moddings/endless/wf/workflows/investigations/4x-simulation.md:63) 分開領土控制、採收範圍與戰略點；[衝突社會](/home/lorkhan/repo/moddings/endless/wf/workflows/investigations/4x-conflict-society.md:57) 區分正式關係、談判、條約與態度。這些能讓經濟政治共用地圖而不混成一個 owner 欄位。
+- [回合經濟](../../../../../moddings/endless/wf/workflows/investigations/4x-turn-economy.md "L15") 把立即、回合末、跨回合後、開放輸入前分開，並提出依賴圖與批次收成；原作流程見 [turn-loop](../../../../../moddings/endless/wf/workflows/investigations/turn-loop.md "L7")。本案採其明確時序的原則，不換掉秒制時鐘。
+- [AI](../../../../../moddings/endless/wf/workflows/investigations/4x-ai.md "L17") 提供感知、目標、候選、資源分配、命令與回饋；適合補上本案 AI 真正對世界行動的接線。
+- [資料與世界](../../../../../moddings/endless/wf/workflows/investigations/4x-simulation.md "L63") 分開領土控制、採收範圍與戰略點；[衝突社會](../../../../../moddings/endless/wf/workflows/investigations/4x-conflict-society.md "L57") 區分正式關係、談判、條約與態度。這些能讓經濟政治共用地圖而不混成一個 owner 欄位。
 
 重要限制：原作的省份、客戶端／伺服器、一省一城和戰鬥子模擬不等於 aetheria 的三層。研究中的「多人幾乎免費」等評語不採作工程承諾；本次沒有規劃多人功能。
 
@@ -41,12 +41,12 @@
 
 | 來源 | 提供的具體參考 | 限度 |
 |---|---|---|
-| [Freeciv 生成](/home/lorkhan/repo/pas/analysis/freeciv/details/mapgen_deepdive.md:8)、[外交運輸](/home/lorkhan/repo/pas/analysis/freeciv/details/ai_diplomacy_logistics.md:5) | 分階段生成；船與乘客供需、外交態度變化 | 本文有來源函式，參數仍需按本案校準 |
-| [Unciv 回合](/home/lorkhan/repo/pas/analysis/unciv/details/ai_turn_logic_flow.md:7)、[決定性](/home/lorkhan/repo/pas/analysis/unciv/details/fixed_point_and_determinism.md:27) | AI 明確執行順序、危機覆寫、移動與亂數穩定性 | 不能把分析裡的 C++ 重構建議當 Kotlin 原作實作 |
-| [Veloren 世界生成](/home/lorkhan/repo/pas/analysis/veloren/details/world_gen_and_civ_deep_analysis.md:3) | 水文、自然條件與文明選址的連接 | 正文較短、部分行號約略；是環境建模線索 |
-| [CDDA 三尺度](/home/lorkhan/repo/pas/analysis/cdda/architecture/04_map_three_scales.md:29)、[存檔](/home/lorkhan/repo/pas/analysis/cdda/architecture/09_savegame_serialization.md:85) | 帶尺度與原點的座標型別、近場載入、世界與角色／地圖記憶分開 | 原作尺度與 aetheria 不同，不搬常數與現實泡模型 |
-| [DCSS 長期系統](/home/lorkhan/repo/pas/analysis/dcss/architecture/04_long_term_systems.md:13) | 按已過時間與到期點推進腐敗、環境效果等 | 玩家中心地城的計時器，不是遠方文明模擬的完整答案 |
-| [opennefia-cpp 摘要](/home/lorkhan/repo/pas/analysis/opennefia-cpp/architecture/summary.md:19) | 核心、事件、原型、保存與 Godot 邊界的既有重寫經驗 | 屬衍生專案完成摘要，只借邊界經驗，不當玩法深度來源 |
+| [Freeciv 生成](../../../../../pas/analysis/freeciv/details/mapgen_deepdive.md "L8")、[外交運輸](../../../../../pas/analysis/freeciv/details/ai_diplomacy_logistics.md "L5") | 分階段生成；船與乘客供需、外交態度變化 | 本文有來源函式，參數仍需按本案校準 |
+| [Unciv 回合](../../../../../pas/analysis/unciv/details/ai_turn_logic_flow.md "L7")、[決定性](../../../../../pas/analysis/unciv/details/fixed_point_and_determinism.md "L27") | AI 明確執行順序、危機覆寫、移動與亂數穩定性 | 不能把分析裡的 C++ 重構建議當 Kotlin 原作實作 |
+| [Veloren 世界生成](../../../../../pas/analysis/veloren/details/world_gen_and_civ_deep_analysis.md "L3") | 水文、自然條件與文明選址的連接 | 正文較短、部分行號約略；是環境建模線索 |
+| [CDDA 三尺度](../../../../../pas/analysis/cdda/architecture/04_map_three_scales.md "L29")、[存檔](../../../../../pas/analysis/cdda/architecture/09_savegame_serialization.md "L85") | 帶尺度與原點的座標型別、近場載入、世界與角色／地圖記憶分開 | 原作尺度與 aetheria 不同，不搬常數與現實泡模型 |
+| [DCSS 長期系統](../../../../../pas/analysis/dcss/architecture/04_long_term_systems.md "L13") | 按已過時間與到期點推進腐敗、環境效果等 | 玩家中心地城的計時器，不是遠方文明模擬的完整答案 |
+| [opennefia-cpp 摘要](../../../../../pas/analysis/opennefia-cpp/architecture/summary.md "L19") | 核心、事件、原型、保存與 Godot 邊界的既有重寫經驗 | 屬衍生專案完成摘要，只借邊界經驗，不當玩法深度來源 |
 
 PAS 還有地城生成、路徑／群體移動、行為樹與腳本等材料。這次只用與系統藍圖直接相關的正文，不把「庫裡存在」寫成「已全部讀完」。待某個子系統要選算法時，再回該題的資料深入。
 

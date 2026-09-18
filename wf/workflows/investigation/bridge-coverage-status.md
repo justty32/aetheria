@@ -6,7 +6,7 @@
 
 **「core 做了的東西，有多少從 bridge 露出去、godot 拿得到？」**
 M8 曾量到「M6/M7 做的戰鬥、勢力 AI、外交、地城、湧現任務，從遊戲裡一個都碰不到」
-（[m8-2-loop-coverage.md](../../inbox/m8-2-loop-coverage.md) 的 6 列 ❌）。之後還剩多少？
+（[m8-2-loop-coverage.md](../../inbox/done/m8-2-loop-coverage.md) 的 6 列 ❌）。之後還剩多少？
 拆成 5 個可判定提問，逐一對應下面〈現況〉的 5 節。
 
 ## 結論

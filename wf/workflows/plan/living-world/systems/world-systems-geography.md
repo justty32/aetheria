@@ -45,13 +45,13 @@
 
 **既有可沿用**：三層投影／歸約與 LOD（`interface-*`）、edge 接邊、世界生成純 pass、板塊／高度／氣候／河流／biome、古道廢墟、道路 portal、Site/Local 生成與串流。
 
-**新增建議**：流域與水量帳、土壤／土地覆蓋、群落承載量、災害狀態機、土地利用回饋、多年代生成史、自然與人文地名 provenance、跨系統 `EnvironmentImpact`／`HazardEvent` 契約。現有濕度削頂問題仍以 `wf/TERRAIN-HANDOFF.md` 為事實基線，不在本規劃假定已解。
+**新增建議**：流域與水量帳、土壤／土地覆蓋、群落承載量、災害狀態機、土地利用回饋、多年代生成史、自然與人文地名 provenance、跨系統 `EnvironmentImpact`／`HazardEvent` 契約。現有濕度削頂問題仍以 [`wf/workflows/investigation/TERRAIN-HANDOFF.md`](../../../investigation/TERRAIN-HANDOFF.md) 為事實基線，不在本規劃假定已解。
 
 ## 參考及證據邊界
 
 - Aetheria 既有依據：`design/worldgen-*`、`gen-pipeline.md`、`edge-consistency.md`、`interface-lifecycle.md`。
-- Endless Legend 研究支持粗圖先定拓撲、Region 作穩定索引、生成後驗連通（[正文](../../../../../../../moddings/endless/analysis/general-4x/note-world-core.md:5)）；它是靜態研究，不代表有 DF 式長期生態。
-- Freeciv 的生成正文說明地形 pass 與生成模組（[正文](../../../../../../../pas/analysis/freeciv/details/mapgen_deepdive.md:1)）；Unciv 的管線正文另提供 4X 地圖流程（[正文](../../../../../../../pas/analysis/unciv/details/map_generation_pipeline.md:1)）。兩者不是三層或長期氣候證據。
+- Endless Legend 研究支持粗圖先定拓撲、Region 作穩定索引、生成後驗連通（[正文](../../../../../../../moddings/endless/analysis/general-4x/note-world-core.md "L5")）；它是靜態研究，不代表有 DF 式長期生態。
+- Freeciv 的生成正文說明地形 pass 與生成模組（[正文](../../../../../../../pas/analysis/freeciv/details/mapgen_deepdive.md "L1")）；Unciv 的管線正文另提供 4X 地圖流程（[正文](../../../../../../../pas/analysis/unciv/details/map_generation_pipeline.md "L1")）。兩者不是三層或長期氣候證據。
 - 本文的水循環、生態演替、多年代史與災害鏈是設計建議，尚未宣稱任何參考作完整實現。
 
 ## 可驗收情境與待細化政策

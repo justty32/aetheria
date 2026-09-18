@@ -78,6 +78,6 @@ longyin／sanguo 由主調查另補。
   地圖、戰鬥與探索主骨架以最新三層藍圖為準，不由這三作取代。
 - 後續 spec 需核對人物／勢力模型、投影生命週期、時間、事件歷史與存檔版本；本報告不裁定方案。
 - 舊世界追加文明、人物、物品會同時碰到執行期注入現況；目前人物仍只是極薄紀錄，物品型別不存在，
-  詳見 [runtime-injection-status.md](runtime-injection-status.md:28) 與
-  [runtime-injection-assets.md](runtime-injection-assets.md:67)。
+  詳見 [runtime-injection-status.md](runtime-injection-status.md "L28") 與
+  [runtime-injection-assets.md](runtime-injection-assets.md "L67")。
 - longyin／sanguo 的證據與定位尚未收入本檔，需由主調查合併後，才能形成完整 roadmap 參考表。

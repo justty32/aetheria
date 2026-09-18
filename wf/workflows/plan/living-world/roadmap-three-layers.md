@@ -18,7 +18,7 @@
 
 借用 Endless 的命令入口、結算依賴、收支可追查、AI 目標與資源分配。**不直接複製一省一城、六角格、數值與終局政策。** 它的 Region 是省份；本案 `Region` 是一張大地圖，省份若有需要應是圖內的政治資料，而非新增地圖層。
 
-來源：[Endless 通用藍圖](/home/lorkhan/repo/moddings/endless/wf/workflows/investigations/4x-design.md:5)、[AI](/home/lorkhan/repo/moddings/endless/wf/workflows/investigations/4x-ai.md:17)。本案基礎：[worldmap](../../../../design/maps/worldmap.md)、[faction-ai](../../../../design/rules/faction-ai.md)、[diplomacy](../../../../design/rules/diplomacy.md)。
+來源：[Endless 通用藍圖](../../../../../../moddings/endless/wf/workflows/investigations/4x-design.md "L5")、[AI](../../../../../../moddings/endless/wf/workflows/investigations/4x-ai.md "L17")。本案基礎：[worldmap](../../../../design/maps/worldmap.md)、[faction-ai](../../../../design/rules/faction-ai.md)、[diplomacy](../../../../design/rules/diplomacy.md)。
 
 ## 中地圖：地方經營與方陣戰場
 
@@ -31,7 +31,7 @@
 
 **規則邊界**：保留四鄰接、行動點、面向與側背；不新增即時時鐘，不把畫面士兵當核心逐兵模擬。現有命令階段先保留，出手序只列比較，不自動改成 WeGo。細節分為 [地方運作](site/world-site-operations.md)、[方陣指揮](site/world-site-formations.md)、[平戰轉換](site/world-site-conflict.md)。
 
-來源：[VCMI 三種兵力身分](/home/lorkhan/repo/pas/analysis/vcmi/architecture/L3-creature.md:16)、[戰鬥結束回寫](/home/lorkhan/repo/pas/analysis/vcmi/architecture/L4-battle-turn.md:74)、[Wesnoth 棋盤](/home/lorkhan/repo/pas/analysis/wesnoth/details/complete_manual_vol12_game_board.md:7)。證據範圍見 [中層參考盤點](../../investigation/roadmap-reference-tactics-status.md)。
+來源：[VCMI 三種兵力身分](../../../../../../pas/analysis/vcmi/architecture/L3-creature.md "L16")、[戰鬥結束回寫](../../../../../../pas/analysis/vcmi/architecture/L4-battle-turn.md "L74")、[Wesnoth 棋盤](../../../../../../pas/analysis/wesnoth/details/complete_manual_vol12_game_board.md "L7")。證據範圍見 [中層參考盤點](../../investigation/roadmap-reference-tactics-status.md)。
 
 ## 小地圖：人物生活與冒險
 

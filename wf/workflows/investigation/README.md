@@ -19,7 +19,7 @@
 3. **fan-out**：把彼此獨立的提問分給 subagent（簡單的盤點用 sonnet + `Explore`），
    每個 agent 一個主題、要求**每點附 `檔案:行號`**、**找不到就說找不到**。
 4. **關鍵結論自己覆核**：轉述 agent 的結果之前，至少自己 grep 一次它的核心斷言。
-   → 這條的由來見 [OPS-VERIFY.md](../../OPS-VERIFY.md)。
+   → 這條的由來見 [OPS-VERIFY.md](../dispatch/OPS-VERIFY.md)。
 5. **寫報告進本資料夾**（一主題一檔，命名 `<主題>-status.md`，上限 8 KB），
    並在下面的清單加一列。
 6. 報告若揭出「會在未來咬人」的東西 → 同時記進 [KNOWN-TRAPS.md](../../KNOWN-TRAPS.md)；
@@ -51,3 +51,4 @@
 | [godot-pipeline-status.md](godot-pipeline-status.md) | godot 端是 core 除錯控制台不是遊戲畫面——三層場景 0 套、整圖重畫、兩鐵律一守一破 | 2026-08-27 |
 | [bridge-coverage-status.md](bridge-coverage-status.md) | core→bridge 覆蓋——缺口移到 session↔core：腳本掛勾死的、位階系統孤兒、外交 25 露 1 | 2026-08-27 |
 | [roadmap-baseline-status.md](roadmap-baseline-status.md) | roadmap 重排前基線——區分舊驗收回報、現存程式證據與本次未執行的驗證 | 2026-09-09 |
+| [TERRAIN-HANDOFF.md](TERRAIN-HANDOFF.md) | 地形生成交接（由 `wf/` 根搬來）：濕度削頂根因、量測入口、接縫位置、Freeciv 的 CDF＋配額；尚無人接手 | 2026-08 |

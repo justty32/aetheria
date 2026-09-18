@@ -51,9 +51,9 @@
 ## 參考及證據邊界
 
 - Aetheria：`design/maps/worldmap.md`、`midmap.md`、`interface-world-mid.md`、`sitegen-city.md`、`faction-ai.md`。
-- Endless Legend 研究支持同階段快照、具名 pass 與彙總（[正文](../../../../../../../moddings/endless/analysis/general-4x/note-turn-economy.md:3)）；不等於實物供應鏈。
-- Freeciv 研究支持 ruleset 地格產出與分階段計算（[正文](../../../../../../../pas/analysis/freeciv/details/economic_output_logic.md:12)）；Unciv 提供飢餓與建設評分（[正文](../../../../../../../pas/analysis/unciv/details/city_economy_algorithms.md:1)）。它們不是三層 DF 式庫存證據。
-- CK2 的 holdings、稅兵與建築資料化見[正文](../../../../../../../pas/analysis/crusader-kings-2/details/03_economy_buildings_and_armies.md:1)；批次守恆、地方市場與 cohort 是本文建議。
+- Endless Legend 研究支持同階段快照、具名 pass 與彙總（[正文](../../../../../../../moddings/endless/analysis/general-4x/note-turn-economy.md "L3")）；不等於實物供應鏈。
+- Freeciv 研究支持 ruleset 地格產出與分階段計算（[正文](../../../../../../../pas/analysis/freeciv/details/economic_output_logic.md "L12")）；Unciv 提供飢餓與建設評分（[正文](../../../../../../../pas/analysis/unciv/details/city_economy_algorithms.md "L1")）。它們不是三層 DF 式庫存證據。
+- CK2 的 holdings、稅兵與建築資料化見[正文](../../../../../../../pas/analysis/crusader-kings-2/details/03_economy_buildings_and_armies.md "L1")；批次守恆、地方市場與 cohort 是本文建議。
 
 ## 可驗收情境與待細化政策
 

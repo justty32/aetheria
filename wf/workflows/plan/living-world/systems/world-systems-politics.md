@@ -53,8 +53,8 @@
 ## 參考及證據邊界
 
 - Aetheria：`design/rules/diplomacy.md`、`faction-ai.md`、`rules-magic-faith.md`、`significance-fate.md`、`events.md`。
-- CK2 研究支持頭銜圖、法理／實控與繼承拆分（[政治正文](../../../../../../../pas/analysis/crusader-kings-2/details/01_succession_and_politics.md:31)），宗教規則面板見[宗教正文](../../../../../../../pas/analysis/crusader-kings-2/details/02_religion_and_culture.md:9)。它明說沒有國家物件（政治正文第 3 行），本案明確不採這點。
-- Endless Legend 的外交、人物與世界事件摘要見[正文](../../../../../../../moddings/endless/analysis/general-4x/note-conflict-society.md:1)；它不是人物王朝模擬。
+- CK2 研究支持頭銜圖、法理／實控與繼承拆分（[政治正文](../../../../../../../pas/analysis/crusader-kings-2/details/01_succession_and_politics.md "L31")），宗教規則面板見[宗教正文](../../../../../../../pas/analysis/crusader-kings-2/details/02_religion_and_culture.md "L9")。它明說沒有國家物件（政治正文第 3 行），本案明確不採這點。
+- Endless Legend 的外交、人物與世界事件摘要見[正文](../../../../../../../moddings/endless/analysis/general-4x/note-conflict-society.md "L1")；它不是人物王朝模擬。
 - 本文的文明／國家分型、通用組織、混合身份與三層地方政治是新增設計建議，未偽稱參考作已有同一套。
 
 ## 可驗收情境與待細化政策

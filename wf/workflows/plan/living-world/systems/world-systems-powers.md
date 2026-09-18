@@ -64,7 +64,7 @@
 ## 來源與證據限度
 
 - aetheria 已裁定位階、四屬性與三層力量表現，但法術清單、成本、種族與教義仍待細化
-  （[rules-magic-faith.md](../../../../../design/rules/rules-magic-faith.md:130)）。
+  （[rules-magic-faith.md](../../../../../design/rules/rules-magic-faith.md "L130")）。
 - 《覓長生》的性質涵蓋式煉丹與「試出來的配方即知識」可借；實際手感未實測
   （[items-recipes.md](</home/lorkhan/repo/moddings/michangsheng/wf/workflows/investigations/items-recipes.md:14>)）。
 - 《修仙模擬器》證實稀有度與單件品質分離、材料靈氣流入成品，也暴露堆疊吃掉個體屬性的問題
