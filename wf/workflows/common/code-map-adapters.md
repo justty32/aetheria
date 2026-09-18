@@ -17,6 +17,15 @@ session、命令、快照與資料封裝分工，`aetheria_core_<功能群>.cpp`
 場景與 GDScript 負責顯示、美術、音效、UI 及輸入轉發。畫面取自核心快照，
 可由核心重建，不自行保有回合、單位或地圖玩法狀態。
 
+`main.gd` 是 `main.tscn` 根節點：持節點參考、`_ready`、命令列、輸入轉發與 `_core` 呼叫。
+其餘以 `preload` 的 RefCounted **無狀態 static helper** 分職責：`main_ui`／`main_controls`
+建畫面（節點參考由 main 的 setter 指派）、`main_format` 摘要／戰報／事件／可見文字、
+`main_grid` Site／Local 格線、`main_storage` 新遊戲／存讀檔轉發與內附 data 實體化、
+`main_probes` demo／截圖／negative／performance 探針。`region_debug_renderer.gd` 保留
+`render()` 編排，疊圖分 `region_debug_layers_terrain`（領界／地物／邊）與
+`region_debug_layers_entities`（目標／單位／聚落／portal），色表在 `region_debug_palette`。
+helper 一律不持 member／static var，不用 `class_name`。
+
 ## `sim/` — Headless CLI 與驗證輸出
 
 `sim/main.cpp` 是 CLI11 命令分派入口。`core_probe*.cpp` 是核心 smoke 探針，
