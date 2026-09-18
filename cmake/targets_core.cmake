@@ -1,48 +1,14 @@
+# 純 C++ 核心 target 骨架；來源清單依 core/ 子系統分檔。
+
 # aetheria_faction_ai_objects 只看得到知識視圖；世界真值 header 不在 include path。
-add_library(aetheria_faction_ai_objects OBJECT
-    core/ai/faction_view.cpp
-)
+add_library(aetheria_faction_ai_objects OBJECT)
 target_include_directories(aetheria_faction_ai_objects PRIVATE
     "${PROJECT_SOURCE_DIR}/core/ai/include"
 )
 aetheria_enable_warnings(aetheria_faction_ai_objects)
 
 # aetheria_worldgen_objects 只有 repo 根與純資料公式；執行期跨-zone header 對它不可見。
-add_library(aetheria_worldgen_objects OBJECT
-    core/worldgen/civ_tiles.cpp
-    core/worldgen/city_scoring.cpp
-    core/worldgen/settlement_scoring.cpp
-    core/worldgen/city_selection.cpp
-    core/worldgen/city_sites.cpp
-    core/worldgen/feature_placement.cpp
-    core/worldgen/history_roads.cpp
-    core/worldgen/history_layer.cpp
-    core/worldgen/influence_spread.cpp
-    core/worldgen/influence_claim.cpp
-    core/worldgen/governance_release.cpp
-    core/worldgen/capital_selection.cpp
-    core/worldgen/portal_generation.cpp
-    core/worldgen/portal_candidates.cpp
-    core/worldgen/portal_boundary_candidates.cpp
-    core/worldgen/faction_generation.cpp
-    core/worldgen/road_path.cpp
-    core/worldgen/road_loops.cpp
-    core/worldgen/road_network.cpp
-    core/worldgen/region_seed.cpp
-    core/worldgen/field_redistribution.cpp
-    core/worldgen/stage_plates.cpp
-    core/worldgen/stage_height.cpp
-    core/worldgen/stage_erosion.cpp
-    core/worldgen/stage_climate.cpp
-    core/worldgen/stage_rivers.cpp
-    core/worldgen/stage_biomes.cpp
-    core/worldgen/stage_features.cpp
-    core/worldgen/region_build.cpp
-    core/worldgen/region_populate.cpp
-    core/worldgen/region_stage_hash.cpp
-    core/worldgen/region_result_hash.cpp
-    core/worldgen/region_debug.cpp
-)
+add_library(aetheria_worldgen_objects OBJECT)
 target_include_directories(aetheria_worldgen_objects PRIVATE
     "${PROJECT_SOURCE_DIR}"
     "${PROJECT_SOURCE_DIR}/core/ai/include"
@@ -51,96 +17,9 @@ target_link_libraries(aetheria_worldgen_objects PRIVATE EnTT::EnTT)
 aetheria_enable_warnings(aetheria_worldgen_objects)
 
 # aetheria_core：純 C++ 玩法核心（不得依賴 godot-cpp）。
-
 add_library(aetheria_core STATIC
     $<TARGET_OBJECTS:aetheria_faction_ai_objects>
     $<TARGET_OBJECTS:aetheria_worldgen_objects>
-    core/api/version.cpp
-    core/narrative/emergent_quest.cpp
-    core/narrative/narrative_event.cpp
-    core/rules/power.cpp
-    core/rules/attributes.cpp
-    core/rules/check.cpp
-    core/rules/damage.cpp
-    core/rules/combat.cpp
-    core/rules/ruleset.cpp
-    core/rules/ruleset_load_defs.cpp
-    core/rules/ruleset_load_site.cpp
-    core/rules/ruleset_load_site_city.cpp
-    core/rules/ruleset_load_site_build.cpp
-    core/rules/ruleset_load_site_wilderness.cpp
-    core/rules/ruleset_load_local_buildings.cpp
-    core/rules/ruleset_load_individual.cpp
-    core/rules/ruleset_load_biomes.cpp
-    core/rules/ruleset_load_civilization.cpp
-    core/rules/ruleset_load_factions.cpp
-    core/rules/ruleset_load_history.cpp
-    core/rules/ruleset_load_history_values.cpp
-    core/rules/ruleset_load_history_references.cpp
-    core/rules/ruleset_load_diplomacy.cpp
-    core/rules/ruleset_load_crossings.cpp
-    core/rules/ruleset_load_world_graph.cpp
-    core/rules/ruleset_load_power.cpp
-    core/rules/ruleset_load_combat.cpp
-    core/serialize/normalized_state_hash.cpp
-    core/spatial/recursive_partition.cpp
-    core/local/local_generation.cpp
-    core/local/local_building_generation.cpp
-    core/local/local_building_geometry.cpp
-    core/local/local_building_content.cpp
-    core/local/local_underground_generation.cpp
-    core/local/local_underground_geometry.cpp
-    core/local/local_underground_validation.cpp
-    core/local/local_fov.cpp
-    core/local/local_movement.cpp
-    core/local/local_navigation.cpp
-    core/local/local_materialize.cpp
-    core/local/local_projection.cpp
-    core/local/local_reduction.cpp
-    core/site/site_event_escalation.cpp
-    core/site/site_build_loop.cpp
-    core/site/site_build_economy.cpp
-    core/site/site_lifecycle.cpp
-    core/site/site_materialize.cpp
-    core/site/site_streaming.cpp
-    core/site/site_population.cpp
-    core/site/site_zoning.cpp
-    core/site/site_buildings.cpp
-    core/site/site_building_placement.cpp
-    core/site/site_fortifications.cpp
-    core/site/site_landmarks.cpp
-    core/site/site_damage.cpp
-    core/site/site_projection.cpp
-    core/site/site_skeleton_common.cpp
-    core/site/site_skeleton_center.cpp
-    core/site/site_skeleton_terrain.cpp
-    core/site/site_skeleton_roads.cpp
-    core/site/site_skeleton_blocks.cpp
-    core/site/site_wilderness.cpp
-    core/site/site_wilderness_entities.cpp
-    core/site/site_wilderness_boundary.cpp
-    core/site/site_wilderness_boundary_seed.cpp
-    core/site/site_wilderness_terrain.cpp
-    core/site/site_wilderness_pathfinding.cpp
-    core/site/site_wilderness_paths.cpp
-    core/site/site_wilderness_content.cpp
-    core/site/site_reduction.cpp
-    core/time/tick.cpp
-    core/serialize/zone_encode.cpp
-    core/serialize/zone_decode.cpp
-    core/serialize/zone_diplomacy_codec.cpp
-    core/runtime/cross_zone.cpp
-    core/zone/file_zone_store.cpp
-    core/zone/save_manifest_io.cpp
-    core/zone/zone_manager.cpp
-    core/zone/zone_store.cpp
-    core/world/region_tiles.cpp
-    core/world/region_simulation.cpp
-    core/world/region_step_cost.cpp
-    core/world/region_path.cpp
-    core/world/region_turn.cpp
-    core/world/diplomacy.cpp
-    core/world/diplomacy_view.cpp
 )
 target_include_directories(aetheria_core PUBLIC
     "${PROJECT_SOURCE_DIR}"
@@ -152,64 +31,6 @@ target_link_libraries(aetheria_core
     PRIVATE cereal::cereal tomlplusplus::tomlplusplus zstd::libzstd_static
 )
 aetheria_enable_warnings(aetheria_core)
-
-# M6.4 追加區塊：保持在檔尾，避免多路工作切開既有 source 宣告。
-target_sources(aetheria_core PRIVATE
-    core/world/named_fate.cpp
-)
-
-target_sources(aetheria_core PRIVATE
-    core/rules/ruleset_load_world_observations.cpp
-)
-
-# M6.5 並行追加區：只在檔尾擴充既有 target，避免切入來源宣告群。
-target_sources(aetheria_faction_ai_objects PRIVATE
-    core/ai/faction_ai.cpp
-)
-target_sources(aetheria_core PRIVATE
-    core/world/faction_ai.cpp
-)
-
-# M6.7 追加區塊：三層戰鬥校準不改 Ruleset 或存檔格式。
-target_sources(aetheria_core PRIVATE
-    core/world/combat_scaling.cpp
-)
-
-# M7.0 追加區：三條位階來源共用接點與資料載入。
-target_sources(aetheria_core PRIVATE
-    core/rules/power_sources.cpp
-    core/rules/ruleset_load_power_sources.cpp
-)
-
-# M7.1 並行追加區：地城規則與共用生成器只在檔尾擴充。
-target_sources(aetheria_core PRIVATE
-    core/rules/ruleset_load_dungeon.cpp
-    core/local/dungeon.cpp
-)
-
-# M7.2 追加區塊：Site cohort 戰鬥；保持在檔尾以利並行合併。
-target_sources(aetheria_core PRIVATE
-    core/site/site_combat.cpp
-)
-
-# M7.3 追加區：Local 逐單位戰鬥以既有 Site 面、M5 導航與 M6.1 d100 為接點。
-target_sources(aetheria_core PRIVATE
-    core/local/local_combat.cpp
-)
-
-# M8.1 追加區：純 C++ 可玩情境門面，只編排既有玩法，不依賴 Godot。
-target_sources(aetheria_core PRIVATE
-    core/runtime/playable_session.cpp
-    core/runtime/character_save.cpp
-    core/runtime/save_raws.cpp
-    core/runtime/session_persistence.cpp
-)
-
-# M8.0 追加區：Lua 只跑低頻掛勾，世界寫入經受限 Context 事件化提交。
-target_sources(aetheria_core PRIVATE
-    core/script/script_engine.cpp
-    core/script/script_world.cpp
-)
 target_include_directories(aetheria_core PUBLIC
     "${PROJECT_SOURCE_DIR}/core/script/include"
 )
@@ -224,119 +45,18 @@ target_compile_definitions(aetheria_core PRIVATE
     SOL_ALL_SAFETIES_ON=1
 )
 
-# M8.3 追加區：城建 def 到持久建築型別的正式 Ruleset 映射。
-target_sources(aetheria_core PRIVATE
-    core/rules/building_mapping_rules.cpp
-)
-
-# M10.3a：payload 無關歷史鏈與世界級 journal-first commit point。
-target_sources(aetheria_core PRIVATE
-    core/history/history_log.cpp
-    core/runtime/turn_commit.cpp
-)
-
-# 拆檔波 split/runtime 追加區
-target_sources(aetheria_core PRIVATE
-    core/runtime/playable_session_scenario.cpp
-    core/runtime/playable_session_materialize.cpp
-    core/runtime/playable_session_load.cpp
-    core/runtime/playable_session_site.cpp
-    core/runtime/playable_session_quests.cpp
-    core/runtime/playable_session_diplomacy.cpp
-    core/runtime/playable_session_city.cpp
-    core/runtime/playable_session_local.cpp
-    core/runtime/playable_session_dungeon.cpp
-    core/runtime/playable_session_calibration.cpp
-    core/runtime/playable_session_armies.cpp
-    core/runtime/playable_session_history.cpp
-    core/runtime/playable_session_turn.cpp
-    core/runtime/playable_session_battle.cpp
-    core/runtime/playable_session_coverage.cpp
-    core/runtime/playable_session_site_view.cpp
-    core/runtime/playable_session_local_view.cpp
-    core/runtime/playable_session_character.cpp
-    core/runtime/playable_session_save.cpp
-    core/history/history_log_io.cpp
-    core/runtime/cross_zone_migrate.cpp
-    core/runtime/turn_commit_replay.cpp
-    core/runtime/turn_commit_payload.cpp
-    core/script/script_engine_catalog.cpp
-    core/script/script_engine_sandbox.cpp
-    core/script/script_engine_hooks.cpp
-)
-
-# 拆檔波 split/site 追加區
-target_sources(aetheria_core PRIVATE
-    core/site/site_build_economy_validation.cpp
-    core/site/site_build_loop_commands.cpp
-    core/site/site_combat_attack.cpp
-    core/site/site_combat_cohorts.cpp
-    core/site/site_fortifications_rings.cpp
-    core/site/site_lifecycle_migration.cpp
-    core/site/site_lifecycle_migration_placement.cpp
-    core/site/site_materialize_restore.cpp
-    core/site/site_materialize_residency.cpp
-    core/site/site_materialize_eviction.cpp
-    core/site/site_reduction_region.cpp
-    core/site/site_streaming_transitions.cpp
-)
-
-# 拆檔波 split/local 追加區
-target_sources(aetheria_core PRIVATE
-    core/local/dungeon_generation.cpp
-    core/local/dungeon_interactions.cpp
-    core/local/dungeon_rooms.cpp
-    core/local/dungeon_validation.cpp
-    core/local/local_building_floor_geometry.cpp
-    core/local/local_building_hash.cpp
-    core/local/local_building_validation.cpp
-    core/local/local_combat_navigation.cpp
-    core/local/local_combat_outcome.cpp
-    core/local/local_fov_rays.cpp
-    core/local/local_generation_content.cpp
-    core/local/local_generation_paths.cpp
-    core/local/local_generation_validation.cpp
-    core/local/local_underground_dungeon.cpp
-    core/local/local_underground_hash.cpp
-    core/local/local_underground_mine.cpp
-    core/local/local_underground_ruin.cpp
-)
-
-# 拆檔波 split/rules-world 追加區
-target_sources(aetheria_faction_ai_objects PRIVATE
-    core/ai/faction_ai_goal.cpp
-    core/ai/faction_ai_power.cpp
-)
-target_sources(aetheria_core PRIVATE
-    core/narrative/emergent_quest_completion.cpp
-    core/narrative/emergent_quest_observation.cpp
-    core/rules/combat_loss.cpp
-    core/rules/combat_loss_allocation.cpp
-    core/rules/combat_region.cpp
-    core/rules/power_sources_faith.cpp
-    core/rules/power_sources_magic.cpp
-    core/rules/ruleset_load_dungeon_traps.cpp
-    core/rules/ruleset_load_power_source_defs.cpp
-    core/rules/ruleset_load_site_city_fortification.cpp
-    core/rules/ruleset_load_site_city_styles.cpp
-    core/world/combat_scaling_promotion.cpp
-    core/world/diplomacy_persistence.cpp
-    core/world/diplomacy_truth.cpp
-    core/world/diplomacy_war.cpp
-    core/world/faction_ai_commands.cpp
-    core/world/named_fate_sampling.cpp
-    core/world/named_fate_validation.cpp
-)
-
-# 拆檔波 split/sersim 追加區
-target_sources(aetheria_core PRIVATE
-    core/serialize/normalized_state_hash_city.cpp
-    core/serialize/normalized_state_hash_diplomacy.cpp
-    core/serialize/normalized_state_hash_fate.cpp
-    core/serialize/normalized_state_hash_payload.cpp
-    core/serialize/normalized_state_hash_units.cpp
-    core/serialize/zone_decode_definitions.cpp
-    core/serialize/zone_decode_registry.cpp
-    core/serialize/zone_diplomacy_decode.cpp
-    core/serialize/zone_encode_validate.cpp
-)
+include("${CMAKE_CURRENT_LIST_DIR}/targets_core_ai.cmake")
+include("${CMAKE_CURRENT_LIST_DIR}/targets_core_worldgen.cmake")
+include("${CMAKE_CURRENT_LIST_DIR}/targets_core_api.cmake")
+include("${CMAKE_CURRENT_LIST_DIR}/targets_core_narrative.cmake")
+include("${CMAKE_CURRENT_LIST_DIR}/targets_core_rules.cmake")
+include("${CMAKE_CURRENT_LIST_DIR}/targets_core_serialize.cmake")
+include("${CMAKE_CURRENT_LIST_DIR}/targets_core_spatial.cmake")
+include("${CMAKE_CURRENT_LIST_DIR}/targets_core_local.cmake")
+include("${CMAKE_CURRENT_LIST_DIR}/targets_core_site.cmake")
+include("${CMAKE_CURRENT_LIST_DIR}/targets_core_time.cmake")
+include("${CMAKE_CURRENT_LIST_DIR}/targets_core_runtime.cmake")
+include("${CMAKE_CURRENT_LIST_DIR}/targets_core_zone.cmake")
+include("${CMAKE_CURRENT_LIST_DIR}/targets_core_world.cmake")
+include("${CMAKE_CURRENT_LIST_DIR}/targets_core_script.cmake")
+include("${CMAKE_CURRENT_LIST_DIR}/targets_core_history.cmake")

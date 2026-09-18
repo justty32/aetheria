@@ -1,0 +1,19 @@
+target_sources(aetheria_core PRIVATE
+    core/world/region_tiles.cpp
+    core/world/region_simulation.cpp
+    core/world/region_step_cost.cpp
+    core/world/region_path.cpp
+    core/world/region_turn.cpp
+    core/world/diplomacy.cpp
+    core/world/diplomacy_view.cpp
+    core/world/named_fate.cpp
+    core/world/faction_ai.cpp
+    core/world/combat_scaling.cpp
+    core/world/combat_scaling_promotion.cpp
+    core/world/diplomacy_persistence.cpp
+    core/world/diplomacy_truth.cpp
+    core/world/diplomacy_war.cpp
+    core/world/faction_ai_commands.cpp
+    core/world/named_fate_sampling.cpp
+    core/world/named_fate_validation.cpp
+)
