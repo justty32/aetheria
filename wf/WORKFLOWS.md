@@ -1,69 +1,63 @@
 # WORKFLOWS — 工作流派發器
 
-← [AGENTS.md](../AGENTS.md)｜專案地圖 [INDEX.md](INDEX.md)
+← [AGENTS.md](../AGENTS.md)｜專案地圖 [INDEX.md](INDEX.md)｜結構 [STRUCTURE](STRUCTURE.md)
 
 你（使用者）說要做某件事 → **從這張表選對應工作流 → 讀它的「入口檔」→ 就知道要做什麼**。每個工作流的細節都在它自己的入口檔，不在這裡。
+
+**可以跳流程**：單行或小範圍、低風險、不跨 session 的修正；純查詢或一次性回答，不留 durable 知識；使用者明確要求快速處理；既有工作流只會增加同步成本而不降低風險。跳流程不等於跳過工程規矩——仍要讀必要上下文、不破壞使用者改動、能測就測。
 
 ## 你想做什麼 → 用哪個工作流
 
 ### 開發 flavor
 
+碰原始碼的工作流共用 [common/conventions](workflows/common/conventions.md)（寫碼慣例）與 [common/code-map](workflows/common/code-map.md)（哪個檔負責什麼）。
+
 | 觸發（你說…）| 工作流 | 入口檔（先讀這個）|
 |--------------|--------|-------------------|
 | 「我想開發 / 修改某個功能」「**修 bug**」 | **feature-dev** | [workflows/feature-dev/README.md](workflows/feature-dev/README.md) |
-| 「**拆檔 / 重構 / 整理結構**」 | **refactor** | [workflows/refactor.md](workflows/refactor.md) |
-| 「跑測試 / 驗證」 | **testing** | [workflows/testing.md](workflows/testing.md) |
-| 「**記 / 查踩坑**」 | **gotchas** | [workflows/common/gotchas.md](workflows/common/gotchas.md) |
+| 「跑測試 / 驗證」「這樣改有沒有壞」 | **testing** | [workflows/testing.md](workflows/testing.md) |
+| 「**拆檔 / 重構 / 整理結構**」（行為不變）| **refactor** | [workflows/refactor/README.md](workflows/refactor/README.md) |
+| 「搬檔案 / 改目錄名 / 拆 repo」 | **refactor**（搬移專章）| [workflows/refactor/moving-things.md](workflows/refactor/moving-things.md) |
 | 「**看看現在狀況**」「**這個功能有做嗎 / 差距在哪**」「解讀外部系統 / 可行性」 | **investigation** | [workflows/investigation/README.md](workflows/investigation/README.md) |
-| 「**開始規劃**」「把方案展開成動工計畫 / 拆輪次排依賴」 | **plan** | [workflows/plan/README.md](workflows/plan/README.md) |
 | 「規劃 spec」「把 roadmap 展開成規則／設計方案」 | **spec** | [workflows/spec.md](workflows/spec.md) |
+| 「**開始規劃**」「把方案展開成動工計畫 / 拆輪次排依賴」 | **plan** | [workflows/plan/README.md](workflows/plan/README.md) |
 
-碰原始碼的工作流共用 [common/conventions](workflows/common/conventions.md)（程式碼慣例 + code map）。
+**規劃管線**（一個想法的成熟過程）：investigation（現況如何？）→ spec（討論後方案）→ plan（動工前詳規）→ 任務書進 `inbox/` → build（feature-dev）。本專案用 spec／plan 取代 kernel 的 planning 管線；遊戲設計裁定記在 `design/` 各領域文件與 plan 的 `*-decisions.md`，工作流／團隊層面的決定才記 [decisions](workflows/decisions.md)。
 
-> 以下是常見**開發類**工作流菜單，**需要哪個才加哪列**（入口檔在第一次用到時才建，從單檔開始長——見 [DEV-GUIDE](DEV-GUIDE.md) 四級成長軌跡）：
-> - **idea**（記一個奇思妙想，不確定要不要做）
-> - **roadmap**（記一件確定會做、不確定何時的事）
-> - **tooling**（外部工具設定 / env var / 依賴）
-> - **dev-env**（開發環境、fresh clone 後要做什麼、打包出貨）
->
-> 若採用規劃類工作流，建議保留這條**規劃管線**（一個想法的成熟過程）：
-> investigation（現況如何？）→ idea（要不要做？）→ roadmap（會做，何時？）→ spec（討論後方案）→ plan（動工前詳規）→ build（feature-dev）。
+### multi-agent flavor
 
-**都不符 → 看 [INDEX.md](INDEX.md)**（repo 頂層結構地圖）。
+| 觸發（你說…）| 工作流 | 入口檔（先讀這個）|
+|--------------|--------|-------------------|
+| 「看看信箱」「處理 inbox」 | **inbox（收信）** | [workflows/inbox/README.md](workflows/inbox/README.md) |
+| 「寫任務書給 codex」「回報做完了 / 卡住了」 | **inbox（寄信）** | [workflows/inbox/README.md](workflows/inbox/README.md) |
+| 「派工」「開一波」「怎麼驗收回報」「限流 / 並行 worktree」 | **dispatch** | [workflows/dispatch/README.md](workflows/dispatch/README.md) |
+| 「要開團隊」「這層派哪級模型」「怎麼分角色」 | **team-model** | [workflows/team-model.md](workflows/team-model.md) |
 
-## 定期喚醒（kernel 內建，與上面 flavor 派發表分開）
+### 定期喚醒 flavor
 
-一套定期工作流，**不屬任一 flavor、kernel 一律有**。**兩種進入**：
-1. **循環執行**：[`/wf-tick`](../.claude/commands/wf-tick.md) 每隔週期喚醒 tick → tick 派發下面各工作流，判時間、**做**到期項。
-2. **使用者登記**：你直接請求 →「**幫我登記行程**」進 schedule、「**加個常規事務**」進 routines，只寫進清單、不當場做（等 tick 到點才做）。
+| 觸發（你說…）| 工作流 | 入口檔（先讀這個）|
+|--------------|--------|-------------------|
+| 「跑一次心跳」（多半由 [`/wf-tick`](../.claude/commands/wf-tick.md) 循環喚醒，不用人說）| **tick** | [workflows/tick.md](workflows/tick.md) |
+| 「幫我加個常規事務」「登記例行」「每 N 天要做一次…」 | **routines** | [workflows/routines.md](workflows/routines.md) |
+| 「幫我登記行程：17:00 重啟 X」「今晚 8 點提醒我 OO」 | **schedule** | [workflows/schedule.md](workflows/schedule.md) |
 
-| 工作流 | 入口 | 做什麼 |
-|--------|------|--------|
-| **tick** | [workflows/tick.md](workflows/tick.md) | 定期心跳的**單次**執行——當**派發器**依序跑各定期工作流（routines → schedule）。由 `/wf-tick [週期]` 每隔週期喚醒。 |
-| **routines** | [workflows/routines.md](workflows/routines.md) | **固定例行**清單（不常變動）：判當地時間 → 對照時機分區 / 間隔登記表 → 到期的唯讀事務就做。 |
-| **schedule** | [workflows/schedule.md](workflows/schedule.md) | **一次性**定時請求（心血來潮，如「17:00 重啟 XXX」）：判時間 → 到點的就做、做完刪。 |
+**tick 只派發、不判斷**；「什麼時間該做什麼」的判斷與清單各歸 routines / schedule。登記類請求只寫進清單、不當場做（等 tick 到點才做）。
 
-**tick 只派發、不判斷**；「什麼時間該做什麼」的判斷與清單各歸 routines / schedule。整套用不到就把 `tick` 連同 [`/wf-tick`](../.claude/commands/wf-tick.md) 一起刪。
+### kernel 內建
 
-## 工作流的統一形式（規範）
+| 觸發（你說…）| 工作流 | 入口檔 |
+|--------------|--------|--------|
+| 「記 / 查踩坑」 | **gotchas** | [workflows/common/gotchas.md](workflows/common/gotchas.md)（會咬人的專案陷阱在 [KNOWN-TRAPS](KNOWN-TRAPS.md)）|
+| 「整理 X」「封存過時的」「檔案太多／太雜」「太大要拆」 | **tidy** | [workflows/tidy/README.md](workflows/tidy/README.md) |
+| 「記個決定」「為什麼選 A 不選 B」（工作流／團隊層面）| **decisions** | [workflows/decisions.md](workflows/decisions.md) |
+| 「我的偏好是…」「以後直接做 / 先問」 | **user** | [workflows/common/user.md](workflows/common/user.md) |
 
-所有工作流照同一套形式（細則見 [DEV-GUIDE](DEV-GUIDE.md)）：
+**都不符 → 看 [INDEX.md](INDEX.md)**。新開工作流 → 複製 [workflows/TEMPLATE.workflow.md](workflows/TEMPLATE.workflow.md) 並在上表加一列；工作流的統一形式與成長軌跡見 [STRUCTURE](STRUCTURE.md)。
 
-**檔名規範**：
-- **README** = 初入一個資料夾**先讀的入口／導引**（這資料夾在幹嘛、怎麼用）。
-- **INDEX** = **描述該資料夾頂層結構**的索引（有哪些子項、各放什麼）。
-- 小資料夾兩者可合一（README 兼述結構）；大到結構複雜時才分出獨立 INDEX。
+## 活狀態記哪裡（只列 open，完成即刪）
 
-形式：
-- **資料夾型工作流**：一個**入口 README**（或主檔）+ 視需要的 `archive/`（過時/被取代文檔封存）、`gotchas.md`（踩坑）、`session-log.md`（本工作流 open 進度）。
-- **單檔工作流**：一個 `.md` 同時是入口與內容；撐大了照「[結構整理原則](DEV-GUIDE.md)」升級成資料夾型。
-- 入口檔本身膨脹 → 一樣照結構整理原則拆。
-- 非微小工作先寫 `Done when:`，完成定義要可驗證，並說清楚不包含什麼。
-
-## 跨工作流的活狀態（repo 根）
-
-三軸各管一種「還沒完成的事」，都**只列 open**、完成即移除：
-
-- **進度**（我自己還沒完成的 in-flight / open）→ [SESSION-LOG.md](SESSION-LOG.md)
-- **待使用者親自做 / 驗證的**（實機環境 / 外部工具 / env / 權限）→ [WAIT_USER.md](WAIT_USER.md)
-- **信件**（agent 之間的訊息交換，像 email——寄失敗/不回都無妨；放信處是 `wf/inbox/`）→ 使用方式見 [workflows/inbox/](workflows/inbox/README.md)
+| 在等誰 | 記哪裡 |
+|--------|--------|
+| 等**使用者**做 / 驗證 / 決定 | [WAIT_USER.md](WAIT_USER.md) |
+| 等**同 repo 另一個 session / 角色** | [SESSION-LOG.md](SESSION-LOG.md) 一行 open（規劃者／實作者各寫自己的區塊）|
+| 等**另一個 agent 做完一封任務書** | 信件軸：`inbox/` 頂層＝未辦、`done/`＝已辦，見 [workflows/inbox/](workflows/inbox/README.md) |

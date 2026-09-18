@@ -1,10 +1,10 @@
 # KNOWN-TRAPS — 會在未來咬人的東西
 
-← [SESSION-LOG.md](SESSION-LOG.md)｜[OPS-VERIFY.md](OPS-VERIFY.md)｜[INDEX](INDEX.md)
+← [SESSION-LOG.md](SESSION-LOG.md)｜[OPS-VERIFY.md](workflows/dispatch/OPS-VERIFY.md)｜[INDEX](INDEX.md)
 
 > **每一條都是踩過或量到才寫下來的**，不是推測。
 > 這裡放的是**知道有問題、但當下沒修**的東西——所以它會咬人。
-> 驗收方法的心得在 [OPS-VERIFY.md](OPS-VERIFY.md)；派工在 [OPS-NOTES.md](OPS-NOTES.md)。
+> 驗收方法的心得在 [OPS-VERIFY.md](workflows/dispatch/OPS-VERIFY.md)；派工在 [OPS-NOTES.md](workflows/dispatch/OPS-NOTES.md)。
 
 ## 假通過與驗證
 

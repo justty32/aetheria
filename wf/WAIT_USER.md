@@ -1,12 +1,12 @@
-# WAIT_USER — 等待使用者的事
+# WAIT_USER — 等待使用者的事（只列 open）
 
-← [AGENTS.md](../AGENTS.md)｜[INDEX](INDEX.md)
+← [AGENTS.md](../AGENTS.md)｜[INDEX](INDEX.md)｜我的進度另記 [SESSION-LOG](SESSION-LOG.md)
 
-需要**使用者親自做 / 驗證**才能繼續的事——例如：實機/實環境測試、外部服務登入、環境變數設定、權限操作、需要帳號的下載、**催/開/fork 另一個 agent 處理急件**（見 [inbox](workflows/inbox/README.md)：寄了信但很急、對方可能沒開）。Claude 能做結構性驗證＋打包到極限；跨不過去的那一關記這裡等使用者。
+需要**使用者親自做 / 驗證 / 決定**才能繼續的事——例如：實機/實環境測試、外部服務登入、環境變數設定、權限操作、需要帳號的下載、**催/開/fork 另一個 agent 處理急件**（見 [inbox](workflows/inbox/README.md)：寄了信但很急、對方可能沒開）。agent 做到結構性驗證＋打包的極限；跨不過去的那一關記這裡等使用者。
 
-**只列還沒做的**——做完即移除（不留已完成清單，歷史看 git log）。
+條目格式：`- [工作流] 請使用者做什麼 → 做完我接著做什麼`，**做完即刪**（不留已完成清單，歷史看 git log）。等別的 session / agent 不記這裡（判別表見 [WORKFLOWS](WORKFLOWS.md)）。
 
-> **膨脹就拆**：待使用者項堆多了，就開 **`wait_todo/`** 資料夾按類別拆檔，本檔退回只留導航到各分類檔（照 [DEV-GUIDE「結構整理原則」](DEV-GUIDE.md)）。
+> **膨脹就拆**：堆多了就開 **`wait-user/`** 按類別拆檔，本檔只留一張 `| 類別 | open | 清單 |` 導航表，每列連到 `wait-user/<類別>.md`（照 [STRUCTURE](STRUCTURE.md)）。
 
 ## 待使用者項
 
@@ -21,7 +21,7 @@
   但真色盤沒定之前，任何素材都不該開始生成，否則整批要重做。
 - ⚠ **prompt 模板的前後綴＋反向 prompt**，以及**選哪個生成模型**。
   模板定案後「一個字都不准改」，要改就整批重生成。
-- ⚠ **音訊的調性中心、配器組、LUFS 目標**（[audio.md](audio.md) 閘一）。
+- ⚠ **音訊的調性中心、配器組、LUFS 目標**（[audio.md](../design/presentation/audio.md) 閘一）。
   同理：M9.1 用佔位音，真素材等你。
 
 ### 需要你裁定的一個設計問題

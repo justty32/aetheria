@@ -2,7 +2,7 @@
 
 ← [common/README](README.md)｜[conventions](conventions.md)｜[INDEX](../../INDEX.md)
 
-**目錄＝職責，檔名＝子題。** 改結構後更新 [refactor](../refactor.md)。
+**目錄＝職責，檔名＝子題。** 改結構後更新 [refactor](../refactor/README.md)。
 
 ## 檔名慣例
 

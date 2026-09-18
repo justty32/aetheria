@@ -2,7 +2,7 @@
 
 ← [common/README](README.md)｜[INDEX](../../INDEX.md)
 
-碰原始碼的工作流（feature-dev / refactor / specs / plans…）共用這套規矩。純文檔/調查類工作流用不到。結構整理原則（被動、按需取用）在 [DEV-GUIDE](../../DEV-GUIDE.md)；always-on 鐵律在 [AGENTS.md](../../../AGENTS.md)。
+碰原始碼的工作流（feature-dev / refactor / specs / plans…）共用這套規矩。純文檔/調查類工作流用不到。結構整理原則（被動、按需取用）在 [STRUCTURE](../../STRUCTURE.md)；always-on 鐵律在 [AGENTS.md](../../../AGENTS.md)。
 
 ## 程式碼慣例
 
@@ -17,4 +17,4 @@
 ## 導航 index（code map）
 
 原始碼導航拆到獨立一檔：**[code-map.md](code-map.md)**（目錄職責、檔名慣例、每個領域有哪些檔）。
-拆檔／重構後回去更新它，維護鏈見 [refactor](../refactor.md)。
+拆檔／重構後回去更新它，維護鏈見 [refactor](../refactor/README.md)。

@@ -1,6 +1,6 @@
 # CODEX-PROTOCOL — 規劃者與 codex 的即時通道
 
-← [SESSION-LOG.md](SESSION-LOG.md)｜[OPS-NOTES.md](OPS-NOTES.md)
+← [dispatch](README.md)｜[SESSION-LOG.md](../../SESSION-LOG.md)｜[OPS-NOTES.md](OPS-NOTES.md)
 
 > **為什麼要有這個**：回報只在 codex **做完並 commit** 之後才看得到。
 > 中途卡住、發現任務書寫錯、需要裁定——這些**在舊做法裡完全沒有出口**，

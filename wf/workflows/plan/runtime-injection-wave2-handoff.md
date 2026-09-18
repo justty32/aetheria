@@ -1,6 +1,6 @@
 # 波 2 交接 — 暫停於 M10.3a（2026-08-27）
 
-← [總覽](runtime-injection.md)｜[波 2 細目](runtime-injection-inject.md)｜[裁定](runtime-injection-decisions.md)｜[TEAM](../../TEAM.md)
+← [總覽](runtime-injection.md)｜[波 2 細目](runtime-injection-inject.md)｜[裁定](runtime-injection-decisions.md)｜[TEAM](../team-model/TEAM.md)
 
 > **給下一任波管家冷啟動用。** 波 2 因 token 配額暫停，**M10.3a 已驗收通過並併入 `main`**，
 > 3b 與 M10.4 尚未開工。讀完本檔即可接手，不必回頭讀三輪的回報信。

@@ -1,6 +1,6 @@
 # M10 派工佈局 — 並行線、領地、版本號
 
-← [runtime-injection.md](runtime-injection.md)（總覽）｜通用規矩：[OPS-NOTES](../../OPS-NOTES.md)、[CODEX-PROTOCOL](../../CODEX-PROTOCOL.md)
+← [runtime-injection.md](runtime-injection.md)（總覽）｜通用規矩：[OPS-NOTES](../dispatch/OPS-NOTES.md)、[CODEX-PROTOCOL](../dispatch/CODEX-PROTOCOL.md)
 
 > 通用的 codex 指令、旗標坑、限流、即時通道**都在 OPS-NOTES／CODEX-PROTOCOL，不重抄**。
 > 本檔只放 M10 特有的：哪些輪可以並行、各線領地、版本號誰動。

@@ -47,7 +47,7 @@ Godot 4 只負責顯示、美術、音效與 UI；**全部玩法邏輯由 C++ GD
 | 路徑 | 內容 |
 |---|---|
 | `design/` | 全部設計文件。一份一檔、上限 8 KB |
-| `wf/` | 工作流 kernel：`WORKFLOWS` / `INDEX` / `DEV-GUIDE` / `SESSION-LOG` / `WAIT_USER` + `workflows/` |
+| `wf/` | 工作流 kernel：`WORKFLOWS` / `INDEX` / `STRUCTURE` / `SESSION-LOG` / `WAIT_USER` + `workflows/` |
 | `core/` | 純 C++23 核心；不依賴 Godot |
 | `bridge/` | godot-cpp 綁定與 `AetheriaCore` Node |
 | `godot/` | Godot 4.7 專案與 M0 驗證場景 |

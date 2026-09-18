@@ -1,6 +1,6 @@
 # TEAM — 團隊角色與執行節奏（2026-08-27 使用者裁定）
 
-← [AGENTS.md](../AGENTS.md)｜[OPS-NOTES](OPS-NOTES.md)｜[CODEX-PROTOCOL](CODEX-PROTOCOL.md)
+← [team-model](../team-model.md)｜[AGENTS.md](../../../AGENTS.md)｜[OPS-NOTES](../dispatch/OPS-NOTES.md)｜[CODEX-PROTOCOL](../dispatch/CODEX-PROTOCOL.md)
 
 > **成本前提**：Claude（調度長＋opus/sonnet agent）按 token 計費，**稀缺**；
 > codex（gpt-sol／terra，$200 月訂閱）**吃到飽**。
@@ -20,10 +20,10 @@
 
 - **任務書／回報信**：`wf/inbox/`（辦完歸 `done/`）。起草線的草稿也走這裡
   （`<round>-draft.md`，調度長批完改名定稿）。
-- **即時通道**：`.codex-inbox/`（[CODEX-PROTOCOL](CODEX-PROTOCOL.md)：`.ask` 附假設不停、
+- **即時通道**：`.codex-inbox/`（[CODEX-PROTOCOL](../dispatch/CODEX-PROTOCOL.md)：`.ask` 附假設不停、
   `.blocked` 才停、`.reply` 裁定）。
 - **裁定包絡**：波 brief 裡明列「管家可自答的範圍」（計畫檔已裁定的、KNOWN-TRAPS 已記的、
-  [OPS-VERIFY](OPS-VERIFY.md) 的通則）；包絡外的 `.ask` 一律升級調度長。
+  [OPS-VERIFY](../dispatch/OPS-VERIFY.md) 的通則）；包絡外的 `.ask` 一律升級調度長。
 
 ## 執行節奏（以波為單位）
 
@@ -40,7 +40,7 @@
 
 ## 驗收的不可讓渡底線
 
-- 文字回報永遠不足採信（[OPS-VERIFY](OPS-VERIFY.md)）：**負向控制必須有 Claude 的手重跑過**
+- 文字回報永遠不足採信（[OPS-VERIFY](../dispatch/OPS-VERIFY.md)）：**負向控制必須有 Claude 的手重跑過**
   ——這隻手是**管家的**；管家上呈的摘要必須寫明「哪幾條是我親手注入看紅的」。
 - 調度長保留抽查權（摘要可疑時），但抽查是例外不是流程。
 - terra 交叉審是**多一雙眼**，不是驗收的替代。
@@ -55,5 +55,5 @@
 
 ## 派工細節不重抄
 
-指令、旗標坑、限流、並行 worktree、合併括號坑 → [OPS-NOTES](OPS-NOTES.md)；
-M10 的領地與版本政策 → [plan/runtime-injection-dispatch.md](workflows/plan/runtime-injection-dispatch.md)。
+指令、旗標坑、限流、並行 worktree、合併括號坑 → [OPS-NOTES](../dispatch/OPS-NOTES.md)；
+M10 的領地與版本政策 → [plan/runtime-injection-dispatch.md](../plan/runtime-injection-dispatch.md)。

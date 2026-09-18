@@ -6,7 +6,7 @@
 
 ## Repo 佈局
 
-**非侵入式佈局**：repo 頂層只留 `AGENTS.md` / `CLAUDE.md` 兩個 agent 入口，這套工作流 kernel 的其餘部分全部收在 `wf/`（本檔就在裡面）。理由與慣例見 `~/repo/workflows/non-invasive-import.md`。
+**非侵入式佈局**：repo 頂層只留 `AGENTS.md` / `CLAUDE.md` 兩個 agent 入口與 `.claude/commands/` 適配層，這套工作流 kernel 的其餘部分全部收在 `wf/`（本檔就在裡面）。理由與慣例見 `~/repo/workflows/docs/non-invasive-import.md`；kernel 版本戳在 `AGENTS.md` 尾端。
 
 ```text
 aetheria/
@@ -15,58 +15,52 @@ aetheria/
   cmake/            各 target 的來源清單、Godot 工具鏈與 CTest 腳本
   core/ bridge/ tests/ sim/   純 C++ 核心、綁定、測試、headless CLI
   godot/            Godot 4.7 顯示／整合驗證專案
+  tools/art/        美術管線（確定性後處理與入庫閘）
   third_party/      固定版本的 godot-cpp submodule
   design/    遊戲設計文件（入口 design/README.md，清單 design/INDEX.md）
   wf/        工作流 kernel（本檔所在）
-  .claude/   commands（如 /wf-tick）
+  .claude/   commands（/wf-lint、/wf-tick）
 ```
-
-> M0 可編譯骨架已建立；建置與驗證見 [design/architecture/build.md](../design/architecture/build.md) 與
-> [testing](workflows/testing.md)。目前尚無玩法邏輯。
 
 ### 主體
 
 | 路徑 | 內容 |
 |------|------|
 | `design/` | 遊戲設計文件。入口 [design/README.md](../design/README.md)，完整清單 [design/INDEX.md](../design/INDEX.md)（不歸本工作流 kernel 管，由主 agent 同步維護）。|
-| `.claude/` | [commands](../.claude/commands/)（slash 指令，如 `/wf-tick`）。|
+| `.claude/commands/` | slash 指令適配層：[`/wf-lint`](../.claude/commands/wf-lint.md)（文檔檢查）、[`/wf-tick`](../.claude/commands/wf-tick.md)（定期心跳）。Claude Code 只讀專案根的這層，非侵入式佈局也留在根。|
 | `core/`、`bridge/`、`godot/` | 純 C++ 核心、GDExtension 綁定與 Godot 顯示層。|
 | `tests/`、`sim/` | GoogleTest 與不需 Godot 的 headless CLI。|
 | `cmake/` | 建置分檔：`targets_*.cmake`（各 target 的來源清單）、`godot_toolchain.cmake`、CTest 腳本。|
+| `tools/art/` | 美術管線腳本（Python；不是 kernel 的 `wf/tools/`）。|
 | `third_party/` | 固定版本的 godot-cpp submodule。|
 
 ### `wf/` — 工作流 kernel（本檔所在）
 
 | 路徑 | 內容 |
 |------|------|
-| `workflows/` | 各工作流的入口與 durable 知識（派發表見 [WORKFLOWS.md](WORKFLOWS.md)）。|
-| `inbox/` | agent 之間的**信件**收件匣（放信處，保持乾淨；使用方式見 [workflows/inbox/](workflows/inbox/README.md)）。|
-| `WORKFLOWS.md` `INDEX.md` `DEV-GUIDE.md` `SESSION-LOG.md` `WAIT_USER.md` | kernel 的五份頂層文件 |
+| `workflows/` | 各工作流的入口與 durable 知識（派發表見 [WORKFLOWS.md](WORKFLOWS.md)；共享區 [workflows/common/](workflows/common/README.md)）。|
+| `inbox/` | agent 之間的**信件**收件匣：頂層＝未處理、`done/`＝已處理（使用方式見 [workflows/inbox/](workflows/inbox/README.md)）。|
+| `tools/` | kernel 工具：`wf-lint.sh`（檢查連結／大小／殘留）、`tabledb.py`（資料檔 CRUD／連結）、`find_big_lists.py`、`fix_moved_links.py`；資料檔契約見 [workflows/common/data-files.md](workflows/common/data-files.md)。|
 
 > 某目錄內部複雜就在該目錄放它自己的 README / INDEX，本檔只留一句話 + 連結——永遠只描述「頂層」。
 
+## 頂層文件
+
+| 檔案 | 角色 |
+|------|------|
+| [WORKFLOWS.md](WORKFLOWS.md) | 派發器：意圖 → 工作流入口 |
+| [STRUCTURE.md](STRUCTURE.md) | 結構整理參考（被動）：分層、膨脹即拆、四級成長、archive、工作流形式 |
+| [SESSION-LOG.md](SESSION-LOG.md) | 進度 hub（open-only；規劃者／實作者分區塊）|
+| [WAIT_USER.md](WAIT_USER.md) | 待**使用者**親自做／驗證／裁定的事（open-only）|
+| [KNOWN-TRAPS.md](KNOWN-TRAPS.md) | **會在未來咬人**的專案陷阱：假通過、原則五被侵蝕、AI 在地圖上什麼都不做（`design/` 有連過來，先留在此層）|
+
 ## 工作流
 
-工作流的**選擇與入口**見 **[WORKFLOWS.md](WORKFLOWS.md)** 的派發表。每個工作流的 durable 知識歸在 `workflows/<該工作流>/` 或單檔 `workflows/<該工作流>.md`（含 `archive/` 封存過時文檔），具體流程在各自入口檔。
-
-[DEV-GUIDE](DEV-GUIDE.md) 是**被動的結構整理參考**（結構整理原則 + 四級成長軌跡）——**只在要重構/整理結構時取用**。always-on 的**鐵律**在 [AGENTS.md](../AGENTS.md)；碰原始碼的**程式碼慣例**在 [workflows/common/conventions.md](workflows/common/conventions.md)，**原始碼導航**在 [workflows/common/code-map.md](workflows/common/code-map.md)。
-
-## 通用（跨工作流共享）
+工作流的**選擇與入口**見 **[WORKFLOWS.md](WORKFLOWS.md)** 的派發表。每個工作流的 durable 知識歸在 `workflows/<該工作流>/` 或單檔 `workflows/<該工作流>.md`（含 `archive/` 封存過時文檔），具體流程在各自入口檔。always-on 的**鐵律**在 [AGENTS.md](../AGENTS.md)。
 
 | 路徑 | 內容 |
 |------|------|
-| [common/README](workflows/common/README.md) | 跨工作流共通：[gotchas](workflows/common/gotchas.md) 踩坑 + [conventions](workflows/common/conventions.md) 程式碼慣例（架構鐵律：核心 C++ 不依賴 godot-cpp、Godot 端不持有玩法狀態）+ [code-map](workflows/common/code-map.md) 原始碼導航|
-
-## 活狀態（只列還沒完成的）
-
-三軸：進度＝我手上的、待使用者＝卡在人、信件＝agent 之間收發（像 email）。
-
-| 檔案 | 用途 |
-|------|------|
-| [SESSION-LOG](SESSION-LOG.md) | 進度 hub（repo 根）→ 各工作流 session-log（open-only）|
-| [OPS-NOTES](OPS-NOTES.md) | 操作心得：派 codex 的參數、限流歸屬、即時通道 |
-| [OPS-VERIFY](OPS-VERIFY.md) | **驗收**心得：重跑負向控制、會動的數字 vs 裝飾的數字、門檻要從組成推導 |
-| [KNOWN-TRAPS](KNOWN-TRAPS.md) | **會在未來咬人**：假通過、原則五被侵蝕、AI 在地圖上什麼都不做 |
-| [CODEX-PROTOCOL](CODEX-PROTOCOL.md) | 與 codex 的即時通道：`.codex-inbox/` 的 ask／blocked／done |
-| [WAIT_USER](WAIT_USER.md) | 待**使用者**親自做/驗證的入口（open-only）|
-| `inbox/`（放信處）+ [workflows/inbox/](workflows/inbox/README.md)（使用方式）| agent 之間的**信件**（像 email，狀態靠位置：inbox 頂層＝未處理、`done/`＝已處理）|
+| [common/README](workflows/common/README.md) | 跨工作流共通：[gotchas](workflows/common/gotchas.md)、[conventions](workflows/common/conventions.md) 程式碼慣例、[code-map](workflows/common/code-map.md) 原始碼導航、[user](workflows/common/user.md) 偏好、[reply-style](workflows/common/reply-style.md)、[data-files](workflows/common/data-files.md) 資料檔契約 |
+| [dispatch/](workflows/dispatch/README.md) | 派工與驗收：[OPS-NOTES](workflows/dispatch/OPS-NOTES.md) 操作心得、[OPS-VERIFY](workflows/dispatch/OPS-VERIFY.md) 驗收心得、[CODEX-PROTOCOL](workflows/dispatch/CODEX-PROTOCOL.md) 與 codex 的即時通道 |
+| [team-model](workflows/team-model.md) | 誰來做：角色三層、分級表；本專案的 [TEAM](workflows/team-model/TEAM.md) 團隊制與波節奏 |
+| [investigation/](workflows/investigation/README.md)、[plan/](workflows/plan/README.md)、[spec](workflows/spec.md) | 現況報告、動工計畫、規則規格（使用者的規劃文件）|
