@@ -265,3 +265,8 @@ add_test(
         --core "${PROJECT_SOURCE_DIR}/core"
         --allowlist "${PROJECT_SOURCE_DIR}/tests/principle5_allowlist.txt"
 )
+
+# 拆檔波 split/sersim 追加區
+target_sources(aetheria_tests PRIVATE
+    sim/world_hash_replay.cpp
+)

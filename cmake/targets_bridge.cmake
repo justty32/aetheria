@@ -20,3 +20,13 @@ add_custom_command(TARGET aetheria_bridge POST_BUILD
     COMMENT "Stage baseline TOML raws for Godot editor/export"
 )
 aetheria_enable_warnings(aetheria_bridge)
+
+# 拆檔波 split/sersim 追加區
+target_sources(aetheria_bridge PRIVATE
+    bridge/aetheria_core_commands.cpp
+    bridge/aetheria_core_generation.cpp
+    bridge/aetheria_core_pack_region.cpp
+    bridge/aetheria_core_pack_reports.cpp
+    bridge/aetheria_core_session.cpp
+    bridge/aetheria_core_snapshot.cpp
+)
