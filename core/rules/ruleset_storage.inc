@@ -1,0 +1,58 @@
+// Ruleset 類別內引入的私有儲存宣告；不作為獨立 header 使用。
+
+    private:
+    friend class RulesetLoader;
+    Ruleset() = default;
+
+    std::vector<TerrainDef> terrains_;
+    std::vector<ReliefDef> reliefs_;
+    std::vector<FeatureDef> features_;
+    std::vector<EdgeDef> edges_;
+    std::vector<GroundDef> grounds_;
+    std::vector<BuildingDef> buildings_;
+    std::vector<CityBuildingDef> city_buildings_;
+    std::vector<FurnitureDef> furniture_;
+    std::vector<PowerBreakthroughDef> breakthroughs_;
+    std::vector<DamageTypeDef> damage_types_;
+    std::vector<TerrainGroundMapping> terrain_ground_mappings_;
+    std::vector<TerrainRule> terrain_rules_;
+    std::vector<ReliefRule> relief_rules_;
+    MovementRules movement_rules_;
+    SiteGenerationRules site_generation_rules_;
+    SiteFillRules site_fill_rules_;
+    SiteBuildRules site_build_rules_;
+    WildernessGenerationRules wilderness_generation_rules_;
+    LocalBuildingRules local_building_rules_;
+    CivilizationRules civilization_rules_;
+    PowerRules power_rules_;
+    AttributeRules attribute_rules_;
+    CheckRules check_rules_;
+    DamageRules damage_rules_;
+    DiplomacyRules diplomacy_rules_;
+    std::vector<WorldGraphConnection> world_connections_;
+    std::map<std::string, TerrainId, std::less<>> terrain_index_;
+    std::map<std::string, ReliefId, std::less<>> relief_index_;
+    std::map<std::string, FeatureId, std::less<>> feature_index_;
+    std::map<std::string, EdgeId, std::less<>> edge_index_;
+    std::map<std::string, GroundId, std::less<>> ground_index_;
+    std::map<std::string, BuildingDefId, std::less<>> building_index_;
+    std::map<std::string, CityBuildingDefId, std::less<>> city_building_index_;
+    std::map<std::string, FurnitureDefId, std::less<>> furniture_index_;
+    std::map<std::string, PowerBreakthroughDefId, std::less<>> breakthrough_index_;
+    std::map<std::string, DamageTypeId, std::less<>> damage_type_index_;
+    std::map<std::string, TreatyDefId, std::less<>> treaty_index_;
+    std::map<std::string, CasusBelliDefId, std::less<>> casus_belli_index_;
+    CombatRules combat_rules_;
+    WorldObservationRules world_observation_rules_;
+    std::vector<SchoolDef> schools_;
+    std::vector<TenetDef> tenets_;
+    std::vector<DeityDef> deities_;
+    std::vector<RaceDef> races_;
+    std::map<std::string, SchoolDefId, std::less<>> school_index_;
+    std::map<std::string, TenetDefId, std::less<>> tenet_index_;
+    std::map<std::string, DeityDefId, std::less<>> deity_index_;
+    std::map<std::string, RaceDefId, std::less<>> race_index_;
+    PowerSourceRules power_source_rules_;
+    std::vector<TrapDef> traps_;
+    std::map<std::string, TrapDefId, std::less<>> trap_index_;
+    DungeonRules dungeon_rules_;

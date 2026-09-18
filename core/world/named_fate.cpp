@@ -1,6 +1,7 @@
 // named_fate.cpp：以權威統計配額分配具名命運，並共用在場與重載補算實作。
 
 #include "core/world/named_fate.h"
+#include "core/world/named_fate_detail.h"
 
 #include <algorithm>
 #include <limits>
@@ -11,39 +12,8 @@
 #include <utility>
 
 namespace aetheria::world {
+using detail::valid_stage_one;
 namespace {
-
-inline constexpr std::uint32_t kMaximumModifierBasisPoints = 50'000;
-
-[[nodiscard]] bool valid_outcome(FateOutcome outcome) noexcept {
-    return outcome <= FateOutcome::Died;
-}
-
-[[nodiscard]] bool valid_modifier(std::uint32_t value) noexcept {
-    return value > 0 && value <= kMaximumModifierBasisPoints;
-}
-
-[[nodiscard]] bool valid_member(const NamedFateMember& member) noexcept {
-    return member.entity_uid != 0 && member.cohort_id != 0 && !member.name_key.empty() &&
-           member.significance <= Significance::World &&
-           (!member.has_outcome || valid_outcome(member.outcome)) &&
-           valid_modifier(member.modifiers.status_basis_points) &&
-           valid_modifier(member.modifiers.wealth_basis_points) &&
-           valid_modifier(member.modifiers.relationship_basis_points) &&
-           valid_modifier(member.modifiers.occupation_basis_points) &&
-           valid_modifier(member.modifiers.vulnerability_basis_points) &&
-           valid_modifier(member.modifiers.district_basis_points);
-}
-
-[[nodiscard]] bool valid_stage_one(const FateStageOne& stage) noexcept {
-    return stage.crisis.event_id != 0 && stage.crisis.cohort_id != 0 &&
-           stage.crisis.site_key != 0 && !stage.crisis.place_key.empty() &&
-           stage.crisis.base_loss_basis_points <= kFateBasisPoints &&
-           stage.crisis.relief_basis_points <= kFateBasisPoints &&
-           time::is_representable(stage.crisis.occurred_at) &&
-           stage.population_after <= stage.population_before &&
-           stage.total_loss == stage.population_before - stage.population_after;
-}
 
 [[nodiscard]] std::string template_key(FateOutcome outcome) {
     switch (outcome) {
@@ -59,13 +29,6 @@ inline constexpr std::uint32_t kMaximumModifierBasisPoints = 50'000;
         return "event.fate.named.died";
     }
     throw std::logic_error{"命運結果列舉無效"};
-}
-
-[[nodiscard]] std::uint64_t splitmix64(std::uint64_t value) noexcept {
-    value += UINT64_C(0x9E3779B97F4A7C15);
-    value = (value ^ (value >> 30U)) * UINT64_C(0xBF58476D1CE4E5B9);
-    value = (value ^ (value >> 27U)) * UINT64_C(0x94D049BB133111EB);
-    return value ^ (value >> 31U);
 }
 
 [[nodiscard]] FateResolution resolve(NamedFateLedger& ledger, const FateStageOne& stage_one,
@@ -133,105 +96,6 @@ inline constexpr std::uint32_t kMaximumModifierBasisPoints = 50'000;
 }
 
 }  // namespace
-
-bool valid_named_fate_ledger(const NamedFateLedger& ledger) noexcept {
-    std::set<std::uint64_t> member_uids;
-    for (const auto& member : ledger.members) {
-        if (!valid_member(member) || !member_uids.insert(member.entity_uid).second) {
-            return false;
-        }
-    }
-    std::set<std::pair<std::uint64_t, std::uint64_t>> pending_ids;
-    for (const auto& pending : ledger.pending) {
-        if (!valid_stage_one(pending) ||
-            !pending_ids.emplace(pending.crisis.event_id, pending.crisis.cohort_id).second) {
-            return false;
-        }
-    }
-    for (const auto& event : ledger.events) {
-        if (event.event_id == 0 || event.cohort_id == 0 || event.place_key.empty() ||
-            event.template_key.empty() || event.kind > FateNarrativeKind::NamedQuotaOverflow ||
-            !valid_outcome(event.outcome)) {
-            return false;
-        }
-        if (event.kind == FateNarrativeKind::NamedOutcome &&
-            (event.entity_uid == 0 || event.person_key.empty())) {
-            return false;
-        }
-    }
-    return true;
-}
-
-std::uint64_t fate_seed(std::uint64_t event_id, std::uint64_t cohort_id,
-                        std::uint64_t entity_uid) noexcept {
-    auto seed = splitmix64(event_id);
-    seed = splitmix64(seed ^ cohort_id);
-    return splitmix64(seed ^ entity_uid);
-}
-
-std::uint32_t adjusted_death_basis_points(const FateStageOne& stage_one,
-                                          const NamedFateMember& member,
-                                          const FateRules& rules) {
-    if (!valid_stage_one(stage_one) || !valid_member(member) ||
-        member.cohort_id != stage_one.crisis.cohort_id ||
-        rules.marked_death_bias_basis_points == 0 ||
-        rules.marked_death_bias_basis_points > kFateBasisPoints) {
-        throw std::invalid_argument{"個體命運修正輸入無效"};
-    }
-    const auto weight_sum = std::accumulate(rules.surviving_outcome_weights.begin(),
-                                            rules.surviving_outcome_weights.end(), UINT64_C(0));
-    if (weight_sum == 0) {
-        throw std::invalid_argument{"存活命運權重總和不可為零"};
-    }
-    const auto cohort_loss_basis_points =
-        stage_one.population_before == 0
-            ? UINT64_C(0)
-            : static_cast<std::uint64_t>(stage_one.total_loss) * kFateBasisPoints /
-                  stage_one.population_before;
-    std::uint64_t adjusted = cohort_loss_basis_points;
-    const std::array modifiers{
-        member.modifiers.status_basis_points,
-        member.modifiers.wealth_basis_points,
-        member.modifiers.relationship_basis_points,
-        member.modifiers.occupation_basis_points,
-        member.modifiers.vulnerability_basis_points,
-        member.modifiers.district_basis_points,
-    };
-    for (const auto modifier : modifiers) {
-        adjusted = std::min<std::uint64_t>(
-            kFateBasisPoints, adjusted * modifier / kFateBasisPoints);
-    }
-    if (member.marked) {
-        adjusted = adjusted * rules.marked_death_bias_basis_points / kFateBasisPoints;
-        adjusted = std::max<std::uint64_t>(1U, adjusted);
-    }
-    return static_cast<std::uint32_t>(adjusted);
-}
-
-FateOutcome roll_fate_outcome(std::mt19937_64& rng, std::uint32_t death_basis_points,
-                              const FateRules& rules) {
-    if (death_basis_points > kFateBasisPoints) {
-        throw std::invalid_argument{"死亡機率超過 10000 basis points"};
-    }
-    const auto death_roll = static_cast<std::uint32_t>(rng() % kFateBasisPoints);
-    if (death_roll < death_basis_points) {
-        return FateOutcome::Died;
-    }
-    const auto total = std::accumulate(rules.surviving_outcome_weights.begin(),
-                                       rules.surviving_outcome_weights.end(), UINT64_C(0));
-    if (total == 0) {
-        throw std::invalid_argument{"存活命運權重總和不可為零"};
-    }
-    auto roll = rng() % total;
-    for (std::size_t index = 0; index < rules.surviving_outcome_weights.size(); ++index) {
-        const auto weight = rules.surviving_outcome_weights[index];
-        if (roll < weight) {
-            return static_cast<FateOutcome>(index);
-        }
-        roll -= weight;
-    }
-    throw std::logic_error{"存活命運抽樣未命中任何權重"};
-}
 
 FateStageOne FateResolver::apply_stage_one(RegionTiles& tiles, RegionXY coordinate,
                                            FateCrisis crisis) {

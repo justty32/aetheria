@@ -234,3 +234,29 @@ target_sources(aetheria_core PRIVATE
     core/history/history_log.cpp
     core/runtime/turn_commit.cpp
 )
+
+# 拆檔波 split/rules-world 追加區
+target_sources(aetheria_faction_ai_objects PRIVATE
+    core/ai/faction_ai_goal.cpp
+    core/ai/faction_ai_power.cpp
+)
+target_sources(aetheria_core PRIVATE
+    core/narrative/emergent_quest_completion.cpp
+    core/narrative/emergent_quest_observation.cpp
+    core/rules/combat_loss.cpp
+    core/rules/combat_loss_allocation.cpp
+    core/rules/combat_region.cpp
+    core/rules/power_sources_faith.cpp
+    core/rules/power_sources_magic.cpp
+    core/rules/ruleset_load_dungeon_traps.cpp
+    core/rules/ruleset_load_power_source_defs.cpp
+    core/rules/ruleset_load_site_city_fortification.cpp
+    core/rules/ruleset_load_site_city_styles.cpp
+    core/world/combat_scaling_promotion.cpp
+    core/world/diplomacy_persistence.cpp
+    core/world/diplomacy_truth.cpp
+    core/world/diplomacy_war.cpp
+    core/world/faction_ai_commands.cpp
+    core/world/named_fate_sampling.cpp
+    core/world/named_fate_validation.cpp
+)
