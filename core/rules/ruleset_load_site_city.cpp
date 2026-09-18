@@ -3,6 +3,7 @@
 #include "core/rules/ruleset.h"
 
 #include "core/rules/toml_read.h"
+#include "core/rules/ruleset_load_site_city_detail.h"
 
 #include <toml++/toml.hpp>
 
@@ -160,65 +161,8 @@ void RulesetLoader::load_site_city(Ruleset& result, const std::filesystem::path&
         }
     }
 
-    std::vector<bool> faction_seen;
-    for (const auto& node : *styles) {
-        const auto& table = require_table(node, path);
-        const auto faction = require_integer(table, "faction", path);
-        const auto* landmarks = table["landmarks"].as_array();
-        if (faction < 0 || faction > UINT16_MAX || landmarks == nullptr || landmarks->empty()) {
-            throw std::runtime_error{"site_city.toml 勢力地標風格無效"};
-        }
-        const auto faction_index = static_cast<std::size_t>(faction);
-        if (faction_seen.size() <= faction_index) {
-            faction_seen.resize(faction_index + 1U);
-        }
-        if (faction_seen[faction_index]) {
-            throw std::runtime_error{"site_city.toml 勢力地標風格重複"};
-        }
-        faction_seen[faction_index] = true;
-        FactionLandmarkStyle style;
-        style.faction = static_cast<std::uint16_t>(faction);
-        for (const auto& landmark_node : *landmarks) {
-            const auto id = landmark_node.value<std::string>();
-            const auto def = id.has_value() ? result.find_building(*id) : std::nullopt;
-            if (!def.has_value() || !result.building(*def)->landmark) {
-                throw std::runtime_error{"site_city.toml 勢力風格引用不存在或非地標建築"};
-            }
-            style.landmarks.push_back(*def);
-        }
-        rules.faction_styles.push_back(std::move(style));
-    }
-
-    auto read_nonnegative = [&](std::string_view field, std::int64_t maximum) {
-        const auto value = require_integer(*fortification, field, path);
-        if (value < 0 || value > maximum) {
-            throw std::runtime_error{"site_city.toml 城防參數無效：" + std::string{field}};
-        }
-        return value;
-    };
-    auto read_edge = [&](std::string_view field, std::uint32_t required_flags) {
-        const auto string_id = require_string(*fortification, field, path);
-        const auto edge = result.find_edge(string_id);
-        if (!edge.has_value() || (result.edge(*edge)->flags & required_flags) != required_flags) {
-            throw std::runtime_error{"site_city.toml 城防引用不存在或旗標不符：" + string_id};
-        }
-        return *edge;
-    };
-    auto& walls = rules.fortification;
-    walls.double_wall_defense =
-        static_cast<std::uint16_t>(read_nonnegative("double_wall_defense", UINT16_MAX));
-    walls.tower_defense = static_cast<std::uint16_t>(read_nonnegative("tower_defense", UINT16_MAX));
-    walls.tower_spacing = static_cast<std::uint8_t>(read_nonnegative("tower_spacing", UINT8_MAX));
-    walls.moat_defense = static_cast<std::uint16_t>(read_nonnegative("moat_defense", UINT16_MAX));
-    walls.breach_percent_at_full_damage =
-        static_cast<std::uint8_t>(read_nonnegative("breach_percent_at_full_damage", 100));
-    if (walls.double_wall_defense == 0 || walls.tower_spacing == 0) {
-        throw std::runtime_error{"site_city.toml 城防門檻或塔樓間距不得為 0"};
-    }
-    walls.wall_edge = read_edge("wall_edge", kEdgeWallFlag);
-    walls.gate_edge = read_edge("gate_edge", kEdgeWallFlag | kEdgeGateFlag | kEdgeOpenableFlag);
-    walls.tower_edge = read_edge("tower_edge", kEdgeWallFlag | kEdgeTowerFlag);
-    walls.moat_edge = read_edge("moat_edge", kEdgeMoatFlag);
+    load_site_city_styles(result, {styles, fortification, path});
+    load_site_city_fortification(result, {styles, fortification, path});
     rules.loaded = true;
 }
 
