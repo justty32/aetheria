@@ -1,7 +1,7 @@
 # godot-cpp 工具鏈：偵測本機 Godot、dump extension API、驗證 submodule revision。
 # 由頂層 CMakeLists.txt include，只負責讓 godot-cpp target 可用，不定義自家 target。
 
-set(AETHERIA_EXPECTED_GODOT_VERSION "4.7.1")
+set(AETHERIA_EXPECTED_GODOT_VERSION "4.7.2")
 set(GODOTCPP_API_VERSION "4.7" CACHE STRING "Godot API version" FORCE)
 set(GODOTCPP_DISABLE_EXCEPTIONS OFF CACHE BOOL "Use the same exception ABI as aetheria" FORCE)
 set(GODOTCPP_ENABLE_TESTING OFF CACHE BOOL "Do not build godot-cpp tests" FORCE)

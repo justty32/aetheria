@@ -11,7 +11,7 @@
 | OS | Manjaro Linux x86_64 |
 | CMake / generator | 4.4.2 / Ninja 1.13.2 |
 | C++ | GCC 16.1.1，C++23、關閉 GNU extensions |
-| Godot | `godot-mono 4.7.1.stable`；GDExtension API 期望版本固定為 `4.7.1` |
+| Godot | `godot-mono 4.7.2.stable`（本機 Arch 套件）；GDExtension API 期望版本固定為 `4.7.2`（2026-09-18 使用者裁定：一律以本機 4.7.2 為準） |
 | vcpkg baseline | `b781af668027bbf77f2f827f47b5c6cd8d825c08` |
 | godot-cpp | submodule commit `d7b6162249ed52796a8301d216c24ee71d68c2bf` |
 
@@ -34,7 +34,7 @@ cmake --build build --parallel
 
 第一次 configure 會依 `vcpkg.json` 的 baseline 安裝依賴。若找到 `godot`、`godot4`、
 `godot-4` 或 `godot-mono`，CMake 會執行 `--dump-extension-api`，並核對 JSON header 必須是
-Godot `4.7.1`；不符就中止 configure。可用 cache 變數
+Godot `4.7.2`；不符就中止 configure。可用 cache 變數
 `-DAETHERIA_GODOT_BIN=/path/to/godot` 明確覆寫執行檔。找不到 Godot 時改用 godot-cpp
 內建的 4.7 API，`aetheria_sim` 仍可獨立建置。
 
@@ -90,7 +90,7 @@ M0.1 已從本地 `main` 執行 `git clone` 到 `/tmp` 的全新目錄，再依�
    `add_subdirectory` 後覆寫 target property。M0 首次 configure 約 21 秒，12-way 首編約 1 分鐘。
 3. bridge 開 `-Wall -Wextra` 時，上游巨集 header 會產生大量 unused-parameter 警告；將第三方
    public headers 標成 CMake `SYSTEM` 後，本專案 warning 仍全開且能保持零警告。
-4. Godot 4.7.1 Mono 對全新 `godot/.godot/` 的第一次 headless editor 掃描，在完成檔案掃描後
+4. Godot 4.7.x Mono 對全新 `godot/.godot/` 的第一次 headless editor 掃描，在完成檔案掃描後
    曾以 139 結束；不改檔直接再跑即為 0，之後主場景也穩定為 0。這是一次性初始化坑，不能把
    第一次失敗當成 bridge 載入失敗；仍應檢查第二次與主場景的原始輸出。
 5. 每次 configure 直接覆寫正式 `extension_api.json`，即使內容相同也會令 godot-cpp 的 2,137

@@ -30,10 +30,11 @@
   使用者打遊戲（`main` 537%）也會湊滿次數。**建議只是建議，先查證歸屬再決定寄不寄。**
   順帶：這種爆量正是「效能斷言取 N≥5 次最小值」那條裁定的活證據——
   單次牆鐘取樣若剛好落在這個窗口，`<10 ms` 的預算會假失敗。
-- 🔧 **主 repo 冷啟動 configure 會失敗**（2026-08-27 波管家實測，凍結期後第一件會撞的事）：
-  cache 指向真 Godot 4.7.2 但專案期望 4.7.1，且 vcpkg 已搬家（舊 `/home/lorkhan/vcpkg`）。
-  可用配方：`-DAETHERIA_GODOT_BIN=/bin/false
-  -DCMAKE_TOOLCHAIN_FILE=/home/lorkhan/dev/vcpkg/scripts/buildsystems/vcpkg.cmake`。
+- 🔧 **主 repo 冷啟動 configure 配方**（vcpkg 已搬家；Godot 期望 2026-09-18 起改 4.7.2＝本機版本）：
+  `-DCMAKE_TOOLCHAIN_FILE=/home/lorkhan/dev/vcpkg/scripts/buildsystems/vcpkg.cmake`，不必再用 `/bin/false` 繞版本核對。
+  ⚠ `--quit-after 5` 對 `main.gd` 解析失敗仍 exit 0——**要 grep stderr 的 `SCRIPT ERROR`**。
+  ⚠ `--playable-demo=… --screenshot=` 在 `--headless` 會卡死（`await process_frame` 不回來）；截圖走
+  `xvfb-run -a -s "-screen 0 1280x900x24" godot-mono --path godot --rendering-driver opengl3 -- …`，結果逐位元確定。
 - ⚠ **貼著 8 KB 上限**：`design/README.md` 因索引成長而超標，已依 AGENTS.md 慣例拆出
   `design/INDEX.md`（README = 入口導引，INDEX = 完整清單）。原始碼最大的是
   `tests/rules/ruleset_error_test.cpp` 7,921。**要動貼邊的檔就先拆**。

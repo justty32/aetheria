@@ -267,7 +267,7 @@ func _materialize_packaged_data() -> String:
 	var destination := ProjectSettings.globalize_path("user://packaged-data")
 	if DirAccess.make_dir_recursive_absolute(destination) != OK:
 		return ""
-	for file_name in RAW_FILES:
+	for file_name: String in RAW_FILES:
 		var source := "res://data/" + file_name
 		if not FileAccess.file_exists(source):
 			return ""
@@ -592,7 +592,7 @@ func _run_negative_probe() -> void:
 func _run_performance_probe() -> void:
 	var samples: Array[float] = []
 	for index in 6:
-		_core.new_game(515151, 51)
+		_core.new_game(515151, 51, _materialize_packaged_data())
 		var snapshot := _snapshot()
 		_core.issue_move(snapshot["player_unit_id"], snapshot["guided_target_x"], snapshot["guided_target_y"])
 		var started := Time.get_ticks_usec()
