@@ -1,0 +1,19 @@
+target_sources(aetheria_tests PRIVATE
+    tests/local/local_boundary_test.cpp
+    tests/local/local_building_test.cpp
+    tests/local/local_generation_test.cpp
+    tests/local/local_fov_test.cpp
+    tests/local/local_materialize_test.cpp
+    tests/local/local_movement_test.cpp
+    tests/local/local_reduction_test.cpp
+    tests/local/local_underground_test.cpp
+    tests/local/dungeon_test.cpp
+    tests/local/local_combat_test.cpp
+    tests/local/dungeon_encounters_test.cpp
+    tests/local/dungeon_persistence_test.cpp
+    tests/local/local_combat_calibration_test.cpp
+    tests/local/local_combat_consequences_test.cpp
+    tests/local/local_fov_properties_test.cpp
+    tests/local/local_movement_path_connectivity_test.cpp
+    tests/local/local_movement_path_obstacles_test.cpp
+)
