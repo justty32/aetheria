@@ -2,7 +2,7 @@
 
 ← [common/README](README.md)｜[conventions](conventions.md)｜[INDEX](../../INDEX.md)
 
-**目錄＝職責，檔名＝子題。** 本頁派發到領域詳圖；結構維護順序見 [refactor](../refactor.md)。
+**目錄＝職責，檔名＝子題。** 本頁派發到領域詳圖；結構維護順序見 [refactor](../refactor/README.md)。
 
 ## 領域入口
 

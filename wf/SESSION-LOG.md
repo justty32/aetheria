@@ -36,6 +36,9 @@
 - [investigation] 地形生成已交接、**尚無人接手**（濕度削頂根因已量到）→ [TERRAIN-HANDOFF](workflows/investigation/TERRAIN-HANDOFF.md)；
   活世界規劃以它為事實基線。
 - [feature-dev] 「能動但不像真的」（M5 四處、M6.6 湧現任務只有半步意義）仍未解，卡在 observer mark 的擱置裁定 → [WAIT_USER](WAIT_USER.md)、[M5-CLOSEOUT](workflows/feature-dev/landed/M5-CLOSEOUT.md)。
+- [split] 2026-09-18 拆檔波：C++/cmake 84 檔已 ≤8 KB 併入 main（432 綠、sim 雜湊不變）；
+  `split/tools-godot` 分支（tools/ Python 拆檔）待使用者裁定 verify_acceptance 故障注入改為 AST 展開副本是否接受；
+  `godot/main.gd`、`region_debug_renderer.gd` 未拆。
 
 ## 各工作流 session-log
 

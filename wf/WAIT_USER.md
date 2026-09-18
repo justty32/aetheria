@@ -32,6 +32,12 @@
   [milestones.md](../design/milestones.md) 寫著「要做之前先問」。
   **不解除擱置的話，「湧現任務有靈魂」這條要留到 M9 之後。**
 
+### 拆檔波：Godot 驗證基準線
+
+- ⚠ **恢復 Godot 驗證基準線**：本機 `godot-mono` 4.7.2 headless 對 `godot/` 有解析錯誤、
+  乾淨 worktree 缺 bridge `.so`——拆 `.gd` 前需先能在本機跑綠
+  `godot-mono --headless --path godot --quit-after 5`。
+
 ### 只有你能給的判準
 
 - ⚠ **M9 的第一條判準有一半要人來看**：「關掉 core 重開，畫面與音景完全一致」。
