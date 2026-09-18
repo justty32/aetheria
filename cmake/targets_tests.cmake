@@ -265,3 +265,26 @@ add_test(
         --core "${PROJECT_SOURCE_DIR}/core"
         --allowlist "${PROJECT_SOURCE_DIR}/tests/principle5_allowlist.txt"
 )
+
+# 拆檔波 split/tests-world-runtime 追加區
+target_sources(aetheria_tests PRIVATE
+    tests/narrative/emergent_quest_reduction_test.cpp
+    tests/runtime/character_save_persistence_test.cpp
+    tests/runtime/history_log_recovery_test.cpp
+    tests/runtime/history_log_identity_test.cpp
+    tests/runtime/history_log_continuity_test.cpp
+    tests/world/combat_scaling_promotion_statistics_test.cpp
+    tests/world/combat_scaling_lifecycle_test.cpp
+    tests/world/diplomacy_war_test.cpp
+    tests/world/faction_ai_lod_test.cpp
+    tests/world/faction_ai_knowledge_test.cpp
+    tests/worldgen/region_climate_functions_terrain_test.cpp
+    tests/worldgen/region_output_validation_required_terrain_test.cpp
+    tests/worldgen/region_stage_functions_coastline_test.cpp
+    tests/world/named_fate_distribution_test.cpp
+    tests/world/named_fate_persistence_test.cpp
+    tests/zone/cross_zone_migration_test.cpp
+    tests/zone/cross_zone_rollback_test.cpp
+    tests/zone/diplomacy_save_legacy_v14_test.cpp
+    tests/zone/diplomacy_save_version_validation_test.cpp
+)
