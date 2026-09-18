@@ -18,28 +18,6 @@ using aetheria::tests::TemporaryDirectory;
 using aetheria::tests::write_text;
 using aetheria::tests::write_valid_ruleset;
 
-void copy_default_ruleset(const std::filesystem::path& destination) {
-    std::filesystem::copy(AETHERIA_SOURCE_DIR "/data", destination,
-                          std::filesystem::copy_options::recursive |
-                              std::filesystem::copy_options::overwrite_existing);
-}
-
-[[nodiscard]] std::string read_text(const std::filesystem::path& path) {
-    std::ifstream stream{path};
-    if (!stream) {
-        throw std::runtime_error{"Cannot read Ruleset test file"};
-    }
-    return {std::istreambuf_iterator<char>{stream}, std::istreambuf_iterator<char>{}};
-}
-
-void replace_once(std::string& text, std::string_view before, std::string_view after) {
-    const auto position = text.find(before);
-    if (position == std::string::npos) {
-        throw std::runtime_error{"Ruleset test fixture text not found"};
-    }
-    text.replace(position, before.size(), after);
-}
-
 TEST(RulesetLoader, RejectsMissingFile) {
     TemporaryDirectory directory;
     EXPECT_THROW(static_cast<void>(RulesetLoader::load(directory.path())), std::runtime_error);
@@ -96,100 +74,6 @@ TEST(RulesetLoader, RejectsIntegerNarrowingOutsideInt32) {
 TEST(RulesetLoader, RejectsUnresolvedDefinitionReference) {
     TemporaryDirectory directory;
     write_valid_ruleset(directory.path(), kGrass, "terrain.missing");
-    EXPECT_THROW(static_cast<void>(RulesetLoader::load(directory.path())), std::runtime_error);
-}
-
-TEST(RulesetLoader, RejectsCombatRatioDomainBeyondFixedPointCapacity) {
-    TemporaryDirectory directory;
-    copy_default_ruleset(directory.path());
-    auto combat = read_text(directory.path() / "combat.toml");
-    replace_once(combat, "ratio_binary_limit = 27", "ratio_binary_limit = 31");
-    write_text(directory.path() / "combat.toml", combat);
-
-    EXPECT_THROW(static_cast<void>(RulesetLoader::load(directory.path())), std::runtime_error);
-}
-
-TEST(RulesetLoader, AllowsDisabledHistoryWithZeroCountAndBonus) {
-    TemporaryDirectory directory;
-    copy_default_ruleset(directory.path());
-    auto civilization = read_text(directory.path() / "civilization.toml");
-    replace_once(civilization, "ancient_site_count = 12", "ancient_site_count = 0");
-    replace_once(civilization, "ancient_site_bonus = 10000", "ancient_site_bonus = 0");
-    write_text(directory.path() / "civilization.toml", civilization);
-
-    const auto ruleset = RulesetLoader::load(directory.path());
-    EXPECT_EQ(ruleset.civilization_rules().history.ancient_site_count, 0U);
-    EXPECT_EQ(ruleset.civilization_rules().history.ancient_city_count, 3U);
-    EXPECT_EQ(ruleset.civilization_rules().history.ancient_town_count, 4U);
-    EXPECT_EQ(ruleset.civilization_rules().history.ancient_site_bonus, 0);
-}
-
-TEST(RulesetLoader, RejectsNonPositiveBottleneckBarrierCost) {
-    TemporaryDirectory directory;
-    copy_default_ruleset(directory.path());
-    auto civilization = read_text(directory.path() / "civilization.toml");
-    replace_once(civilization, "bottleneck_barrier_move_cost = 5",
-                 "bottleneck_barrier_move_cost = 0");
-    write_text(directory.path() / "civilization.toml", civilization);
-
-    EXPECT_THROW(static_cast<void>(RulesetLoader::load(directory.path())), std::runtime_error);
-}
-
-TEST(RulesetLoader, RejectsNegativeGovernanceDistance) {
-    TemporaryDirectory directory;
-    copy_default_ruleset(directory.path());
-    auto civilization = read_text(directory.path() / "civilization.toml");
-    replace_once(civilization, "governance_max_cost = 256", "governance_max_cost = -1");
-    write_text(directory.path() / "civilization.toml", civilization);
-
-    EXPECT_THROW(static_cast<void>(RulesetLoader::load(directory.path())), std::runtime_error);
-}
-
-TEST(RulesetLoader, RejectsDifferentCrossingKeysSharingResult) {
-    TemporaryDirectory directory;
-    copy_default_ruleset(directory.path());
-    auto civilization = read_text(directory.path() / "civilization.toml");
-    replace_once(civilization, "result = \"edge.bridge_wood_stream_road\"",
-                 "result = \"edge.ford_stream_trail\"");
-    write_text(directory.path() / "civilization.toml", civilization);
-
-    try {
-        static_cast<void>(RulesetLoader::load(directory.path()));
-        FAIL() << "different crossing keys sharing one result should throw";
-    } catch (const std::runtime_error& error) {
-        EXPECT_NE(std::string{error.what()}.find("crossing result 重複"), std::string::npos);
-    }
-}
-
-TEST(RulesetLoader, RejectsRepeatedHistoryRuinFeatureIds) {
-    TemporaryDirectory directory;
-    copy_default_ruleset(directory.path());
-    auto civilization = read_text(directory.path() / "civilization.toml");
-    replace_once(civilization,
-                 "[\"feature.ruin_village\", \"feature.ruin_town\", \"feature.ruin_city\"]",
-                 "[\"feature.ruin_village\", \"feature.ruin_town\", \"feature.ruin_town\"]");
-    write_text(directory.path() / "civilization.toml", civilization);
-
-    try {
-        static_cast<void>(RulesetLoader::load(directory.path()));
-        FAIL() << "repeated history ruin feature ids should throw";
-    } catch (const std::runtime_error& error) {
-        EXPECT_NE(std::string{error.what()}.find("ruin_features 三級 ID 不得重複"),
-                  std::string::npos);
-    }
-}
-
-TEST(RulesetLoader, RejectsHistoryRoadWithoutHigherMovementCost) {
-    TemporaryDirectory directory;
-    copy_default_ruleset(directory.path());
-    auto edges = read_text(directory.path() / "edges.toml");
-    replace_once(edges,
-                 "id = \"edge.ancient_road\"\nname_key = \"edge.ancient_road.name\"\n"
-                 "move_cost = 2",
-                 "id = \"edge.ancient_road\"\nname_key = \"edge.ancient_road.name\"\n"
-                 "move_cost = 1");
-    write_text(directory.path() / "edges.toml", edges);
-
     EXPECT_THROW(static_cast<void>(RulesetLoader::load(directory.path())), std::runtime_error);
 }
 

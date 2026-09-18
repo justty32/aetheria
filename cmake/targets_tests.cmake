@@ -265,3 +265,24 @@ add_test(
         --core "${PROJECT_SOURCE_DIR}/core"
         --allowlist "${PROJECT_SOURCE_DIR}/tests/principle5_allowlist.txt"
 )
+
+# 拆檔波 split/tests-local-rules 追加區
+target_sources(aetheria_tests PRIVATE
+    tests/local/dungeon_encounters_test.cpp
+    tests/local/dungeon_persistence_test.cpp
+    tests/local/local_combat_calibration_test.cpp
+    tests/local/local_combat_consequences_test.cpp
+    tests/local/local_fov_properties_test.cpp
+    tests/local/local_movement_path_connectivity_test.cpp
+    tests/local/local_movement_path_obstacles_test.cpp
+    tests/rules/combat_calibration_test.cpp
+    tests/rules/combat_formula_test.cpp
+    tests/rules/individual_rules_check_test.cpp
+    tests/rules/individual_rules_damage_test.cpp
+    tests/rules/power_sources_connectors_test.cpp
+    tests/rules/power_sources_magic_test.cpp
+    tests/rules/power_sources_restrictions_test.cpp
+    tests/rules/ruleset_error_constraints_test.cpp
+    tests/script/lua_sandbox_reload_test.cpp
+    tests/script/lua_sandbox_settlement_test.cpp
+)
