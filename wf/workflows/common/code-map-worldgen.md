@@ -1,11 +1,32 @@
-# core/worldgen 導航
+# code-map — Worldgen
 
-← [code-map](code-map.md)｜[conventions](conventions.md)
+← [code-map](code-map.md)
 
-## Region 十二階段生成
+## `core/worldgen/` — Region 十二階段生成
 
-門面 `region_generator.h` → `region_config.h`（變數、常數、參數 hash）、各階段 header、`region_skeleton.h`／`region_diagnostics.h`；`field_redistribution.*` 是高度／濕度 identity 接縫。
+此目錄從 seed 與參數產生地形、人文骨架及落地資料，並提供決定論 hash 與診斷。
+`core/worldgen/region_generator.h` 是門面，彙整設定、階段、骨架與診斷介面；
+`region_*.h` 按這些責任分群。`gen_*.h` 共享 stage id、格網、噪聲與 hash 工具。
 
-內部共用：`gen_stage_ids.h`、`gen_grid.h`、`gen_noise.h`、`gen_hash.h`；`biome_classification.h` 隔離 terrain／relief 裁決。
+## 檔名如何對應生成階段
 
-實作：`region_seed.cpp`（種子推導與參數 hash）、`stage_plates/height/erosion/climate/rivers/biomes/features.cpp`（階段 1–7；量化閘口在 `stage_erosion.cpp`，地物約束在 `feature_placement.*`）、`civ_tiles.*`（人文階段共用底圖）、`settlement_scoring.cpp`＋`city_scoring.*`（共用純評分）、`city_selection.*`（canonical 分級選點）、`history_layer.cpp`＋`history_roads.*`（階段 8 選址／災變／古道）、`city_sites.cpp`（階段 9）、`road_path.*`＋`road_loops.*`＋`road_network.cpp`（階段 10 工程路徑／MST／補環路）、`portal_candidates.*`＋`portal_boundary_candidates.cpp`＋`portal_generation.cpp`（階段 11 候選、邊界落點與補路）、`capital_selection.cpp`＋`influence_claim.cpp`＋`governance_release.cpp`＋`influence_spread.*`＋`faction_generation.cpp`（階段 12 首都、全域認領、治理釋回與編排）、`region_build.cpp`＋`region_populate.cpp`（骨架／落地）、`region_stage_hash.cpp`＋`region_result_hash.cpp`（決定論 hash）、`region_debug.cpp`（診斷與灰階圖）。
+`stage_*.cpp` 是第 1～7 階段的板塊、高度、侵蝕、氣候、河流、生態與地物；
+侵蝕階段是量化閘口，地物群處理放置約束，biome 分類介面隔離 terrain／relief 裁決。
+`field_redistribution.*` 保留高度／濕度的 identity 接縫。
+
+人文階段以職責前綴命名：`history_*.cpp` 負責第 8 階段選址、災變與古道；
+`city_*.cpp` 與 settlement 評分群負責共用純評分、canonical 分級選點及第 9 階段城市；
+`road_*.cpp` 負責第 10 階段工程路徑、MST 與補環路；`portal_*.cpp` 負責第 11 階段
+候選、邊界落點與補路。第 12 階段由 capital、influence、governance、faction 前綴群
+負責首都、全域認領、治理釋回與勢力編排。`civ_tiles.*` 是人文共用底圖。
+
+`region_*.cpp` 承接 seed／參數 hash、骨架建置、實體落地、階段／結果 hash 及灰階診斷。
+尋找某階段時先按前綴定位，不以單一巨型實作檔作入口。
+
+## 生成與執行期隔離
+
+`aetheria_worldgen_objects` 可見 repo 根目錄與 `core/ai/include/`，
+不含 `core/runtime/include/`，因此不能 include 跨 zone 公開介面。
+`cmake/check_worldgen_cross_zone_isolation.cmake` 以 compile-fail 見證維持護欄；
+不要為方便共用而加入 runtime include path。其他生成隔離與效能證據見
+[測試詳圖](code-map-tests.md)。
