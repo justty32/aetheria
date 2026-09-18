@@ -30,8 +30,8 @@
 - [plan] 波 2 暫停於 M10.3a（已併入 main、**仍 v23 未 bump**）。待續 **M10.3b → M10.4 → v24 定版輪**，
   順序等 roadmap 重排裁定 → [波 2 交接](workflows/plan/runtime-injection-wave2-handoff.md)
   （v24 格式清單／繼承缺陷／多角色槽重放對不上）。
-- [plan] M9.0 主線通關與 M9.1 音景的任務書**從未開工**（無 `-complete`、無 commit）；已隨 2026-09-09 roadmap 重排歸 `inbox/done/`，
-  對應 [roadmap-coverage](workflows/plan/living-world/roadmap-coverage.md) 的 R5／R6，**不是已完成**。
+- [inbox] [M9.0 主線通關](inbox/m9-0-mainline-victory.md)與 [M9.1 音景](inbox/m9-1-soundscape.md)兩份任務書**仍在收件匣、未開工**
+  （無 `-complete`、無 commit；2026-09-18 調度長裁定留頂層）；對應 [roadmap-coverage](workflows/plan/living-world/roadmap-coverage.md) 的 R5／R6，開工順序等 roadmap 重排。
 - [investigation] 地形生成已交接、**尚無人接手**（濕度削頂根因已量到）→ [TERRAIN-HANDOFF](workflows/investigation/TERRAIN-HANDOFF.md)；
   活世界規劃以它為事實基線。
 - [feature-dev] 「能動但不像真的」（M5 四處、M6.6 湧現任務只有半步意義）仍未解，卡在 observer mark 的擱置裁定 → [WAIT_USER](WAIT_USER.md)、[M5-CLOSEOUT](workflows/feature-dev/landed/M5-CLOSEOUT.md)。

@@ -26,4 +26,5 @@
 ---
 
 - **`grep --include='*.md'` 在 zsh 要加引號**：不加引號會被 glob 展開成 `no matches found`，整條指令靜默失敗；`wf-lint` 的殘留檢查也靠 grep，指令要在 bash 或加引號跑。
+- **kernel-owned 的 `dispatch/driving-cli-agents.md`、`dispatch/lessons.md` 有 3 處出鏈被改過**（`resources.md`／`inbox/PROTOCOL.md`／`TEMPLATE.handoff.md` 本專案未採用，改指 OPS-NOTES、inbox README、TEMPLATE.letter）：下次整檔覆蓋 kernel 會回復成斷鏈，覆蓋完要重做這 3 處或改採那三個檔（v0.6 升級時記，2026-09-18）。
 - **worktree 裡跑 `wf-lint`，指向 repo 外的相對連結會假斷**：`wf/workflows/plan/living-world/**` 有十條 `../../../../../../../pas/…` 連結只從 `~/repo/game_dev/aetheria` 根解析得到；在 `.claude/worktrees/<x>/` 跑會多報 BROKEN，不是連結壞了。
