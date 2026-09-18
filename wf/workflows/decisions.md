@@ -15,6 +15,7 @@
 
 | 日期 | 決定 | 未選方案與原因 | 前提（變了就重看）|
 |------|------|---------------|-----------------|
+| 2026-09-18 | biglist 清零（契約 [data-files](common/data-files.md)）：**只抽同質記錄表**（矩陣、登記、里程碑、領地、目錄，20 張 → 同目錄 `.json`），**散文式條列一律標 `<!-- wf-nav -->`**（照 kernel 自己 `tidy/gotchas.md`、`dispatch/README.md` 流程的用法） | 全部抽 json：情境走查表、流程、規則論述抽出後 md 剩空殼、違反契約「給人讀的留 md」；按子題拆段：把一段流程拆成半段是假拆 | kernel 的豁免標記只有 `wf-nav`；code-map\* 留給拆檔線收尾 |
 | 2026-09-09 | 解除凍結後**先做完整世界規劃、不開始實作**（[roadmap](plan/living-world/roadmap-2026-09.md)）| 直接續 M10 波 2：舊 roadmap 順序要重排，不能當下一件事（[基線](investigation/roadmap-baseline-status.md)）| M10.3a 停在 v23；規劃完成後才排實作順序 |
 | 2026-08-27 | **量大的工作全給 codex，Claude 只留裁定、驗收、對使用者**；一波一隻 opus 管家（[TEAM](team-model/TEAM.md)）| 調度長親讀信件與回報：token 最貴、context 撐不住 | codex 月訂閱吃到飽、Claude 按 token 計費 |
 | 2026-08-22 | 與 codex 的中途溝通走檔案系統 `.codex-inbox/`，`.ask` 附假設不停、只有 `.blocked` 才停（[CODEX-PROTOCOL](dispatch/CODEX-PROTOCOL.md)）| 只靠回報信：中途卡住沒有出口；Monitor 內嵌：綁 session、改不動 | 規劃者不一定在線上 |

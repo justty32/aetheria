@@ -1,0 +1,52 @@
+{
+ "contract": "wf-table/1",
+ "source": "runtime-injection-dispatch.md",
+ "extracted": "2026-09-18",
+ "columns": [
+  "線",
+  "可寫",
+  "明令不可碰"
+ ],
+ "rows": [
+  {
+   "線": "R0a",
+   "可寫": "`tests/`、`tools/`（新腳本）、CMake 的 tests 區段",
+   "明令不可碰": "`core/` 全部"
+  },
+  {
+   "線": "R0b",
+   "可寫": "`tests/` 既有雜湊測試檔",
+   "明令不可碰": "`core/`；與 R0a 不同檔，任務書互列檔名"
+  },
+  {
+   "線": "R0c",
+   "可寫": "`core/runtime/`、`bridge/`、`godot/`",
+   "明令不可碰": "`core/serialize/`、`core/zone/` 格式、版本號"
+  },
+  {
+   "線": "R1/R2",
+   "可寫": "`core/serialize/`、`core/zone/`、`core/rules/`（載入路徑）、`sim/`",
+   "明令不可碰": "同波無他線"
+  },
+  {
+   "線": "R3a/3b/R4",
+   "可寫": "`core/world/`、`core/runtime/`、`core/serialize/`、`core/rules/`（patcher）、`sim/`",
+   "明令不可碰": "—"
+  },
+  {
+   "線": "R5a",
+   "可寫": "`core/site/site_combat*`、`core/rules/`（新 loader 檔＋`ruleset.{h,cpp}` **尾端追加**）、`data/units.toml`、相關測試",
+   "明令不可碰": "`core/serialize/`、`core/ai/`"
+  },
+  {
+   "線": "R5c",
+   "可寫": "`core/ai/`、`core/rules/`（同上，尾端追加）、`data/`（AI 目標動作 toml）、相關測試",
+   "明令不可碰": "`core/site/`、`core/serialize/`（goal codec 歸整合輪）"
+  },
+  {
+   "線": "R6a/b/c",
+   "可寫": "各自新檔為主；新增 `.cpp` 進 CMake **只准一線做**，其餘兩線在信裡列出讓整合輪加",
+   "明令不可碰": "互不碰對方的 `data/*.toml`"
+  }
+ ]
+}

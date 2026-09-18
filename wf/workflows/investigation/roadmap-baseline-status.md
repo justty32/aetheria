@@ -22,6 +22,7 @@
 
 ### 現在還找得到的實作證據
 
+<!-- wf-nav -->
 - 舊 M1–M5 不是純文件：Site 來回三次 hash 相同的測試程式在 `tests/runtime/playable_session_test.cpp:31-35`；存檔、推進三旬、載入後再存的測試程式在 `tests/runtime/session_persistence_test.cpp:81-100`；Site 卸載等價性另有 `tests/site/site_unload_equivalence_test.cpp`。這只證明測試存在，本次沒有執行它們。
 - 最小可玩迴圈仍在：`PlayableSession` 有移動、推進、戰鬥和進出 Site/Local/Dungeon 的公開命令（`core/runtime/playable_session.h:160-214`）；bridge 有新遊戲、存讀檔、移動、推進與戰鬥綁定（`bridge/aetheria_core.cpp:278-306`）。
 - M10 前半有直接程式碼：存檔、載入和日誌重放介面在 `core/runtime/playable_session.h:149-154,217-225`；`sim replay` 會分開比對 zone、raws、history head 和合成世界 hash（`sim/world_hash.cpp:194-244`）；存檔格式仍是 v23（`core/serialize/zone_codec.h:13`）。
@@ -30,6 +31,7 @@
 
 ### 舊回報有說，但不該直接當成產品現況
 
+<!-- wf-nav -->
 - `wf/SESSION-LOG.md:34-54` 寫過「M0～M8 完成、414/414」；`wf/SESSION-LOG.md:98-105` 又記錄 M10 當時的 423/432 綠燈。這些是舊驗收回報，不是本次執行結果，也不證明玩家看得到全部 core 功能。
 - 力量來源仍只找到 `core/rules/` 實作與測試用法；bridge/Godot 沒有對應介面。Lua 有 `ScriptEngine`（`core/script/script_engine.h:58-99`），但現在 `PlayableSession::advance_xun()` 傳入的回調沒有腳本回合（`core/runtime/playable_session.cpp:1267-1299`）。因此「M7/M8 完成」不等於這些系統在玩法流程內成立。
 - Godot 目前仍在一個 view 裡用程式碼組側邊欄、按鈕和 `TextureRect`（`godot/main.gd:76-180`）；專案原始碼仍找不到 `TileMap`、`Camera2D`、音訊串流或消費 `VisualRef` 的路徑。這能操作，但不是完整的三層遊戲呈現。

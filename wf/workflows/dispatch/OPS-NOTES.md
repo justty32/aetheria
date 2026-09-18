@@ -5,6 +5,7 @@
 > 與**進度**無關、但**每次派工都會用到**的東西。
 > 這裡的每一條都是踩過才寫下來的，不是推測。
 
+<!-- wf-nav -->
 - 🔧 **派 codex**：`-c model_reasoning_effort="high"` 覆寫 config 的 `ultra`（60 分 → 12 分，品質沒掉）；
   prompt 要明令**不准 fan-out 自我審查子 agent**、**`--parallel 2`**（不帶數字會開滿核心）。
   並行用 `git worktree`，但要挑**檔案真正互斥**的兩件事。

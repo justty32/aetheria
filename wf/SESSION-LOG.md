@@ -27,6 +27,7 @@
 
 ### 規劃者（Opus 5）
 
+<!-- wf-nav -->
 - [plan] 波 2 暫停於 M10.3a（已併入 main、**仍 v23 未 bump**）。待續 **M10.3b → M10.4 → v24 定版輪**，
   順序等 roadmap 重排裁定 → [波 2 交接](workflows/plan/runtime-injection-wave2-handoff.md)
   （v24 格式清單／繼承缺陷／多角色槽重放對不上）。

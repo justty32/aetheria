@@ -43,6 +43,7 @@ Site／Local／Dungeon 是 64×64（`core/site/site_projection.h:22-23`）的 **
 `_input`／`_process` 零命中）。
 
 **設計 vs 現況**：
+<!-- wf-nav -->
 - 「**三層各一套場景**」→ **0 套**：三層共用同一個 `TextureRect`，切層走
   `_rebuild_for_residence()`（`main.gd:318-323`），側欄 `queue_free()` 再重建。
 - 「**鏡頭轉場**」→ **沒有**：無 `Tween`、無 `Camera`，硬切。
@@ -80,21 +81,7 @@ Site／Local／Dungeon 是 64×64（`core/site/site_projection.h:22-23`）的 **
 
 ## 差距
 
-| # | 差距 | 佐證 |
-|---|---|---|
-| 1 | 三層場景 0 套、鏡頭轉場 0 個，切層是砍掉重建側欄 | `main.gd:318-323` |
-| 2 | 零美術素材、零 `TileMapLayer`；`tech-stack.md` 的三層 TileMap 堆疊未動工 | `godot/` 無 sprite／tileset |
-| 3 | 輸入只有左鍵點地圖；無鍵盤、無相機、無縮放平移 | `main.gd:156` 唯一輸入接點 |
-| 4 | 每次互動整張 12,288 格全重畫：主迴圈＋owner 邊界＋地物＋edge＋聚落共 **5 趟** 12,288 迴圈 | `region_debug_renderer.gd:25, 86, 99, 128, 179` |
-| 5 | `revision` 已備妥卻沒接上，無髒標記／增量重繪 | `main.gd:249` |
-| 6 | 一次互動打包 **2 份**完整快照 | `main.gd:304` ＋ `_refresh()` 內再一次 |
-| 7 | 122,880 bytes 的 `tile_blob` 每次都打包，渲染完全沒用，只在探針印長度 | `main.gd:459` 唯一用處 |
-| 8 | `maximum_elevation` 每次多掃 12,288 格，但 `LAYERS[2]=false` 不畫海拔 | `region_debug_renderer.gd:21-23` vs `main.gd:5` |
-| 9 | `event_panel.tscn`／`poll_events()`／三個 `.po` 全是死碼，M6.6 的 i18n 敘事事件畫面碰不到 | `main.gd` 零呼叫 |
-| 10 | 40 個枚舉文字寫死在 GDScript，與 core 枚舉順序耦合 | `main.gd:6-16` |
-| 11 | `bridge/` 越過 `core/api/` 直接 include 五個 core 子模組 | `bridge/aetheria_core.cpp:3-8` |
-| 12 | `main.gd:282` 註解稱「z 數字由左側權威摘要顯示」，但 `_format_coverage()` 沒印 z——地城深度看不到 | `main.gd:288-300` |
-| 13 | bridge／godot 停在 M8.2（`bb4e707`, 2026-08-22），其後 core 又進 4 個 commit（含 `e786465`），godot 一個都碰不到 | `git log bb4e707..HEAD -- core` |
+13 條差距（#／差距／佐證）已抽到 [godot-pipeline-gaps.json](godot-pipeline-gaps.json)。
 
 ## 牽扯到的部份
 

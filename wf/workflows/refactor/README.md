@@ -28,6 +28,7 @@
 
    注意 `git ls-files` 會列出 submodule 目錄本身，`ls -l` 會展開它的內容——`third_party/godot-cpp` 底下的檔案不是我們的，忽略。
 
+<!-- wf-nav -->
 2. **存基準線**：拆之前先跑一次完整驗證（見 [testing](../testing.md)），記下測試數。基準線不綠就先別拆。
 
 3. **按語意切，不按行數切**。一個 `.cpp` 通常照「一個階段／一個職責一檔」切；匿名 namespace 裡**跨檔共用**的 helper 才提成內部 header（`*_detail.h` / `gen_*.h`，放 `detail` sub-namespace），**只被單一檔用到的一律留在該檔的匿名 namespace**。

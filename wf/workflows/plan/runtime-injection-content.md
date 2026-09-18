@@ -26,6 +26,7 @@
 
 ### M10.5c AI 目標與動作資料化（打掉重做）
 
+<!-- wf-nav -->
 - **變因**：`FactionGoal`／`FactionActionKind`（`faction_ai.h:16-33`）→ TOML 定義的
   目標與動作表（權重、條件、效果引用）；效果落在一組**具名內建效果**上（先不做 Lua）。
 - **同輪兌現地圖可見的行為**（KNOWN-TRAPS：AI 現在在地圖上什麼都不做）：

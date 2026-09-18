@@ -6,6 +6,7 @@
 
 ## M10.3a 歷史日誌＋結算協調器
 
+<!-- wf-nav -->
 - **變因**：世界檔多一個 append-only 歷史日誌；回合尾端有了正式的結算協調器。
 - 範圍：
   1. `saves/<世界>/history.log`：每筆＝`{tick, 種類, TOML payload, 前雜湊鏈}`，只追加。
@@ -37,6 +38,7 @@
 
 ## M10.3b def 注入（`RulesetPatcher`）
 
+<!-- wf-nav -->
 - **變因**：Ruleset 獲得「回合尾端追加」能力，**通道通用於全部 def 型別**
   （[裁定#9](runtime-injection-decisions.md)「所有東西」）；地形是驗收範例
   （它的最小包最刁鑽），不是唯一支援的型別。
@@ -60,6 +62,7 @@
 
 ## M10.4 勢力可增長（首個端到端注入，origin＝開拓）
 
+<!-- wf-nav -->
 - **變因**：勢力數從建構期常數變成可在回合尾端 +1。
 - 範圍：
   1. `WorldDiplomacyState::add_faction`：建構時配的是 relations／truths／knowledge／

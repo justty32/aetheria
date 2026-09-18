@@ -36,6 +36,7 @@
 
 ## 差距
 
+<!-- wf-nav -->
 - **沒有存檔功能（前置缺口）**：要談「在存檔中添加」，得先讓遊戲能存能讀。
 - **`Ruleset` 不可變、且明文不進存檔**：拷貝/賦值 `= delete`、建構子 private、只有
   `RulesetLoader` 是 friend（`core/rules/ruleset.h:33-41,152-154`），公開介面全 const，
@@ -77,6 +78,7 @@
 
 ## 牽扯到的部份
 
+<!-- wf-nav -->
 - **存檔版本**：`kSaveFormatVersion = 21`（`core/serialize/zone_codec.h:13`）。政策是
   **版本不符 fail-fast、不寫遷移**（[zone-save-history.md](../../../design/architecture/zone-save-history.md)），
   且歷史上撞過兩次版本號 → 這件事至少要**獨佔一次版本號**。

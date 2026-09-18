@@ -23,6 +23,7 @@
 
 ### M10.0c 遊戲會存讀檔（波 0 最大的一輪）
 
+<!-- wf-nav -->
 - **變因**：`PlayableSession` 換用 `FileZoneStore`；世界態收進 zone；bridge/godot 開存讀檔入口。
 - 範圍：
   1. **用 `ZoneManager` 既有的 root**（建構時已載入或建立 root，`zone_manager.cpp:40-47`
@@ -49,6 +50,7 @@
 
 ### M10.1 世界檔自帶 raws
 
+<!-- wf-nav -->
 - **變因**：Ruleset 的載入來源從全域 `data/` 改成**存檔內的基底 raws**。
 - 範圍：開新世界時把 `data/`（22 個 TOML）整份複製到 `saves/<世界>/raws/`，
   **之後永不改寫**（[裁定#8](runtime-injection-decisions.md)）；讀檔時
@@ -70,6 +72,7 @@
 
 ### M10.2 角色檔
 
+<!-- wf-nav -->
 - **變因**：玩家態 6 成員（`player_army_id_`、`residence_`、`local_z_`、`local_player_x/y_`、
   `accepted_quest_id_`，`playable_session.h:245-260`）落成獨立檔。
 - 範圍：`saves/<世界>/chars/<角色>.bin`，小 codec（cereal PortableBinary），

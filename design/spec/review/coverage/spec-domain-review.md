@@ -8,6 +8,7 @@
 
 已重讀 [十二系統框架](../../../../wf/workflows/plan/living-world/world-framework.md) 與 [原需求對照](../../../../wf/workflows/plan/living-world/roadmap-coverage.md)。上表涵蓋政治、人物、生活、戰爭與 AI；其餘接點如下。
 
+<!-- wf-nav -->
 - **環境與生態：**[環境](../../nature/spec-environment.md)讓工程改變通水與地貌；[生態](../../nature/ecology/spec-ecology.md)由棲地、覓食與避險接到獸群遷移，再改牧人安排；[災害](../../nature/spec-disasters.md)把預警、實際損失、疏散和重建分開。水退、驅離和離場都不自動復原。
 - **經濟與旅行：**[市場](../../economy/spec-markets.md)把需求、訂單、真實交貨、部分履約和欠款串起；[旅行](../../economy/spec-travel.md)有集合、受阻、改道、拆隊、到達與交接。承諾不等於到貨，受阻仍有消耗。
 - **力量、信仰與知識：**[奇幻手段](../../common/cases/fantasy/spec-world-magic.md)比較傳送、感知、治療、召喚與造糧如何改供應及部署；[教團](../../magic/faith/spec-faith.md)有神力失效後的合作、縮減和轉送；[知識](../../magic/spec-knowledge.md)把發現、理解、使用、教學與失傳分開，導師或設備失去後能重議。

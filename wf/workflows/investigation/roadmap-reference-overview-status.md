@@ -18,6 +18,7 @@
 
 已讀 [4X 藍圖](../../../../../moddings/endless/wf/workflows/investigations/4x-design.md "L5") 與四份子題、原作回合／AI／省份分析。可用內容：
 
+<!-- wf-nav -->
 - 定義、狀態、命令、效果、事件與查詢分開；玩家與 AI 同命令入口，改動可追查來源。這是研究綜合出的可移植邊界，並非原作現成 C++ API。
 - [回合經濟](../../../../../moddings/endless/wf/workflows/investigations/4x-turn-economy.md "L15") 把立即、回合末、跨回合後、開放輸入前分開，並提出依賴圖與批次收成；原作流程見 [turn-loop](../../../../../moddings/endless/wf/workflows/investigations/turn-loop.md "L7")。本案採其明確時序的原則，不換掉秒制時鐘。
 - [AI](../../../../../moddings/endless/wf/workflows/investigations/4x-ai.md "L17") 提供感知、目標、候選、資源分配、命令與回饋；適合補上本案 AI 真正對世界行動的接線。
