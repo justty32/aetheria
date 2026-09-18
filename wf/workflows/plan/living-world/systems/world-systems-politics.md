@@ -32,6 +32,7 @@
 
 ## 核心規則與跨系統因果
 
+<!-- wf-nav -->
 1. **文明不是國家**：文明是長期制度／知識記憶；文化是人口身份與習俗；國家是領土、機構、法律與暴力權。國家可亡而文明延續，也可統治多文化人口。
 2. **身份多軸**：文化、語言、信仰、階層與效忠正交。cohort 存比例與轉換流，重要人物存明確身份；認同受遷徙、教育、通婚、壓迫與地方機構改變。
 3. **國家是獨立實體**：`FactionId` 指向持續存在的國家／勢力；頭銜持有圖與機構描述誰執政、怎麼統治，不取代國家。王位、領地、神職、人物、組織與國庫分開；轉手只走具名程序。
@@ -53,8 +54,8 @@
 ## 參考及證據邊界
 
 - Aetheria：`design/rules/diplomacy.md`、`faction-ai.md`、`rules-magic-faith.md`、`significance-fate.md`、`events.md`。
-- CK2 研究支持頭銜圖、法理／實控與繼承拆分（[政治正文](../../../../../../../pas/analysis/crusader-kings-2/details/01_succession_and_politics.md:31)），宗教規則面板見[宗教正文](../../../../../../../pas/analysis/crusader-kings-2/details/02_religion_and_culture.md:9)。它明說沒有國家物件（政治正文第 3 行），本案明確不採這點。
-- Endless Legend 的外交、人物與世界事件摘要見[正文](../../../../../../../moddings/endless/analysis/general-4x/note-conflict-society.md:1)；它不是人物王朝模擬。
+- CK2 研究支持頭銜圖、法理／實控與繼承拆分（[政治正文](../../../../../../../pas/analysis/crusader-kings-2/details/01_succession_and_politics.md "L31")），宗教規則面板見[宗教正文](../../../../../../../pas/analysis/crusader-kings-2/details/02_religion_and_culture.md "L9")。它明說沒有國家物件（政治正文第 3 行），本案明確不採這點。
+- Endless Legend 的外交、人物與世界事件摘要見[正文](../../../../../../../moddings/endless/analysis/general-4x/note-conflict-society.md "L1")；它不是人物王朝模擬。
 - 本文的文明／國家分型、通用組織、混合身份與三層地方政治是新增設計建議，未偽稱參考作已有同一套。
 
 ## 可驗收情境與待細化政策

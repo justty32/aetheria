@@ -32,6 +32,7 @@
 
 地方經營的工作單、街區服務、居民權限與委任，展開於 [中層地方運作](../site/world-site-operations.md)；戰時停工與重建見 [平戰轉換](../site/world-site-conflict.md)。
 
+<!-- wf-nav -->
 1. **貨物帳本守恆**：`期末=期初+開採/生產+進口-消耗-出口-損耗-破壞`。例外如魔法創造也必須有具名 source。測試不是比 golden，而是逐貨物驗守恆。
 2. **配方網路**：`RecipeDef` 記輸入、工具、技能、時間、輸出、副產物與污染。合法的回收、工具再用與材料循環可存在，但要守恆且有損耗；載入時拒絕無代價淨產、必需品無初始來源，以及無法拓撲排程的 pass 相依環，不是一看見材料環就拒絕。
 3. **需求分層**：生存、維持、舒適、身份／信仰、軍需分開；短缺依政策分配，不平均消失。糧荒會先動庫存與價格，再傷健康、治安、出生、遷徙與政治忠誠。
@@ -51,9 +52,9 @@
 ## 參考及證據邊界
 
 - Aetheria：`design/maps/worldmap.md`、`midmap.md`、`interface-world-mid.md`、`sitegen-city.md`、`faction-ai.md`。
-- Endless Legend 研究支持同階段快照、具名 pass 與彙總（[正文](../../../../../../../moddings/endless/analysis/general-4x/note-turn-economy.md:3)）；不等於實物供應鏈。
-- Freeciv 研究支持 ruleset 地格產出與分階段計算（[正文](../../../../../../../pas/analysis/freeciv/details/economic_output_logic.md:12)）；Unciv 提供飢餓與建設評分（[正文](../../../../../../../pas/analysis/unciv/details/city_economy_algorithms.md:1)）。它們不是三層 DF 式庫存證據。
-- CK2 的 holdings、稅兵與建築資料化見[正文](../../../../../../../pas/analysis/crusader-kings-2/details/03_economy_buildings_and_armies.md:1)；批次守恆、地方市場與 cohort 是本文建議。
+- Endless Legend 研究支持同階段快照、具名 pass 與彙總（[正文](../../../../../../../moddings/endless/analysis/general-4x/note-turn-economy.md "L3")）；不等於實物供應鏈。
+- Freeciv 研究支持 ruleset 地格產出與分階段計算（[正文](../../../../../../../pas/analysis/freeciv/details/economic_output_logic.md "L12")）；Unciv 提供飢餓與建設評分（[正文](../../../../../../../pas/analysis/unciv/details/city_economy_algorithms.md "L1")）。它們不是三層 DF 式庫存證據。
+- CK2 的 holdings、稅兵與建築資料化見[正文](../../../../../../../pas/analysis/crusader-kings-2/details/03_economy_buildings_and_armies.md "L1")；批次守恆、地方市場與 cohort 是本文建議。
 
 ## 可驗收情境與待細化政策
 

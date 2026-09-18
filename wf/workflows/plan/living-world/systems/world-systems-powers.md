@@ -23,6 +23,7 @@
 
 ## 狀態／輸入輸出／時間
 
+<!-- wf-nav -->
 - 定義：`RaceDef`、`PowerSourceDef`、`SkillDef`、`KnowledgeDef`、`RecipeDef`、`MaterialDef`、
   `ItemDef`、`FaithDef`、`TenetDef`，種類全是資料而非 enum。
 - 持久狀態：種族／血統、位階、技能熟練與瓶頸、已知知識及來源、誓約／眷顧、傷殘；物品材料、
@@ -35,6 +36,7 @@
 
 ## 核心規則與跨系統因果
 
+<!-- wf-nav -->
 1. 位階獨立保存，屬性是細部展開；兩者用 `suggest_tier` 校準。力量來源可疊但有取得、維持、失去
    條件：訓練會受傷衰老，魔法需知識與媒介，信仰可因違教被剝奪，血統限制上限，神器可易主。
 2. 成長不是殺怪經驗條。技能由有目的的使用、訓練、反思與教學累積；高階必須跨瓶頸，要求事蹟、
@@ -64,7 +66,7 @@
 ## 來源與證據限度
 
 - aetheria 已裁定位階、四屬性與三層力量表現，但法術清單、成本、種族與教義仍待細化
-  （[rules-magic-faith.md](../../../../../design/rules/rules-magic-faith.md:130)）。
+  （[rules-magic-faith.md](../../../../../design/rules/rules-magic-faith.md "L130")）。
 - 《覓長生》的性質涵蓋式煉丹與「試出來的配方即知識」可借；實際手感未實測
   （[items-recipes.md](</home/lorkhan/repo/moddings/michangsheng/wf/workflows/investigations/items-recipes.md:14>)）。
 - 《修仙模擬器》證實稀有度與單件品質分離、材料靈氣流入成品，也暴露堆疊吃掉個體屬性的問題

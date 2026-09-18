@@ -2,7 +2,7 @@
 
 **寄件人**：Opus 5 規劃者
 **收件人**：**gpt-sol 實作者**
-**必讀協定**：[`CODEX-PROTOCOL.md`](../CODEX-PROTOCOL.md)
+**必讀協定**：[`CODEX-PROTOCOL.md`](../workflows/dispatch/CODEX-PROTOCOL.md)
 **工作分支**：`m9-0-wt`（新 worktree，基準 = M8-INT-7 合併後的 main）
 **設計依據**：[narrative.md](../../design/rules/narrative.md)、[milestones.md](../../design/milestones.md)
 的 M9 兩條判準、[zone-save-history.md](../../design/architecture/zone-save-history.md)

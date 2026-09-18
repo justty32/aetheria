@@ -35,6 +35,7 @@
 
 ## 核心規則與跨系統因果
 
+<!-- wf-nav -->
 1. 事件圖記 `cause → event → consequences`，每個效果必須改權威狀態或產生明確消息；循環在同一
    回合去重並設深度／數量預算。跨 Site 影響先交 Region，再投到目標信箱。
 2. 歷史分三層：少量人工神話與上古災變；世界生成留下文明、道路、廢墟與血統；遊戲中事件持續
@@ -67,8 +68,9 @@
 
 ## 來源與證據限度
 
+<!-- wf-nav -->
 - aetheria 已有事件跨層與三種任務設計，但事件因果鏈、序列化、信箱上限仍待細化
-  （[events.md](../../../../../design/simulation/events.md:145)、[narrative.md](../../../../../design/rules/narrative.md:129)）。
+  （[events.md](../../../../../design/simulation/events.md "L145")、[narrative.md](../../../../../design/rules/narrative.md "L129")）。
 - 《鬼谷八荒》證實關係／記憶選文、跨月劇情包與持久地圖事件；條件 DSL 缺型別是反例
   （[relations-events.md](</home/lorkhan/repo/moddings/guigu/wf/workflows/investigations/relations-events.md:25>)）。
 - 《修仙模擬器》提供事件最晚強制發生與固定編年史並存；遠方世界過度靜態，不可當完整歷史模型

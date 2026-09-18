@@ -1,6 +1,6 @@
 # M10 派工佈局 — 並行線、領地、版本號
 
-← [runtime-injection.md](runtime-injection.md)（總覽）｜通用規矩：[OPS-NOTES](../../OPS-NOTES.md)、[CODEX-PROTOCOL](../../CODEX-PROTOCOL.md)
+← [runtime-injection.md](runtime-injection.md)（總覽）｜通用規矩：[OPS-NOTES](../dispatch/OPS-NOTES.md)、[CODEX-PROTOCOL](../dispatch/CODEX-PROTOCOL.md)
 
 > 通用的 codex 指令、旗標坑、限流、即時通道**都在 OPS-NOTES／CODEX-PROTOCOL，不重抄**。
 > 本檔只放 M10 特有的：哪些輪可以並行、各線領地、版本號誰動。
@@ -24,16 +24,7 @@
 
 ## 領地表（照 skyrim `line-claims` 的做法：開工前宣告，寫進任務書）
 
-| 線 | 可寫 | 明令不可碰 |
-|---|---|---|
-| R0a | `tests/`、`tools/`（新腳本）、CMake 的 tests 區段 | `core/` 全部 |
-| R0b | `tests/` 既有雜湊測試檔 | `core/`；與 R0a 不同檔，任務書互列檔名 |
-| R0c | `core/runtime/`、`bridge/`、`godot/` | `core/serialize/`、`core/zone/` 格式、版本號 |
-| R1/R2 | `core/serialize/`、`core/zone/`、`core/rules/`（載入路徑）、`sim/` | 同波無他線 |
-| R3a/3b/R4 | `core/world/`、`core/runtime/`、`core/serialize/`、`core/rules/`（patcher）、`sim/` | — |
-| R5a | `core/site/site_combat*`、`core/rules/`（新 loader 檔＋`ruleset.{h,cpp}` **尾端追加**）、`data/units.toml`、相關測試 | `core/serialize/`、`core/ai/` |
-| R5c | `core/ai/`、`core/rules/`（同上，尾端追加）、`data/`（AI 目標動作 toml）、相關測試 | `core/site/`、`core/serialize/`（goal codec 歸整合輪） |
-| R6a/b/c | 各自新檔為主；新增 `.cpp` 進 CMake **只准一線做**，其餘兩線在信裡列出讓整合輪加 | 互不碰對方的 `data/*.toml` |
+8 條線的領地（線／可寫／明令不可碰）已抽到 [runtime-injection-claims.json](runtime-injection-claims.json)。
 
 ## 版本號政策（撞過兩次，鐵律）
 

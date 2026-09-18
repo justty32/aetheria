@@ -84,6 +84,7 @@ M0.1 已從本地 `main` 執行 `git clone` 到 `/tmp` 的全新目錄，再依�
 
 ## 實際踩坑
 
+<!-- wf-nav -->
 1. 本機執行檔叫 `godot-mono`，只找 `godot`／`godot4` 會誤判未安裝。
 2. godot-cpp CMake 把自身 target 寫死為 C++17；只設全域 `CMAKE_CXX_STANDARD` 不夠，必須在
    `add_subdirectory` 後覆寫 target property。M0 首次 configure 約 21 秒，12-way 首編約 1 分鐘。

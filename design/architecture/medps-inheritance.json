@@ -1,0 +1,57 @@
+{
+ "contract": "wf-table/1",
+ "source": "medps-inheritance.md",
+ "extracted": "2026-09-18",
+ "columns": [
+  "決策",
+  "結論",
+  "出處"
+ ],
+ "rows": [
+  {
+   "決策": "**格網拓樸**",
+   "結論": "方格、4 鄰接",
+   "出處": "roadmap D-1（2026-07-25 拍板）"
+  },
+  {
+   "決策": "**def 系統**",
+   "結論": "def 全進不可變 `Ruleset`、**不進存檔**、載入期建 id→下標索引",
+   "出處": "roadmap D-2（已落地）→ 見 [definitions.md](../rules/definitions.md)"
+  },
+  {
+   "決策": "**一切皆 zone**",
+   "結論": "各層共用同一套 `Zone` + `ZoneManager`，沒有獨立的「世界地圖系統」",
+   "出處": "`zone_layers.md:36-42`"
+  },
+  {
+   "決策": "**root 永駐**",
+   "結論": "id=0 的 root zone 放跨 zone 的全局實體，永不卸載、不參與一般 tick",
+   "出處": "`zone_streaming_architecture.md:21`"
+  },
+  {
+   "決策": "**成長軸不變量**",
+   "結論": "持久／常駐結構只能隨「已載入 zone 數」或「已造訪 zone 數」成長，**絕不隨世界總 zone 數**",
+   "出處": "`zone-addressing-lifecycle-design.md:138`"
+  },
+  {
+   "決策": "**垂直層收在同一 zone**",
+   "結論": "地下／地面／天空是 `Zone::layers` 的 z 鍵，**不是不同 zone**",
+   "出處": "`zone_layers.md:41-42`"
+  },
+  {
+   "決策": "**三條執行期契約**",
+   "結論": "tick 內禁止 zone 結構性變更；存檔目錄＝單槽活儲存；`Zone*` 不跨 tick 持有",
+   "出處": "同上 §3.11-3.13"
+  },
+  {
+   "決策": "**跨 registry 不存 entity**",
+   "結論": "跨 zone 引用存 zone id + 穩定 uid，解引用**兩段皆可失敗**且失敗是預期結果",
+   "出處": "同上 §3.7"
+  },
+  {
+   "決策": "**fail-fast 套件**",
+   "結論": "load 驗檔內 id、manifest 原子寫、destroy 同步刪檔、規則檔壞就 throw",
+   "出處": "同上 §3.10"
+  }
+ ]
+}

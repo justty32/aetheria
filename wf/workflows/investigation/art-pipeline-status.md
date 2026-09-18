@@ -26,26 +26,14 @@
 
 ### 1 `tools/art/`（M9.2／M9.2b 產物）
 
-- 追蹤檔 8 個：`art_pipeline.py` 575 行、`verify_acceptance.py` 411 行、
-  `tests/test_art_pipeline.py` 331 行、`tests/conftest.py` 9 行、
-  `placeholder_palette.json` 71 行，加 `README.md`／`requirements.txt`
-  （Pillow==12.3.0、pytest==9.0.2）／`.gitignore`。
-- CLI 只有 3 個子命令：`process`、`gate`、`generate-placeholder-palette`
-  （`tools/art/art_pipeline.py:498,512,518`）。沒有 batch 子命令，一次一張。
-- 輸入：單張圖 + 外部色盤 JSON（`colors` 陣列、`#RRGGBB`、不得重複，
-  `art_pipeline.py:58-72`）。輸出：單張 PNG，不是圖集，一次寫一個檔
-  （`art_pipeline.py:362-400`），路徑 = def id 點換斜線加 `.png`
-  （`art_pipeline.py:111-115`）。
+<!-- wf-nav -->
+- 追蹤檔 8 個：`art_pipeline.py` 575 行、`verify_acceptance.py` 411 行、`tests/test_art_pipeline.py` 331 行、`tests/conftest.py` 9 行、`placeholder_palette.json` 71 行，加 `README.md`／`requirements.txt`（Pillow==12.3.0、pytest==9.0.2）／`.gitignore`。
+- CLI 只有 3 個子命令：`process`、`gate`、`generate-placeholder-palette`（`tools/art/art_pipeline.py:498,512,518`）。沒有 batch 子命令，一次一張。
+- 輸入：單張圖 + 外部色盤 JSON（`colors` 陣列、`#RRGGBB`、不得重複，`art_pipeline.py:58-72`）。輸出：單張 PNG，不是圖集，一次寫一個檔（`art_pipeline.py:362-400`），路徑 = def id 點換斜線加 `.png`（`art_pipeline.py:111-115`）。
 - 常數：格線預設 `(64, 64)`、色盤外門檻 `0.01`（`art_pipeline.py:18,19`）。
-- 隨附色盤是佔位：以 0/85/170/255 三通道笛卡兒積產生固定 64 色
-  （`art_pipeline.py:74-84`），檔內自帶 `placeholder-only-not-project-palette` 警語。
-- 測試：`tests/test_art_pipeline.py` 有 18 個 `test_` 函式。⚠ 本機 `python3`
-  沒有 pytest，這 18 條本次沒實跑；Pillow 12.3.0 有裝。
-- `verify_acceptance.py` 本次實跑，退出碼 0。它自帶反向對照：5 個正向 gate 案例
-  （clean=0，尺寸／色盤／alpha／命名各 exit 2）、4 個「停用該規則」對照組全部變 exit 0、
-  接縫度量 95.625 → 0.0（跳過修補時維持 95.625）、terrain 四方向旋轉
-  `[0, 270, 180, 90]` 且四張雜湊相同、`detection_power_audit` 13 項自評
-  （`verify_acceptance.py:311-325`）。
+- 隨附色盤是佔位：以 0/85/170/255 三通道笛卡兒積產生固定 64 色（`art_pipeline.py:74-84`），檔內自帶 `placeholder-only-not-project-palette` 警語。
+- 測試：`tests/test_art_pipeline.py` 有 18 個 `test_` 函式。⚠ 本機 `python3` 沒有 pytest，這 18 條本次沒實跑；Pillow 12.3.0 有裝。
+- `verify_acceptance.py` 本次實跑，退出碼 0。它自帶反向對照：5 個正向 gate 案例（clean=0，尺寸／色盤／alpha／命名各 exit 2）、4 個「停用該規則」對照組全部變 exit 0、接縫度量 95.625 → 0.0（跳過修補時維持 95.625）、terrain 四方向旋轉 `[0, 270, 180, 90]` 且四張雜湊相同、`detection_power_audit` 13 項自評（`verify_acceptance.py:311-325`）。
 
 ### 2 四道閘的狀態
 
@@ -93,19 +81,15 @@ autotile 連接、生成參數 sidecar。要開始真素材，前置是閘一那
 
 ## 差距
 
+<!-- wf-nav -->
 1. **閘一整條未開始**，且不是工程能自解的——真色盤沒定之前生成任何素材都要重做。
-2. **閘二零程式碼**：沒有批次、沒有 sidecar 參數記錄，`art-pipeline.md` 要求的
-   「局部重生成可重現」無從談起。
+2. **閘二零程式碼**：沒有批次、沒有 sidecar 參數記錄，`art-pipeline.md` 要求的「局部重生成可重現」無從談起。
 3. **Godot 端沒有吃素材的程式碼**，這是「畫面上看到」那端最大的斷點。
-4. **兩套命名並存且互不相通**：`data/*.toml` 的 `visual` 是斜線形（`"terrain/taiga"`），
-   `tools/art` 走 def id 點換斜線。工具不讀、核心不解讀、顯示層拿不到——目前是死重。
-5. **art-specs 說「不必維護任何索引表」，實際維護了兩張**：toml 的 `visual` 必填欄位，
-   與 `region_debug_palette.gd` 的硬寫色表；後者已經漏掉 2 種地形。
-6. **輸出形狀對不上規格**：規格要圖集、`_{00..03}` 變體、autotile 16／47 連接與
-   64×96 角色；工具只輸出無後綴單張 PNG，`--size` 要呼叫端自己給。
+4. **兩套命名並存且互不相通**：`data/*.toml` 的 `visual` 是斜線形（`"terrain/taiga"`），`tools/art` 走 def id 點換斜線。工具不讀、核心不解讀、顯示層拿不到——目前是死重。
+5. **art-specs 說「不必維護任何索引表」，實際維護了兩張**：toml 的 `visual` 必填欄位，與 `region_debug_palette.gd` 的硬寫色表；後者已經漏掉 2 種地形。
+6. **輸出形狀對不上規格**：規格要圖集、`_{00..03}` 變體、autotile 16／47 連接與 64×96 角色；工具只輸出無後綴單張 PNG，`--size` 要呼叫端自己給。
 7. **閘四缺 2/3**：接觸表與實機拼貼都寫在設計文件裡，沒有腳本或場景。
-8. **`object` 錯向主光只警告不擋**（`art_pipeline.py:246-250`，gate 無 `fail` 模式），
-   而「光源統一」是 art-specs 自稱最容易被眼睛察覺的一條。
+8. **`object` 錯向主光只警告不擋**（`art_pipeline.py:246-250`，gate 無 `fail` 模式），而「光源統一」是 art-specs 自稱最容易被眼睛察覺的一條。
 9. **18 條 pytest 在本機跑不起來**（無 pytest），可重複驗證只剩 `verify_acceptance.py`。
 
 ## 牽扯到的部份

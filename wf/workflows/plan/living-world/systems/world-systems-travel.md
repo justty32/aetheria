@@ -21,7 +21,7 @@
 
 同層地點不直接互改：道路與河流邊界由共同上層／邊物件裁決。既有 Square 四鄰接、64 倍縮放、
 單一秒制時間、地城屬於其 Local 的負 z 層不變
-（[outline](../../../../../design/outline.md:35)、[lowmap](../../../../../design/maps/lowmap.md:20)）。
+（[outline](../../../../../design/outline.md "L35")、[lowmap](../../../../../design/maps/lowmap.md "L20")）。
 
 ## 狀態、輸入、輸出與時間
 
@@ -36,10 +36,11 @@
 Region 旅程按旬推進；下沉後 Site 每小時、交戰每 15 分鐘，Local 探索每分鐘、戰鬥每 6 秒。
 跨邊、進城、紮營或遭遇可成為共同合法結算點：立即提交已過區間結果，不必等玩家離開；Region
 跳過已交由低層模擬的配額與區間，穿過旬界按共同排程對齊。上提／下沉仍保留已耗糧、傷勢與進度
-（[共同契約](../world-simulation-contracts.md:9)、[排程](../world-simulation-contracts.md:29)）。
+（[共同契約](../world-simulation-contracts.md "L9")、[排程](../world-simulation-contracts.md "L29")）。
 
 ## 規則與跨系統因果
 
+<!-- wf-nav -->
 1. 地形、水系、道路、橋、港與聚落形成交通圖；道路降低成本但更易被收稅、伏擊與封鎖，荒路較隱蔽
    卻耗補給。山口、渡口、海峽是生成所得的政治與軍事瓶頸，不手擺假 chokepoint。
 2. 交通量反過來餵經濟：商隊帶貨、旅店與市集成長；戰亂、怪物、斷橋令價格、難民、治安與外交改變。
@@ -52,7 +53,7 @@ Region 旅程按旬推進；下沉後 Site 每小時、交戰每 15 分鐘，Loc
    噪音與氣味會招來生物；受傷、感染、負重與同伴能力改撤退成本。
 6. 地城／遺跡是世界歷史的物證：原勢力、戰爭、礦脈、災難決定格局與內容。深入提高危險與寶藏，
    開箱、拆機關、挖牆、Boss 生死進持久層；清空後不能重載刷資源
-   （[地城](../../../../../design/rules/dungeon.md:17)、[生命週期](../../../../../design/rules/dungeon.md:97)）。
+   （[地城](../../../../../design/rules/dungeon.md "L17")、[生命週期](../../../../../design/rules/dungeon.md "L97")）。
 7. 情報是旅行產物：地圖不是全知，路況與價格會過期；旅人、驛站、斥候、文獻更新帶來源與時間戳
    的情報。AI 也只能依自己的情報重規劃。
 
@@ -60,8 +61,8 @@ Region 旅程按旬推進；下沉後 Site 每小時、交戰每 15 分鐘，Loc
 
 **既有裁定**：大圖移動為持續命令，四鄰接 A*；道路／河流為邊，Site 荒野承載通過、遭遇與 L3
 入口；Local 四鄰接逐格、地城為負 z；駐留層遇事件可下沉或粗算；時間與高低解析度結果守恆
-（[worldmap](../../../../../design/maps/worldmap.md:82)、[midmap](../../../../../design/maps/midmap.md:89)、
-[探索](../../../../../design/maps/lowmap-exploration.md:14)）。
+（[worldmap](../../../../../design/maps/worldmap.md "L82")、[midmap](../../../../../design/maps/midmap.md "L89")、
+[探索](../../../../../design/maps/lowmap-exploration.md "L14")）。
 
 **新建議、尚未裁定**：JourneyOrder／RoutePlan 正式資料、道路容量、交通流經濟、營地、通行權、
 情報新鮮度、足跡、環境風險、遺跡線索與救援。它們不改既有拓撲與 stride。
@@ -71,9 +72,9 @@ Region 旅程按旬推進；下沉後 Site 每小時、交戰每 15 分鐘，Loc
 - Endless 可借國家交通需求、區域資源與 AI 目標，不借六角、省份或快速旅行
   （[4x-design](</home/lorkhan/repo/moddings/endless/wf/workflows/investigations/4x-design.md:5>)）。
 - Wesnoth 證明地形成本、ZOC 與 AI 可共用合法移動查詢，但本案仍四鄰接，也未裁定 ZOC
-  （[中層調查](../../../investigation/roadmap-reference-tactics-status.md:61)）。
+  （[中層調查](../../../investigation/roadmap-reference-tactics-status.md "L61")）。
 - ToME4 可借 zone 級內容池、探索觸發、技能物品與地城內容邊界；其大地圖不是文明交通模擬，Lua
-  API 與單角色中心限制不能搬來（[小層調查](../../../investigation/roadmap-reference-local-status.md:14)）。
+  API 與單角色中心限制不能搬來（[小層調查](../../../investigation/roadmap-reference-local-status.md "L14")）。
 - 騎砍只提供「大圖行軍、遇事選擇下沉」的玩法坐標；本案的三層、縮放守恆與單一時鐘是自己既有
   裁定，不是已由參考作驗證的整套方案。環境與交通數值均未實機校準。
 

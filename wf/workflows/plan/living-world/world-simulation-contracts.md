@@ -77,6 +77,6 @@ M10 的全型別追加不能只驗載入器：新定義若被 AI、任務、生�
 
 ## 參考與待細化
 
-既有 [interface-verification](../../../../design/simulation/interface-verification.md)、[player-residence](../../../../design/maps/player-residence.md) 為基準。Endless 的 [回合與經濟](/home/lorkhan/repo/moddings/endless/wf/workflows/investigations/4x-turn-economy.md:15) 提供時序與批次思路；CDDA 的 [尺度座標](/home/lorkhan/repo/pas/analysis/cdda/architecture/04_map_three_scales.md:29) 提供型別化換算；DCSS 的 [計時排程](/home/lorkhan/repo/pas/analysis/dcss/architecture/04_long_term_systems.md:13) 提供到期工作線索。後兩者是本地源碼分析，本次未執行原作，不能證明本案已具備相同能力。
+既有 [interface-verification](../../../../design/simulation/interface-verification.md)、[player-residence](../../../../design/maps/player-residence.md) 為基準。Endless 的 [回合與經濟](../../../../../../moddings/endless/wf/workflows/investigations/4x-turn-economy.md "L15") 提供時序與批次思路；CDDA 的 [尺度座標](../../../../../../pas/analysis/cdda/architecture/04_map_three_scales.md "L29") 提供型別化換算；DCSS 的 [計時排程](../../../../../../pas/analysis/dcss/architecture/04_long_term_systems.md "L13") 提供到期工作線索。後兩者是本地源碼分析，本次未執行原作，不能證明本案已具備相同能力。
 
 後續規格需定：責任交接的精確欄位、跨旬中的存檔邊界、關係與歷史摘要的保真程度、每類近似的誤差預算。只在所屬系統文件細化，避免多處各寫一套政策。

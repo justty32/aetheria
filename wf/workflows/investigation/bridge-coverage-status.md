@@ -6,7 +6,7 @@
 
 **「core 做了的東西，有多少從 bridge 露出去、godot 拿得到？」**
 M8 曾量到「M6/M7 做的戰鬥、勢力 AI、外交、地城、湧現任務，從遊戲裡一個都碰不到」
-（[m8-2-loop-coverage.md](../../inbox/m8-2-loop-coverage.md) 的 6 列 ❌）。之後還剩多少？
+（[m8-2-loop-coverage.md](../../inbox/done/m8-2-loop-coverage.md) 的 6 列 ❌）。之後還剩多少？
 拆成 5 個可判定提問，逐一對應下面〈現況〉的 5 節。
 
 ## 結論
@@ -42,17 +42,7 @@ batch_bytes, batch_ms。
 「沒露」皆 grep 過 `bridge/` 三檔：`Diplomacy` `declare_war` `faction_ai` `EmergentQuest`
 `NamedFate` `fov` `Formation` `magic` `faith` `Race` `script` `lua` `save` **全為 0 次**。
 
-| 子系統 | 判定 | core 有的 → bridge 露的 |
-|---|---|---|
-| 外交 | 部分露 | `diplomacy.h:99-165` **25 個公開方法**（`declare_war`:130、`observe_faction`:159）→ 只 `sign_treaty`＋`treaty_count`(`:242`)；戰爭、關係、情報零欄位 |
-| 勢力 AI | 部分露 | 真有跑(`playable_session.cpp:882`)、`FactionActionKind` 7 種 → 只把 kind 壓成整數塞進 `value_b`(`:885-889`)；理由/目標無欄位，參數寫死 |
-| 地城 | 部分露 | `dungeon.h` 14 函式（生成`:143`、機關`:156,160,163`、寶藏`:179`）→ 4 命令＋3 純量(`:239-241`)；層數、機關、寶藏內容全無 |
-| 湧現任務 | 部分露 | `EmergentQuestKind` **5 種**皆有偵測(`emergent_quest.cpp:51,66,81`)、僅 2 種有 `complete_*` → 只 2 種有旗標(`playable_session.cpp:1034,1039`)、1 種可動作，無文字 |
-| named fate | 部分露 | `named_fate.h` 10 型別＋`FateResolver` 4 個 static(`:171-178`) → 戰報只 `named_person`/`named_outcome`(`:200-201`)；帳本是區域變數、用完即丟(`:953`) |
-| 三層駐留 | **有露** | `PlayableResidence` 四層 → `coverage.residence`(`:230`)＋18 命令，`main.gd:6,109` 依它切 UI |
-| Local 探索 | 部分露 | `calculate_fov`(`local_fov.h:36`)、`assess_exploration_step`(`local_movement.h:30`) → 只有 `local_view` 的 `cells`＋`player_x/y`(`:213-224`)；**FOV 無欄位**，尋路不可呼叫 |
-| 戰鬥細節 | 部分露 | `CohortFormation{Line,SpearWall,Loose}`、`ContactArc`(`site_combat.h:17-94`)、`LocalCombatant`(`local_combat.h:70`) → `battle_report` 16 欄全是聚合純量(`:204-208`)；cohort／朝向／接敵面／個體全無 |
-| 魔法/信仰/種族 | **完全沒露** | `power_sources.h:19-159` 9 型別＋`Ruleset::races()`(`ruleset.h:143`) → **0 個欄位**。⚠ 且 `resolve_power_profile`、`fall_deity` 等在 `core/`、`bridge/`、`godot/` **0 個呼叫端**，只有 `tests/rules/power_sources_test.cpp` 用——**整塊在 core 內就是孤兒** |
+9 個子系統的判定（子系統／判定／core 有的 → bridge 露的）已抽到 [bridge-coverage-subsystems.json](bridge-coverage-subsystems.json)。
 
 ### 3. PlayableSession：37 個公開方法，bridge 呼叫 36 個
 
@@ -73,6 +63,7 @@ batch_bytes, batch_ms。
 
 ### 5. Lua/script 與主線劇情：沒露，且可玩流程裡根本沒跑
 
+<!-- wf-nav -->
 - M8.0 完成回報自己就寫明「沒有修改 `bridge/`、`godot/`」。更關鍵：
   `RegionTurnPipeline::advance_xun` 第 4 參數 `ScriptTurnPass` 預設為空
   （`region_movement.h:112,126`），而 `PlayableSession::advance_xun` **只傳 3 個 callback**

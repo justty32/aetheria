@@ -1,6 +1,6 @@
 # 波 2 交接 — 暫停於 M10.3a（2026-08-27）
 
-← [總覽](runtime-injection.md)｜[波 2 細目](runtime-injection-inject.md)｜[裁定](runtime-injection-decisions.md)｜[TEAM](../../TEAM.md)
+← [總覽](runtime-injection.md)｜[波 2 細目](runtime-injection-inject.md)｜[裁定](runtime-injection-decisions.md)｜[TEAM](../team-model/TEAM.md)
 
 > **給下一任波管家冷啟動用。** 波 2 因 token 配額暫停，**M10.3a 已驗收通過並併入 `main`**，
 > 3b 與 M10.4 尚未開工。讀完本檔即可接手，不必回頭讀三輪的回報信。
@@ -18,6 +18,7 @@
 
 M10.3a **零二進位佈局變更**，所以不 bump；但下列是**語意面**的變更，定版輪要一起交代：
 
+<!-- wf-nav -->
 - `history.log`：**新增**的獨立二進位檔（magic、固定寬度欄位、字串長度＋內容）。
   鏈語意＝第一筆 `prev_hash = 0`（`kHistoryGenesisHash`），**不由 raws 播種**；
   ⚠ 以 raws 當 genesis 寫出的舊鏈與現行不相容。
@@ -44,6 +45,7 @@ M10.3a **零二進位佈局變更**，所以不 bump；但下列是**語意面**
 
 **管家（Claude）親手跑的**——以下每一條都是自己注入、自己看紅、自己還原看綠，**不是重跑 codex 的測試**：
 
+<!-- wf-nav -->
 1. 用 Python **獨立重算**定序 FNV fold，兩組真實數字（head=0 與 head≠0）都精確命中 binary 的
    `world_hash`；交換 zone/raws 順序得不同值（不可交換）；拿掉 raws 得不同值（raws 真有貢獻）。
 2. 篡改 `raws/` → fail-fast（manifest raws_hash 不符）；翻 zone `.bin` 一 byte → fail-fast。
@@ -89,6 +91,7 @@ M10.3a **零二進位佈局變更**，所以不 bump；但下列是**語意面**
 
 ## 派工心得（這一波踩到的）
 
+<!-- wf-nav -->
 - ⚠ **codex 會漏讀 `.codex-inbox/<輪>.reply`。** 初版輪它 11:08 寫 `.ask`、管家 11:12 覆寫
   `.reply` 放進裁定，它 11:41 完成卻仍照**被否決的**假設做完。**對策**：prompt 第一行明令先讀
   `.reply`，並要求**做完前回頭再掃一次**——fix1／fix2 加了之後兩輪都回報「完成前已再次讀取」。

@@ -1,10 +1,10 @@
 # S6b：地方市場、支付、信用與履約
 
-[本層入口](README.md)｜← [spec 入口](../spec-world.md)｜[原則](../../principles.md)｜[術語](../../glossary.md)
+[本層入口](README.md)｜← [spec 入口](../overview/spec-world.md)｜[原則](../../principles.md)｜[術語](../../glossary.md)
 
 ## 範圍
 
-草案，承接 [經濟藍圖](../../../wf/workflows/plan/living-world/systems/world-systems-economy.md)、[物資](spec-goods.md) 與 [家庭職涯](../people/spec-households.md)。市場連接真實供需，貨幣是支付工具，信用是承諾，都不能替代食物與運能。
+草案，承接 [經濟藍圖](../../../wf/workflows/plan/living-world/systems/world-systems-economy.md)、[物資](spec-goods.md) 與 [家庭職涯](../people/family/spec-households.md)。市場連接真實供需，貨幣是支付工具，信用是承諾，都不能替代食物與運能。
 
 **Done when：**現貨交易與遠地交貨可部分履約、逾期、退款或違約；價格訊號不瞬移貨物，死亡／占領不清空債務。價格公式、貨幣制度與破產法仍待定。
 
@@ -17,6 +17,8 @@
 市場規則撮合並提出合法交易，帳本寫支付及物資，政治規則驗權利和稅制，旅行交到貨證據。稅率由政治定，不由商人 AI 直接改。
 
 ## 交易生命週期
+
+**暫行操作方向：**日常補給可設定常用採買與支出上限，代理按現有庫存和未到貨訂單補足；不讓玩家每次重填條款，也不能因定期重試買出重複份額。一般成交與到貨合併報告，超預算、缺貨而需換目標或新增信用承諾時才要求決定。底下是系統要分清的狀態，不是玩家逐步按確認的流程。
 
 | 轉移 | 前提與一致效果 | 失敗／中斷 |
 |---|---|---|

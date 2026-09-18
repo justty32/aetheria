@@ -1,0 +1,57 @@
+{
+ "contract": "wf-table/1",
+ "source": "bridge-coverage-status.md",
+ "extracted": "2026-09-18",
+ "columns": [
+  "子系統",
+  "判定",
+  "core 有的 → bridge 露的"
+ ],
+ "rows": [
+  {
+   "子系統": "外交",
+   "判定": "部分露",
+   "core 有的 → bridge 露的": "`diplomacy.h:99-165` **25 個公開方法**（`declare_war`:130、`observe_faction`:159）→ 只 `sign_treaty`＋`treaty_count`(`:242`)；戰爭、關係、情報零欄位"
+  },
+  {
+   "子系統": "勢力 AI",
+   "判定": "部分露",
+   "core 有的 → bridge 露的": "真有跑(`playable_session.cpp:882`)、`FactionActionKind` 7 種 → 只把 kind 壓成整數塞進 `value_b`(`:885-889`)；理由/目標無欄位，參數寫死"
+  },
+  {
+   "子系統": "地城",
+   "判定": "部分露",
+   "core 有的 → bridge 露的": "`dungeon.h` 14 函式（生成`:143`、機關`:156,160,163`、寶藏`:179`）→ 4 命令＋3 純量(`:239-241`)；層數、機關、寶藏內容全無"
+  },
+  {
+   "子系統": "湧現任務",
+   "判定": "部分露",
+   "core 有的 → bridge 露的": "`EmergentQuestKind` **5 種**皆有偵測(`emergent_quest.cpp:51,66,81`)、僅 2 種有 `complete_*` → 只 2 種有旗標(`playable_session.cpp:1034,1039`)、1 種可動作，無文字"
+  },
+  {
+   "子系統": "named fate",
+   "判定": "部分露",
+   "core 有的 → bridge 露的": "`named_fate.h` 10 型別＋`FateResolver` 4 個 static(`:171-178`) → 戰報只 `named_person`/`named_outcome`(`:200-201`)；帳本是區域變數、用完即丟(`:953`)"
+  },
+  {
+   "子系統": "三層駐留",
+   "判定": "**有露**",
+   "core 有的 → bridge 露的": "`PlayableResidence` 四層 → `coverage.residence`(`:230`)＋18 命令，`main.gd:6,109` 依它切 UI"
+  },
+  {
+   "子系統": "Local 探索",
+   "判定": "部分露",
+   "core 有的 → bridge 露的": "`calculate_fov`(`local_fov.h:36`)、`assess_exploration_step`(`local_movement.h:30`) → 只有 `local_view` 的 `cells`＋`player_x/y`(`:213-224`)；**FOV 無欄位**，尋路不可呼叫"
+  },
+  {
+   "子系統": "戰鬥細節",
+   "判定": "部分露",
+   "core 有的 → bridge 露的": "`CohortFormation{Line,SpearWall,Loose}`、`ContactArc`(`site_combat.h:17-94`)、`LocalCombatant`(`local_combat.h:70`) → `battle_report` 16 欄全是聚合純量(`:204-208`)；cohort／朝向／接敵面／個體全無"
+  },
+  {
+   "子系統": "魔法/信仰/種族",
+   "判定": "**完全沒露**",
+   "core 有的 → bridge 露的": "`power_sources.h:19-159` 9 型別＋`Ruleset::races()`(`ruleset.h:143`) → **0 個欄位**。⚠ 且 `resolve_power_profile`、`fall_deity` 等在 `core/`、`bridge/`、`godot/` **0 個呼叫端**，只有 `tests/rules/power_sources_test.cpp` 用——**整塊在 core 內就是孤兒**"
+  }
+ ]
+}

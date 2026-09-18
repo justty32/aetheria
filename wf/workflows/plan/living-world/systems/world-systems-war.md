@@ -24,7 +24,7 @@
 Region 的軍團與人物 ID 不因切層換人；Site／Local 只投影需要的部分。控制權、國庫、總兵力只由
 Region 接受結果後改一次；低層不得直接改另一個 Site。既有 Square 四鄰接、尺度、單一秒制時鐘、
 高低解析度期望值一致與回合尾端結構變更全部保留
-（[outline](../../../../../design/outline.md:35)、[原則](../../../../../design/principles.md:93)）。
+（[outline](../../../../../design/outline.md "L35")、[原則](../../../../../design/principles.md "L93")）。
 
 ## 狀態、輸入、輸出與時間
 
@@ -40,12 +40,13 @@ Region 接受結果後改一次；低層不得直接改另一個 Site。既有 S
 Region 每旬推戰役；下沉時同一時鐘按 Site 900 秒、Local 6 秒走。上層先凍結可受損配額；到共同
 合法結算點就提交已過區間結果，不必等玩家離開。Region 跳過已交由低層模擬的配額與區間，穿過旬界
 則按共同排程對齊，避免延遲可見或重算。未下沉戰線仍粗算
-（[共同契約](../world-simulation-contracts.md:9)、[排程](../world-simulation-contracts.md:29)）。
+（[共同契約](../world-simulation-contracts.md "L9")、[排程](../world-simulation-contracts.md "L29")）。
 
 ## 規則與跨系統因果
 
 中層已回歸原案「Total War，但是回合制」；方陣是操作單位，不改全單兵或即時制。細節見 [方陣指揮](../site/world-site-formations.md) 與 [平戰轉換](../site/world-site-conflict.md)；VCMI／Wesnoth 僅保留輔助架構用途。
 
+<!-- wf-nav -->
 1. 外交積怨／宣戰理由→動員合法性→稅收、忠誠、盟友是否參戰；無理由侵略提高內外反作用。
 2. 城市人口、糧產、工坊與馬匹→可維持的兵種和器械；徵兵會讓農田、商隊、治安真的缺人。
 3. 道路、渡口、港口與季節→行軍速度和補給吞吐；切斷橋梁、截運輸隊比正面殺敵更可能贏戰役。
@@ -58,14 +59,14 @@ Region 每旬推戰役；下沉時同一時鐘按 Site 900 秒、Local 6 秒走�
 
 出手制是候選政策：A 單位 initiative 輪替；B 整側交替、側內自由排序；C 雙方先交命令後分階段
 同時結算（WeGo）。三者都必須維持命令合法性查詢、可重放、AI 與玩家同規則；未裁定前不改既有
-Site 回合與行動點（[midmap](../../../../../design/maps/midmap.md:55)）。
+Site 回合與行動點（[midmap](../../../../../design/maps/midmap.md "L55")）。
 
 ## 既有與新建議
 
 **既有裁定**：Region 戰爭是持續事件與厭戰；補給是旬級最重修正；Site 四鄰接、面向、側背、
 行動點，城建即守城地形；Local 個人戰鬥；統計先算、具名人物從配額扣；玩家可選下沉或粗算
-（[外交](../../../../../design/rules/diplomacy.md:61)、[戰役公式](../../../../../design/rules/combat-formula.md:47)、
-[Site](../../../../../design/maps/midmap.md:80)）。
+（[外交](../../../../../design/rules/diplomacy.md "L61")、[戰役公式](../../../../../design/rules/combat-formula.md "L47")、
+[Site](../../../../../design/maps/midmap.md "L80")）。
 
 **新建議、尚未裁定**：正式編制樹、補給網與運輸實體、圍城狀態機、撤退出口、俘虜生命週期、
 戰損分類、戰爭目標計分，以及三種出手制。它們要補全願景，不能反過來默改四鄰接、stride 或縮放。
@@ -73,13 +74,13 @@ Site 回合與行動點（[midmap](../../../../../design/maps/midmap.md:55)）�
 ## 來源與證據限度
 
 - VCMI 證明「長期軍隊→暫態戰場→傷亡回寫」可分層，且其 BattleAI 在副本評估；不證明本案應採
-  stack、七槽或速度序（[中層調查](../../../investigation/roadmap-reference-tactics-status.md:24)）。
+  stack、七槽或速度序（[中層調查](../../../investigation/roadmap-reference-tactics-status.md "L24")）。
 - Wesnoth 提供地形成本、ZOC、候選行動與個體 carryover 範例；不證明應採六角、單兵或整側回合
-  （[中層調查](../../../investigation/roadmap-reference-tactics-status.md:53)）。
+  （[中層調查](../../../investigation/roadmap-reference-tactics-status.md "L53")）。
 - Endless 只借國家命令、資源分配、AI 與戰爭經濟，不借省份結構與終局
   （[4x-design](</home/lorkhan/repo/moddings/endless/wf/workflows/investigations/4x-design.md:5>)）。
 - 本案低層參考 ToME4 的 zone 內容邊界，但原作不是跨層戰爭模擬器
-  （[小層調查](../../../investigation/roadmap-reference-local-status.md:14)）。以上都是設計參考，未實機校準。
+  （[小層調查](../../../investigation/roadmap-reference-local-status.md "L14")）。以上都是設計參考，未實機校準。
 
 ## 驗收情境與待細化
 

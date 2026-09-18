@@ -13,6 +13,7 @@
 
 四個支柱各自的關鍵選擇：
 
+<!-- wf-nav -->
 1. **raws 用 TOML 原文進存檔，不做 def 的二進位序列化。**
    開新世界＝把 `data/`（22 個 TOML）複製進 `saves/<世界>/raws/`，**之後永不改寫**
    （[裁定#8](runtime-injection-decisions.md)）；載入世界＝從它的 raws 載 Ruleset
@@ -43,20 +44,7 @@
 
 ## 輪次地圖
 
-| 波 | 輪 | 變因 | 依賴 |
-|---|---|---|---|
-| 0 | M10.0a 原則五守門測試 | 內容種類 enum 的 ctest 白名單檢查 | — |
-| 0 | M10.0b 雜湊改關係斷言 | 21 檔 14 常數的 golden snapshot 退場 | — |
-| 0 | M10.0c 遊戲會存讀檔 | root zone + FileZoneStore + bridge/godot 入口 | — |
-| 1 | M10.1 世界檔自帶 raws | Ruleset 載入來源改為存檔內 raws | 0c |
-| 1 | M10.2 角色檔 | 玩家態 6 成員的獨立存檔 | 0c |
-| 2 | M10.3a 歷史日誌＋結算協調器 | 命令/注入全記錄、重放、崩潰恢復、uid 配發 | 1 |
-| 2 | M10.3b def 注入 | `RulesetPatcher`＋影子驗證＋指標 id 化；**通道通用於全部 def 型別**（[裁定#9](runtime-injection-decisions.md)） | 3a |
-| 2 | M10.4 勢力可增長 | `add_faction` + codec 換字串 id 表；首個端到端注入（開拓）| 3b |
-| 3 | M10.5a/b/c 原則五補課 | 兵種／建築／AI 目標動作資料化 | 0a |
-| 4 | M10.6a/b/c 新內容型別 | 人物實體／文明文化 def／物品 | 3 |
-| 5 | M10.7 注入入口 | 外部檔案吸收（`saves/<世界>/inject/`，裁定#2 已定） | 3b |
-| 5 | M10.8 端到端整合驗收 | 全鏈驗收，見下方完成判準 | 全部 |
+12 輪的變因與依賴（波／輪／變因／依賴）已抽到 [runtime-injection-rounds.json](runtime-injection-rounds.json)。
 
 細目：波 0–1 → [runtime-injection-waves.md](runtime-injection-waves.md)；
 波 2 → [runtime-injection-inject.md](runtime-injection-inject.md)；
@@ -65,6 +53,7 @@
 
 ## 全局約束
 
+<!-- wf-nav -->
 - **原則九「拆得走」**（使用者 2026-08-27 裁定，[principles.md](../../../design/principles.md)）：
   第一個原型之後可能打掉重做，M10 的每個新能力都要是**可整組拆走的窄介面組件**——
   存讀檔編排、歷史日誌、`RulesetPatcher`、角色檔 codec、注入佇列各自成模組，

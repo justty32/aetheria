@@ -1,12 +1,17 @@
 # aetheria — AI agent 專案備忘
 
-aetheria = **中世紀奇幻、日式表現風格的三層嵌套地圖回合制策略遊戲；Godot 4 只做顯示／美術／音效／UI，全部玩法邏輯以 C++ GDExtension 實作。** 本檔是**最頂層路由器**：只指向下一層，**durable 細節一律不寫這裡**。
+aetheria = **中世紀奇幻、日式表現風格的三層嵌套地圖回合制策略遊戲；Godot 4 只做顯示／美術／音效／UI，全部玩法邏輯以 C++ GDExtension 實作。** 本檔是**最頂層路由器**：只指向下一層，**durable 細節一律不寫這裡**（分層原則見 [wf/STRUCTURE.md](wf/STRUCTURE.md)）。
 
-## 先讀哪裡
+## 開場與入口
 
+- 每個 session 先跑 `grep -c '^- \[' wf/SESSION-LOG.md wf/WAIT_USER.md`：非 0 才開 [wf/SESSION-LOG.md](wf/SESSION-LOG.md)（進度）/ [wf/WAIT_USER.md](wf/WAIT_USER.md)（等使用者）。
+- 開場也 `ls wf/inbox/*.md`：有信就先讀，**只辦收件人是自己的**（兩個角色共用同一收件匣；信件軸見 [wf/workflows/inbox/](wf/workflows/inbox/README.md)）。
+- **碰原始碼前**：慣例與 code map → [wf/workflows/common/conventions.md](wf/workflows/common/conventions.md)、[wf/workflows/common/code-map.md](wf/workflows/common/code-map.md)；build/test 指令 → [wf/workflows/testing.md](wf/workflows/testing.md)。
+- 要開 agent 團隊、派工給 codex、決定各層派哪級模型 → [wf/workflows/team-model.md](wf/workflows/team-model.md)。
 - **使用者要你動手做某件事** → **[wf/WORKFLOWS.md](wf/WORKFLOWS.md)**：依使用者意圖派發到對應工作流，再讀該工作流入口。
 - **想看專案長怎樣** → **[wf/INDEX.md](wf/INDEX.md)**：repo 頂層結構地圖。
 - **想看遊戲設計內容** → **[design/README.md](design/README.md)**：先讀順序與導讀主線（分層結構見 [design/INDEX.md](design/INDEX.md)）。
+- 使用者偏好、確認邊界、回覆風格 → [wf/workflows/common/user.md](wf/workflows/common/user.md)。
 
 ## 分層思想（本專案的組織原則）
 
@@ -16,15 +21,16 @@ aetheria = **中世紀奇幻、日式表現風格的三層嵌套地圖回合制�
 AGENTS.md（本檔，最頂）→ wf/WORKFLOWS.md / wf/INDEX.md → 各工作流入口 → 工作流內容 → 子工作流…
 ```
 
-**非侵入式佈局**：repo 頂層只有 `AGENTS.md`（本檔）、`CLAUDE.md` 兩個 agent 入口，工作流 kernel 的其餘部分收在 `wf/`。慣例見 `~/repo/workflows/non-invasive-import.md`。
+**非侵入式佈局**：repo 頂層只有 `AGENTS.md`（本檔）、`CLAUDE.md` 兩個 agent 入口與 `.claude/commands/` 適配層，工作流 kernel 的其餘部分（含 `inbox/`、`tools/`）收在 `wf/`。慣例見 `~/repo/workflows/docs/non-invasive-import.md`。
 
 - **README** = 初入一個資料夾**先讀的入口／導引**；**INDEX** = **描述該資料夾頂層結構**的索引。小資料夾兩者合一，大了才分出獨立 INDEX。
 - **durable 知識歸到它所屬的那一層／那個工作流**，絕不往上堆——所以本檔才這麼薄。要某主題的細節，順著上面的樹往下走，不在本檔找。
 - **鐵律（always-on，任何工作流任何時候都遵守）**：
-  1. 重構/整理必須**不改變原意**（行為不變、改完跑驗證；build/test 指令見 [wf/workflows/testing.md](wf/workflows/testing.md)）。
-  2. **未經確認不 push、不開新工作**（commit 到主分支是慣例，push 先確認）。
-  3. 各工作流的**具體流程在它自己的入口檔**，不在頂層。
-- **[wf/DEV-GUIDE.md](wf/DEV-GUIDE.md) 是被動參考**（結構整理原則 + 四級成長軌跡）——**只在你要重構/整理結構時才取用**，不貫穿日常每個動作。碰原始碼的**程式碼慣例 + 導航 index 維護鏈**在 [wf/workflows/common/conventions.md](wf/workflows/common/conventions.md)。
+  1. 重構/整理必須**不改變原意**（行為不變、改完跑驗證；build/test 指令見 [wf/workflows/testing.md](wf/workflows/testing.md)；非開發＝原意不變，照 `Done when:` 驗收）。
+  2. **不可逆或對外的動作**（push、刪除、對外送出）要有**授權來源**：使用者當場確認，或他親自登記在清單裡（routines / schedule）。都沒有就先問——**未經確認不 push、不開新工作**（commit 到主分支是慣例）。
+  3. **條列走資料檔、導航留 md**：給 AI 消化的表／清單 >1 KB 存 `.json`／`.csv`（契約 `wf-table/1`，見 [data-files](wf/workflows/common/data-files.md)），用 `wf/tools/tabledb.py` 讀寫、不整份讀進 context；給人點的導航連結留 md。
+  4. 各工作流的**具體流程在它自己的入口檔**，不在頂層。
+- **[wf/STRUCTURE.md](wf/STRUCTURE.md) 是被動參考**（分層原則、膨脹即拆、四級成長軌跡、archive 規則）——**只在你要重構/整理結構時才取用**，不貫穿日常每個動作。
 
 ## 主工作流（活狀態：進度 / 待測 / 信件）
 
@@ -40,7 +46,7 @@ AGENTS.md（本檔，最頂）→ wf/WORKFLOWS.md / wf/INDEX.md → 各工作流
   **Opus 5 規劃者**寫 `design/` 與任務書、審閱實作，**不寫實作程式碼**；
   **實作 agent** 依 `wf/inbox/` 的任務書寫 `core/`／`bridge/`／`godot/`，**不自行改設計**
   （有異議寫信回報）。兩者共用同一個收件匣，靠信件的收件人欄位辨識。
-  分工與流程見 [wf/workflows/inbox/CONTACTS.md](wf/workflows/inbox/CONTACTS.md)。
+  分工與流程見 [wf/workflows/inbox/CONTACTS.md](wf/workflows/inbox/CONTACTS.md)；波管家／codex 的團隊制見 [wf/workflows/team-model/TEAM.md](wf/workflows/team-model/TEAM.md)。
 - **文件鐵律**：每份文件上限 8 KB；檔案過大按子題拆檔，資料夾雜亂則按職責分層並設入口。各層只索引下一層（2026-09-09 使用者指示）。
 - **文件語言**：繁體中文。
 - **設計文件**在 `design/`：入口是 [design/README.md](design/README.md)，[design/INDEX.md](design/INDEX.md) 只列下一層；葉文件由各領域入口索引。
@@ -50,7 +56,8 @@ AGENTS.md（本檔，最頂）→ wf/WORKFLOWS.md / wf/INDEX.md → 各工作流
 
 ## 專案現況
 
-M0 可編譯骨架已建立：純 C++23 `core/`、GoogleTest、headless CLI、C++23 godot-cpp
-GDExtension 與 Godot 4.7 驗證場景均可建置執行；尚無玩法邏輯。建置／測試指令見
+實作停在 M10.3a（v23、432 綠），**2026-09-09 起先做完整世界規劃、不開始實作**——入口見 [wf/SESSION-LOG.md](wf/SESSION-LOG.md)。建置／測試指令見
 [design/architecture/build.md](design/architecture/build.md) 與 [wf/workflows/testing.md](wf/workflows/testing.md)，程式碼導航見
-[wf/workflows/common/conventions.md](wf/workflows/common/conventions.md)。
+[wf/workflows/common/code-map.md](wf/workflows/common/code-map.md)。
+
+<!-- wf-kernel v0.6 (2026-09-18) -->

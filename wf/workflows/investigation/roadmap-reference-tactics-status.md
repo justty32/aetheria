@@ -20,6 +20,7 @@ VCMI 可參考「大圖軍隊 → 暫態戰場 → 結果回寫」；Wesnoth 可
 
 ### VCMI：獨立戰場是大地圖軍隊的暫態投影
 
+<!-- wf-nav -->
 - 開戰先決定戰場與地形、封鎖玩家、送出快照、建立戰鬥查詢，再跑開場觸發器與首回合。可借的是
   「封存輸入、建立戰場、執行開場規則、才接受命令」的階段界線
   （[L4-battle-turn.md](</home/lorkhan/repo/pas/analysis/vcmi/architecture/L4-battle-turn.md:44>)、
@@ -42,6 +43,7 @@ VCMI 可參考「大圖軍隊 → 暫態戰場 → 結果回寫」；Wesnoth 可
 
 ### Wesnoth：整張戰術棋盤共用同一套地形與規則查詢
 
+<!-- wf-nav -->
 - scenario 帶地形、資源、事件、目標與 side 起點。可借「戰場定義與參戰狀態一起輸入」，
   不代表必須一關一圖或使用 WML
   （[tech_encyclopedia_vol4_generators.md](</home/lorkhan/repo/pas/analysis/wesnoth/details/tech_encyclopedia_vol4_generators.md:12>)、

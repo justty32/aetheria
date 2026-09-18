@@ -25,6 +25,7 @@ godot-cpp 預設以 C++17 建置，要跟 core 一致就得用相同標準與相
 
 ### 型別
 
+<!-- wf-nav -->
 - **強型別 id，禁止裸整數。** `ZoneKey`、`FactionId`、`EntityId`（zone 內，實質是 `entt::entity`）、
   `EntityRef`（跨 zone 的弱引用）。混用 `uint32_t` 遲早會把 `FactionId` 傳進吃 `EntityId` 的函式。
   **沒有 `SiteId`**——Site 的身分就是它的 `ZoneKey`，由座標推導。

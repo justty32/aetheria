@@ -29,6 +29,7 @@ core 用 `std::` 與自訂 POD 型別，轉換一律在 bridge 做。**這條沒
 
 ## core/ 模組總覽
 
+<!-- wf-nav -->
 | 模組 | 職責 |
 |---|---|
 | `core/time/` | 全局時鐘（`Tick` = 秒）、曆法換算、各層可變 stride 的回合排程 |
@@ -64,6 +65,7 @@ GDScript ──fetch_layer(...) -> PackedByteArray──▶ 批次拉整層地�
 
 三條規則：
 
+<!-- wf-nav -->
 1. **命令是意圖，不是結果。** GDScript 送「這個單位要移動到 (x,y)」，
    不送「把這個單位的座標設成 (x,y)」。合法性由 core 判。
 2. **事件是已成事實。** core 吐出的每個事件都已經改過狀態，GDScript 只負責演出。

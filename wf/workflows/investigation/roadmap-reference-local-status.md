@@ -22,6 +22,7 @@ ToME4 knowledge 與 RimWorld 反編譯核對可當較強證據；Elin 玩法總�
 
 **證據等級：以下三點來自已回原始碼複驗的 knowledge。**
 
+<!-- wf-nav -->
 1. **同一 zone 容器，不同玩法政策。**原版大地圖也是 `persistent="zone"` 的普通 zone，
    `wilderness=true` 才整包改時間、FOV、技能／道具互動。可借「共同容器＋可拆政策」，不借這個
    綁死的旗標包。[證據](</home/lorkhan/repo/moddings/tome4/docs/knowledge/worldmap-parts/01-basics.md:6>)

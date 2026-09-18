@@ -1,13 +1,14 @@
 # KNOWN-TRAPS — 會在未來咬人的東西
 
-← [SESSION-LOG.md](SESSION-LOG.md)｜[OPS-VERIFY.md](OPS-VERIFY.md)｜[INDEX](INDEX.md)
+← [SESSION-LOG.md](SESSION-LOG.md)｜[OPS-VERIFY.md](workflows/dispatch/OPS-VERIFY.md)｜[INDEX](INDEX.md)
 
 > **每一條都是踩過或量到才寫下來的**，不是推測。
 > 這裡放的是**知道有問題、但當下沒修**的東西——所以它會咬人。
-> 驗收方法的心得在 [OPS-VERIFY.md](OPS-VERIFY.md)；派工在 [OPS-NOTES.md](OPS-NOTES.md)。
+> 驗收方法的心得在 [OPS-VERIFY.md](workflows/dispatch/OPS-VERIFY.md)；派工在 [OPS-NOTES.md](workflows/dispatch/OPS-NOTES.md)。
 
 ## 假通過與驗證
 
+<!-- wf-nav -->
 - ⚠ **M4 的驗收不能用 byte 相等**：EnTT snapshot 只對同一段建構歷史決定性。
   世界級正規化雜湊已在 M2.0 落地（`aetheria_sim verify world-hash`）。
 - ⚠ **`load` ≠ `rematerialize`**：`load` 只解碼持久層，程序層是空的。
@@ -41,6 +42,7 @@
 
 ## 功能缺口（知道是空的）
 
+<!-- wf-nav -->
 - 🔴 **遊戲不會存檔**（2026-08-27 量到）：可玩 session 用 `zone::InMemoryZoneStore`
   （`core/runtime/playable_session.h:233`），`bridge/` 與 `godot/main.gd` 沒有任何存讀檔呼叫；
   會落地的 `FileZoneStore` 只有測試與 `sim` CLI 在用。
