@@ -82,3 +82,6 @@ M8-INT-7 我寫「合併後 ctest 必須 ≥ 420」，那個數字是我拍腦�
 對已搬移的 core 碼做 4 次行為注入（combat 損失率、Local 地面噪聲門檻、正規化雜湊略過 stable_id 等），
 432 測試與 sim 雜湊都沒紅——既有測試多為關係式斷言，對這些位置偵測力弱。
 往後在這些區域動行為時，不能只靠 ctest 綠，要另設專屬負向控制。
+
+`tools/art/verify_acceptance.py` 的故障注入自拆檔後改為「AST 展開 `art_pipeline_*` import 成單一副本再文字替換」
+（`verify_acceptance_source.py`）：入口拆成多 module 後，只替換入口檔會找不到目標。驗過 9 條注入新舊機制皆紅、JSON 逐欄相同。
