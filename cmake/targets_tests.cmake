@@ -265,3 +265,23 @@ add_test(
         --core "${PROJECT_SOURCE_DIR}/core"
         --allowlist "${PROJECT_SOURCE_DIR}/tests/principle5_allowlist.txt"
 )
+
+# 拆檔波 split/tests-site 追加區
+target_sources(aetheria_tests PRIVATE
+    tests/site/site_build_loop_batch_test.cpp
+    tests/site/site_build_loop_clock_test.cpp
+    tests/site/site_building_mapping_cold_load_test.cpp
+    tests/site/site_combat_simulation_test.cpp
+    tests/site/site_event_escalation_xun_test.cpp
+    tests/site/site_fill_buildings_test.cpp
+    tests/site/site_fill_walls_test.cpp
+    tests/site/site_migration_relocation_test.cpp
+    tests/site/site_observation_persistence_compatibility_test.cpp
+    tests/site/site_projection_determinism_test.cpp
+    tests/site/site_reduction_calibration_performance_test.cpp
+    tests/site/site_reduction_unload_test.cpp
+    tests/site/site_roundtrip_cold_test.cpp
+    tests/site/site_unload_equivalence_random_sequence_test.cpp
+    tests/site/site_unload_equivalence_reload_test.cpp
+    tests/site/site_unload_equivalence_unload_count_test.cpp
+)
