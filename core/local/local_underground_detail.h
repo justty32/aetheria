@@ -25,6 +25,17 @@ struct LayerBuild {
     LocalXY exit;
 };
 
+[[nodiscard]] LocalTiles make_rock_layer(rules::GroundId ground, rules::EdgeId wall);
+void carve_cell(LayerBuild& layer, LocalXY tile);
+[[nodiscard]] std::vector<LocalXY> orthogonal_path(LocalXY from, LocalXY to,
+                                                   bool horizontal_first);
+void carve_path(LayerBuild& layer, const std::vector<LocalXY>& path, rules::EdgeId none);
+
+[[nodiscard]] constexpr LocalXY room_center(const spatial::PartitionRect& room) noexcept {
+    return {static_cast<std::uint16_t>(room.x + room.width / 2U),
+            static_cast<std::uint16_t>(room.y + room.height / 2U)};
+}
+
 [[nodiscard]] LayerBuild build_mine_layer(LocalXY entrance, std::int8_t z, std::uint64_t seed,
                                           rules::GroundId ground, rules::EdgeId wall,
                                           rules::EdgeId none);

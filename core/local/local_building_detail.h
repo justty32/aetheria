@@ -24,6 +24,10 @@ void set_edge(LocalTiles& tiles, LocalXY tile, spatial::BoundarySide side, rules
 void build_house_geometry(BuildingLocalSkeleton& result, const LocalSlowVars& slow,
                           std::uint64_t local_seed, const rules::Ruleset& ruleset);
 
+void build_floor(BuildingLocalSkeleton& result, const LocalSlowVars& slow,
+                 std::uint16_t house_index, std::int8_t z, std::uint64_t seed,
+                 const rules::Ruleset& ruleset);
+
 void fill_furniture(BuildingLocalSkeleton& result, std::uint64_t local_seed,
                     const rules::Ruleset& ruleset);
 
