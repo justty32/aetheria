@@ -234,3 +234,33 @@ target_sources(aetheria_core PRIVATE
     core/history/history_log.cpp
     core/runtime/turn_commit.cpp
 )
+
+# 拆檔波 split/runtime 追加區
+target_sources(aetheria_core PRIVATE
+    core/runtime/playable_session_scenario.cpp
+    core/runtime/playable_session_materialize.cpp
+    core/runtime/playable_session_load.cpp
+    core/runtime/playable_session_site.cpp
+    core/runtime/playable_session_quests.cpp
+    core/runtime/playable_session_diplomacy.cpp
+    core/runtime/playable_session_city.cpp
+    core/runtime/playable_session_local.cpp
+    core/runtime/playable_session_dungeon.cpp
+    core/runtime/playable_session_calibration.cpp
+    core/runtime/playable_session_armies.cpp
+    core/runtime/playable_session_history.cpp
+    core/runtime/playable_session_turn.cpp
+    core/runtime/playable_session_battle.cpp
+    core/runtime/playable_session_coverage.cpp
+    core/runtime/playable_session_site_view.cpp
+    core/runtime/playable_session_local_view.cpp
+    core/runtime/playable_session_character.cpp
+    core/runtime/playable_session_save.cpp
+    core/history/history_log_io.cpp
+    core/runtime/cross_zone_migrate.cpp
+    core/runtime/turn_commit_replay.cpp
+    core/runtime/turn_commit_payload.cpp
+    core/script/script_engine_catalog.cpp
+    core/script/script_engine_sandbox.cpp
+    core/script/script_engine_hooks.cpp
+)
