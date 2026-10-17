@@ -107,7 +107,9 @@ PlayableAdvanceReport PlayableSession::advance_xun() {
             throw std::logic_error{"已綁定世界槽但缺少目前角色檔路徑"};
         }
         const auto raws_hash = raws_directory_hash(base_raws_directory_);
-        turn_commit_->commit_world(store_, store_, *manager_, seed_,
+        auto& destination =
+            commit_destination_ != nullptr ? *commit_destination_ : store_;
+        turn_commit_->commit_world(store_, destination, *manager_, seed_,
                                    raws_hash, now(), [&] {
                                        write_character_save(
                                            *character_save_path_,

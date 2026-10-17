@@ -27,6 +27,23 @@ namespace aetheria::runtime {
 
 namespace {
 
+[[nodiscard]] std::unique_ptr<zone::InMemoryZoneStore>
+copy_slot_store(const zone::ZoneStore& slot, const rules::Ruleset& ruleset) {
+    auto copy = std::make_unique<zone::InMemoryZoneStore>(ruleset);
+    for (const auto key : slot.stored_keys()) {
+        const auto zone = slot.load(key);
+        if (zone == nullptr) {
+            throw std::runtime_error{"冷讀時列舉到的 zone 無法載入：" +
+                                     std::to_string(zone::value_of(key))};
+        }
+        copy->save(*zone);
+    }
+    if (slot.manifest().has_value()) {
+        copy->write_manifest(*slot.manifest());
+    }
+    return copy;
+}
+
 struct PlayableUidConfig {
     std::optional<std::uint64_t> player_army;
     std::optional<std::uint64_t> enemy_army;
@@ -89,8 +106,9 @@ PlayableSession::PlayableSession(std::uint64_t seed, std::uint32_t region_id,
 PlayableSession::PlayableSession(LoadTag, std::filesystem::path slot_directory,
                                  zone::ZoneStore& store)
     : base_raws_directory_{save_raws_directory(slot_directory)},
-      ruleset_{load_saved_ruleset(slot_directory)}, store_{store},
-      turn_pipeline_{ruleset_, store_} {
+      ruleset_{load_saved_ruleset(slot_directory)},
+      loaded_store_{copy_slot_store(store, ruleset_)}, store_{*loaded_store_},
+      commit_destination_{&store}, turn_pipeline_{ruleset_, store_} {
     if (!store_.manifest().has_value() || store_.manifest()->raws_hash == 0) {
         throw std::runtime_error{"存檔 manifest 缺少 v23 raws 內容雜湊"};
     }

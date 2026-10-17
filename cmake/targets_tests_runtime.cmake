@@ -8,4 +8,5 @@ target_sources(aetheria_tests PRIVATE
     tests/runtime/history_log_recovery_test.cpp
     tests/runtime/history_log_identity_test.cpp
     tests/runtime/history_log_continuity_test.cpp
+    tests/runtime/history_log_multi_character_test.cpp
 )

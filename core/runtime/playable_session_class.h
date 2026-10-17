@@ -131,7 +131,10 @@ private:
     std::filesystem::path base_raws_directory_;
     std::optional<std::filesystem::path> character_save_path_;
     rules::Ruleset ruleset_;
+    // 冷讀時的工作副本：世界槽只經 commit_world 寫入，載入本身不改盤。
+    std::unique_ptr<zone::InMemoryZoneStore> loaded_store_;
     zone::ZoneStore& store_;
+    zone::ZoneStore* commit_destination_{};
     world::RegionTurnPipeline turn_pipeline_;
     std::unique_ptr<zone::ZoneManager> manager_;
     std::unique_ptr<TurnCommit> turn_commit_;
