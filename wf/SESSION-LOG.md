@@ -35,7 +35,10 @@
   （無 `-complete`、無 commit；2026-09-18 調度長裁定留頂層）；對應 [roadmap-coverage](workflows/plan/living-world/roadmap-coverage.md) 的 R5／R6，開工順序等 roadmap 重排。
 - [investigation] 地形生成已交接、**尚無人接手**（濕度削頂根因已量到）→ [TERRAIN-HANDOFF](workflows/investigation/TERRAIN-HANDOFF.md)；
   活世界規劃以它為事實基線。
-- [feature-dev] 「能動但不像真的」（M5 四處、M6.6 湧現任務只有半步意義）仍未解，卡在 observer mark 的擱置裁定 → [WAIT_USER](WAIT_USER.md)、[M5-CLOSEOUT](workflows/feature-dev/landed/M5-CLOSEOUT.md)。
+- [feature-dev] 兩個獨立未解、各等一條 [WAIT_USER](WAIT_USER.md) 裁定：
+  ① M6.6 湧現任務只有半步意義 → 等「M9 要不要碰 observer mark」；
+  ② M5 四處「能動但不像真的」（地形、荒野地表、住宅、地城）→ 等「寫實度判準由誰定、何時定」，
+  與 mark 無關 → [M5-CLOSEOUT](workflows/feature-dev/landed/M5-CLOSEOUT.md)。
 
 ## 各工作流 session-log
 

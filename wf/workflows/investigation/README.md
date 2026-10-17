@@ -45,6 +45,7 @@
 
 | 報告 | 題目 | 日期 |
 |---|---|---|
+| [project-overview-2026-10-status.md](project-overview-2026-10-status.md) | 全專案現況盤點：實作停點、規劃完成度、懸案、工作流漏洞 | 2026-10-17 |
 | [roadmap-reference-overview-status.md](roadmap-reference-overview-status.md) | 三層活世界參考總覽：Endless、大中小層專題、PAS 補充與證據限制 | 2026-09-09 |
 | [runtime-injection-status.md](runtime-injection-status.md) | 執行期注入（存檔進行中加入地形／文化／勢力／人物／物品定義）做了沒——**結論與差距** | 2026-08-27 |
 | [runtime-injection-assets.md](runtime-injection-assets.md) | 同題：**已經有的地基與插入點**（哪些是接線問題，不是從零蓋）| 2026-08-27 |

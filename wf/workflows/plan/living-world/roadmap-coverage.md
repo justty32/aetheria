@@ -8,6 +8,8 @@
 
 18 條原有需求的去向（原有需求／新規劃歸屬／必須保留的驗收）已抽到 [roadmap-coverage.json](roadmap-coverage.json)。
 
+反向看各 spec 子規格落在哪輪，見 [S→R 對應](../../../../design/spec/overview/spec-round-map.json)（草案推定，待使用者裁定輪次順序）。
+
 M10 的原始範圍以 [既有總覽](../runtime-injection.md) 與 [裁定](../runtime-injection-decisions.md) 為準。版本號由實際整合決定，不因為重排就先改存檔格式。整個 M10 是一份完整承諾，先做一類內容不等於完成。
 
 ## 使用者指定參考的分工

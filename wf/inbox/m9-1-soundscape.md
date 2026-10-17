@@ -6,6 +6,8 @@
 **工作分支**：`m9-1-wt`（新 worktree，基準 = **M9.0 合併後**的 main）
 **設計依據**：[audio.md](../../design/presentation/audio.md)、[tech-stack.md](../../design/architecture/tech-stack.md) 鐵律、
 [milestones.md](../../design/milestones.md) 的 M9 第一條判準
+**規劃歸屬**：活世界 roadmap-coverage 已將 M9（主線、美術、音景）歸 R5／R6
+（`wf/workflows/plan/living-world/roadmap-coverage.json:47-48`）；開工時機依 roadmap 重排裁定。
 
 ---
 

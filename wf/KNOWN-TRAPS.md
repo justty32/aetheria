@@ -43,10 +43,6 @@
 ## 功能缺口（知道是空的）
 
 <!-- wf-nav -->
-- 🔴 **遊戲不會存檔**（2026-08-27 量到）：可玩 session 用 `zone::InMemoryZoneStore`
-  （`core/runtime/playable_session.h:233`），`bridge/` 與 `godot/main.gd` 沒有任何存讀檔呼叫；
-  會落地的 `FileZoneStore` 只有測試與 `sim` CLI 在用。
-  **M8.1「遊戲第一次能玩」不含存讀檔**，而所有存檔相關的判準都只在測試裡跑過。
 - 🔴 **在 TOML 加一個勢力，所有既有存檔立刻讀不開**：
   `core/serialize/zone_diplomacy_codec.cpp:57,151` 檢查「存檔勢力數 ≠ 目前 Ruleset ⇒ throw」。
   這是「存檔自帶 raws」的**反面**，直接擋住執行期注入。
@@ -80,8 +76,9 @@
 - ⚠ **「free 後從 core 重建」的自證是子集**（2026-08-27 量到）：`main.gd` 的重建鈕
   只 free `_view` 不 free 持有 `_selected_unit_id` 的 main 節點——
   M9「關掉 core 重開畫面完全一致」現在**測不出來**。
-- ⚠ **godot 色表漏了 `terrain.taiga`／`terrain.steppe`**：兩種地形實際會生成
-  （`data/biomes.toml:18,23`），畫面上落洋紅 fallback（`region_debug_renderer.gd:30`）。
+- ⚠ **godot 色表漏了 `terrain.taiga`／`terrain.steppe`**（2026-10-17 拆檔後複核仍在）：兩種地形實際會生成
+  （`data/biomes.toml:18,23`），色表 `godot/region_debug_palette.gd` 的 `TERRAIN` 沒有它們，
+  畫面上落洋紅 fallback（`region_debug_renderer.gd:32`）。
   色表 5 筆 vs terrain def 7 筆——「不必維護索引表」的規格已經被違反且漏了。
 
 ## 混淆點
@@ -97,3 +94,8 @@
   **16660／17470／19540**，斷言嚴格遞增。
 - ⚠ **並行派工要把「誰有權動存檔版本號」劃給單一路**——沒劃，一晚撞了兩次
   （兩個 v16、兩個 v17），每次都要另開一輪整合。
+- ✅ **遊戲已能存讀檔**（2026-08-27 記為缺口，2026-10-17 複核已接上）：bridge 有
+  `save_game`／`load_game`／`list_saves`（`bridge/aetheria_core_session.cpp:75,96,126`），
+  `godot/main_ui.gd:56-57` 的存檔／讀檔鈕經 `main_storage.gd` 呼叫它們。
+  ⚠ 新局仍以 `InMemoryZoneStore` 起手（`bridge/aetheria_core_session.cpp:53`），
+  存檔時才寫進 `FileZoneStore`、讀檔後改持 `FileZoneStore`——兩種 session 的 store 不同型。

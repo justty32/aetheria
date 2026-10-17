@@ -3,16 +3,16 @@
 ← [總覽](runtime-injection.md)｜[波 2 細目](runtime-injection-inject.md)｜[裁定](runtime-injection-decisions.md)｜[TEAM](../team-model/TEAM.md)
 
 > **給下一任波管家冷啟動用。** 波 2 因 token 配額暫停，**M10.3a 已驗收通過並併入 `main`**，
-> 3b 與 M10.4 尚未開工。讀完本檔即可接手，不必回頭讀三輪的回報信。
+> 讀完本檔即可接手，不必回頭讀三輪的回報信。
 
 ## 現況
 
 | 輪 | 狀態 |
 |---|---|
 | **M10.3a** 歷史日誌＋結算協調器 | ✅ **已併入 main**（初版＋fix1＋fix2），432/432 綠，**未 bump，仍 v23** |
-| M10.3b def 注入（`RulesetPatcher`） | ⬜ 未開工，**任務書尚未起草**（codex 起草、管家定稿） |
+| M10.3b def 注入（`RulesetPatcher`） | ⬜ 未開工，任務書尚未起草 |
 | M10.4 勢力可增長 | ⬜ 未開工，任務書尚未起草 |
-| 波 2 定版輪 | ⬜ 未開工。v23→24、三處 `static_assert`、彙總格式變更、全套綠 |
+| 波 2 定版輪 | ⬜ 未開工（見下一步 3） |
 
 ## v24 定版輪要用的格式變更清單（原文保留，勿改寫）
 
@@ -27,8 +27,8 @@ M10.3a **零二進位佈局變更**，所以不 bump；但下列是**語意面**
 - `chars/<角色>.bin`：codec／版本**未改**，只把原子寫入移到 marker **之前**。
 - `data/civilization.toml`：新增 `[playable_session_uids]`（player_army 1001／enemy_army 2001／
   named_commander 9001）。三個在建世界時**一次全 claim**，故 `next_entity_uid` 初始推進到 9002。
-- `core/zone/zone_store`／`file_zone_store`／`session_persistence`：啟用 v23 manifest **已有的**
-  `next_detached_zone_id`／`next_entity_uid`（原本是死欄位）。**欄位、編碼順序、版型均未新增或重排。**
+- `core/zone/zone_store`／`file_zone_store`／`core/runtime/session_persistence`：啟用 v23 manifest **已有的**
+  `next_detached_id`／`next_entity_uid`（原本是死欄位）。**欄位、編碼順序、版型均未新增或重排。**
 - `sim/world_hash.{h,cpp}`：身分語意改為三分量定序 FNV-1a、`verify world-hash` 輸出改四行；
   `cmake/check_sim_world_hash.cmake` 只加斷言。**兩者都不屬磁碟 codec。**
 - `core/serialize/zone_codec.h` 仍為 `kSaveFormatVersion = 23`。
@@ -100,11 +100,12 @@ M10.3a **零二進位佈局變更**，所以不 bump；但下列是**語意面**
   順帶：`grep -l <字串> /proc/*/cmdline` 因 NUL 分隔**會回空**，不能當「不存在」的證據。
 - **驗收要自己造槽**：`sim` 沒有「依 seed 建世界」的入口，但
   `--tick N --data-dir D --save-dir S` 可以生世界；要帶 history 的槽就暫時附一支 gtest 到
-  `tests/runtime/history_log_test.cpp` 尾端，跑完 `git checkout --` 還原（增量 build 很快）。
+  `tests/runtime/history_log_test.cpp` 尾端，跑完 `git checkout --` 還原。
 
 ## 下一步
 
 1. 叫 codex 起草 **M10.3b** 任務書（依[波 2 細目](runtime-injection-inject.md) M10.3b 節），
    管家按包絡與範本 `wf/inbox/done/m10-1-raws-in-save.md` 的骨架定稿 → 派工 → 親手驗收。
-2. 同樣流程做 **M10.4**。3. **定版輪**：v23→24、同步三處 `static_assert`、彙總上面的格式清單、全套綠。
+2. 同樣流程做 **M10.4**。3. 定版輪：v23→24、同步三處 `static_assert`（`zone_codec_test.cpp:103`、
+   `site_building_mapping_cold_load_test.cpp:30`、`site_observation_persistence_compatibility_test.cpp:93`）、彙總上方格式清單、全套綠。
 4. ⚠ 3b 動 `RulesetPatcher` 前先看 **A-1**（多角色槽重放對不上）——它會先炸。

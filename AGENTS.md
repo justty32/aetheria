@@ -4,7 +4,7 @@ aetheria = **中世紀奇幻、日式表現風格的三層嵌套地圖回合制�
 
 ## 開場與入口
 
-- 每個 session 先跑 `grep -c '^- \[' wf/SESSION-LOG.md wf/WAIT_USER.md`：非 0 才開 [wf/SESSION-LOG.md](wf/SESSION-LOG.md)（進度）/ [wf/WAIT_USER.md](wf/WAIT_USER.md)（等使用者）。
+- 每個 session 先跑 `grep -cE '^- (\[|⚠)' wf/SESSION-LOG.md wf/WAIT_USER.md`（SESSION-LOG 條目以 `- [` 開頭、WAIT_USER 以 `- ⚠` 開頭）：非 0 才開 [wf/SESSION-LOG.md](wf/SESSION-LOG.md)（進度）/ [wf/WAIT_USER.md](wf/WAIT_USER.md)（等使用者）。
 - 開場也 `ls wf/inbox/*.md`：有信就先讀，**只辦收件人是自己的**（兩個角色共用同一收件匣；信件軸見 [wf/workflows/inbox/](wf/workflows/inbox/README.md)）。
 - **碰原始碼前**：慣例與 code map → [wf/workflows/common/conventions.md](wf/workflows/common/conventions.md)、[wf/workflows/common/code-map.md](wf/workflows/common/code-map.md)；build/test 指令 → [wf/workflows/testing.md](wf/workflows/testing.md)。
 - 要開 agent 團隊、派工給 codex、決定各層派哪級模型 → [wf/workflows/team-model.md](wf/workflows/team-model.md)。

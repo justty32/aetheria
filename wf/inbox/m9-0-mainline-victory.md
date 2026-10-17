@@ -3,7 +3,7 @@
 **寄件人**：Opus 5 規劃者
 **收件人**：**gpt-sol 實作者**
 **必讀協定**：[`CODEX-PROTOCOL.md`](../workflows/dispatch/CODEX-PROTOCOL.md)
-**工作分支**：`m9-0-wt`（新 worktree，基準 = M8-INT-7 合併後的 main）
+**工作分支**：`m9-0-wt`（新 worktree，基準 = 開工當下的 main；2026-10-17 標定時為 M10.3a 後、拆檔波完成的 main，v23、432 綠）
 **設計依據**：[narrative.md](../../design/rules/narrative.md)、[milestones.md](../../design/milestones.md)
 的 M9 兩條判準、[zone-save-history.md](../../design/architecture/zone-save-history.md)
 
@@ -20,23 +20,26 @@ M6／M7／M8 已經有外交締約、地城清空、Site 攻陷、湧現任務�
 `narrative.md` 的賭注是「敘事是模擬出來的」——主線是**骨架**，不是劇本。
 
 階段數自訂但**至少 4 個**，最後一階由既有的 victory 掛勾（M8.0 已有
-`check -> Outcome`）判通關。
+`check -> Outcome`，現位於 `core/script/script_engine_hooks.cpp:73`）判通關。
 
 ## ⚠ 最容易出事的一件：劇情進度不能存在 Lua 裡
 
 M8.0 的**鐵律 4** 是每次掛勾新建 `_ENV`、存檔不含 Lua state
-（`LuaDeterminismLaw4.FreshEnvironmentDropsCrossTurnStateAndSaveOmitsLuaState`）。
+（`LuaDeterminismLaw4.FreshEnvironmentDropsCrossTurnStateAndSaveOmitsLuaState`，`tests/script/lua_sandbox_settlement_test.cpp:42`）。
 所以**主線階段必須是 core 的持久狀態**，經 `Context` 讀寫。
 
 目前 `core/script/include/aetheria/script/context.h` 只開了
-`owner` / `set_owner` / `rng()`。這一輪要擴充 `Context`，加上主線階段的受限讀寫。
+`owner` / `set_owner` / `rng()`（`context.h:33-35`）。這一輪要擴充 `Context`，加上主線階段的受限讀寫。
 
 ⚠ **不准把 `RegionTiles` 或任何指標漏進 Lua**——維持 M8.0 的型別隔離，
-`ScriptContextIsolation.WorldTruthCompileFailure` 那條雙向證據要照樣綠。
+`ScriptContextIsolation.WorldTruthCompileFailure`（`cmake/targets_tests_checks.cmake:130`）那條雙向證據要照樣綠。
 
 ## ⚠ 存檔版本號：這一輪獨佔
 
-主線階段要進存檔，所以 `kSaveFormatVersion` **20 → 21，只有這一路能動**。
+主線階段要進存檔，所以 `kSaveFormatVersion` 要 bump，**只有這一路能動**。
+現況是 v23（`core/serialize/zone_codec.h:13`），而波 2 定版輪已預定 v23→v24
+（[交接書](../workflows/plan/runtime-injection-wave2-handoff.md)）。本輪的目標編號、以及由本輪或定版輪執行 bump，
+**待 roadmap 重排裁定**，開工前向規劃者確認，不得自行決定編號。
 （OPS-NOTES 記過：沒劃清楚，一晚撞了兩次版本號。）
 若同期還有別輪在跑，它們一律不准動這個常數。
 
@@ -82,7 +85,7 @@ M8.0 的**鐵律 4** 是每次掛勾新建 `_ENV`、存檔不含 Lua state
 `wf/inbox/m9-0-mainline-victory-complete.md`：
 階段表與各階段命中次數、兩次通關的逐點雜湊、冷載入往返的逐點雜湊、
 三條負向控制各自的紅燈輸出（或哪一條測不到）、`Context` 新增了什麼、
-`kSaveFormatVersion` 21 的欄位、ctest N 的組成、現有測試證不了的事。
+`kSaveFormatVersion` 新版號的欄位、ctest N 的組成、現有測試證不了的事。
 
 ## 規約
 

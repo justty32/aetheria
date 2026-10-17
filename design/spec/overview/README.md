@@ -13,3 +13,4 @@
 | [spec-planning-scope.md](spec-planning-scope.md) | 最新優先序：世界與 NPC 先成立，玩家接入後置 |
 | [spec-world-core.md](spec-world-core.md) | 六條核心規則、三層與四塊行為、取捨及正文歸屬 |
 | [spec-world.md](spec-world.md) | S0–S11 展開順序、完成條件與跨規格協調 |
+| [spec-round-map.json](spec-round-map.json) | S→R 對應：33 份規格推定落在 roadmap 哪輪（草案推定，待使用者裁定輪次順序）|

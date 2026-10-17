@@ -43,7 +43,7 @@ list_owned_files() {
   local -a prunes=(
     -path '*/.git' -o -path '*/node_modules' -o -path '*/__pycache__'
     -o -path '*/archive' -o -path '*/reference' -o -path '*/references' -o -path '*/vendor'
-    -o -path '*/done' -o -path '*/superseded'
+    -o -path '*/done' -o -path '*/superseded' -o -path '*/.claude/worktrees'
   )
   # .gitmodules 在 git 頂層，$root 可能是子目錄（例 skills/）；宣告過的 submodule 路徑不論落在哪一層都不下鑽。
   local top; top=$(git -C "$root" rev-parse --show-toplevel 2>/dev/null) || top=""
