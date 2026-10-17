@@ -78,7 +78,7 @@ RegionBuildResult build_skeleton(const RegionSlowVariables& slow, std::uint64_t 
                         derive_region_stage_seed(world_seed, slow.region_id,
                                                  detail::kRiverStageId),
                         config.rivers),
-        config.rivers.redistribution);
+        elevation, config.rivers.redistribution);
     auto biome = generate_biomes(
         elevation, climate, rivers, ruleset, definitions,
         derive_region_stage_seed(world_seed, slow.region_id, detail::kBiomeStageId), config.biome);

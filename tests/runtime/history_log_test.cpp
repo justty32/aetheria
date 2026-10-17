@@ -118,7 +118,9 @@ TEST(HistoryAcceptance, MiddleByteTamperFailsAtExactEntryAndRestorePasses) {
 }
 
 TEST(HistoryAcceptance, EmptyWorldPreservesV23ZoneAndFoldsThreeComponents) {
-    constexpr std::uint64_t kV23ZoneHash = UINT64_C(17114528469974780418);
+    // 存檔格式仍是 v23；雜湊變動來自生成內容——濕度接縫改為陸地 rank remap
+    // （2026-10-17），tile 的 moisture 與 terrain 隨之改變。舊值 17114528469974780418。
+    constexpr std::uint64_t kV23ZoneHash = UINT64_C(15952553903670859695);
     TemporaryDirectory workspace;
     const auto empty_slot = workspace.path() / "empty";
     {

@@ -5,7 +5,24 @@
 使用者裁定**地形之後單開一個 session 處理**。本 session 到 M5.11 為止只留接口、不再調值。
 **根因已經量到，不必重新診斷。**
 
-使用者裁定**地形之後單開一個 session 處理**，本 session 到 M5.11 為止只留接口、不再調值。
+## ✅ 2026-10-17 地形 session：濕度飽和已修（第一輪，只動濕度接縫）
+
+濕度 overload 改為**陸地格整數 rank remap**（Freeciv CDF 式，排序後依 rank 攤到原陸地
+`[min,max]`，海洋不動）。⚠ **純值 LUT 拆不開 65535 同值群**（與 libtcod 同病），所以排序鍵是
+`(moisture, lake, flow, 較低 filled_elevation)`；四鍵全等者取同值，與格子編號無關。高度 overload 仍是 identity。
+
+| seed | 飽和比例 前→後 | swamp | desert | grassland | steppe | taiga | tundra |
+|---|---|---|---|---|---|---|---|
+| 515151 | 41.8%→0.03% | 1823→302 | 299→990 | 966→1408 | 431→845 | 125→22 | 42→119 |
+| 1 | 25.6%→0.03% | 1214→245 | 292→840 | 1436→1430 | 634→984 | 110→177 | 0→10 |
+| 42 | 18.1%→0% | 899→248 | 280→657 | 1121→1298 | 775→1023 | 398→183 | 213→277 |
+| 777 | 28.1%→0.03% | 1229→211 | 322→1028 | 1308→1213 | 545→854 | 198→265 | 84→115 |
+
+（陸地皆 3686 格。）最大類別從 swamp 49% 降到 grassland ≤39%，**類別配額本輪不需要**。
+存檔格式仍 v23；`kV23ZoneHash` 因生成內容改變而換值（關掉等化即回到舊值，已驗）。
+
+**未解**：等化後 desert 升到 18–28%、515151 的 taiga 只剩 0.6%——規則門檻是對著削頂分布校的
+（desert target 18000），下一輪若要調，一次只動一條規則的 target／scale 再量。
 
 **接手就從這裡開始**（一行指令重出全部診斷）：
 
@@ -28,7 +45,7 @@ moisture_saturated_ratio=0.418      terrain_histogram swamp=1823（saturated=154
 > ⚠ **這是同族缺陷第四次**。前三次是**門檻落在分布之外**（M1 沙漠、M5.4 的 tundra 與 swamp），
 > 這次是**分布本身頂在天花板上**。表現不同，結果一樣：**分類規則失去鑑別力**。
 
-**接縫**（`core/worldgen/field_redistribution.h`，兩個正式 overload 都是 identity）：
+**接縫**（`core/worldgen/field_redistribution.h`；高度 overload 仍是 identity，濕度見上方 ✅ 段）：
 高度在 `erode_height` 後、`quantize_elevation` 前；濕度在河流回灌後、biome 分類前。
 ⚠ 未來放 rank remap **要用整數 LUT，不要 `pow`**（跨平台浮點不決定性）。
 

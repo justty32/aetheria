@@ -27,13 +27,11 @@ using aetheria::worldgen::grayscale;
 using aetheria::worldgen::hash_stage;
 using aetheria::worldgen::land_fraction;
 using aetheria::worldgen::land_is_single_component;
-using aetheria::worldgen::MoistureRedistributionParams;
 using aetheria::worldgen::populate;
 using aetheria::worldgen::quantize_elevation;
 using aetheria::worldgen::redistribute;
 using aetheria::worldgen::RegionFastVariables;
 using aetheria::worldgen::RegionSlowVariables;
-using aetheria::worldgen::RiverStageOutput;
 
 
 
@@ -60,18 +58,6 @@ TEST(RegionGeneration, ElevationRedistributionSeamIsIdentityUnlessATestTransform
     EXPECT_NE(quantize_elevation(shifted).meters, quantize_elevation(identity).meters);
 }
 
-TEST(RegionGeneration, MoistureRedistributionSeamIsIdentityUnlessATestTransformIsInjected) {
-    RiverStageOutput raw{2, 1, {4096, 4096}, {-1, -1}, {1, 1}, {0, 0}, {1000, 2000}, {0, 0}};
-    const auto identity = redistribute(raw, MoistureRedistributionParams{});
-    const auto shifted = redistribute(
-        raw, MoistureRedistributionParams{},
-        [](RiverStageOutput& field, const MoistureRedistributionParams&) {
-            ++field.moisture.front();
-        });
-
-    EXPECT_EQ(hash_stage(identity), hash_stage(raw));
-    EXPECT_NE(hash_stage(shifted), hash_stage(identity));
-}
 
 TEST(RegionGeneration, ProducesTargetLandRatioAndOneConnectedMainland) {
     const auto result =

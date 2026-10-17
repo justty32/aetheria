@@ -15,6 +15,7 @@ target_sources(aetheria_tests PRIVATE
     tests/worldgen/late_stage_isolation_test.cpp
     tests/worldgen/region_determinism_test.cpp
     tests/worldgen/region_parameter_isolation_test.cpp
+    tests/worldgen/moisture_redistribution_test.cpp
     tests/worldgen/region_output_validation_test.cpp
     tests/worldgen/region_perf_test.cpp
     tests/worldgen/region_stage_functions_test.cpp

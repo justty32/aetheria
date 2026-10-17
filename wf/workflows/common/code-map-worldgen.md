@@ -12,7 +12,7 @@
 
 `stage_*.cpp` 是第 1～7 階段的板塊、高度、侵蝕、氣候、河流、生態與地物；
 侵蝕階段是量化閘口，地物群處理放置約束，biome 分類介面隔離 terrain／relief 裁決。
-`field_redistribution.*` 保留高度／濕度的 identity 接縫。
+`field_redistribution.*` 是高度（identity）／濕度（陸地整數 rank remap）的分布重整接縫。
 
 人文階段以職責前綴命名：`history_*.cpp` 負責第 8 階段選址、災變與古道；
 `city_*.cpp` 與 settlement 評分群負責共用純評分、canonical 分級選點及第 9 階段城市；
